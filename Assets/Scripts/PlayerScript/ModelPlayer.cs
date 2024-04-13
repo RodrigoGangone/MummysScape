@@ -8,7 +8,7 @@ public class ModelPlayer
     Player _player;
 
 
-    ModelPlayer(Player p) { _player = p; }
+    public ModelPlayer(Player p) { _player = p; }
 
     public void Move ()
     {
