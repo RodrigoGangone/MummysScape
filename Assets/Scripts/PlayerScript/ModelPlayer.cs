@@ -30,6 +30,9 @@ public class ModelPlayer
             _player.transform.rotation = Quaternion.RotateTowards(_player.transform.rotation, rotacionDeseada, _player.SpeedRotation * Time.deltaTime);
         }
 
+        //_rb.AddForce(movimiento.x, _rb.velocity.y, movimiento.z);
+        //_rb.velocity = _player.transform.forward * (movimiento.magnitude * _player.Speed);
+
         _rb.velocity = new Vector3(movimiento.x, _rb.velocity.y, movimiento.z);
     }
 }
