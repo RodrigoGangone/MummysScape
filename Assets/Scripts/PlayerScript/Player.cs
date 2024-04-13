@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    private Transform _cameraTransform;
     
     ModelPlayer _modelPlayer;
     ViewPlayer _viewPlayer;
@@ -24,6 +25,8 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
+        if (Camera.main != null) _cameraTransform = Camera.main.transform;
+
         _modelPlayer = new ModelPlayer(this);
         _controllerPlayer = new ControllerPlayer(_modelPlayer);
         _StateMachinePlayer = new StateMachinePlayer();

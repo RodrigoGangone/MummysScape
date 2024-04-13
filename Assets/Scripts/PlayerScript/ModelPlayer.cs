@@ -30,9 +30,28 @@ public class ModelPlayer
             _player.transform.rotation = Quaternion.RotateTowards(_player.transform.rotation, rotacionDeseada, _player.SpeedRotation * Time.deltaTime);
         }
 
-        //_rb.AddForce(movimiento.x, _rb.velocity.y, movimiento.z);
-        //_rb.velocity = _player.transform.forward * (movimiento.magnitude * _player.Speed);
-
         _rb.velocity = new Vector3(movimiento.x, _rb.velocity.y, movimiento.z);
     }
+    
+    public void MoveCameraTransform (float movimientoHorizontal, float movimientoVertical, Transform camaraTransform )
+    {
+        Vector3 movimiento = new Vector3(movimientoHorizontal, 0f, movimientoVertical);
+
+        // Rotar hacia la dirección de movimiento
+        if (movimiento.magnitude > 0.1f) // Solo rotar si hay movimiento significativo
+        {
+            Quaternion rotacionDeseada = Quaternion.LookRotation(movimiento, Vector3.up);
+            _player.transform.rotation = Quaternion.RotateTowards(_player.transform.rotation, rotacionDeseada, _player.SpeedRotation * Time.deltaTime);
+        }
+        
+        // Rotar hacia la dirección de la cámara en el plano XZ
+        Vector3 direccionMovimiento = camaraTransform.forward;
+        direccionMovimiento.y = 0f; // Mantener la dirección en el plano horizontal
+
+        // Aplicar el movimiento al Rigidbody en la dirección del input de movimiento relativo a la orientación de la cámara
+        Vector3 movimientoRelativoCamara = Quaternion.Euler(0f, camaraTransform.eulerAngles.y, 0f) * movimiento.normalized;
+        _rb.velocity = movimientoRelativoCamara * _player.Speed;
+    }
+    
+    
 }
