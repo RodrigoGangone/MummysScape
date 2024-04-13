@@ -6,12 +6,17 @@ using UnityEngine.Scripting.APIUpdating;
 public class ModelPlayer
 {
     Player _player;
+    Rigidbody _rb;
 
 
-    public ModelPlayer(Player p) { _player = p; }
+    public ModelPlayer(Player p) { _player = p; _rb = _player.GetComponent<Rigidbody>(); }
 
-    public void Move ()
+    public void Move (float rotationInput, float moveInput)
     {
-        
+        Quaternion _rotation = Quaternion.Euler(0f, rotationInput * _player.SpeedRotation * Time.deltaTime, 0f);
+        _rb.rotation = (_rb.rotation * _rotation);
+
+        Vector3 movemente = _player.transform.forward * moveInput * _player.Speed*Time.deltaTime;
+        _rb.MovePosition(_rb.position + movemente);
     }
 }
