@@ -2,17 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ControllerPlayer : MonoBehaviour
+public class ControllerPlayer 
 {
-    // Start is called before the first frame update
-    void Start()
+    ModelPlayer _model;
+    public ControllerPlayer(ModelPlayer m)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        _model = m;
     }
 }
