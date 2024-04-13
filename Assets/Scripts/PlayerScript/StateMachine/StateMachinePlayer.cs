@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-public class StateMachine : MonoBehaviour
+public class StateMachinePlayer : MonoBehaviour
 {
     Dictionary<Enum, State> _allStates = new();
     State _currentState;

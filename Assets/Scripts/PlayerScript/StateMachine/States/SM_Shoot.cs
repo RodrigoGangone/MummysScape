@@ -4,18 +4,6 @@ using UnityEngine;
 
 public class SM_Shoot : State
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public override void OnEnter()
     {
         
@@ -27,11 +15,9 @@ public class SM_Shoot : State
 
     public override void OnFixedUpdate()
     {
-        throw new System.NotImplementedException();
     }
 
     public override void OnExit()
     {
-        throw new System.NotImplementedException();
     }
 }

@@ -9,5 +9,5 @@ public abstract class State
     public abstract void OnFixedUpdate();
     public abstract void OnExit();
 
-    public StateMachine StateMachine;
+    public StateMachinePlayer StateMachine;
 }

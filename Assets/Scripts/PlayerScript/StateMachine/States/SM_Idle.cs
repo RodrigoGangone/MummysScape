@@ -4,18 +4,6 @@ using UnityEngine;
 
 public class SM_Idle : State
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public override void OnEnter()
     {
         
