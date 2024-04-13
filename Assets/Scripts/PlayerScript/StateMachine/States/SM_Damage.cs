@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SM_Damage : MonoBehaviour
+public class SM_Damage : State
 {
     // Start is called before the first frame update
     void Start()
@@ -14,5 +14,22 @@ public class SM_Damage : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public override void OnEnter()
+    {
+        
+    }
+
+    public override void OnUpdate()
+    {
+    }
+
+    public override void OnFixedUpdate()
+    {
+    }
+
+    public override void OnExit()
+    {
     }
 }
