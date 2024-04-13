@@ -13,10 +13,10 @@ public class Player : MonoBehaviour
     public StateMachinePlayer _StateMachinePlayer { get; private set; }
     private string _currentState;
     
-    private float _life;
-    private float _speed;
+    [SerializeField] private float _life;
+    [SerializeField] private float _speed;
     private float _stockBandages;
-    private float _speedRotation ;
+    [SerializeField] private float _speedRotation ;
     
     public float Life { get => _life; set => _life = value; }
     public float Speed { get => _speed; set { } }
@@ -59,7 +59,6 @@ public class Player : MonoBehaviour
         {
             return _StateMachinePlayer.getCurrentState();
         }
-
 
         private enum PlayerState
         {
