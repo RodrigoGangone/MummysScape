@@ -41,6 +41,7 @@ public class Player : MonoBehaviour
     private void Update()
     {
         _StateMachinePlayer.Update();
+        _controllerPlayer.ControllerUpdate();
     }
 
     private void FixedUpdate()
