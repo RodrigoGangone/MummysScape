@@ -21,7 +21,7 @@ public class Player : MonoBehaviour
     private void Start()
     {
         _modelPlayer = new ModelPlayer();
-        _controllerPlayer = new ControllerPlayer();
+        _controllerPlayer = new ControllerPlayer(_modelPlayer);
         _machinePlayer = new StateMachinePlayer();
         
     }

@@ -4,5 +4,9 @@ using UnityEngine;
 
 public class ControllerPlayer 
 {
-    
+    ModelPlayer _model;
+    public ControllerPlayer(ModelPlayer m)
+    {
+        _model = m;
+    }
 }
