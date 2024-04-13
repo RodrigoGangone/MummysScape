@@ -16,6 +16,10 @@ public class ControllerPlayer
     {
         _rotationInput = Input.GetAxis("Horizontal");
         _moveInput = Input.GetAxis("Vertical");
-        _model.MoveVariant(_rotationInput, _moveInput);
+        
+        if (_rotationInput != 0 || _moveInput != 0)
+        {
+            _model.MoveVariant(_rotationInput, _moveInput);
+        }    
     }
 }

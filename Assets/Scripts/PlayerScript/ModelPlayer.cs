@@ -7,8 +7,6 @@ public class ModelPlayer
 {
     Player _player;
     Rigidbody _rb;
-
-
     public ModelPlayer(Player p) { _player = p; _rb = _player.GetComponent<Rigidbody>(); }
 
     public void MoveTank (float rotationInput, float moveInput)
@@ -19,20 +17,24 @@ public class ModelPlayer
         Vector3 movemente = _player.transform.forward * moveInput * _player.Speed*Time.deltaTime;
         _rb.MovePosition(_rb.position + movemente);
     }
-    
-    public void MoveVariant (float movimientoHorizontal, float movimientoVertical)
+
+    public void MoveVariant(float movimientoHorizontal, float movimientoVertical)
     {
-        Vector3 movimiento = new Vector3(movimientoHorizontal, 0f, movimientoVertical) * _player.Speed;
+        Vector3 forward = ( new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z));
+        
+        Vector3 right = Quaternion.Euler( new Vector3 (0, 90, 0) ) * forward;
 
-        if (movimiento != Vector3.zero)
-        {
-            Quaternion rotacionDeseada = Quaternion.LookRotation(movimiento);
-            _player.transform.rotation = Quaternion.RotateTowards(_player.transform.rotation, rotacionDeseada, _player.SpeedRotation * Time.deltaTime);
-        }
+        Vector3 righMovement = right * (_player.Speed * Time.deltaTime * movimientoHorizontal);
+        Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * movimientoVertical);
 
-        //_rb.AddForce(movimiento.x, _rb.velocity.y, movimiento.z);
-        //_rb.velocity = _player.transform.forward * (movimiento.magnitude * _player.Speed);
+        Vector3 heading = Vector3.Normalize(righMovement + upMovement);
 
-        _rb.velocity = new Vector3(movimiento.x, _rb.velocity.y, movimiento.z);
+        Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
+        
+        _player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation);
+        
+        _player.transform.position += righMovement;
+        _player.transform.position += upMovement;
+        
     }
 }
