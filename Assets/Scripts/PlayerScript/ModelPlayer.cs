@@ -1,17 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-public class ModelPlayer : MonoBehaviour
+public class ModelPlayer
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    Player _player;
 
-    // Update is called once per frame
-    void Update()
+
+    ModelPlayer(Player p) { _player = p; }
+
+    public void Move ()
     {
         
     }
