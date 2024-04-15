@@ -8,7 +8,7 @@ public class CameraPos : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKey(KeyCode.J))
+        if (Input.GetKey(KeyCode.Q))
         {
             if (Vector3.Distance(transform.position, camOne.position) > 0.1f)
             {
@@ -17,7 +17,7 @@ public class CameraPos : MonoBehaviour
             }
                 
         }
-        if (Input.GetKey(KeyCode.K))
+        if (Input.GetKey(KeyCode.E))
         {
             if (Vector3.Distance(transform.position, camTwo.position) > 0.1f)
             {
