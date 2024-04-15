@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 using UnityEngine.Scripting.APIUpdating;
+using Object = UnityEngine.Object;
 
 public class ModelPlayer
 {
@@ -14,6 +16,7 @@ public class ModelPlayer
     private LineRenderer _bandage;
     public SpringJoint _joint;
     public bool _isHook = false;
+    
     public ModelPlayer(Player p, SpringJoint springJoint)
     {
         _player = p; 
@@ -55,11 +58,13 @@ public class ModelPlayer
     {
         var minDistanceHook = 5;
         bool objectToHookUpdated = false;
-
+        
         Collider[] _hooks = Physics.OverlapSphere(_player.transform.position, minDistanceHook, LayerMask.GetMask("Hookeable"));
 
         if (_hooks.Length > 0)
         {
+            if(_joint == null) { _joint = _player.gameObject.AddComponent<SpringJoint>(); _joint.autoConfigureConnectedAnchor = false; }
+
             foreach (var graps in _hooks)
             {
                 var distance = Vector3.Distance(_player.transform.position, graps.transform.position);
@@ -77,6 +82,7 @@ public class ModelPlayer
 
         if (objectToHookUpdated)
         {
+
             _joint.connectedAnchor = _objectToHook;
 
             float distanceFromHook = Vector3.Distance(_player.transform.position, _objectToHook);
@@ -92,26 +98,16 @@ public class ModelPlayer
     
     public void ResetHook()
     {
+        Object.Destroy(_joint);
         _bandage.enabled = false;
-        
         _isHook = false;
-        
-        _joint.connectedAnchor = Vector3.zero;
-        _joint.maxDistance = 0f;
-        _joint.minDistance = 0f;
-        _joint.spring = 0f;
-        _joint.damper = 0f;
-        _joint.massScale = 0f;
-    
-        _objectToHook = Vector3.zero;
     }
     
     public void DrawHook() 
     {            
         _bandage.enabled = true;
-        
         _bandage.SetPosition(0, _player.transform.position);
         _bandage.SetPosition(1, _objectToHook); 
     }
-    
+
 }
