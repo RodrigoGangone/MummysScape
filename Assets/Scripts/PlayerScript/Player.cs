@@ -10,6 +10,8 @@ public class Player : MonoBehaviour
     ModelPlayer _modelPlayer;
     ViewPlayer _viewPlayer;
     ControllerPlayer _controllerPlayer;
+
+    private SpringJoint _springJoint;
     
     public StateMachinePlayer _StateMachinePlayer { get; private set; }
     private string _currentState;
@@ -27,7 +29,9 @@ public class Player : MonoBehaviour
     {
         if (Camera.main != null) _cameraTransform = Camera.main.transform;
 
-        _modelPlayer = new ModelPlayer(this);
+        _springJoint = GetComponent<SpringJoint>();
+        
+        _modelPlayer = new ModelPlayer(this, _springJoint);
         _controllerPlayer = new ControllerPlayer(_modelPlayer);
         _StateMachinePlayer = new StateMachinePlayer();
         
