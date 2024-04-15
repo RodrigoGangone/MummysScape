@@ -5,25 +5,25 @@ using UnityEngine;
 public class CameraPos : MonoBehaviour
 {
     [SerializeField] private Transform camOne, camTwo;
-    
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.J))
+        if (Input.GetKey(KeyCode.J))
         {
-            transform.position = camOne.transform.position;
-            transform.rotation = camOne.transform.rotation;
+            if (Vector3.Distance(transform.position, camOne.position) > 0.1f)
+            {
+                transform.position = Vector3.Lerp(transform.position, camOne.position, 0.001f);
+                transform.rotation = Quaternion.Lerp(transform.rotation, camOne.rotation, 0.001f);
+            }
+                
         }
-        if (Input.GetKeyDown(KeyCode.K))
+        if (Input.GetKey(KeyCode.K))
         {
-            transform.position = camTwo.transform.position;
-            transform.rotation = camTwo.transform.rotation;
+            if (Vector3.Distance(transform.position, camTwo.position) > 0.1f)
+            {
+                transform.position = Vector3.Lerp(transform.position, camTwo.position, 0.001f);
+                transform.rotation = Quaternion.Lerp(transform.rotation, camTwo.rotation, 0.001f);
+            }
         }
     }
 }
