@@ -7,7 +7,14 @@ public class ModelPlayer
 {
     Player _player;
     Rigidbody _rb;
-    public ModelPlayer(Player p) { _player = p; _rb = _player.GetComponent<Rigidbody>(); }
+    LineRenderer _bandage;
+    
+    public ModelPlayer(Player p)
+    {
+        _player = p; 
+        _rb = _player.GetComponent<Rigidbody>();
+        _bandage = _player.GetComponent<LineRenderer>();
+    }
 
     public void MoveTank (float rotationInput, float moveInput)
     {
@@ -35,6 +42,11 @@ public class ModelPlayer
         
         _player.transform.position += righMovement;
         _player.transform.position += upMovement;
+        
+    }
+
+    public void Hook()
+    {
         
     }
 }
