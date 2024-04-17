@@ -1,28 +1,33 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
-using UnityEngine.Scripting.APIUpdating;
-using Object = UnityEngine.Object;
+
 
 public class ModelPlayer
 {
     Player _player;
     Rigidbody _rb;
-    Vector3 _currentHook;
     Vector3 _objectToHook = Vector3.zero;
-    private LineRenderer _bandage;
+    public LineRenderer _bandage;
     public SpringJoint _joint;
+    public  AnimationCurve _affectcurve;
     public bool _isHook = false;
-    private Vector3 currentGrapplePos;
-    public ModelPlayer(Player p, SpringJoint springJoint)
+    public bool _drawLineHook = false;
+    public Action _reset;
+    public Action _lineCurrent;
+    public ModelPlayer(Player p, SpringJoint springJoint, AnimationCurve affectcurve)
     {
         _player = p; 
         _rb = _player.GetComponent<Rigidbody>();
         _bandage = _player.GetComponent<LineRenderer>();
         _joint = springJoint;
+        _affectcurve = affectcurve;
+
+        _reset = () => { UnityEngine.Object.Destroy(_joint); _bandage.enabled = false; _isHook = false; _drawLineHook = false; };
+        //_lineCurrent = () => { _bandage.enabled = true; _bandage.SetPosition(0, _player.transform.position); _bandage.SetPosition(1, _objectToHook); };
+        _lineCurrent = () => { _bandage.enabled = true; _bandage.positionCount = 2; _bandage.SetPosition(0, _player.transform.position); _bandage.SetPosition(1, _objectToHook);
+            Debug.Log("LAMBDAAAAAAA");
+        };
     }
 
     public void MoveTank (float rotationInput, float moveInput)
@@ -52,16 +57,12 @@ public class ModelPlayer
         _player.transform.position += righMovement;
         _player.transform.position += upMovement;
         
-        if (_rb.velocity.magnitude > _player.Speed)
-        {
-            _rb.velocity = _rb.velocity.normalized * _player.Speed;
-        }
+        if (_rb.velocity.magnitude > _player.Speed) { _rb.velocity = _rb.velocity.normalized * _player.Speed; }
     }
 
     public void Hook()
     {
         var minDistanceHook = 5;
-        
         bool objectToHookUpdated = false;
         
         Collider[] _hooks = Physics.OverlapSphere(_player.transform.position, minDistanceHook, LayerMask.GetMask("Hookeable"));
@@ -79,13 +80,9 @@ public class ModelPlayer
             
             _isHook = true;
         }
-        
-
         if (objectToHookUpdated)
         {
             _joint.connectedAnchor = _objectToHook;
-            
-            //float distanceFromHook = Vector3.Distance(_player.transform.position, _objectToHook);
             
             _joint.maxDistance = 2f;
             _joint.minDistance = 0.1f;
@@ -94,23 +91,38 @@ public class ModelPlayer
             _joint.damper = 100f;
             _joint.breakTorque = 1;
             _joint.massScale = 100f;
+            
+            _bandage.enabled = true;
+            _drawLineHook = true;
         }
-    }
-    
-    public void ResetHook()
-    {
-        Object.Destroy(_joint);
-        _bandage.enabled = false;
-        _isHook = false;
     }
     
     public void DrawHook()
     {
-        Debug.Log(_joint.minDistance + _joint.maxDistance);
+        int quality = 50;
+
+        if (!_isHook) { _reset?.Invoke(); _bandage.positionCount = 0; return; }
+        if (_bandage.positionCount == 0){ _bandage.positionCount = quality + 1; }
+        if (_bandage.positionCount < quality + 1) { _bandage.positionCount = quality + 1; }
+    
+        var grapplePoint = _objectToHook;
+        var gunTipPosition = _player.transform.position;
+        var up = Quaternion.LookRotation((grapplePoint - gunTipPosition).normalized) * Vector3.up;
+        float distance = Vector3.Distance(gunTipPosition, grapplePoint);
+
+        for (var i = 0; i < quality + 1; i++)
+        {
+            var delta = i / (float)quality;
+            Vector3 ropePosition = Vector3.Lerp(gunTipPosition, grapplePoint, delta);
+            float distanceFromGunTip = Vector3.Distance(gunTipPosition, ropePosition);
+            float percentage = distanceFromGunTip / distance;
+            Vector3 offset = up * Mathf.Sin(percentage * 3 * Mathf.PI) * 5f * _affectcurve.Evaluate(delta);
+            
+            _bandage.SetPosition(i, ropePosition + offset);
+        }
         
-        _bandage.enabled = true;
-        
-        _bandage.SetPosition(0, _player.transform.position);
-        _bandage.SetPosition(1, _objectToHook);
+        _bandage.enabled = false;
+        _drawLineHook = false;
     }
+
 }
