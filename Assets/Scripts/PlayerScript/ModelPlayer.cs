@@ -16,7 +16,7 @@ public class ModelPlayer
     private LineRenderer _bandage;
     public SpringJoint _joint;
     public bool _isHook = false;
-    
+    private Vector3 currentGrapplePos;
     public ModelPlayer(Player p, SpringJoint springJoint)
     {
         _player = p; 
@@ -48,15 +48,20 @@ public class ModelPlayer
         Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
         
         _player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation);
-        
+
         _player.transform.position += righMovement;
         _player.transform.position += upMovement;
         
+        if (_rb.velocity.magnitude > _player.Speed)
+        {
+            _rb.velocity = _rb.velocity.normalized * _player.Speed;
+        }
     }
 
     public void Hook()
     {
         var minDistanceHook = 5;
+        
         bool objectToHookUpdated = false;
         
         Collider[] _hooks = Physics.OverlapSphere(_player.transform.position, minDistanceHook, LayerMask.GetMask("Hookeable"));
@@ -69,11 +74,7 @@ public class ModelPlayer
             {
                 var distance = Vector3.Distance(_player.transform.position, graps.transform.position);
 
-                if (distance < minDistanceHook) 
-                { 
-                    _objectToHook = graps.transform.position;
-                    objectToHookUpdated = true;
-                }
+                if (distance < minDistanceHook) { _objectToHook = graps.transform.position; objectToHookUpdated = true;}
             }
             
             _isHook = true;
@@ -82,17 +83,17 @@ public class ModelPlayer
 
         if (objectToHookUpdated)
         {
-
             _joint.connectedAnchor = _objectToHook;
-
-            float distanceFromHook = Vector3.Distance(_player.transform.position, _objectToHook);
-
-            _joint.maxDistance = distanceFromHook * 0.8f;
-            _joint.minDistance = distanceFromHook * 0.25f;
-
-            _joint.spring = 7f;
-            _joint.damper = 12f;
-            _joint.massScale = 7f;
+            
+            //float distanceFromHook = Vector3.Distance(_player.transform.position, _objectToHook);
+            
+            _joint.maxDistance = 2f;
+            _joint.minDistance = 0.1f;
+            
+            _joint.spring = 100;
+            _joint.damper = 100f;
+            _joint.breakTorque = 1;
+            _joint.massScale = 100f;
         }
     }
     
@@ -103,11 +104,13 @@ public class ModelPlayer
         _isHook = false;
     }
     
-    public void DrawHook() 
-    {            
+    public void DrawHook()
+    {
+        Debug.Log(_joint.minDistance + _joint.maxDistance);
+        
         _bandage.enabled = true;
+        
         _bandage.SetPosition(0, _player.transform.position);
-        _bandage.SetPosition(1, _objectToHook); 
+        _bandage.SetPosition(1, _objectToHook);
     }
-
 }

@@ -18,6 +18,7 @@ public class Player : MonoBehaviour
     
     [SerializeField] private float _life;
     [SerializeField] private float _speed;
+    [SerializeField] private float _maxSpeed;
     private float _stockBandages;
     [SerializeField] private float _speedRotation ;
     

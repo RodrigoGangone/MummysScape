@@ -222,7 +222,7 @@ Transform:
   m_GameObject: {fileID: 179565667}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.23, y: 2.07, z: 9.83}
+  m_LocalPosition: {x: 12.23, y: 2.07, z: 20.28}
   m_LocalScale: {x: 5.2426, y: 5.2426, z: 5.2426}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -327,7 +327,7 @@ Transform:
   m_GameObject: {fileID: 182182241}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -10.79, z: 14.39}
+  m_LocalPosition: {x: 0, y: -10.79, z: 31.3}
   m_LocalScale: {x: 29.520948, y: 0.17605, z: 28.71293}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -432,8 +432,8 @@ Transform:
   m_GameObject: {fileID: 359600421}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11.46, y: 2.86, z: 3.27}
-  m_LocalScale: {x: 6.297999, y: 0.037558507, z: 6.1256166}
+  m_LocalPosition: {x: -20.1, y: 2.86, z: 3.27}
+  m_LocalScale: {x: 19.423029, y: 0.037558507, z: 6.1256166}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -466,7 +466,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 514220569}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 0.1
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -599,7 +599,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 681113333}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 0.1
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -1045,7 +1045,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _life: 100
-  _speed: 8
+  _speed: 5
+  _maxSpeed: 5
   _speedRotation: 3
 --- !u!136 &972602307
 CapsuleCollider:
@@ -1144,7 +1145,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 972602305}
   serializedVersion: 4
-  m_Mass: 5
+  m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -1216,18 +1217,9 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0
+        value: 1
         inSlope: 0
         outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.28175163
-        value: 0.16602372
-        inSlope: 1.2933234
-        outSlope: 1.2933234
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
@@ -1399,7 +1391,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1158397157}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 0.1
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -1789,7 +1781,7 @@ Transform:
   m_GameObject: {fileID: 2034494335}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1, z: 0}
+  m_LocalPosition: {x: 0, y: -9.34, z: 0}
   m_LocalScale: {x: 29.520948, y: 0.17605, z: 28.71293}
   m_ConstrainProportionsScale: 0
   m_Children: []
