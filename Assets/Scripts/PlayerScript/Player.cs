@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -33,7 +30,7 @@ public class Player : MonoBehaviour
 
         _springJoint = GetComponent<SpringJoint>();
         
-        _modelPlayer = new ModelPlayer(this, _springJoint, affectCurve);
+        _modelPlayer = new ModelPlayer(this, _springJoint);
         _controllerPlayer = new ControllerPlayer(_modelPlayer);
         _StateMachinePlayer = new StateMachinePlayer();
         

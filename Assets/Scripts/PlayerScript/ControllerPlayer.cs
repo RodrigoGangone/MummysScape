@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class ControllerPlayer 
@@ -14,14 +13,22 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
+
+        #region Move
+        
         _rotationInput = Input.GetAxis("Horizontal");
         _moveInput = Input.GetAxis("Vertical");
-        
         if (_rotationInput != 0 || _moveInput != 0) { _model.MoveVariant(_rotationInput, _moveInput); }
+        
+    #endregion
 
+        #region Hook
+        
         if (Input.GetKeyDown(KeyCode.Space)) { _model.Hook(); }
-        if (_model._drawLineHook){ _model.DrawHook(); }
-        if(_model._isHook && !_model._drawLineHook ){_model._lineCurrent?.Invoke();}
-        if (Input.GetKeyUp(KeyCode.Space)){_model._reset?.Invoke();}
+        if(_model.objectToHookUpdated) { _model.lineCurrent?.Invoke(); }
+        if (Input.GetKeyUp(KeyCode.Space)){ _model.reset?.Invoke(); }
+        
+    #endregion
+    
     }
 }
