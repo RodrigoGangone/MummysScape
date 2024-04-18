@@ -25,7 +25,7 @@ public class ControllerPlayer
         #region Hook
         
         if (Input.GetKeyDown(KeyCode.Space)) { _model.Hook(); }
-        if(_model.objectToHookUpdated) { _model.lineCurrent?.Invoke(); }
+        if(_model.objectToHookUpdated) { _model.lineCurrent?.Invoke(); _model.limitVelocity?.Invoke(); }
         if (Input.GetKeyUp(KeyCode.Space)){ _model.reset?.Invoke(); }
         
     #endregion

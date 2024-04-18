@@ -7,6 +7,7 @@ public class ModelPlayer
     Player _player;
     Rigidbody _rb;
     
+    //HOOK
     Vector3 _objectToHook = Vector3.zero;
     public LineRenderer _bandage;
     public SpringJoint _joint;
@@ -14,7 +15,8 @@ public class ModelPlayer
 
     public Action reset;
     public Action lineCurrent;
-
+    public Action limitVelocity;
+    //HOOK
     public ModelPlayer(Player p, SpringJoint springJoint)
     {
         _player = p; 
@@ -23,7 +25,8 @@ public class ModelPlayer
         _joint = springJoint;
 
         reset = () => { UnityEngine.Object.Destroy(_joint); _bandage.enabled = false; objectToHookUpdated = false; };
-        lineCurrent = () => { _bandage.enabled = true; _bandage.positionCount = 2; _bandage.SetPosition(0, _player.transform.position); _bandage.SetPosition(1, _objectToHook); };
+        lineCurrent = () => { _bandage.enabled = true; _bandage.SetPosition(0, _player.transform.position); _bandage.SetPosition(1, _objectToHook); };
+        limitVelocity = () => { if (_rb.velocity.magnitude > _player.Speed) { _rb.velocity = _rb.velocity.normalized * _player.Speed; } };
     }
 
     public void MoveTank (float rotationInput, float moveInput)
@@ -52,24 +55,26 @@ public class ModelPlayer
 
         _player.transform.position += righMovement;
         _player.transform.position += upMovement;
-        
-        if (_rb.velocity.magnitude > _player.Speed) { _rb.velocity = _rb.velocity.normalized * _player.Speed; }
     }
 
     public void Hook()
     {
         var minDistanceHook = 5;
         
-        if(_joint == null) { _joint = _player.gameObject.AddComponent<SpringJoint>(); _joint.autoConfigureConnectedAnchor = false; }
-        
         Collider[] hooks = Physics.OverlapSphere(_player.transform.position, minDistanceHook, LayerMask.GetMask("Hookeable"));
 
-        if (hooks.Length > 0 && !objectToHookUpdated)
+        if (hooks.Length > 0 )
         {
-            foreach (var grapes in hooks)
+            if(_joint == null) { _joint = _player.gameObject.AddComponent<SpringJoint>(); _joint.autoConfigureConnectedAnchor = false; }
+
+            if (!objectToHookUpdated)
             {
-                var distance = Vector3.Distance(_player.transform.position, grapes.transform.position);
-                if (distance < minDistanceHook) { _objectToHook = grapes.transform.position; objectToHookUpdated = true; }
+                foreach (var grapes in hooks)
+                {
+                    var distance = Vector3.Distance(_player.transform.position, grapes.transform.position);
+                    if (distance < minDistanceHook) { _objectToHook = grapes.transform.position; objectToHookUpdated = true; }
+                
+                }
             }
         }
         

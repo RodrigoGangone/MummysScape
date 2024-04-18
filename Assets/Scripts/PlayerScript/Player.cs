@@ -9,8 +9,7 @@ public class Player : MonoBehaviour
     ControllerPlayer _controllerPlayer;
 
     private SpringJoint _springJoint;
-    public AnimationCurve affectCurve;
-
+    private LineRenderer _bandage;
     public StateMachinePlayer _StateMachinePlayer { get; private set; }
     private string _currentState;
     
@@ -32,6 +31,8 @@ public class Player : MonoBehaviour
         
         _modelPlayer = new ModelPlayer(this, _springJoint);
         _controllerPlayer = new ControllerPlayer(_modelPlayer);
+        _viewPlayer = new ViewPlayer(_bandage);
+        
         _StateMachinePlayer = new StateMachinePlayer();
         
         _StateMachinePlayer.AddState(PlayerState.Idle, new SM_Idle());
