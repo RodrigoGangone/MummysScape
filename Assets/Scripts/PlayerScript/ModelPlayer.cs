@@ -40,16 +40,13 @@ public class ModelPlayer
 
     public void MoveVariant(float movimientoHorizontal, float movimientoVertical)
     {
-        Vector3 forward = ( new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z));
-        
-        Vector3 right = Quaternion.Euler( new Vector3 (0, 90, 0) ) * forward;
+        Vector3 forward = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z).normalized;
+        Vector3 right = new Vector3(Camera.main.transform.right.x, 0, Camera.main.transform.right.z).normalized;
 
         Vector3 righMovement = right * (_player.Speed * Time.deltaTime * movimientoHorizontal);
         Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * movimientoVertical);
-
-        Vector3 heading = Vector3.Normalize(righMovement + upMovement);
-
-        Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
+        
+        Quaternion targetRotation = Quaternion.LookRotation(Vector3.Normalize(righMovement + upMovement), Vector3.up);
         
         _player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation);
 
@@ -63,23 +60,18 @@ public class ModelPlayer
         
         Collider[] hooks = Physics.OverlapSphere(_player.transform.position, minDistanceHook, LayerMask.GetMask("Hookeable"));
 
-        if (hooks.Length > 0 )
-        {
+        if (hooks.Length > 0 ){
             if(_joint == null) { _joint = _player.gameObject.AddComponent<SpringJoint>(); _joint.autoConfigureConnectedAnchor = false; }
 
-            if (!objectToHookUpdated)
-            {
-                foreach (var grapes in hooks)
-                {
+            if (!objectToHookUpdated){
+                foreach (var grapes in hooks){
                     var distance = Vector3.Distance(_player.transform.position, grapes.transform.position);
                     if (distance < minDistanceHook) { _objectToHook = grapes.transform.position; objectToHookUpdated = true; }
-                
                 }
             }
         }
         
-        if (objectToHookUpdated)
-        {
+        if (objectToHookUpdated){
             _joint.connectedAnchor = _objectToHook;
             
             _joint.maxDistance = 2f;

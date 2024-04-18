@@ -5,6 +5,7 @@ public class ControllerPlayer
     ModelPlayer _model;
     float _rotationInput;
     float _moveInput;
+    private bool _whatmovement = true;
     
     public ControllerPlayer(ModelPlayer m)
     {
@@ -13,12 +14,16 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
-
         #region Move
         
         _rotationInput = Input.GetAxis("Horizontal");
         _moveInput = Input.GetAxis("Vertical");
-        if (_rotationInput != 0 || _moveInput != 0) { _model.MoveVariant(_rotationInput, _moveInput); }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1)) { _whatmovement = true; }
+        else if (Input.GetKeyDown(KeyCode.Alpha2)) { _whatmovement = false; }
+        
+        if (_rotationInput != 0 || _moveInput != 0 && _whatmovement) { _model.MoveVariant(_rotationInput, _moveInput); }
+        if (_rotationInput != 0 || _moveInput != 0 && !_whatmovement) { _model.MoveTank(_rotationInput, _moveInput); }
         
     #endregion
 
@@ -29,6 +34,5 @@ public class ControllerPlayer
         if (Input.GetKeyUp(KeyCode.Space)){ _model.reset?.Invoke(); }
         
     #endregion
-    
     }
 }
