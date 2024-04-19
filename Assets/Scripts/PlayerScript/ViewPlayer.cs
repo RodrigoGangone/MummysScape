@@ -12,11 +12,4 @@ public class ViewPlayer
         _player = p;
         _model = model;
     }
-    
-    //public void AimGizmos(Vector3 dirGizmo)
-    //{
-    //    Gizmos.color = Color.red;
-    //    Gizmos.DrawLine(_player.transform.position, dirGizmo);
-    //}
-    
 }
