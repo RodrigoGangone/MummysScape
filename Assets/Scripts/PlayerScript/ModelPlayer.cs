@@ -27,7 +27,7 @@ public class ModelPlayer
         _bandage = _player.GetComponent<LineRenderer>();
         _joint = springJoint;
 
-        reset = () => { UnityEngine.Object.Destroy(_joint); _bandage.enabled = false; objectToHookUpdated = false; };
+        reset = () => { Object.Destroy(_joint); _bandage.enabled = false; objectToHookUpdated = false; };
         lineCurrent = () => { _bandage.enabled = true; _bandage.SetPosition(0, _player.transform.position); _bandage.SetPosition(1, _objectToHook); };
         limitVelocity = () => { if (_rb.velocity.magnitude > _player.Speed) { _rb.velocity = _rb.velocity.normalized * _player.Speed; } };
     }
@@ -64,11 +64,18 @@ public class ModelPlayer
     {
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out var hitInfo, Mathf.Infinity, LayerMask.GetMask("Ground"))){
-            GameObject bandageGameObject = Object.Instantiate(_player._bandagesPrefab, _player.transform.position, Quaternion.identity);
+            GameObject bandageGameObject = GameObject.Instantiate(_player._bandagesPrefab, _player.transform.position, Quaternion.identity);
             Rigidbody rb = bandageGameObject.GetComponent<Rigidbody>();
             float velocity = Vector3.Distance( _player.transform.position, hitInfo.point) / 1f;
+
+            if (rb != null)
+            {
+                Vector3 dir = (hitInfo.point - _player.transform.position); rb.velocity = dir.normalized * velocity;
+                
+                GameObject indicatorGameObject = GameObject.Instantiate(_player._indicatorShoot, hitInfo.point + new Vector3(0,0.1f,0), Quaternion.identity);
+                Object.Destroy(indicatorGameObject, 2f);
+            }
             
-            if (rb != null ) { Vector3 dir = (hitInfo.point - _player.transform.position); rb.velocity = dir.normalized * velocity; }
         }
     }
     #endregion

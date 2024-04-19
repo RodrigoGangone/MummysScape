@@ -1,21 +1,23 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class ControllerPlayer 
 {
     ModelPlayer _model;
+    ViewPlayer _view;
     float _rotationInput;
     float _moveInput;
     private bool _whatmovement = true;
     
-    public ControllerPlayer(ModelPlayer m)
+    public ControllerPlayer(ModelPlayer m, ViewPlayer v)
     {
         _model = m;
+        _view = v;
     }
 
     public void ControllerUpdate()
     {
+        if (_model == null || _view == null) return;
         
     #region Restart Level
         if (Input.GetKeyDown(KeyCode.R)) { SceneManager.LoadScene(SceneManager.GetActiveScene().name); }
@@ -23,7 +25,7 @@ public class ControllerPlayer
         
     #region Mouse
     
-        if(Input.GetKeyDown(KeyCode.Mouse0)) { _model.Aim(); }
+        if(Input.GetKeyDown(KeyCode.Mouse0)) { _model.Aim();}
         
     #endregion
         
