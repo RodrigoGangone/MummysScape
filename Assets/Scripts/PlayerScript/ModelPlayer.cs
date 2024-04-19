@@ -59,7 +59,6 @@ public class ModelPlayer
         }
     #endregion
 
-
     #region Mouse
     public void Aim()
     {
@@ -73,7 +72,6 @@ public class ModelPlayer
         }
     }
     #endregion
-
     
     #region Abilities
         #region Hook

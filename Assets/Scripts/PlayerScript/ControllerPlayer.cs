@@ -16,7 +16,11 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
-        if(Input.GetKeyDown(KeyCode.R)) { SceneManager.LoadScene(SceneManager.GetActiveScene().name); }
+        
+    #region Restart Level
+        if (Input.GetKeyDown(KeyCode.R)) { SceneManager.LoadScene(SceneManager.GetActiveScene().name); }
+    #endregion
+        
     #region Mouse
     
         if(Input.GetKeyDown(KeyCode.Mouse0)) { _model.Aim(); }

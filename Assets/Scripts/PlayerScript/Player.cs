@@ -45,18 +45,19 @@ public class Player : MonoBehaviour
         _StateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead());
     }
 
+    #region Updates
+        private void Update()
+        {
+            _StateMachinePlayer.Update();
+            _controllerPlayer.ControllerUpdate();
+        }
+        
+        private void FixedUpdate()
+        {
+            _StateMachinePlayer.FixedUpdate();
+        }
+    #endregion
     
-    private void Update()
-    {
-        _StateMachinePlayer.Update();
-        _controllerPlayer.ControllerUpdate();
-    }
-
-    private void FixedUpdate()
-    {
-        _StateMachinePlayer.FixedUpdate();
-    }
-
     #region StateMachineMetods
     
         void ChangeState(PlayerState playerState)
