@@ -16,8 +16,9 @@ public class Player : MonoBehaviour
     [SerializeField] private float _life;
     [SerializeField] private float _speed;
     [SerializeField] private float _maxSpeed;
-    private float _stockBandages;
     [SerializeField] private float _speedRotation ;
+    [SerializeField] public GameObject _bandagesPrefab;
+    private float _stockBandages;
     
     public float Life { get => _life; set => _life = value; }
     public float Speed { get => _speed; set { } }
@@ -29,9 +30,9 @@ public class Player : MonoBehaviour
 
         _springJoint = GetComponent<SpringJoint>();
         
-        _modelPlayer = new ModelPlayer(this, _springJoint);
+        _viewPlayer = new ViewPlayer(this, _modelPlayer);
+        _modelPlayer = new ModelPlayer(this, _springJoint, _viewPlayer);
         _controllerPlayer = new ControllerPlayer(_modelPlayer);
-        _viewPlayer = new ViewPlayer(_bandage);
         
         _StateMachinePlayer = new StateMachinePlayer();
         

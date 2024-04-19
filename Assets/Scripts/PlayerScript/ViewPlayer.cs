@@ -1,18 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ViewPlayer
 {
-    private LineRenderer _bandage;
-    private int resolution, waveCount, wobbleCount;
-    private float waveSize, animSpeed;
-    
-    public ViewPlayer(LineRenderer bandage)
+    Player _player;
+    ModelPlayer _model;
+    public ViewPlayer(Player p, ModelPlayer model)
     {
-        _bandage = bandage;
+        _player = p;
+        _model = model;
     }
     
-    
+    //public void AimGizmos(Vector3 dirGizmo)
+    //{
+    //    Gizmos.color = Color.red;
+    //    Gizmos.DrawLine(_player.transform.position, dirGizmo);
+    //}
     
 }
