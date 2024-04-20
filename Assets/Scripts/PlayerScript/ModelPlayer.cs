@@ -60,7 +60,7 @@ public class ModelPlayer
     #endregion
 
     #region Mouse
-    public void Aim()
+    public void Aim() //TODO:REHACER UTILIZANDO UNA POOL DE OBJETOS
     {
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out var hitInfo, Mathf.Infinity, LayerMask.GetMask("Ground"))){
