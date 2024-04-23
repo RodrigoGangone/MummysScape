@@ -32,7 +32,7 @@ public class Player : MonoBehaviour
 
         _springJoint = GetComponent<SpringJoint>();
         
-        _viewPlayer = new ViewPlayer(this, _modelPlayer, _indicatorShoot);
+        _viewPlayer = new ViewPlayer(this, _modelPlayer);
         _modelPlayer = new ModelPlayer(this, _springJoint, _viewPlayer);
         _controllerPlayer = new ControllerPlayer(_modelPlayer, _viewPlayer);
         

@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -19,6 +20,10 @@ public class ModelPlayer
     public Action lineCurrent;
     public Action limitVelocity;
     //HOOK
+    
+    //AIM
+    public BandageBullet BandageBullet;
+    //AIM
     public ModelPlayer(Player p, SpringJoint springJoint, ViewPlayer v)
     {
         _player = p;
@@ -60,24 +65,31 @@ public class ModelPlayer
     #endregion
 
     #region Mouse
-    public void Aim() //TODO:REHACER UTILIZANDO UNA POOL DE OBJETOS
+    
+    //TODO:REHACER UTILIZANDO UNA POOL DE OBJETOS [LISTO]
+    
+    //TODO: MEJORAR CODIGO, POR EJEMPLO, LO LOGICO SERIA QUE LA MOMIA PUEDA DISPARAR 2 VENDAS AL MISMO TIEMPO COMO MAXIMO
+    //TODO: POR ESO, DEBERIAMOS TENER EN CUENTA ESO PARA APLICAR LOS FEEDBACKS DE LOS INDICADORES DE AIM. 
+    public void Aim() 
     {
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out var hitInfo, Mathf.Infinity, LayerMask.GetMask("Ground"))){
-            GameObject bandageGameObject = GameObject.Instantiate(_player._bandagesPrefab, _player.transform.position, Quaternion.identity);
-            Rigidbody rb = bandageGameObject.GetComponent<Rigidbody>();
+        
+        if (Physics.Raycast(ray, out var hitInfo, Mathf.Infinity, LayerMask.GetMask("Ground")))
+        {
             float velocity = Vector3.Distance( _player.transform.position, hitInfo.point) / 1f;
-
-            if (rb != null)
-            {
-                Vector3 dir = (hitInfo.point - _player.transform.position); rb.velocity = dir.normalized * velocity;
-                
-                GameObject indicatorGameObject = GameObject.Instantiate(_player._indicatorShoot, hitInfo.point + new Vector3(0,0.1f,0), Quaternion.identity);
-                Object.Destroy(indicatorGameObject, 2f);
-            }
             
+            GameObject bandage = ObjectPool.instance.GetPooledObjectBullet();
+            
+            bandage.transform.position = _player.transform.position;
+            bandage.SetActive(true);
+            
+            Rigidbody rb = bandage.GetComponent<Rigidbody>();
+            Vector3 dir = (hitInfo.point - _player.transform.position); rb.velocity = dir.normalized * velocity;
+
+            _view.IndicatorAimOn(hitInfo.point);
         }
     }
+    
     #endregion
     
     #region Abilities

@@ -1,16 +1,24 @@
 using UnityEngine;
-using UnityEngine.Android;
 
 public class ViewPlayer
 {
     Player _player;
     ModelPlayer _model;
-    GameObject _indicatorShoot;
-    public ViewPlayer(Player p, ModelPlayer model, GameObject indicatorShoot)
+
+    public GameObject ind;
+
+    public ViewPlayer(Player p, ModelPlayer model)
     {
         _player = p;
         _model = model;
-        _indicatorShoot = indicatorShoot;
+
+        ind = _player._indicatorShoot;
+    }
+
+    public void IndicatorAimOn(Vector3 hitposition) //
+    {
+            ind.transform.position = hitposition;
+            ind.SetActive(true);
     }
 
     //TODO: PASAR TODOS LOS FEEDBACK A ESTE CODIGO (MUCHO MUY IMPORTANTE)
