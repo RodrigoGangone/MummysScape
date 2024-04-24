@@ -146,43 +146,43 @@ public class ModelPlayer
 
         public void CheckPick()
         {
-            ///// Obtener la posición del ratón en el mundo
-            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            //RaycastHit hit;
-            //
-            //if (Physics.Raycast(ray, out hit) && hit.collider.CompareTag("MoveObject"))
-            //{
-            //    if (Physics.Raycast(_player.transform.position, hit.point - _player.transform.position) && hit.collider.CompareTag("MoveObject"))
-            //    {
-            //        Debug.Log("Objeto seleccionado: " + hit.collider.gameObject.name);
-            //        _objSelected = hit.transform;
-            //    }
-            //}
-            //Debug.DrawRay(_player.transform.position, (hit.point - _player.transform.position), Color.green, 0.5f);/
-            //
-            ////------------------------------------------------------------------------------------------------------------------------//
-
-            // Obtener la posición del ratón en el mundo
+            /// Obtener la posición del ratón en el mundo
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, _pickLimit, _mask)) // Ajuste para que solo interactúe con objetos en la capa "MoveObject"
+            //
+            if (Physics.Raycast(ray, out hit) && hit.collider.CompareTag("MoveObject"))
             {
-                Debug.Log("Objeto seleccionado: " + hit.collider.gameObject.name);
-
-                // Verificar si el objeto está dentro del límite de alcance
-                float distanceToHit = Vector3.Distance(_player.transform.position, hit.point);
-                if (distanceToHit <= _pickLimit)
+                if (Physics.Raycast(_player.transform.position, hit.point - _player.transform.position) && hit.collider.CompareTag("MoveObject"))
                 {
+                    Debug.Log("Objeto seleccionado: " + hit.collider.gameObject.name);
                     _objSelected = hit.transform;
                 }
             }
+            Debug.DrawRay(_player.transform.position, (hit.point - _player.transform.position), Color.green, 0.5f);
+            //
+            //------------------------------------------------------------------------------------------------------------------------//
 
-            // Calcular el final del rayo
-            Vector3 endRay = ray.GetPoint(_pickLimit);
-
-            // Debug del rayo
-            Debug.DrawRay(_player.transform.position, endRay, Color.red, 1f);
+            // Obtener la posición del ratón en el mundo
+            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            //RaycastHit hit;
+//
+            //if (Physics.Raycast(ray, out hit, _pickLimit, _mask)) // Ajuste para que solo interactúe con objetos en la capa "MoveObject"
+            //{
+            //    Debug.Log("Objeto seleccionado: " + hit.collider.gameObject.name);
+//
+            //    // Verificar si el objeto está dentro del límite de alcance
+            //    float distanceToHit = Vector3.Distance(_player.transform.position, hit.point);
+            //    if (distanceToHit <= _pickLimit)
+            //    {
+            //        _objSelected = hit.transform;
+            //    }
+            //}
+//
+            //// Calcular el final del rayo
+            //Vector3 endRay = ray.GetPoint(_pickLimit);
+//
+            //// Debug del rayo
+            //Debug.DrawRay(_player.transform.position, endRay, Color.red, 1f);
 
         } 
         

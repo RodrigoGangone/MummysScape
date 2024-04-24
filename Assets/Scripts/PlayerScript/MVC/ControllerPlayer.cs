@@ -26,7 +26,7 @@ public class ControllerPlayer
         
     #region Mouse
     
-        if(Input.GetKeyDown(KeyCode.Mouse0)) { _model.Aim();}
+        if(Input.GetKeyDown(KeyCode.Mouse1)) { _model.Aim();}
         
     #endregion
         
@@ -58,6 +58,26 @@ public class ControllerPlayer
             if(_model.objectToHookUpdated) { _model.lineCurrent?.Invoke(); _model.limitVelocity?.Invoke(); }
             if (Input.GetKeyUp(KeyCode.Space)){ _model.reset?.Invoke(); }
             
+        #endregion
+
+        #region PickUp Item
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            _model.CheckPick();
+        }
+
+        if (Input.GetMouseButton(0)) // Verifica si se mantiene presionado el clic izquierdo
+        {
+            _model.Pick();
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            _model.Drop();
+        }
+
+
         #endregion
     #endregion
         
