@@ -8,7 +8,8 @@ public class ControllerPlayer
     float _rotationInput;
     float _moveInput;
     private bool _whatmovement = true;
-    
+    private bool isMoveTank;
+
     public ControllerPlayer(ModelPlayer m, ViewPlayer v)
     {
         _model = m;
@@ -30,16 +31,24 @@ public class ControllerPlayer
     #endregion
         
     #region Move
-    
         _rotationInput = Input.GetAxis("Horizontal");
         _moveInput = Input.GetAxis("Vertical");
 
-        if (Input.GetKeyDown(KeyCode.Alpha1)) { _whatmovement = true; }
-        else if (Input.GetKeyDown(KeyCode.Alpha2)) { _whatmovement = false; }
-        
-        if (_rotationInput != 0 || _moveInput != 0 && _whatmovement) { _model.MoveVariant(_rotationInput, _moveInput); }
-        if (_rotationInput != 0 || _moveInput != 0 && !_whatmovement) { _model.MoveTank(_rotationInput, _moveInput); }
-        
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            if (isMoveTank)
+                isMoveTank = false;
+            else
+                isMoveTank = true;
+        }
+
+        if (_rotationInput != 0 || _moveInput != 0)
+        {
+            if (isMoveTank)
+                _model.MoveTank(_rotationInput, _moveInput);
+            else
+                _model.MoveVariant(_rotationInput, _moveInput);
+        }
     #endregion
 
     #region Abilities

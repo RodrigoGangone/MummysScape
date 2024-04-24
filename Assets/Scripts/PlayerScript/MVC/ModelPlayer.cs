@@ -24,6 +24,15 @@ public class ModelPlayer
     //AIM
     public BandageBullet BandageBullet;
     //AIM
+    
+    //PICK UP
+    private LayerMask _mask;
+
+    private Transform _objSelected;
+
+    private float _pickLimit = 5f;
+
+    //PICK UP
     public ModelPlayer(Player p, SpringJoint springJoint, ViewPlayer v)
     {
         _player = p;
@@ -38,30 +47,40 @@ public class ModelPlayer
     }
 
     #region Move
-        public void MoveTank (float rotationInput, float moveInput)
-        {
-            Quaternion rotation = Quaternion.Euler(0f, rotationInput * _player.SpeedRotation * Time.deltaTime, 0f);
-            _rb.rotation = (_rb.rotation * rotation);
+    public void MoveTank (float rotationInput, float moveInput)
+    {
+        _player.SpeedRotation = 150;
+
+        Quaternion _rotation = Quaternion.Euler(0f, rotationInput * _player.SpeedRotation * Time.deltaTime, 0f);
+        _rb.rotation = (_rb.rotation * _rotation);
+
+        Vector3 movemente = _player.transform.forward * (moveInput * _player.Speed * Time.deltaTime);
+        _rb.MovePosition(_rb.position + movemente);
+    }
+
     
-            Vector3 movemente = _player.transform.forward * (moveInput * _player.Speed * Time.deltaTime);
-            _rb.MovePosition(_rb.position + movemente);
-        }
-    
-        public void MoveVariant(float movimientoHorizontal, float movimientoVertical)
-        {
-            Vector3 forward = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z).normalized;
-            Vector3 right = new Vector3(Camera.main.transform.right.x, 0, Camera.main.transform.right.z).normalized;
-    
-            Vector3 righMovement = right * (_player.Speed * Time.deltaTime * movimientoHorizontal);
-            Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * movimientoVertical);
-            
-            Quaternion targetRotation = Quaternion.LookRotation(Vector3.Normalize(righMovement + upMovement), Vector3.up);
-            
-            _player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation);
-    
-            _player.transform.position += righMovement;
-            _player.transform.position += upMovement;
-        }
+    public void MoveVariant(float movimientoHorizontal, float movimientoVertical)
+    {
+        _player.SpeedRotation = 3;
+
+        Vector3 forward = (new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z));
+
+        Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
+
+        Vector3 righMovement = right * (_player.Speed * Time.deltaTime * movimientoHorizontal);
+        Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * movimientoVertical);
+
+        Vector3 heading = Vector3.Normalize(righMovement + upMovement);
+
+        Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
+
+        _player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation,
+            Time.deltaTime * _player.SpeedRotation);
+
+        _player.transform.position += righMovement;
+        _player.transform.position += upMovement;
+    }
+
     #endregion
 
     #region Mouse
@@ -89,7 +108,6 @@ public class ModelPlayer
             _view.IndicatorAimOn(hitInfo.point);
         }
     }
-    
     #endregion
     
     #region Abilities
@@ -122,6 +140,86 @@ public class ModelPlayer
                     _joint.massScale = 100f;
                 }
             }
+        #endregion
+
+        #region  PickUp Item
+
+        public void CheckPick()
+        {
+            ///// Obtener la posición del ratón en el mundo
+            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            //RaycastHit hit;
+            //
+            //if (Physics.Raycast(ray, out hit) && hit.collider.CompareTag("MoveObject"))
+            //{
+            //    if (Physics.Raycast(_player.transform.position, hit.point - _player.transform.position) && hit.collider.CompareTag("MoveObject"))
+            //    {
+            //        Debug.Log("Objeto seleccionado: " + hit.collider.gameObject.name);
+            //        _objSelected = hit.transform;
+            //    }
+            //}
+            //Debug.DrawRay(_player.transform.position, (hit.point - _player.transform.position), Color.green, 0.5f);/
+            //
+            ////------------------------------------------------------------------------------------------------------------------------//
+
+            // Obtener la posición del ratón en el mundo
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, _pickLimit, _mask)) // Ajuste para que solo interactúe con objetos en la capa "MoveObject"
+            {
+                Debug.Log("Objeto seleccionado: " + hit.collider.gameObject.name);
+
+                // Verificar si el objeto está dentro del límite de alcance
+                float distanceToHit = Vector3.Distance(_player.transform.position, hit.point);
+                if (distanceToHit <= _pickLimit)
+                {
+                    _objSelected = hit.transform;
+                }
+            }
+
+            // Calcular el final del rayo
+            Vector3 endRay = ray.GetPoint(_pickLimit);
+
+            // Debug del rayo
+            Debug.DrawRay(_player.transform.position, endRay, Color.red, 1f);
+
+        } 
+        
+        public void Pick()
+        {
+            RaycastHit hit;
+            if (_objSelected != null && Physics.Raycast(_player.transform.position, _objSelected.position, out hit) && hit.collider.CompareTag("MoveObject"))
+            {
+
+                Debug.DrawRay(_player.transform.position, _objSelected.position, Color.cyan);
+
+
+                // Convertir la posición del mouse desde la pantalla a un rayo en el mundo
+                Ray rayo = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Plane plano = new Plane(Vector3.up, _objSelected.position);
+                if (plano.Raycast(rayo, out float distancia))
+                {
+                    // Calcular la nueva posición del objeto en el plano
+                    Vector3 nuevaPosicion = rayo.GetPoint(distancia);
+                    // Mantener la misma altura que el objeto seleccionado
+                    nuevaPosicion.y = _objSelected.position.y;
+                    // Actualizar la posición del objeto seleccionado
+                    _objSelected.position = nuevaPosicion;
+                }
+            }
+            else
+                Drop();
+
+        }
+
+        public void Drop()
+        {
+            // Si se suelta el botón izquierdo del ratón, restablecer el objeto seleccionado
+            _objSelected = null;
+        }
+   
+
         #endregion
     #endregion
 
