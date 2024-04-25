@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class ControllerPlayer 
+public class ControllerPlayer
 {
     ModelPlayer _model;
     ViewPlayer _view;
@@ -9,6 +9,7 @@ public class ControllerPlayer
     float _moveInput;
     private bool _whatmovement = true;
     private bool isMoveTank;
+
     public ControllerPlayer(ModelPlayer m, ViewPlayer v)
     {
         _model = m;
@@ -18,18 +19,17 @@ public class ControllerPlayer
     public void ControllerUpdate()
     {
         if (_model == null || _view == null) return;
-        
-    #region Restart Level
-        if (Input.GetKeyDown(KeyCode.R)) { SceneManager.LoadScene(SceneManager.GetActiveScene().name); }
-    #endregion
-        
-    #region Mouse
-    
-        if(Input.GetKeyDown(KeyCode.Mouse1)) { _model.Aim();}
-        
-    #endregion
-        
-    #region Move
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            _model.Aim();
+        }
+
         _rotationInput = Input.GetAxis("Horizontal");
         _moveInput = Input.GetAxis("Vertical");
 
@@ -40,18 +40,22 @@ public class ControllerPlayer
             else
                 isMoveTank = true;
         }
-            #endregion
 
-            #region Abilities
-            #region Hook
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            _model.Hook();
+        }
 
-            if (Input.GetKeyDown(KeyCode.Space)) { _model.Hook(); }
-            if(_model.objectToHookUpdated) { _model.lineCurrent?.Invoke(); _model.limitVelocity?.Invoke(); }
-            if (Input.GetKeyUp(KeyCode.Space)){ _model.reset?.Invoke(); }
-            
-        #endregion
+        if (_model.objectToHookUpdated)
+        {
+            _model.lineCurrent?.Invoke();
+            _model.limitVelocity?.Invoke();
+        }
 
-        #region PickUp Item
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            _model.reset?.Invoke();
+        }
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -68,11 +72,8 @@ public class ControllerPlayer
             _model.Drop();
         }
 
-
-        #endregion
-    #endregion
-        
     }
+
     public void ControllerFixedUpdate()
     {
         if (_rotationInput != 0 || _moveInput != 0)
@@ -83,5 +84,4 @@ public class ControllerPlayer
                 _model.MoveVariant(_rotationInput, _moveInput);
         }
     }
-    
 }

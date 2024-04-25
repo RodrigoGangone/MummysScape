@@ -221,7 +221,7 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 74593051}
   serializedVersion: 8
-  lengthInSec: 0.49
+  lengthInSec: 100
   simulationSpeed: 3.32
   stopAction: 0
   cullingMode: 0
@@ -296,7 +296,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.34
+      scalar: 100
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -784,10 +784,10 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 1000
+    maxNumParticles: 1
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
-    rotation3D: 1
+    rotation3D: 0
     gravityModifier:
       serializedVersion: 2
       minMaxState: 0
@@ -1050,7 +1050,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 26.71
+      scalar: 0
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -1214,7 +1214,7 @@ ParticleSystem:
       repeatInterval: 0.01
       probability: 1
   SizeModule:
-    enabled: 1
+    enabled: 0
     curve:
       serializedVersion: 2
       minMaxState: 1
@@ -5003,9 +5003,9 @@ Transform:
   m_GameObject: {fileID: 74593051}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 12.28, y: -2.01, z: -1.67}
-  m_LocalScale: {x: 2.0233502, y: 2.0233502, z: 2.0233502}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 12.28, y: -2.22, z: -1.67}
+  m_LocalScale: {x: 9.9, y: 9.9, z: 9.9}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
