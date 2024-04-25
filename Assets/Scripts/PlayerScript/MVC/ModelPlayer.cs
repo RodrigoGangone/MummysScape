@@ -32,6 +32,8 @@ public class ModelPlayer
 
     private float _pickLimit = 5f;
 
+    Ray _click;
+
     //PICK UP
     public ModelPlayer(Player p, SpringJoint springJoint, ViewPlayer v)
     {
@@ -168,67 +170,28 @@ public class ModelPlayer
 
     public void CheckPick()
     {
-        /// Obtener la posición del ratón en el mundo
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        _click = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-        //
-        if (Physics.Raycast(ray, out hit) && hit.collider.CompareTag("MoveObject"))
+        if (Physics.Raycast(_click, out hit) && hit.collider.CompareTag("MoveObject"))
         {
-            if (Physics.Raycast(_player.transform.position, hit.point - _player.transform.position) &&
-                hit.collider.CompareTag("MoveObject"))
-            {
-                Debug.Log("Objeto seleccionado: " + hit.collider.gameObject.name);
-                _objSelected = hit.transform;
-            }
+            _objSelected = hit.transform;
         }
-
-        Debug.DrawRay(_player.transform.position, (hit.point - _player.transform.position), Color.green, 0.5f);
-        //
-        //------------------------------------------------------------------------------------------------------------------------//
-
-        // Obtener la posición del ratón en el mundo
-        //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        //RaycastHit hit;
-//
-        //if (Physics.Raycast(ray, out hit, _pickLimit, _mask)) // Ajuste para que solo interactúe con objetos en la capa "MoveObject"
-        //{
-        //    Debug.Log("Objeto seleccionado: " + hit.collider.gameObject.name);
-//
-        //    // Verificar si el objeto está dentro del límite de alcance
-        //    float distanceToHit = Vector3.Distance(_player.transform.position, hit.point);
-        //    if (distanceToHit <= _pickLimit)
-        //    {
-        //        _objSelected = hit.transform;
-        //    }
-        //}
-//
-        //// Calcular el final del rayo
-        //Vector3 endRay = ray.GetPoint(_pickLimit);
-//
-        //// Debug del rayo
-        //Debug.DrawRay(_player.transform.position, endRay, Color.red, 1f);
     }
 
     public void Pick()
     {
-        RaycastHit hit;
-        if (_objSelected != null && Physics.Raycast(_player.transform.position, _objSelected.position, out hit) &&
-            hit.collider.CompareTag("MoveObject"))
+        if (_objSelected != null )
         {
-
-            Debug.DrawRay(_player.transform.position, _objSelected.position, Color.cyan);
-
-
-            // Convertir la posición del mouse desde la pantalla a un rayo en el mundo
             Ray rayo = Camera.main.ScreenPointToRay(Input.mousePosition);
-            Plane plano = new Plane(Vector3.up, _objSelected.position);
-            if (plano.Raycast(rayo, out float distancia))
+            if (Physics.Raycast(_player.transform.position,_objSelected.position, out var hit) && !hit.collider.CompareTag("MoveObject"))
             {
-                // Calcular la nueva posición del objeto en el plano
-                Vector3 nuevaPosicion = rayo.GetPoint(distancia);
-                // Mantener la misma altura que el objeto seleccionado
+                Drop();
+                return;
+            }
+            if (Physics.Raycast(rayo, out var hitInfo, Mathf.Infinity, LayerMask.GetMask("Ground")))
+            {
+                Vector3 nuevaPosicion = hitInfo.point;
                 nuevaPosicion.y = _objSelected.position.y;
-                // Actualizar la posición del objeto seleccionado
                 _objSelected.position = nuevaPosicion;
             }
         }
