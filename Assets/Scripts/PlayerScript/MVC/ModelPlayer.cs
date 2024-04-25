@@ -1,5 +1,4 @@
 using System;
-using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -12,13 +11,15 @@ public class ModelPlayer
 
     //HOOK
     Vector3 _objectToHook = Vector3.zero;
-    public LineRenderer _bandage;
-    public SpringJoint _joint;
+    private LineRenderer _bandage;
+    private SpringJoint _joint;
     public bool objectToHookUpdated = false;
-
+    private Collider[] _hooks;
+    
     public Action reset;
     public Action lineCurrent;
     public Action limitVelocity;
+    public Action jointPreferences;
     //HOOK
 
     //AIM
@@ -31,7 +32,6 @@ public class ModelPlayer
     private Transform _objSelected;
 
     private float _pickLimit = 5f;
-
     //PICK UP
     public ModelPlayer(Player p, SpringJoint springJoint, ViewPlayer v)
     {
@@ -41,25 +41,19 @@ public class ModelPlayer
         _bandage = _player.GetComponent<LineRenderer>();
         _joint = springJoint;
 
-        reset = () =>
-        {
-            Object.Destroy(_joint);
-            _bandage.enabled = false;
-            objectToHookUpdated = false;
-        };
-        lineCurrent = () =>
-        {
-            _bandage.enabled = true;
-            _bandage.SetPosition(0, _player.transform.position);
-            _bandage.SetPosition(1, _objectToHook);
-        };
-        limitVelocity = () =>
-        {
-            if (_rb.velocity.magnitude > _player.Speed)
-            {
-                _rb.velocity = _rb.velocity.normalized * _player.Speed;
-            }
-        };
+        reset = () => { Object.Destroy(_joint); _bandage.enabled = false; objectToHookUpdated = false; _hooks = null; }; //RESET DE HOOK
+        
+        lineCurrent = () => { _bandage.enabled = true; _bandage.SetPosition(0, _player.transform.position); _bandage.SetPosition(1, _objectToHook); }; //VISUAL PROVISOARIO, PARA MOSTRAR EL LINERENDERER
+        
+        limitVelocity = () => { if (_rb.velocity.magnitude > _player.Speed) { _rb.velocity = _rb.velocity.normalized * _player.Speed; } }; //LIMITO LA VELOCIDAD DEL RIGIDBODY
+        
+        jointPreferences = () => { _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
+                                   _joint.maxDistance = 2f;
+                                   _joint.minDistance = 0.1f;
+                                   _joint.spring = 9;
+                                   _joint.damper = 6;
+                                   _joint.breakTorque = 1;
+                                   _joint.massScale = 100f; };
     }
 
     public void MoveTank(float rotationInput, float moveInput)
@@ -127,10 +121,10 @@ public class ModelPlayer
     public void Hook()
     {
         var minDistanceHook = 5;
-        Collider[] hooks =
-            Physics.OverlapSphere(_player.transform.position, minDistanceHook, LayerMask.GetMask("Hookeable"));
+        
+        _hooks = Physics.OverlapSphere(_player.transform.position, minDistanceHook, LayerMask.GetMask("Hookeable"));
 
-        if (hooks.Length > 0)
+        if (_hooks.Length > 0)
         {
             if (_joint == null)
             {
@@ -140,7 +134,7 @@ public class ModelPlayer
 
             if (!objectToHookUpdated)
             {
-                foreach (var grapes in hooks)
+                foreach (var grapes in _hooks)
                 {
                     var distance = Vector3.Distance(_player.transform.position, grapes.transform.position);
                     if (distance < minDistanceHook)
@@ -150,19 +144,6 @@ public class ModelPlayer
                     }
                 }
             }
-        }
-
-        if (objectToHookUpdated)
-        {
-            _joint.connectedAnchor = _objectToHook;
-
-            _joint.maxDistance = 2f;
-            _joint.minDistance = 0.1f;
-
-            _joint.spring = 100;
-            _joint.damper = 100f;
-            _joint.breakTorque = 1;
-            _joint.massScale = 100f;
         }
     }
 

@@ -19,7 +19,11 @@ public class ControllerPlayer
     public void ControllerUpdate()
     {
         if (_model == null || _view == null) return;
-
+        
+        _rotationInput = Input.GetAxisRaw("Horizontal");
+        
+        _moveInput = Input.GetAxisRaw("Vertical");
+        
         if (Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
@@ -29,10 +33,7 @@ public class ControllerPlayer
         {
             _model.Aim();
         }
-
-        _rotationInput = Input.GetAxis("Horizontal");
-        _moveInput = Input.GetAxis("Vertical");
-
+        
         if (Input.GetKeyDown(KeyCode.T))
         {
             if (isMoveTank)
@@ -41,7 +42,7 @@ public class ControllerPlayer
                 isMoveTank = true;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKey(KeyCode.Space))
         {
             _model.Hook();
         }
@@ -50,6 +51,7 @@ public class ControllerPlayer
         {
             _model.lineCurrent?.Invoke();
             _model.limitVelocity?.Invoke();
+            _model.jointPreferences?.Invoke();
         }
 
         if (Input.GetKeyUp(KeyCode.Space))
