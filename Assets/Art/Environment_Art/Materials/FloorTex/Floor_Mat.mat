@@ -55,6 +55,22 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 2, y: 2}
         m_Offset: {x: 0, y: 0}
+    - _FloorAO:
+        m_Texture: {fileID: 2800000, guid: b9ddc537b3db4df4a80b96bcbfc88622, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FloorBaseColor:
+        m_Texture: {fileID: 2800000, guid: a1ed6dbe31403bf4aa8776e79defc664, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FloorHeightMap:
+        m_Texture: {fileID: 2800000, guid: 83382a234b1e09244af3adaca7b591d3, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FloorNormal:
+        m_Texture: {fileID: 2800000, guid: 5050aee4e93b83943b50e769390f31ec, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 2800000, guid: a1ed6dbe31403bf4aa8776e79defc664, type: 3}
         m_Scale: {x: 2, y: 2}
@@ -69,6 +85,18 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
         m_Texture: {fileID: 2800000, guid: b9ddc537b3db4df4a80b96bcbfc88622, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SandAO:
+        m_Texture: {fileID: 2800000, guid: 8e11d5d6f05902c41b4c48e97e4e8e2e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SandBaseColor:
+        m_Texture: {fileID: 2800000, guid: fdb19f8d11c554c49bacf4188c4ff485, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SandNormal:
+        m_Texture: {fileID: 2800000, guid: c7cac1746ac07394c96ad0388b504ce4, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _StuccoAO:
@@ -102,16 +130,19 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _FloorTile: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.244
     - _GlossyReflections: 1
+    - _HeightMapIntensity: 0
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.0186
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Smoothness: -1.17
+    - _SandBaseTile: 1
+    - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -121,6 +152,7 @@ Material:
     m_Colors:
     - _Color: {r: 0.7264151, g: 0.7075694, b: 0.68872374, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _MinMaxHeight: {r: 0, g: 19.3, b: 0, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &106075884264199718
 MonoBehaviour:
