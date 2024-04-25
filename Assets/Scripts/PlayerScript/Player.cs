@@ -47,7 +47,6 @@ public class Player : MonoBehaviour
         _StateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead());
     }
 
-    #region Updates
     private void Update()
     {
         _StateMachinePlayer.Update();
@@ -59,9 +58,6 @@ public class Player : MonoBehaviour
         _StateMachinePlayer.FixedUpdate();
         _controllerPlayer.ControllerFixedUpdate();
     }
-    #endregion
-
-    #region StateMachineMetods
 
     void ChangeState(PlayerState playerState)
     {
@@ -83,6 +79,4 @@ public class Player : MonoBehaviour
         Damage,
         Dead
     }
-
-    #endregion
 }
