@@ -3,7 +3,7 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     private Transform _cameraTransform;
-    
+
     ModelPlayer _modelPlayer;
     ViewPlayer _viewPlayer;
     ControllerPlayer _controllerPlayer;
@@ -12,16 +12,16 @@ public class Player : MonoBehaviour
     private LineRenderer _bandage;
     public StateMachinePlayer _StateMachinePlayer { get; private set; }
     private string _currentState;
-    
+
     [SerializeField] private float _life;
     [SerializeField] private float _speed;
     [SerializeField] private float _maxSpeed;
-    [SerializeField] private float _speedRotation ;
+    [SerializeField] private float _speedRotation;
     [SerializeField] public GameObject _bandagesPrefab;
     [SerializeField] public GameObject _indicatorShoot;
-    
+
     private float _stockBandages;
-    
+
     public float Life { get => _life; set => _life = value; }
     public float Speed { get => _speed; set { } }
     public float SpeedRotation { get => _speedRotation; set => _speedRotation = value; }
@@ -31,13 +31,13 @@ public class Player : MonoBehaviour
         if (Camera.main != null) _cameraTransform = Camera.main.transform;
 
         _springJoint = GetComponent<SpringJoint>();
-        
+
         _viewPlayer = new ViewPlayer(this, _modelPlayer);
         _modelPlayer = new ModelPlayer(this, _springJoint, _viewPlayer);
         _controllerPlayer = new ControllerPlayer(_modelPlayer, _viewPlayer);
-        
+
         _StateMachinePlayer = new StateMachinePlayer();
-        
+
         _StateMachinePlayer.AddState(PlayerState.Idle, new SM_Idle());
         _StateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot());
         _StateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk());
@@ -48,40 +48,41 @@ public class Player : MonoBehaviour
     }
 
     #region Updates
-        private void Update()
-        {
-            _StateMachinePlayer.Update();
-            _controllerPlayer.ControllerUpdate();
-        }
-        
-        private void FixedUpdate()
-        {
-            _StateMachinePlayer.FixedUpdate();
-        }
-    #endregion
-    
-    #region StateMachineMetods
-    
-        void ChangeState(PlayerState playerState)
-        {
-            _StateMachinePlayer.ChangeState(playerState);
-        }
-    
-        string CurrentState()
-        {
-            return _StateMachinePlayer.getCurrentState();
-        }
+    private void Update()
+    {
+        _StateMachinePlayer.Update();
+        _controllerPlayer.ControllerUpdate();
+    }
 
-        private enum PlayerState
-        {
-            Idle,
-            Shoot,
-            Walk,
-            Hook,
-            Grab,
-            Damage,
-            Dead
-        }    
-    
+    private void FixedUpdate()
+    {
+        _StateMachinePlayer.FixedUpdate();
+        _controllerPlayer.ControllerFixedUpdate();
+    }
+    #endregion
+
+    #region StateMachineMetods
+
+    void ChangeState(PlayerState playerState)
+    {
+        _StateMachinePlayer.ChangeState(playerState);
+    }
+
+    string CurrentState()
+    {
+        return _StateMachinePlayer.getCurrentState();
+    }
+
+    private enum PlayerState
+    {
+        Idle,
+        Shoot,
+        Walk,
+        Hook,
+        Grab,
+        Damage,
+        Dead
+    }
+
     #endregion
 }

@@ -9,7 +9,6 @@ public class ControllerPlayer
     float _moveInput;
     private bool _whatmovement = true;
     private bool isMoveTank;
-
     public ControllerPlayer(ModelPlayer m, ViewPlayer v)
     {
         _model = m;
@@ -41,19 +40,11 @@ public class ControllerPlayer
             else
                 isMoveTank = true;
         }
+            #endregion
 
-        if (_rotationInput != 0 || _moveInput != 0)
-        {
-            if (isMoveTank)
-                _model.MoveTank(_rotationInput, _moveInput);
-            else
-                _model.MoveVariant(_rotationInput, _moveInput);
-        }
-    #endregion
+            #region Abilities
+            #region Hook
 
-    #region Abilities
-        #region Hook
-        
             if (Input.GetKeyDown(KeyCode.Space)) { _model.Hook(); }
             if(_model.objectToHookUpdated) { _model.lineCurrent?.Invoke(); _model.limitVelocity?.Invoke(); }
             if (Input.GetKeyUp(KeyCode.Space)){ _model.reset?.Invoke(); }
@@ -82,4 +73,15 @@ public class ControllerPlayer
     #endregion
         
     }
+    public void ControllerFixedUpdate()
+    {
+        if (_rotationInput != 0 || _moveInput != 0)
+        {
+            if (isMoveTank)
+                _model.MoveTank(_rotationInput, _moveInput);
+            else
+                _model.MoveVariant(_rotationInput, _moveInput);
+        }
+    }
+    
 }
