@@ -165,7 +165,9 @@ public class ModelPlayer
         if (_objSelected != null )
         {
             Ray rayo = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(_player.transform.position,_objSelected.position, out var hit) && !hit.collider.CompareTag("MoveObject"))
+            
+            Debug.DrawRay(_player.transform.position, _objSelected.position - _player.transform.position, Color.red, 0.5f);
+            if (Physics.Raycast(_player.transform.position,_objSelected.position - _player.transform.position, out var hit) && !hit.collider.CompareTag("MoveObject"))
             {
                 Drop();
                 return;
@@ -177,8 +179,6 @@ public class ModelPlayer
                 _objSelected.position = nuevaPosicion;
             }
         }
-        else
-            Drop();
     }
 
     public void Drop()
