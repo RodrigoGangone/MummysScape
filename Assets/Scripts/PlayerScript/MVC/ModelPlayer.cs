@@ -53,8 +53,8 @@ public class ModelPlayer
         jointPreferences = () => { _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
                                    _joint.maxDistance = 2f;
                                    _joint.minDistance = 0.1f;
-                                   _joint.spring = 9;
-                                   _joint.damper = 6;
+                                   _joint.spring = 15;
+                                   _joint.damper = 10;
                                    _joint.breakTorque = 1;
                                    _joint.massScale = 100f; };
     }
@@ -123,7 +123,7 @@ public class ModelPlayer
 
     public void Hook()
     {
-        var minDistanceHook = 5;
+        var minDistanceHook = 4; //TODO: REPLANTEAR CON LIFO PARA QUE LA ULTIMA POSICION QUE DETECTE SEA LA PRIMERA QUE SALGA
         
         _hooks = Physics.OverlapSphere(_player.transform.position, minDistanceHook, LayerMask.GetMask("Hookeable"));
 
