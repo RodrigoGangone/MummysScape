@@ -14,12 +14,15 @@ public class ModelPlayer
     private LineRenderer _bandage;
     private SpringJoint _joint;
     public bool objectToHookUpdated = false;
-    private Collider[] _hooks;
+    private Collider[] _hookBeetle;
+    private Collider[] _hookBeetleJump;
     
     public Action reset;
     public Action lineCurrent;
     public Action limitVelocity;
-    public Action jointPreferences;
+    public Action jointPreferencesBalanced;
+    public Action jointPreferencesJump;
+    public Action createSpring;
     //HOOK
 
     //AIM
@@ -44,19 +47,45 @@ public class ModelPlayer
         _bandage = _player.GetComponent<LineRenderer>();
         _joint = springJoint;
 
-        reset = () => { Object.Destroy(_joint); _bandage.enabled = false; objectToHookUpdated = false; _hooks = null; }; //RESET DE HOOK
+        reset = () => { Object.Destroy(_joint); _bandage.enabled = false; objectToHookUpdated = false; _hookBeetle = null; }; //RESET DE HOOK
         
         lineCurrent = () => { _bandage.enabled = true; _bandage.SetPosition(0, _player.transform.position); _bandage.SetPosition(1, _objectToHook); }; //VISUAL PROVISOARIO, PARA MOSTRAR EL LINERENDERER
         
         limitVelocity = () => { if (_rb.velocity.magnitude > _player.Speed) { _rb.velocity = _rb.velocity.normalized * _player.Speed; } }; //LIMITO LA VELOCIDAD DEL RIGIDBODY
         
-        jointPreferences = () => { _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
-                                   _joint.maxDistance = 2f;
-                                   _joint.minDistance = 0.1f;
-                                   _joint.spring = 15;
-                                   _joint.damper = 10;
-                                   _joint.breakTorque = 1;
-                                   _joint.massScale = 100f; };
+        jointPreferencesBalanced = () =>
+        {
+            createSpring?.Invoke();
+            _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
+            _joint.maxDistance = 2f;
+            _joint.minDistance = 0.1f;
+            _joint.spring = 15;
+            _joint.damper = 10;
+            _joint.breakTorque = 1;
+            _joint.massScale = 100f;
+        };
+        
+        jointPreferencesJump = () =>
+        {
+            createSpring?.Invoke();
+            _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
+            _joint.maxDistance = 0.2f;
+            _joint.minDistance = 0.1f;
+            _joint.spring = 1000;
+            _joint.damper = 7;
+            _joint.breakTorque = 1;
+            _joint.massScale = 4.5f;
+        };
+
+        createSpring = () =>
+        {
+            if (_joint == null)
+            {
+                _joint = _player.gameObject.AddComponent<SpringJoint>();
+                _joint.autoConfigureConnectedAnchor = false;
+                objectToHookUpdated = true;
+            }
+        };
     }
 
     public void MoveTank(float rotationInput, float moveInput)
@@ -121,30 +150,31 @@ public class ModelPlayer
         }
     }
 
-    public void Hook()
+    public void HookBalanced() //TODO: CONFIGURAR PARA QUE EL RAYCAST SOLO TOME OBJETOS EN EL RANGO DE VISION DEL PERSONAJE
     {
-        var minDistanceHook = 4; //TODO: REPLANTEAR CON LIFO PARA QUE LA ULTIMA POSICION QUE DETECTE SEA LA PRIMERA QUE SALGA
-        
-        _hooks = Physics.OverlapSphere(_player.transform.position, minDistanceHook, LayerMask.GetMask("Hookeable"));
+        var minDistance = 100;
+        var minDistanceHook = 5;
+        var minDistanceJump = 100;
+        var pos = _player.transform.position;
 
-        if (_hooks.Length > 0)
+        _hookBeetle = Physics.OverlapSphere(pos, minDistance, LayerMask.GetMask("Hookeable", "BeetleJump"));
+
+        if (_hookBeetle.Length > 0 && !objectToHookUpdated)
         {
-            if (_joint == null)
+            foreach (var Beetle in _hookBeetle)
             {
-                _joint = _player.gameObject.AddComponent<SpringJoint>();
-                _joint.autoConfigureConnectedAnchor = false;
-            }
-
-            if (!objectToHookUpdated)
-            {
-                foreach (var grapes in _hooks)
+                float angle = Vector3.Angle(pos, Beetle.transform.position - pos);
+                var distance = Vector3.Distance(pos, Beetle.transform.position);
+                
+                if (Beetle.gameObject.layer == LayerMask.NameToLayer("Hookeable") && distance < minDistanceHook) //&& angle < 180f / 2)
                 {
-                    var distance = Vector3.Distance(_player.transform.position, grapes.transform.position);
-                    if (distance < minDistanceHook)
-                    {
-                        _objectToHook = grapes.transform.position;
-                        objectToHookUpdated = true;
-                    }
+                    _objectToHook = Beetle.transform.position;
+                    jointPreferencesBalanced?.Invoke();
+                }
+                else if (Beetle.gameObject.layer == LayerMask.NameToLayer("BeetleJump") && distance < minDistanceJump && distance > minDistanceHook)// && angle < 180f / 2 )
+                {
+                    _objectToHook = Beetle.transform.position;
+                    jointPreferencesJump?.Invoke();
                 }
             }
         }

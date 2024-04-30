@@ -44,14 +44,13 @@ public class ControllerPlayer
 
         if (Input.GetKey(KeyCode.Space))
         {
-            _model.Hook();
+            _model.HookBalanced();
         }
 
         if (_model.objectToHookUpdated)
         {
             _model.lineCurrent?.Invoke();
             _model.limitVelocity?.Invoke();
-            _model.jointPreferences?.Invoke();
         }
 
         if (Input.GetKeyUp(KeyCode.Space))
