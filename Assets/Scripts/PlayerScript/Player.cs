@@ -7,7 +7,7 @@ public class Player : MonoBehaviour
     ModelPlayer _modelPlayer;
     ViewPlayer _viewPlayer;
     ControllerPlayer _controllerPlayer;
-
+    
     private SpringJoint _springJoint;
     private LineRenderer _bandage;
     public StateMachinePlayer _StateMachinePlayer { get; private set; }
@@ -52,7 +52,26 @@ public class Player : MonoBehaviour
         _StateMachinePlayer.Update();
         _controllerPlayer.ControllerUpdate();
     }
+    
+    private void OnDrawGizmos()
+    {
+        // Guardar la posición y rotación del jugador
+        Vector3 pos = transform.position;
+        Quaternion rot = transform.rotation;
 
+        // Calcular la posición del boxcast
+        Vector3 boxcastPos = pos + rot * new Vector3(0, 2, 5f);
+
+        // Calcular la rotación del boxcast
+        Quaternion boxcastRot = rot;
+
+        // Dibujar el boxcast
+        Gizmos.color = Color.red;
+        Gizmos.matrix = Matrix4x4.TRS(boxcastPos, boxcastRot, Vector3.one);
+        Gizmos.DrawWireCube(Vector3.zero, new Vector3(5, 5, 10));
+        Gizmos.matrix = Matrix4x4.identity; // Restaurar la matriz de gizmos a la identidad
+    }
+    
     private void FixedUpdate()
     {
         _StateMachinePlayer.FixedUpdate();

@@ -41,7 +41,7 @@ public class ControllerPlayer
             else
                 isMoveTank = true;
         }
-
+        
         if (Input.GetKey(KeyCode.Space))
         {
             _model.HookBalanced();

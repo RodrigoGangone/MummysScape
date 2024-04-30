@@ -1,5 +1,7 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEditor;
 using Object = UnityEngine.Object;
 
 
@@ -15,7 +17,7 @@ public class ModelPlayer
     private SpringJoint _joint;
     public bool objectToHookUpdated = false;
     private Collider[] _hookBeetle;
-    private Collider[] _hookBeetleJump;
+    
     
     public Action reset;
     public Action lineCurrent;
@@ -71,7 +73,7 @@ public class ModelPlayer
             _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
             _joint.maxDistance = 0.2f;
             _joint.minDistance = 0.1f;
-            _joint.spring = 1000;
+            _joint.spring = 100;
             _joint.damper = 7;
             _joint.breakTorque = 1;
             _joint.massScale = 4.5f;
@@ -149,32 +151,40 @@ public class ModelPlayer
             _view.IndicatorAimOn(hitInfo.point);
         }
     }
-
+    
     public void HookBalanced() //TODO: CONFIGURAR PARA QUE EL RAYCAST SOLO TOME OBJETOS EN EL RANGO DE VISION DEL PERSONAJE
     {
-        var minDistance = 100;
+        var minDistance = 5;
         var minDistanceHook = 5;
         var minDistanceJump = 100;
+
         var pos = _player.transform.position;
+        var rot = _player.transform.rotation;
 
-        _hookBeetle = Physics.OverlapSphere(pos, minDistance, LayerMask.GetMask("Hookeable", "BeetleJump"));
+        Vector3 offset = rot * new Vector3(0, 2, 5f);
+        Vector3 boxcastPos = pos + offset;
 
-        if (_hookBeetle.Length > 0 && !objectToHookUpdated)
+        _hookBeetle = Physics.OverlapBox(boxcastPos, new Vector3(5, 5, 10) / 2, rot);
+
+        foreach (var beetle in _hookBeetle)
         {
-            foreach (var Beetle in _hookBeetle)
+            if (_hookBeetle.Length > 0 && !objectToHookUpdated && beetle.gameObject.layer == LayerMask.NameToLayer("Beetle"))
             {
-                float angle = Vector3.Angle(pos, Beetle.transform.position - pos);
-                var distance = Vector3.Distance(pos, Beetle.transform.position);
-                
-                if (Beetle.gameObject.layer == LayerMask.NameToLayer("Hookeable") && distance < minDistanceHook) //&& angle < 180f / 2)
+                var distance = Vector3.Distance(pos, beetle.transform.position);
+
+                if (beetle.gameObject.CompareTag("Hook") && distance <= minDistanceHook)
                 {
-                    _objectToHook = Beetle.transform.position;
+                    _objectToHook = beetle.transform.position;
                     jointPreferencesBalanced?.Invoke();
                 }
-                else if (Beetle.gameObject.layer == LayerMask.NameToLayer("BeetleJump") && distance < minDistanceJump && distance > minDistanceHook)// && angle < 180f / 2 )
+                else if (beetle.gameObject.CompareTag("BeetleJump") && distance <= minDistanceJump)
                 {
-                    _objectToHook = Beetle.transform.position;
+                    _objectToHook = beetle.transform.position;
                     jointPreferencesJump?.Invoke();
+                }
+                else
+                {
+                    return;
                 }
             }
         }
