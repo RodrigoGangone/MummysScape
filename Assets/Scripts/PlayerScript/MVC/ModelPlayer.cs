@@ -154,7 +154,6 @@ public class ModelPlayer
     
     public void HookBalanced() //TODO: CONFIGURAR PARA QUE EL RAYCAST SOLO TOME OBJETOS EN EL RANGO DE VISION DEL PERSONAJE
     {
-        var minDistance = 5;
         var minDistanceHook = 5;
         var minDistanceJump = 100;
 
@@ -181,10 +180,6 @@ public class ModelPlayer
                 {
                     _objectToHook = beetle.transform.position;
                     jointPreferencesJump?.Invoke();
-                }
-                else
-                {
-                    return;
                 }
             }
         }
