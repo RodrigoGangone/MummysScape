@@ -121,6 +121,13 @@ public class ModelPlayer
         }
     }
 
+    public void Shoot()
+    {
+        GameObject bandage = ObjectPool.instance.GetPooledObjectBullet();
+        bandage.transform.position = _player.transform.position;
+        bandage.SetActive(true);
+        _player._StateMachinePlayer.ChangeState(PlayerState.Idle);
+    }
     public void Hook()
     {
         var minDistanceHook = 4; //TODO: REPLANTEAR CON LIFO PARA QUE LA ULTIMA POSICION QUE DETECTE SEA LA PRIMERA QUE SALGA

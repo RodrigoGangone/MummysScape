@@ -4,8 +4,8 @@ public class Player : MonoBehaviour
 {
     private Transform _cameraTransform;
 
-    ModelPlayer _modelPlayer;
-    ViewPlayer _viewPlayer;
+    public ModelPlayer _modelPlayer { get; private set; }
+    public ViewPlayer _viewPlayer { get; private set; }
     ControllerPlayer _controllerPlayer;
 
     private SpringJoint _springJoint;
@@ -34,12 +34,12 @@ public class Player : MonoBehaviour
 
         _viewPlayer = new ViewPlayer(this, _modelPlayer);
         _modelPlayer = new ModelPlayer(this, _springJoint, _viewPlayer);
-        _controllerPlayer = new ControllerPlayer(_modelPlayer, _viewPlayer);
+        _controllerPlayer = new ControllerPlayer(this);
 
         _StateMachinePlayer = new StateMachinePlayer();
 
         _StateMachinePlayer.AddState(PlayerState.Idle, new SM_Idle());
-        _StateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot());
+        _StateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(this));
         _StateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk());
         _StateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook());
         _StateMachinePlayer.AddState(PlayerState.Grab, new SM_Grab());
@@ -69,14 +69,15 @@ public class Player : MonoBehaviour
         return _StateMachinePlayer.getCurrentState();
     }
 
-    private enum PlayerState
-    {
-        Idle,
-        Shoot,
-        Walk,
-        Hook,
-        Grab,
-        Damage,
-        Dead
-    }
+    
+}
+public enum PlayerState
+{
+    Idle,
+    Shoot,
+    Walk,
+    Hook,
+    Grab,
+    Damage,
+    Dead
 }
