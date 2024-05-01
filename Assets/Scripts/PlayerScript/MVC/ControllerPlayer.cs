@@ -5,15 +5,17 @@ public class ControllerPlayer
 {
     ModelPlayer _model;
     ViewPlayer _view;
+    Player _player;
     float _rotationInput;
     float _moveInput;
     private bool _whatmovement = true;
     private bool isMoveTank;
 
-    public ControllerPlayer(ModelPlayer m, ViewPlayer v)
+    public ControllerPlayer(Player player)
     {
-        _model = m;
-        _view = v;
+        _model = player._modelPlayer;
+        _view = player._viewPlayer;
+        _player = player;
     }
 
     public void ControllerUpdate()
@@ -72,7 +74,10 @@ public class ControllerPlayer
         {
             _model.Drop();
         }
-
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            _player._StateMachinePlayer.ChangeState(PlayerState.Shoot);
+        }
     }
 
     public void ControllerFixedUpdate()

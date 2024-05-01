@@ -4844,7 +4844,7 @@ GameObject:
   - component: {fileID: 636637590814106749}
   - component: {fileID: 7747735463463316047}
   - component: {fileID: 2261151456330906959}
-  - component: {fileID: 8846988519169980938}
+  - component: {fileID: -6140515323211252721}
   m_Layer: 0
   m_Name: Bandage
   m_TagString: Untagged
@@ -4925,7 +4925,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7766207882271066570}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 0cc09595b94428a4c8126d6949a71be8, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -4933,7 +4933,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -4947,7 +4947,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7766207882271066570}
   serializedVersion: 4
-  m_Mass: 0.0000001
+  m_Mass: 0.74
   m_Drag: 0
   m_AngularDrag: 0
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -4961,7 +4961,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 1
   m_Constraints: 0
@@ -9761,7 +9761,7 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
---- !u!114 &8846988519169980938
+--- !u!114 &-6140515323211252721
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -9770,6 +9770,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 7766207882271066570}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d8ac3fdd3c27a4468f546189d54af30, type: 3}
+  m_Script: {fileID: 11500000, guid: c116e787f28e2b34297904e63c65375e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _rb: {fileID: 636637590814106749}
+  _speed: 20

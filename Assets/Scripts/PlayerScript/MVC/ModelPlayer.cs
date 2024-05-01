@@ -151,8 +151,16 @@ public class ModelPlayer
             _view.IndicatorAimOn(hitInfo.point);
         }
     }
-    
-    public void HookBalanced() //TODO: CONFIGURAR PARA QUE EL RAYCAST SOLO TOME OBJETOS EN EL RANGO DE VISION DEL PERSONAJE
+
+    public void Shoot()
+    {
+        //GameObject bandage = ObjectPool.instance.GetPooledObjectBullet();
+        //bandage.transform.position = _player.transform.position;
+        //bandage.SetActive(true);
+        BulletFactory.Instance.GetObjectFromPool();
+        _player._StateMachinePlayer.ChangeState(PlayerState.Idle);
+    }
+    public void HookBalanced()
     {
         var minDistanceHook = 5;
         var minDistanceJump = 100;
