@@ -123,9 +123,10 @@ public class ModelPlayer
 
     public void Shoot()
     {
-        GameObject bandage = ObjectPool.instance.GetPooledObjectBullet();
-        bandage.transform.position = _player.transform.position;
-        bandage.SetActive(true);
+        //GameObject bandage = ObjectPool.instance.GetPooledObjectBullet();
+        //bandage.transform.position = _player.transform.position;
+        //bandage.SetActive(true);
+        BulletFactory.Instance.GetObjectFromPool();
         _player._StateMachinePlayer.ChangeState(PlayerState.Idle);
     }
     public void Hook()
