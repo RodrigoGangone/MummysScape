@@ -8,7 +8,7 @@ public class CameraPos : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKey(KeyCode.Q))
+        /*if (Input.GetKey(KeyCode.Q))
         {
             if (Vector3.Distance(transform.position, camOne.position) > 0.1f)
             {
@@ -24,6 +24,6 @@ public class CameraPos : MonoBehaviour
                 transform.position = Vector3.Lerp(transform.position, camTwo.position, 0.001f);
                 transform.rotation = Quaternion.Lerp(transform.rotation, camTwo.rotation, 0.001f);
             }
-        }
+        }*/
     }
 }

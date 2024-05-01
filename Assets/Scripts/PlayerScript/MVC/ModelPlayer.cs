@@ -6,9 +6,9 @@ using Object = UnityEngine.Object;
 public class ModelPlayer
 {
     Player _player;
-    ViewPlayer _view;
+    ControllerPlayer _controller;
     Rigidbody _rb;
-
+    
     //HOOK
     Vector3 _objectToHook = Vector3.zero;
     private LineRenderer _bandage;
@@ -27,22 +27,21 @@ public class ModelPlayer
     //AIM
 
     //PICK UP
-    private LayerMask _mask;
-
+    private LayerMask pickableLayer = LayerMask.GetMask("Pickable");
+    public bool hasObject { get; private set; }
     private Transform _objSelected;
-
-    private float _pickLimit = 5f;
-
-    Ray _click;
-
+    
+    private float _objRotation = 10f;
+    private float _objSpeed = 5f;
+    
     //PICK UP
-    public ModelPlayer(Player p, SpringJoint springJoint, ViewPlayer v)
+    public ModelPlayer(Player p)
     {
         _player = p;
-        _view = v;
-        _rb = _player.GetComponent<Rigidbody>();
-        _bandage = _player.GetComponent<LineRenderer>();
-        _joint = springJoint;
+        
+        _rb = _player._rigidbody;
+        _bandage = _player._bandage;
+        _joint = _player._springJoint;
 
         reset = () => { Object.Destroy(_joint); _bandage.enabled = false; objectToHookUpdated = false; _hooks = null; }; //RESET DE HOOK
         
@@ -50,7 +49,8 @@ public class ModelPlayer
         
         limitVelocity = () => { if (_rb.velocity.magnitude > _player.Speed) { _rb.velocity = _rb.velocity.normalized * _player.Speed; } }; //LIMITO LA VELOCIDAD DEL RIGIDBODY
         
-        jointPreferences = () => { _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
+        //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
+        jointPreferences = () => { _joint.connectedAnchor = _objectToHook; 
                                    _joint.maxDistance = 2f;
                                    _joint.minDistance = 0.1f;
                                    _joint.spring = 15;
@@ -70,12 +70,11 @@ public class ModelPlayer
         _rb.MovePosition(_rb.position + movemente);
     }
 
-
     public void MoveVariant(float movimientoHorizontal, float movimientoVertical)
     {
         _player.SpeedRotation = 10;
 
-        Vector3 forward = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z).normalized;
+        Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
 
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
 
@@ -88,37 +87,7 @@ public class ModelPlayer
 
         _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
 
-        _rb.MovePosition(_player.transform.position + heading * _player.Speed * Time.deltaTime);
-
-        //_player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation,
-        //    Time.deltaTime * _player.SpeedRotation);
-
-        //_player.transform.position += heading*_player.Speed*Time.deltaTime;
-    }
-
-    //TODO:REHACER UTILIZANDO UNA POOL DE OBJETOS [LISTO]
-
-    //TODO: MEJORAR CODIGO, POR EJEMPLO, LO LOGICO SERIA QUE LA MOMIA PUEDA DISPARAR 2 VENDAS AL MISMO TIEMPO COMO MAXIMO
-    //TODO: POR ESO, DEBERIAMOS TENER EN CUENTA ESO PARA APLICAR LOS FEEDBACKS DE LOS INDICADORES DE AIM. 
-    public void Aim()
-    {
-        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out var hitInfo, Mathf.Infinity, LayerMask.GetMask("Ground")))
-        {
-            float velocity = Vector3.Distance(_player.transform.position, hitInfo.point) / 1f;
-
-            GameObject bandage = ObjectPool.instance.GetPooledObjectBullet();
-
-            bandage.transform.position = _player.transform.position;
-            bandage.SetActive(true);
-
-            Rigidbody rb = bandage.GetComponent<Rigidbody>();
-            Vector3 dir = (hitInfo.point - _player.transform.position);
-            rb.velocity = dir.normalized * velocity;
-
-            _view.IndicatorAimOn(hitInfo.point);
-        }
+        _rb.MovePosition(_player.transform.position + heading * (_player.Speed * Time.deltaTime));
     }
 
     public void Hook()
@@ -149,41 +118,41 @@ public class ModelPlayer
             }
         }
     }
-
-    public void CheckPick()
+    
+    public void PickObject()
     {
-        _click = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Debug.DrawRay(_player.transform.position, _player.transform.forward * 30, Color.cyan, 0.5f);
         RaycastHit hit;
-        if (Physics.Raycast(_click, out hit) && hit.collider.CompareTag("MoveObject"))
+        if (Physics.Raycast(_player.transform.position, _player.transform.forward, out hit, Mathf.Infinity, pickableLayer))
         {
+            Debug.Log("Objeto recogido: " + hit.collider.gameObject.name);
+            hasObject = true;
             _objSelected = hit.transform;
         }
     }
-
-    public void Pick()
+    
+    public void MoveObject(float movimientoHorizontal, float movimientoVertical)
     {
-        if (_objSelected != null )
-        {
-            Ray rayo = Camera.main.ScreenPointToRay(Input.mousePosition);
-            
-            Debug.DrawRay(_player.transform.position, _objSelected.position - _player.transform.position, Color.red, 0.5f);
-            if (Physics.Raycast(_player.transform.position,_objSelected.position - _player.transform.position, out var hit) && !hit.collider.CompareTag("MoveObject"))
-            {
-                Drop();
-                return;
-            }
-            if (Physics.Raycast(rayo, out var hitInfo, Mathf.Infinity, LayerMask.GetMask("Ground")))
-            {
-                Vector3 nuevaPosicion = hitInfo.point;
-                nuevaPosicion.y = _objSelected.position.y;
-                _objSelected.position = nuevaPosicion;
-            }
-        }
+        Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
+
+        Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
+
+        Vector3 righMovement = right * (_objSpeed * Time.deltaTime * movimientoHorizontal);
+        Vector3 upMovement = forward * (_objSpeed * Time.deltaTime * movimientoVertical);
+
+        Vector3 heading = (righMovement + upMovement).normalized;
+
+        Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
+
+        var _rbObj = _objSelected.GetComponent<Rigidbody>();
+        _rbObj.MoveRotation(Quaternion.Lerp(_rbObj.rotation, targetRotation, Time.deltaTime * _objRotation));
+        _rbObj.MovePosition(_objSelected.transform.position + heading * (_objSpeed * Time.deltaTime));
     }
-
-    public void Drop()
+    
+    public void DropObject()
     {
-        // Si se suelta el botón izquierdo del ratón, restablecer el objeto seleccionado
+        Debug.Log("Objeto soltado: " + _objSelected.name);
+        hasObject = false;
         _objSelected = null;
     }
 }
