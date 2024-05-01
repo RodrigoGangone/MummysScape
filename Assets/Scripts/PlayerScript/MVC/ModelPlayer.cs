@@ -162,7 +162,7 @@ public class ModelPlayer
     }
     public void HookBalanced()
     {
-        var minDistanceHook = 5;
+        var minDistanceHook = 8;
         var minDistanceJump = 100;
 
         var pos = _player.transform.position;
@@ -171,7 +171,7 @@ public class ModelPlayer
         Vector3 offset = rot * new Vector3(0, 2, 5f);
         Vector3 boxcastPos = pos + offset;
 
-        _hookBeetle = Physics.OverlapBox(boxcastPos, new Vector3(5, 5, 10) / 2, rot);
+        _hookBeetle = Physics.OverlapBox(boxcastPos, new Vector3(5, 8, 10) / 2, rot);
 
         foreach (var beetle in _hookBeetle)
         {

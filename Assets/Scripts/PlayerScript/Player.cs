@@ -68,7 +68,7 @@ public class Player : MonoBehaviour
         // Dibujar el boxcast
         Gizmos.color = Color.red;
         Gizmos.matrix = Matrix4x4.TRS(boxcastPos, boxcastRot, Vector3.one);
-        Gizmos.DrawWireCube(Vector3.zero, new Vector3(5, 5, 10));
+        Gizmos.DrawWireCube(Vector3.zero, new Vector3(5, 8, 10));
         Gizmos.matrix = Matrix4x4.identity; // Restaurar la matriz de gizmos a la identidad
     }
     
