@@ -121,7 +121,7 @@ public class ModelPlayer
     
     public void PickObject()
     {
-        Debug.DrawRay(_player.transform.position, _player.transform.forward * 30, Color.cyan, 0.5f);
+        Debug.DrawRay(_player.transform.position, _player.transform.forward * 30, Color.green, 0.5f);
         RaycastHit hit;
         if (Physics.Raycast(_player.transform.position, _player.transform.forward, out hit, Mathf.Infinity, pickableLayer))
         {
@@ -131,22 +131,36 @@ public class ModelPlayer
         }
     }
     
+    // ReSharper disable Unity.PerformanceAnalysis
     public void MoveObject(float movimientoHorizontal, float movimientoVertical)
     {
-        Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
+        Debug.DrawRay(_objSelected.transform.position, _player.transform.position - _objSelected.transform.position, Color.red, 0.5f);
+        RaycastHit hit;
+        
+        if (Physics.Raycast(_objSelected.transform.position,
+                _player.transform.position - _objSelected.transform.position, out hit))
+        {
+            if (hit.collider.gameObject.tag != "Player")
+                DropObject();
+            else
+            {
+                Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
 
-        Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
+                Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
 
-        Vector3 righMovement = right * (_objSpeed * Time.deltaTime * movimientoHorizontal);
-        Vector3 upMovement = forward * (_objSpeed * Time.deltaTime * movimientoVertical);
+                Vector3 righMovement = right * (_objSpeed * Time.deltaTime * movimientoHorizontal);
+                Vector3 upMovement = forward * (_objSpeed * Time.deltaTime * movimientoVertical);
 
-        Vector3 heading = (righMovement + upMovement).normalized;
+                Vector3 heading = (righMovement + upMovement).normalized;
 
-        Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
+                Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
 
-        var _rbObj = _objSelected.GetComponent<Rigidbody>();
-        _rbObj.MoveRotation(Quaternion.Lerp(_rbObj.rotation, targetRotation, Time.deltaTime * _objRotation));
-        _rbObj.MovePosition(_objSelected.transform.position + heading * (_objSpeed * Time.deltaTime));
+                var _rbObj = _objSelected.GetComponent<Rigidbody>();
+                _rbObj.MoveRotation(Quaternion.Lerp(_rbObj.rotation, targetRotation, Time.deltaTime * _objRotation));
+                _rbObj.MovePosition(_objSelected.transform.position + heading * (_objSpeed * Time.deltaTime));
+            }
+
+        }
     }
     
     public void DropObject()
