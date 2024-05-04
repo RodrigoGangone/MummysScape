@@ -1,27 +1,27 @@
 using UnityEngine;
 
 public class Player : MonoBehaviour
-{
-    private Transform _cameraTransform;
-
+{ 
     public ModelPlayer _modelPlayer { get; private set; }
     public ViewPlayer _viewPlayer { get; private set; }
-    ControllerPlayer _controllerPlayer;
+    public ControllerPlayer _controllerPlayer { get; private set; }
     
-    private SpringJoint _springJoint;
-    private LineRenderer _bandage;
-    public StateMachinePlayer _StateMachinePlayer { get; private set; }
+    public Rigidbody _rigidbody { get; private set; }
+
+    public Transform _cameraTransform { get; private set; }
+    
+    public SpringJoint _springJoint { get; private set; }
+    public LineRenderer _bandage{ get; private set; }
+
+    public StateMachinePlayer _stateMachinePlayer;
+
     private string _currentState;
 
     [SerializeField] private float _life;
     [SerializeField] private float _speed;
     [SerializeField] private float _maxSpeed;
     [SerializeField] private float _speedRotation;
-    [SerializeField] public GameObject _bandagesPrefab;
-    [SerializeField] public GameObject _indicatorShoot;
-
-    private float _stockBandages;
-
+    
     public float Life { get => _life; set => _life = value; }
     public float Speed { get => _speed; set { } }
     public float SpeedRotation { get => _speedRotation; set => _speedRotation = value; }
@@ -30,26 +30,29 @@ public class Player : MonoBehaviour
     {
         if (Camera.main != null) _cameraTransform = Camera.main.transform;
 
+        _rigidbody = GetComponent<Rigidbody>();
+        
         _springJoint = GetComponent<SpringJoint>();
-
-        _viewPlayer = new ViewPlayer(this, _modelPlayer);
-        _modelPlayer = new ModelPlayer(this, _springJoint, _viewPlayer);
+        _bandage = GetComponent<LineRenderer>();
+        
+        _viewPlayer = new ViewPlayer(this);
+        _modelPlayer = new ModelPlayer(this);
         _controllerPlayer = new ControllerPlayer(this);
 
-        _StateMachinePlayer = new StateMachinePlayer();
+        _stateMachinePlayer = new StateMachinePlayer();
 
-        _StateMachinePlayer.AddState(PlayerState.Idle, new SM_Idle());
-        _StateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(this));
-        _StateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk());
-        _StateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook());
-        _StateMachinePlayer.AddState(PlayerState.Grab, new SM_Grab());
-        _StateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage());
-        _StateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead());
+        _stateMachinePlayer.AddState(PlayerState.Idle, new SM_Idle());
+        _stateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(this));
+        _stateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk());
+        _stateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook());
+        _stateMachinePlayer.AddState(PlayerState.Grab, new SM_Grab());
+        _stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage());
+        _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead());
     }
 
     private void Update()
     {
-        _StateMachinePlayer.Update();
+        _stateMachinePlayer.Update();
         _controllerPlayer.ControllerUpdate();
     }
     
@@ -74,18 +77,18 @@ public class Player : MonoBehaviour
     
     private void FixedUpdate()
     {
-        _StateMachinePlayer.FixedUpdate();
+        _stateMachinePlayer.FixedUpdate();
         _controllerPlayer.ControllerFixedUpdate();
     }
 
     void ChangeState(PlayerState playerState)
     {
-        _StateMachinePlayer.ChangeState(playerState);
+        _stateMachinePlayer.ChangeState(playerState);
     }
 
     string CurrentState()
     {
-        return _StateMachinePlayer.getCurrentState();
+        return _stateMachinePlayer.getCurrentState();
     }
 
     

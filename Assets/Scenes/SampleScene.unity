@@ -6693,11 +6693,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4891a35c6fb4583498ba8239aaf8acb6, type: 3}
---- !u!1 &485466538 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3501201398530936636, guid: 4891a35c6fb4583498ba8239aaf8acb6, type: 3}
-  m_PrefabInstance: {fileID: 485466537}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -6828,7 +6823,8 @@ GameObject:
   - component: {fileID: 735838575}
   - component: {fileID: 735838574}
   - component: {fileID: 735838573}
-  m_Layer: 0
+  - component: {fileID: 735838577}
+  m_Layer: 7
   m_Name: Cube
   m_TagString: MoveObject
   m_Icon: {fileID: 0}
@@ -6921,6 +6917,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &735838577
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 735838572}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &934322398
 GameObject:
   m_ObjectHideFlags: 0
@@ -7212,12 +7235,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d80c53ab6dcb23d4787c87b4f350cdfe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _stateMachinePlayer: {fileID: 0}
   _life: 100
   _speed: 5
   _maxSpeed: 5
   _speedRotation: 3
-  _bandagesPrefab: {fileID: 7766207882271066570, guid: 12321519f75d146429bf0747640cf814, type: 3}
-  _indicatorShoot: {fileID: 485466538}
 --- !u!136 &972602307
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -7460,7 +7482,8 @@ GameObject:
   - component: {fileID: 1061905093}
   - component: {fileID: 1061905092}
   - component: {fileID: 1061905091}
-  m_Layer: 0
+  - component: {fileID: 1061905095}
+  m_Layer: 7
   m_Name: Sphere (1)
   m_TagString: MoveObject
   m_Icon: {fileID: 0}
@@ -7553,6 +7576,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &1061905095
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1061905090}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1170474053
 GameObject:
   m_ObjectHideFlags: 0
@@ -7566,7 +7616,7 @@ GameObject:
   - component: {fileID: 1170474056}
   - component: {fileID: 1170474055}
   - component: {fileID: 1170474054}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Hook (9)
   m_TagString: BeetleJump
   m_Icon: {fileID: 0}
@@ -9887,7 +9937,7 @@ GameObject:
   - component: {fileID: 1695545520}
   - component: {fileID: 1695545519}
   - component: {fileID: 1695545518}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Hook (7)
   m_TagString: Hook
   m_Icon: {fileID: 0}
@@ -10066,7 +10116,7 @@ GameObject:
   - component: {fileID: 1857516185}
   - component: {fileID: 1857516184}
   - component: {fileID: 1857516183}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Hook (6)
   m_TagString: Hook
   m_Icon: {fileID: 0}
@@ -10199,7 +10249,7 @@ GameObject:
   - component: {fileID: 2101737313}
   - component: {fileID: 2101737312}
   - component: {fileID: 2101737311}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Hook (5)
   m_TagString: Hook
   m_Icon: {fileID: 0}
