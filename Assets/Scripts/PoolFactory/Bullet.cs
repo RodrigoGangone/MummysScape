@@ -6,12 +6,13 @@ public class Bullet : MonoBehaviour
 {
     [SerializeField] Rigidbody _rb;
     [SerializeField] float _speed;
+    [SerializeField] private GameObject _platform;
 
     void OnEnable()
     {
-        _rb.AddForce(transform.forward*_speed, ForceMode.Impulse);
-        
+        _rb.AddForce(transform.forward * _speed, ForceMode.Impulse);
     }
+
     public void Reset()
     {
         var playerPos = GameObject.FindObjectOfType<BulletFactory>();
@@ -21,14 +22,15 @@ public class Bullet : MonoBehaviour
 
     public static void TurnOn(Bullet b)
     {
-        
         b.Reset();
         b.gameObject.SetActive(true);
     }
+
     public static void TurnOff(Bullet b)
     {
         b.gameObject.SetActive(false);
     }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Player"))

@@ -1,17 +1,17 @@
 using UnityEngine;
 
 public class Player : MonoBehaviour
-{ 
+{
     public ModelPlayer _modelPlayer { get; private set; }
     public ViewPlayer _viewPlayer { get; private set; }
     public ControllerPlayer _controllerPlayer { get; private set; }
-    
+
     public Rigidbody _rigidbody { get; private set; }
 
     public Transform _cameraTransform { get; private set; }
-    
+
     public SpringJoint _springJoint { get; private set; }
-    public LineRenderer _bandage{ get; private set; }
+    public LineRenderer _bandage { get; private set; }
 
     public StateMachinePlayer _stateMachinePlayer;
 
@@ -21,20 +21,34 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speed;
     [SerializeField] private float _maxSpeed;
     [SerializeField] private float _speedRotation;
-    
-    public float Life { get => _life; set => _life = value; }
-    public float Speed { get => _speed; set { } }
-    public float SpeedRotation { get => _speedRotation; set => _speedRotation = value; }
+
+    public float Life
+    {
+        get => _life;
+        set => _life = value;
+    }
+
+    public float Speed
+    {
+        get => _speed;
+        set { }
+    }
+
+    public float SpeedRotation
+    {
+        get => _speedRotation;
+        set => _speedRotation = value;
+    }
 
     private void Start()
     {
         if (Camera.main != null) _cameraTransform = Camera.main.transform;
 
         _rigidbody = GetComponent<Rigidbody>();
-        
+
         _springJoint = GetComponent<SpringJoint>();
         _bandage = GetComponent<LineRenderer>();
-        
+
         _viewPlayer = new ViewPlayer(this);
         _modelPlayer = new ModelPlayer(this);
         _controllerPlayer = new ControllerPlayer(this);
@@ -55,7 +69,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.Update();
         _controllerPlayer.ControllerUpdate();
     }
-    
+
     private void OnDrawGizmos()
     {
         // Guardar la posición y rotación del jugador
@@ -74,7 +88,7 @@ public class Player : MonoBehaviour
         Gizmos.DrawWireCube(Vector3.zero, new Vector3(5, 8, 10));
         Gizmos.matrix = Matrix4x4.identity; // Restaurar la matriz de gizmos a la identidad
     }
-    
+
     private void FixedUpdate()
     {
         _stateMachinePlayer.FixedUpdate();
@@ -90,9 +104,8 @@ public class Player : MonoBehaviour
     {
         return _stateMachinePlayer.getCurrentState();
     }
-
-    
 }
+
 public enum PlayerState
 {
     Idle,

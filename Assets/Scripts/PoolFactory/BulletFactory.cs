@@ -17,6 +17,7 @@ public class BulletFactory : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
         _myBulletPool = new Pool<Bullet>(CreateObject, Bullet.TurnOn, Bullet.TurnOff, _initialAmount);
     }
