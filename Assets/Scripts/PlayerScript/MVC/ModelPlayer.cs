@@ -40,6 +40,9 @@ public class ModelPlayer
     private float _objRotation = 10f;
     private float _objSpeed = 5f;
 
+
+    public bool _isHook = false;
+
     //PICK UP
     public ModelPlayer(Player p)
     {
@@ -76,12 +79,14 @@ public class ModelPlayer
         {
             createSpring?.Invoke();
             _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
-            _joint.maxDistance = 2.5f;
-            _joint.minDistance = 1.5f;
-            _joint.spring = 200;
+            _joint.maxDistance = 3f;
+            _joint.minDistance = 2.99f;
+            _joint.spring = 10000;
             _joint.damper = 5;
             _joint.breakTorque = 1;
-            _joint.massScale = 3f;
+            _joint.massScale = 1000f;
+            _joint.tolerance = 0;
+
         };
 
         jointPreferencesJump = () =>
@@ -150,6 +155,8 @@ public class ModelPlayer
 
     public void HookBalanced()
     {
+        _isHook = true;
+        
         var minDistanceHook = 8;
         var minDistanceJump = 100;
 

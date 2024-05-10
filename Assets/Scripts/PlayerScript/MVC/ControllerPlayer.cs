@@ -81,18 +81,23 @@ public class ControllerPlayer
     public void ControllerFixedUpdate()
     {
         //Movimiento del player
-        if (_rotationInput != 0 || _moveInput != 0)
-        {
-            if (isMoveTank)
-                _model.MoveTank(_rotationInput, _moveInput);
-            else
-                _model.MoveVariant(_rotationInput, _moveInput);
-        }
 
-        //Movimiento del objeto
-        if (_rotationInputObj != 0 || _moveInputObj != 0)
+        if (_model._isHook)
         {
-            _model.MoveObject(_rotationInputObj, _moveInputObj);
+            if (_rotationInput != 0 || _moveInput != 0)
+            {
+                if (isMoveTank)
+                    _model.MoveTank(_rotationInput, _moveInput);
+                else
+                    _model.MoveVariant(_rotationInput, _moveInput);
+            }
+
+
+            //Movimiento del objeto
+            if (_rotationInputObj != 0 || _moveInputObj != 0)
+            {
+                _model.MoveObject(_rotationInputObj, _moveInputObj);
+            }
         }
     }
 }
