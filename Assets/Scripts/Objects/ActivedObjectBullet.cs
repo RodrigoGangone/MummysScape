@@ -5,13 +5,17 @@ using UnityEngine;
 
 public class ActivedObjectBullet : MonoBehaviour
 {
-    [SerializeField] private GameObject _platform;
+    [SerializeField] private List<GameObject> _platform;
     
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Bullet"))
         {
-            Destroy(_platform);
+            foreach (GameObject obj in _platform)
+            {
+                Destroy(obj);
+            }
+            
         }
     }
 }
