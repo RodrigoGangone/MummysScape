@@ -10,7 +10,7 @@ public class ControllerPlayer
     float _moveInput;
     private bool _whatmovement = true;
     private bool isMoveTank;
-    
+
     //Obj picked vars//
     float _rotationInputObj;
     float _moveInputObj;
@@ -25,7 +25,7 @@ public class ControllerPlayer
     public void ControllerUpdate()
     {
         if (_model == null || _view == null) return;
-        
+
         _rotationInput = Input.GetAxisRaw("Horizontal");
         _moveInput = Input.GetAxisRaw("Vertical");
 
@@ -34,12 +34,12 @@ public class ControllerPlayer
             _rotationInputObj = Input.GetAxisRaw("Object Horizontal");
             _moveInputObj = Input.GetAxisRaw("Object Vertical");
         }
-        
+
         if (Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
-        
+
         if (Input.GetKeyDown(KeyCode.T))
         {
             if (isMoveTank)
@@ -47,7 +47,7 @@ public class ControllerPlayer
             else
                 isMoveTank = true;
         }
-        
+
         if (Input.GetKey(KeyCode.Space))
         {
             _model.HookBalanced();
@@ -63,7 +63,7 @@ public class ControllerPlayer
         {
             _model.reset?.Invoke();
         }
-        
+
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (!_model.hasObject)
@@ -81,18 +81,23 @@ public class ControllerPlayer
     public void ControllerFixedUpdate()
     {
         //Movimiento del player
-        if (_rotationInput != 0 || _moveInput != 0)
-        {
-            if (isMoveTank)
-                _model.MoveTank(_rotationInput, _moveInput);
-            else
-                _model.MoveVariant(_rotationInput, _moveInput);
-        }
 
-        //Movimiento del objeto
-        if (_rotationInputObj != 0 || _moveInputObj != 0)
+        if (_model._isHook)
         {
-            _model.MoveObject(_rotationInputObj, _moveInputObj);
+            if (_rotationInput != 0 || _moveInput != 0)
+            {
+                if (isMoveTank)
+                    _model.MoveTank(_rotationInput, _moveInput);
+                else
+                    _model.MoveVariant(_rotationInput, _moveInput);
+            }
+
+
+            //Movimiento del objeto
+            if (_rotationInputObj != 0 || _moveInputObj != 0)
+            {
+                _model.MoveObject(_rotationInputObj, _moveInputObj);
+            }
         }
     }
 }

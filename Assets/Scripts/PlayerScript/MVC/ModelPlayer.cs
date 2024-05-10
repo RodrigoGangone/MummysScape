@@ -10,21 +10,22 @@ public class ModelPlayer
     Player _player;
     ControllerPlayer _controller;
     Rigidbody _rb;
-    
+
     //HOOK
     Vector3 _objectToHook = Vector3.zero;
     private LineRenderer _bandage;
     private SpringJoint _joint;
     public bool objectToHookUpdated = false;
     private Collider[] _hookBeetle;
-    
-    
+
+
     public Action reset;
     public Action lineCurrent;
     public Action limitVelocity;
     public Action jointPreferencesBalanced;
     public Action jointPreferencesJump;
     public Action createSpring;
+    public Action prueba;
     //HOOK
 
     //AIM
@@ -35,37 +36,59 @@ public class ModelPlayer
     private LayerMask pickableLayer = LayerMask.GetMask("Pickable");
     public bool hasObject { get; private set; }
     private Transform _objSelected;
-    
+
     private float _objRotation = 10f;
     private float _objSpeed = 5f;
-    
+
+
+    public bool _isHook = false;
+
     //PICK UP
     public ModelPlayer(Player p)
     {
         _player = p;
-        
+
         _rb = _player._rigidbody;
         _bandage = _player._bandage;
         _joint = _player._springJoint;
 
-        reset = () => { Object.Destroy(_joint); _bandage.enabled = false; objectToHookUpdated = false; _hookBeetle = null; }; //RESET DE HOOK
-        
-        lineCurrent = () => { _bandage.enabled = true; _bandage.SetPosition(0, _player.transform.position); _bandage.SetPosition(1, _objectToHook); }; //VISUAL PROVISOARIO, PARA MOSTRAR EL LINERENDERER
-        
-        limitVelocity = () => { if (_rb.velocity.magnitude > _player.Speed) { _rb.velocity = _rb.velocity.normalized * _player.Speed; } }; //LIMITO LA VELOCIDAD DEL RIGIDBODY
-        
+        reset = () =>
+        {
+            Object.Destroy(_joint);
+            _bandage.enabled = false;
+            objectToHookUpdated = false;
+            _hookBeetle = null;
+        }; //RESET DE HOOK
+
+        lineCurrent = () =>
+        {
+            _bandage.enabled = true;
+            _bandage.SetPosition(0, _player.transform.position);
+            _bandage.SetPosition(1, _objectToHook);
+        }; //VISUAL PROVISOARIO, PARA MOSTRAR EL LINERENDERER
+
+        limitVelocity = () =>
+        {
+            if (_rb.velocity.magnitude > _player.Speed)
+            {
+                _rb.velocity = _rb.velocity.normalized * _player.Speed;
+            }
+        }; //LIMITO LA VELOCIDAD DEL RIGIDBODY
+
         jointPreferencesBalanced = () =>
         {
             createSpring?.Invoke();
             _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
-            _joint.maxDistance = 2f;
-            _joint.minDistance = 0.1f;
-            _joint.spring = 15;
-            _joint.damper = 10;
+            _joint.maxDistance = 3f;
+            _joint.minDistance = 2.99f;
+            _joint.spring = 10000;
+            _joint.damper = 5;
             _joint.breakTorque = 1;
-            _joint.massScale = 100f;
+            _joint.massScale = 1000f;
+            _joint.tolerance = 0;
+
         };
-        
+
         jointPreferencesJump = () =>
         {
             createSpring?.Invoke();
@@ -104,7 +127,8 @@ public class ModelPlayer
     {
         _player.SpeedRotation = 10;
 
-        Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
+        Vector3 forward =
+            new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
 
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
 
@@ -128,8 +152,11 @@ public class ModelPlayer
         BulletFactory.Instance.GetObjectFromPool();
         _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
+
     public void HookBalanced()
     {
+        _isHook = true;
+        
         var minDistanceHook = 8;
         var minDistanceJump = 100;
 
@@ -143,7 +170,8 @@ public class ModelPlayer
 
         foreach (var beetle in _hookBeetle)
         {
-            if (_hookBeetle.Length > 0 && !objectToHookUpdated && beetle.gameObject.layer == LayerMask.NameToLayer("Beetle"))
+            if (_hookBeetle.Length > 0 && !objectToHookUpdated &&
+                beetle.gameObject.layer == LayerMask.NameToLayer("Beetle"))
             {
                 var distance = Vector3.Distance(pos, beetle.transform.position);
 
@@ -160,25 +188,26 @@ public class ModelPlayer
             }
         }
     }
-    
+
     public void PickObject()
     {
         Debug.DrawRay(_player.transform.position, _player.transform.forward * 30, Color.green, 0.5f);
         RaycastHit hit;
-        if (Physics.Raycast(_player.transform.position, _player.transform.forward, out hit, Mathf.Infinity, pickableLayer))
+        if (Physics.Raycast(_player.transform.position, _player.transform.forward, out hit, Mathf.Infinity,
+                pickableLayer))
         {
             Debug.Log("Objeto recogido: " + hit.collider.gameObject.name);
             hasObject = true;
             _objSelected = hit.transform;
         }
     }
-    
-    // ReSharper disable Unity.PerformanceAnalysis
+
     public void MoveObject(float movimientoHorizontal, float movimientoVertical)
     {
-        Debug.DrawRay(_objSelected.transform.position, _player.transform.position - _objSelected.transform.position, Color.red, 0.5f);
+        Debug.DrawRay(_objSelected.transform.position, _player.transform.position - _objSelected.transform.position,
+            Color.red, 0.5f);
         RaycastHit hit;
-        
+
         if (Physics.Raycast(_objSelected.transform.position,
                 _player.transform.position - _objSelected.transform.position, out hit))
         {
@@ -186,7 +215,8 @@ public class ModelPlayer
                 DropObject();
             else
             {
-                Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
+                Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0,
+                    _player._cameraTransform.transform.forward.z).normalized;
 
                 Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
 
@@ -201,10 +231,9 @@ public class ModelPlayer
                 _rbObj.MoveRotation(Quaternion.Lerp(_rbObj.rotation, targetRotation, Time.deltaTime * _objRotation));
                 _rbObj.MovePosition(_objSelected.transform.position + heading * (_objSpeed * Time.deltaTime));
             }
-
         }
     }
-    
+
     public void DropObject()
     {
         Debug.Log("Objeto soltado: " + _objSelected.name);
