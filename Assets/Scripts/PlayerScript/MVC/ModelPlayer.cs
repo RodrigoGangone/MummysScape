@@ -160,13 +160,6 @@ public class ModelPlayer
         }
     }
 
-    public void SetSize()
-    {
-        var minSize = new Vector3(0.5f, 0.5f, 0.5f);
-        var midSize = new Vector3(0.8f, 0.8f, 0.8f);
-        var maxSize = new Vector3(1, 1, 1);
-    }
-
     public void HookBalanced()
     {
         _isHook = true;
