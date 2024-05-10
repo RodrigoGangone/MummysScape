@@ -9,10 +9,10 @@ public class Pool<T>
     //Delegado que devuelve tipo T, por lo que aca voy a guardar el metodo de como se crea el objeto.
 
     private Action<T> _turnOnCallBack;
-    //Delegado que toma por par·metro T, para guardar como se prende la bala una vez la llame el cliente.
+    //Delegado que toma por par√°metro T, para guardar como se prende la bala una vez la llame el cliente.
 
     private Action<T> _turnOffCallBack;
-    //Delegado que toma por par·metro T, para guardar como se apaga la bala una vez regrese al pool.
+    //Delegado que toma por par√°metro T, para guardar como se apaga la bala una vez regrese al pool.
 
     List<T> _currentStock;
     //El cajon donde se guardan los objetos disponibles para su uso.
@@ -41,13 +41,13 @@ public class Pool<T>
     }
 
     //Se pide un objeto del pool
-    public T GetObject() //Devuelve un objeto genÈrico
+    public T GetObject() //Devuelve un objeto gen√©rico
     {
         T result;
 
         if (_currentStock.Count == 0)
         {
-            result = _factoryMethod(); //Si no hay m·s, se crea uno
+            result = _factoryMethod(); //Si no hay m√°s, se crea uno
         }
 
         else
@@ -56,7 +56,7 @@ public class Pool<T>
             _currentStock.RemoveAt(0);
         }
 
-        _turnOnCallBack(result); //Se pasa el objeto generico creado para ser activado en su script especÌfico.
+        _turnOnCallBack(result); //Se pasa el objeto generico creado para ser activado en su script espec√≠fico.
         return result;
     }
 

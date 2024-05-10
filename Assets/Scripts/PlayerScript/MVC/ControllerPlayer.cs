@@ -72,6 +72,11 @@ public class ControllerPlayer
                 _model.DropObject();
         }
 
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            _model.SetSize();
+        }
+
         if (Input.GetKeyDown(KeyCode.V))
         {
             _player._stateMachinePlayer.ChangeState(PlayerState.Shoot);
@@ -82,22 +87,19 @@ public class ControllerPlayer
     {
         //Movimiento del player
 
-        if (_model._isHook)
+        if (_rotationInput != 0 || _moveInput != 0)
         {
-            if (_rotationInput != 0 || _moveInput != 0)
-            {
-                if (isMoveTank)
-                    _model.MoveTank(_rotationInput, _moveInput);
-                else
-                    _model.MoveVariant(_rotationInput, _moveInput);
-            }
+            if (isMoveTank)
+                _model.MoveTank(_rotationInput, _moveInput);
+            else
+                _model.MoveVariant(_rotationInput, _moveInput);
+        }
 
 
-            //Movimiento del objeto
-            if (_rotationInputObj != 0 || _moveInputObj != 0)
-            {
-                _model.MoveObject(_rotationInputObj, _moveInputObj);
-            }
+        //Movimiento del objeto
+        if (_rotationInputObj != 0 || _moveInputObj != 0)
+        {
+            _model.MoveObject(_rotationInputObj, _moveInputObj);
         }
     }
 }
