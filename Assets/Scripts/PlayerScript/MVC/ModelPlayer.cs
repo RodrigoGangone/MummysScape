@@ -86,7 +86,6 @@ public class ModelPlayer
             _joint.breakTorque = 1;
             _joint.massScale = 1000f;
             _joint.tolerance = 0;
-
         };
 
         jointPreferencesJump = () =>
@@ -151,12 +150,27 @@ public class ModelPlayer
         //bandage.SetActive(true);
         BulletFactory.Instance.GetObjectFromPool();
         _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
+
+        var originalSize = new Vector3(0.5f, 0.5f, 0.5f);
+
+        if (_player.transform.localScale.x > originalSize.x || _player.transform.localScale.y > originalSize.y ||
+            _player.transform.localScale.z > originalSize.z)
+        {
+            _player.transform.localScale -= new Vector3(0.1f, 0.1f, 0.1f);
+        }
+    }
+
+    public void SetSize()
+    {
+        var minSize = new Vector3(0.5f, 0.5f, 0.5f);
+        var midSize = new Vector3(0.8f, 0.8f, 0.8f);
+        var maxSize = new Vector3(1, 1, 1);
     }
 
     public void HookBalanced()
     {
         _isHook = true;
-        
+
         var minDistanceHook = 8;
         var minDistanceJump = 100;
 
