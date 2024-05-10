@@ -71,13 +71,8 @@ public class ControllerPlayer
             else
                 _model.DropObject();
         }
-
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            _model.SetSize();
-        }
-
-        if (Input.GetKeyDown(KeyCode.V))
+        
+        if (Input.GetKeyDown(KeyCode.Q))
         {
             _player._stateMachinePlayer.ChangeState(PlayerState.Shoot);
         }
