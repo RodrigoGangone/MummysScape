@@ -79,13 +79,13 @@ public class ModelPlayer
         {
             createSpring?.Invoke();
             _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
-            _joint.maxDistance = 3f;
-            _joint.minDistance = 2.99f;
-            _joint.spring = 10000;
-            _joint.damper = 5;
-            _joint.breakTorque = 1;
-            _joint.massScale = 1000f;
-            _joint.tolerance = 0;
+            _joint.maxDistance = 2.5f;
+            _joint.minDistance = 1.5f;
+            _joint.spring = 75;
+            _joint.damper = 12f;
+            //_joint.breakTorque = 1;
+            //_joint.massScale = 10;
+            //_joint.tolerance = 0;
         };
 
         jointPreferencesJump = () =>
