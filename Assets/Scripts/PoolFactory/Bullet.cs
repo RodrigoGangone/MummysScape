@@ -7,13 +7,12 @@ public class Bullet : MonoBehaviour
     [SerializeField] Rigidbody _rb;
     [SerializeField] float _speed;
     [SerializeField] private GameObject _platform;
+    [SerializeField] private GameObject _prefabBandage;
     private GameObject _playerPos;
     private GameObject _target;
 
     void OnEnable()
     {
-        //_playerPos = FindObjectOfType<BulletFactory>();
-
         _playerPos = GameObject.Find("Mummy");
         _target = GameObject.Find("Target");
         
@@ -38,18 +37,12 @@ public class Bullet : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            BulletFactory.Instance.ReturnObjectToPool(this);
-
-            var originalSize = new Vector3(1, 1, 1);
-
-            if (_playerPos.transform.localScale.x < originalSize.x ||
-                _playerPos.transform.localScale.y < originalSize.y ||
-                _playerPos.transform.localScale.z < originalSize.z)
-            {
-                _playerPos.transform.localScale += new Vector3(0.1f, 0.1f, 0.1f);
-            }
-        }
+        //Instancio un prefab de la bandaje cuando choca la bullet con la wall, y le paso referecia del bullet
+        if (!collision.gameObject.CompareTag("Wall")) return;
+        
+        var bandageGO = Instantiate(_prefabBandage, transform.position, Quaternion.identity);
+        Bandage bandageScript = bandageGO.GetComponent<Bandage>();
+        bandageScript.setInstantiator(this);
+        gameObject.SetActive(false);
     }
 }

@@ -145,19 +145,14 @@ public class ModelPlayer
 
     public void Shoot()
     {
-        //GameObject bandage = ObjectPool.instance.GetPooledObjectBullet();
-        //bandage.transform.position = _player.transform.position;
-        //bandage.SetActive(true);
-        BulletFactory.Instance.GetObjectFromPool();
-        _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
-
-        var originalSize = new Vector3(0.5f, 0.5f, 0.5f);
-
-        if (_player.transform.localScale.x > originalSize.x || _player.transform.localScale.y > originalSize.y ||
-            _player.transform.localScale.z > originalSize.z)
+        if (_player.CurrentNumOfShoot < _player.MaxNumOfShoot)
         {
-            _player.transform.localScale -= new Vector3(0.1f, 0.1f, 0.1f);
+            _player.CurrentNumOfShoot++;
+            _player.transform.localScale -= new Vector3(0.25f, 0.25f, 0.25f);
+            BulletFactory.Instance.GetObjectFromPool();
         }
+        
+        _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
 
     public void HookBalanced()

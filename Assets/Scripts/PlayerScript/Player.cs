@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -21,6 +22,10 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speed;
     [SerializeField] private float _maxSpeed;
     [SerializeField] private float _speedRotation;
+    
+    [SerializeField] private int _maxNumOfShoot = 2;
+    [SerializeField] private int _currNumOfShoot = 0;
+    
 
     public float Life
     {
@@ -38,6 +43,23 @@ public class Player : MonoBehaviour
     {
         get => _speedRotation;
         set => _speedRotation = value;
+    }
+
+    public int MaxNumOfShoot
+    {
+        get => _maxNumOfShoot;
+        set { }
+    }
+    
+    public int CurrentNumOfShoot
+    {
+        get => _currNumOfShoot;
+        set => _currNumOfShoot = value;
+    }
+
+    private void Awake()
+    {
+        
     }
 
     private void Start()
@@ -95,6 +117,11 @@ public class Player : MonoBehaviour
         _controllerPlayer.ControllerFixedUpdate();
     }
 
+    private void ChangeSizeByShoot(int currentBullet)
+    {
+
+    }
+
     void ChangeState(PlayerState playerState)
     {
         _stateMachinePlayer.ChangeState(playerState);
@@ -106,11 +133,19 @@ public class Player : MonoBehaviour
     }
 }
 
+public enum PlayerSize
+{
+    Normal,
+    Small,
+    Head
+}
+
 public enum PlayerState
 {
     Idle,
     Shoot,
     Walk,
+    Head,
     Hook,
     Grab,
     Damage,

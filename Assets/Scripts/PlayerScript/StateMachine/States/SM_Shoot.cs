@@ -11,7 +11,7 @@ public class SM_Shoot : State
     }
     public override void OnEnter()
     {
-        _player._modelPlayer.Shoot();
+        _player._modelPlayer.Shoot();   
     }
 
     public override void OnUpdate()
