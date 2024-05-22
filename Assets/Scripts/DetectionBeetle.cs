@@ -7,8 +7,8 @@ using UnityEngine;
 public class DetectionBeetle : MonoBehaviour
 {
     public List<Collider> _beetles;
-    public Collider currentBeetle;
-
+    public Rigidbody currentBeetle;
+    
     private void OnTriggerEnter(Collider other) // Agregar el Beetle con el que colisiono el trigger a la lista
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Beetle"))
@@ -31,7 +31,7 @@ public class DetectionBeetle : MonoBehaviour
                 {
                     nearestDistance = distance;
 
-                    currentBeetle = beetle;
+                    currentBeetle = beetle.GetComponent<Rigidbody>();
 
                     currentBeetle.transform.GetChild(0).GetComponent<ParticleSystem>().Play();
                 }
@@ -43,7 +43,7 @@ public class DetectionBeetle : MonoBehaviour
         }
         else if (_beetles.Count == 1)
         {
-            currentBeetle = _beetles[0];
+            currentBeetle = _beetles[0].GetComponent<Rigidbody>();
             _beetles[0].transform.GetChild(0).GetComponent<ParticleSystem>().Play();
         }
         else
