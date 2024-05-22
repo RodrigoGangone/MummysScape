@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Player : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class Player : MonoBehaviour
     public SpringJoint _springJoint { get; private set; }
     public LineRenderer _bandage { get; private set; }
 
+    public DetectionBeetle _detectionBeetle { get; private set; }
+
     public StateMachinePlayer _stateMachinePlayer;
 
     private string _currentState;
@@ -22,10 +25,17 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speed;
     [SerializeField] private float _maxSpeed;
     [SerializeField] private float _speedRotation;
-    
+
     [SerializeField] private int _maxNumOfShoot = 2;
     [SerializeField] private int _currNumOfShoot = 0;
-    
+
+    //Var para saber el tamaño del player.
+    [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
+
+    //Los GameObjets con los 3 tamaños de la Mummy
+    [SerializeField] public GameObject MummyNormal;
+    [SerializeField] public GameObject MummySmall;
+    [SerializeField] public GameObject MummyHead;
 
     public float Life
     {
@@ -50,16 +60,17 @@ public class Player : MonoBehaviour
         get => _maxNumOfShoot;
         set { }
     }
-    
+
     public int CurrentNumOfShoot
     {
         get => _currNumOfShoot;
         set => _currNumOfShoot = value;
     }
-
-    private void Awake()
+    
+    public PlayerSize CurrentPlayerSize
     {
-        
+        get => _currentPlayerSize;
+        set => _currentPlayerSize = value;
     }
 
     private void Start()
@@ -67,9 +78,11 @@ public class Player : MonoBehaviour
         if (Camera.main != null) _cameraTransform = Camera.main.transform;
 
         _rigidbody = GetComponent<Rigidbody>();
-
+        
         _springJoint = GetComponent<SpringJoint>();
         _bandage = GetComponent<LineRenderer>();
+        
+        _detectionBeetle = GetComponentInChildren<DetectionBeetle>();
 
         _viewPlayer = new ViewPlayer(this);
         _modelPlayer = new ModelPlayer(this);
@@ -117,11 +130,6 @@ public class Player : MonoBehaviour
         _controllerPlayer.ControllerFixedUpdate();
     }
 
-    private void ChangeSizeByShoot(int currentBullet)
-    {
-
-    }
-
     void ChangeState(PlayerState playerState)
     {
         _stateMachinePlayer.ChangeState(playerState);
@@ -131,6 +139,13 @@ public class Player : MonoBehaviour
     {
         return _stateMachinePlayer.getCurrentState();
     }
+}
+
+public enum PlayerSize
+{
+    Normal,
+    Small,
+    Head
 }
 
 public enum PlayerState

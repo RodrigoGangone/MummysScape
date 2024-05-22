@@ -1,7 +1,5 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEditor;
 using Object = UnityEngine.Object;
 
 
@@ -10,14 +8,14 @@ public class ModelPlayer
     Player _player;
     ControllerPlayer _controller;
     Rigidbody _rb;
+    private DetectionBeetle _detectionBeetle;
 
     //HOOK
     Vector3 _objectToHook = Vector3.zero;
     private LineRenderer _bandage;
     private SpringJoint _joint;
-    public bool objectToHookUpdated = false;
+    public bool objectToHookUpdated;
     private Collider[] _hookBeetle;
-
 
     public Action reset;
     public Action lineCurrent;
@@ -25,12 +23,7 @@ public class ModelPlayer
     public Action jointPreferencesBalanced;
     public Action jointPreferencesJump;
     public Action createSpring;
-    public Action prueba;
     //HOOK
-
-    //AIM
-    public BandageBullet BandageBullet;
-    //AIM
 
     //PICK UP
     private LayerMask pickableLayer = LayerMask.GetMask("Pickable");
@@ -39,9 +32,6 @@ public class ModelPlayer
 
     private float _objRotation = 10f;
     private float _objSpeed = 5f;
-
-
-    public bool _isHook = false;
 
     //PICK UP
     public ModelPlayer(Player p)
@@ -65,7 +55,7 @@ public class ModelPlayer
             _bandage.enabled = true;
             _bandage.SetPosition(0, _player.transform.position);
             _bandage.SetPosition(1, _objectToHook);
-        }; //VISUAL PROVISOARIO, PARA MOSTRAR EL LINERENDERER
+        }; //VISUAL PROVISORIO, PARA MOSTRAR EL LINERENDERER
 
         limitVelocity = () =>
         {
@@ -83,9 +73,6 @@ public class ModelPlayer
             _joint.minDistance = 1.5f;
             _joint.spring = 75;
             _joint.damper = 12f;
-            //_joint.breakTorque = 1;
-            //_joint.massScale = 10;
-            //_joint.tolerance = 0;
         };
 
         jointPreferencesJump = () =>
@@ -148,46 +135,27 @@ public class ModelPlayer
         if (_player.CurrentNumOfShoot < _player.MaxNumOfShoot)
         {
             _player.CurrentNumOfShoot++;
-            _player.transform.localScale -= new Vector3(0.25f, 0.25f, 0.25f);
+            SizeHandler();
+            //_player.transform.localScale -= new Vector3(0.25f, 0.25f, 0.25f);
             BulletFactory.Instance.GetObjectFromPool();
         }
-        
+
         _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
 
     public void HookBalanced()
     {
-        _isHook = true;
-
-        var minDistanceHook = 8;
-        var minDistanceJump = 100;
-
-        var pos = _player.transform.position;
-        var rot = _player.transform.rotation;
-
-        Vector3 offset = rot * new Vector3(0, 2, 5f);
-        Vector3 boxcastPos = pos + offset;
-
-        _hookBeetle = Physics.OverlapBox(boxcastPos, new Vector3(5, 8, 10) / 2, rot);
-
-        foreach (var beetle in _hookBeetle)
+        if (_detectionBeetle.currentBeetle.gameObject.CompareTag("Hook"))
         {
-            if (_hookBeetle.Length > 0 && !objectToHookUpdated &&
-                beetle.gameObject.layer == LayerMask.NameToLayer("Beetle"))
-            {
-                var distance = Vector3.Distance(pos, beetle.transform.position);
+            _objectToHook = _detectionBeetle.currentBeetle.transform.position;
 
-                if (beetle.gameObject.CompareTag("Hook") && distance <= minDistanceHook)
-                {
-                    _objectToHook = beetle.transform.position;
-                    jointPreferencesBalanced?.Invoke();
-                }
-                else if (beetle.gameObject.CompareTag("BeetleJump") && distance <= minDistanceJump)
-                {
-                    _objectToHook = beetle.transform.position;
-                    jointPreferencesJump?.Invoke();
-                }
-            }
+            jointPreferencesBalanced?.Invoke();
+        }
+        else if (_detectionBeetle.currentBeetle.gameObject.CompareTag("BeetleJump"))
+        {
+            _objectToHook = _detectionBeetle.currentBeetle.transform.position;
+
+            jointPreferencesJump?.Invoke();
         }
     }
 
@@ -243,24 +211,42 @@ public class ModelPlayer
         _objSelected = null;
     }
 
-    /*
-    private void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
+    public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         switch (_player.CurrentNumOfShoot)
         {
-            case Utils.PlayerSize.Normal:
-                //size def
+            case 0:
+                //Normal size
+                _player.MummyNormal.SetActive(true);
+                _player.MummySmall.SetActive(false);
+                _player.MummyHead.SetActive(false);
+
+                _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
             case 1:
-                //mid size
+                //Small size
+                _player.MummyNormal.SetActive(false);
+                _player.MummySmall.SetActive(true);
+                _player.MummyHead.SetActive(false);
+
+                _player.CurrentPlayerSize = PlayerSize.Small;
                 break;
             case 2:
-                //head
+                //Head size
+                _player.MummyNormal.SetActive(false);
+                _player.MummySmall.SetActive(false);
+                _player.MummyHead.SetActive(true);
+
+                _player.CurrentPlayerSize = PlayerSize.Head;
                 break;
             default:
                 //size def
+                _player.MummyNormal.SetActive(true);
+                _player.MummySmall.SetActive(false);
+                _player.MummyHead.SetActive(false);
+
+                _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
         }
     }
-*/
 }

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1956178064886819797}
   m_Layer: 0
   m_Name: Normal
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -153,7 +153,7 @@ GameObject:
   - component: {fileID: 224455856925095858}
   m_Layer: 0
   m_Name: Head
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -429,7 +429,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bulletPrefab: {fileID: -6140515323211252721, guid: 12321519f75d146429bf0747640cf814, type: 3}
-  _initialAmount: 4
+  _initialAmount: 2
 --- !u!1 &5889765206703639793
 GameObject:
   m_ObjectHideFlags: 0
@@ -495,6 +495,9 @@ MonoBehaviour:
   _speedRotation: 3
   _maxNumOfShoot: 2
   _currNumOfShoot: 0
+  MummyNormal: {fileID: 1144108919230623638}
+  MummySmall: {fileID: 6922272306407016997}
+  MummyHead: {fileID: 2607399873188615497}
 --- !u!54 &5680753329663238203
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -649,7 +652,7 @@ GameObject:
   - component: {fileID: 8469573538651768349}
   m_Layer: 0
   m_Name: Small
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
