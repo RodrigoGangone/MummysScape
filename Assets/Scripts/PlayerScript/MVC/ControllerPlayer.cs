@@ -53,7 +53,8 @@ public class ControllerPlayer
         {
             _model.Hook();
         }
-        else if (Input.GetKeyUp(KeyCode.Space))
+        
+        if (Input.GetKeyUp(KeyCode.Space))
         {
             _model.resetSpringForHook?.Invoke();
         }
