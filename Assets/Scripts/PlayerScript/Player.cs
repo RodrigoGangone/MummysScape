@@ -29,13 +29,16 @@ public class Player : MonoBehaviour
     [SerializeField] private int _maxNumOfShoot = 2;
     [SerializeField] private int _currNumOfShoot = 0;
 
-    //Var para saber el tamaño del player.
+    //Var para saber el tamaño actual del player.
     [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
 
     //Los GameObjets con los 3 tamaños de la Mummy
     [SerializeField] public GameObject MummyNormal;
     [SerializeField] public GameObject MummySmall;
     [SerializeField] public GameObject MummyHead;
+
+    //TODO: Mejorar esto a futuro
+    #region Getters & Setters
 
     public float Life
     {
@@ -66,27 +69,31 @@ public class Player : MonoBehaviour
         get => _currNumOfShoot;
         set => _currNumOfShoot = value;
     }
-    
+
     public PlayerSize CurrentPlayerSize
     {
         get => _currentPlayerSize;
         set => _currentPlayerSize = value;
     }
 
-    private void Start()
-    {
-        if (Camera.main != null) _cameraTransform = Camera.main.transform;
+    #endregion
 
+    private void Awake()
+    {
         _rigidbody = GetComponent<Rigidbody>();
         
         _springJoint = GetComponent<SpringJoint>();
         _bandage = GetComponent<LineRenderer>();
-        
         _detectionBeetle = GetComponentInChildren<DetectionBeetle>();
 
         _viewPlayer = new ViewPlayer(this);
         _modelPlayer = new ModelPlayer(this);
         _controllerPlayer = new ControllerPlayer(this);
+    }
+
+    private void Start()
+    {
+        if (Camera.main != null) _cameraTransform = Camera.main.transform;
 
         _stateMachinePlayer = new StateMachinePlayer();
 
@@ -104,7 +111,23 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.Update();
         _controllerPlayer.ControllerUpdate();
     }
+    
+    private void FixedUpdate()
+    {
+        _stateMachinePlayer.FixedUpdate();
+        _controllerPlayer.ControllerFixedUpdate();
+    }
 
+    void ChangeState(PlayerState playerState)
+    {
+        _stateMachinePlayer.ChangeState(playerState);
+    }
+
+    string CurrentState()
+    {
+        return _stateMachinePlayer.getCurrentState();
+    }
+    
     private void OnDrawGizmos()
     {
         // Guardar la posición y rotación del jugador
@@ -122,22 +145,6 @@ public class Player : MonoBehaviour
         Gizmos.matrix = Matrix4x4.TRS(boxcastPos, boxcastRot, Vector3.one);
         Gizmos.DrawWireCube(Vector3.zero, new Vector3(5, 8, 10));
         Gizmos.matrix = Matrix4x4.identity; // Restaurar la matriz de gizmos a la identidad
-    }
-
-    private void FixedUpdate()
-    {
-        _stateMachinePlayer.FixedUpdate();
-        _controllerPlayer.ControllerFixedUpdate();
-    }
-
-    void ChangeState(PlayerState playerState)
-    {
-        _stateMachinePlayer.ChangeState(playerState);
-    }
-
-    string CurrentState()
-    {
-        return _stateMachinePlayer.getCurrentState();
     }
 }
 
