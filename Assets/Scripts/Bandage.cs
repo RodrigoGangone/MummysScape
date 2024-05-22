@@ -22,7 +22,6 @@ public class Bandage : MonoBehaviour
         {
             playerRef.CurrentNumOfShoot--;
             playerRef._modelPlayer.SizeHandler();
-            //playerRef.transform.localScale += new Vector3(0.25f, 0.25f, 0.25f); //TODO: hacer metodo para aumentar dimensiones
 
             if (_bulletInstance != null) //Puede que la venda no venga de un disparo, sino que se spawnee al romper jarrones
                 BulletFactory.Instance.ReturnObjectToPool(_bulletInstance); 

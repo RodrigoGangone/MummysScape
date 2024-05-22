@@ -42,7 +42,7 @@ public class ModelPlayer
         _bandage = _player._bandage;
         _joint = _player._springJoint;
         _detectionBeetle = _player._detectionBeetle;
-        
+
         reset = () =>
         {
             Object.Destroy(_joint);
@@ -137,7 +137,6 @@ public class ModelPlayer
         {
             _player.CurrentNumOfShoot++;
             SizeHandler();
-            //_player.transform.localScale -= new Vector3(0.25f, 0.25f, 0.25f);
             BulletFactory.Instance.GetObjectFromPool();
         }
 
@@ -146,6 +145,8 @@ public class ModelPlayer
 
     public void HookBalanced()
     {
+        if (_player.CurrentPlayerSize.Equals(PlayerSize.Head)) return;
+
         if (_detectionBeetle.currentBeetle.gameObject.CompareTag("Hook"))
         {
             _objectToHook = _detectionBeetle.currentBeetle.transform.position;
@@ -216,32 +217,28 @@ public class ModelPlayer
     {
         switch (_player.CurrentNumOfShoot)
         {
-            case 0:
-                //Normal size
+            case 0: //Normal size
                 _player.MummyNormal.SetActive(true);
                 _player.MummySmall.SetActive(false);
                 _player.MummyHead.SetActive(false);
 
                 _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
-            case 1:
-                //Small size
+            case 1: //Small size
                 _player.MummyNormal.SetActive(false);
                 _player.MummySmall.SetActive(true);
                 _player.MummyHead.SetActive(false);
 
                 _player.CurrentPlayerSize = PlayerSize.Small;
                 break;
-            case 2:
-                //Head size
+            case 2: //Head size
                 _player.MummyNormal.SetActive(false);
                 _player.MummySmall.SetActive(false);
                 _player.MummyHead.SetActive(true);
 
                 _player.CurrentPlayerSize = PlayerSize.Head;
                 break;
-            default:
-                //size def
+            default: //size def
                 _player.MummyNormal.SetActive(true);
                 _player.MummySmall.SetActive(false);
                 _player.MummyHead.SetActive(false);
