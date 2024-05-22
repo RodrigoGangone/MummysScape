@@ -41,7 +41,8 @@ public class ModelPlayer
         _rb = _player._rigidbody;
         _bandage = _player._bandage;
         _joint = _player._springJoint;
-
+        _detectionBeetle = _player._detectionBeetle;
+        
         reset = () =>
         {
             Object.Destroy(_joint);
