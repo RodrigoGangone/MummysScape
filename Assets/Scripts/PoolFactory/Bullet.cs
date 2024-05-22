@@ -6,7 +6,7 @@ public class Bullet : MonoBehaviour
 {
     [SerializeField] Rigidbody _rb;
     [SerializeField] float _speed;
-    [SerializeField] private GameObject _platform;
+    //[SerializeField] private GameObject _platform;
     [SerializeField] private GameObject _prefabBandage;
     private GameObject _playerPos;
     private GameObject _target;

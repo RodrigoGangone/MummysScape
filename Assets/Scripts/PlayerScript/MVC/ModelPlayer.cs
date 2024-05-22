@@ -242,4 +242,25 @@ public class ModelPlayer
         hasObject = false;
         _objSelected = null;
     }
+
+    /*
+    private void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
+    {
+        switch (_player.CurrentNumOfShoot)
+        {
+            case Utils.PlayerSize.Normal:
+                //size def
+                break;
+            case 1:
+                //mid size
+                break;
+            case 2:
+                //head
+                break;
+            default:
+                //size def
+                break;
+        }
+    }
+*/
 }

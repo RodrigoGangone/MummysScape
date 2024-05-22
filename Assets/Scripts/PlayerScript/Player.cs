@@ -133,13 +133,6 @@ public class Player : MonoBehaviour
     }
 }
 
-public enum PlayerSize
-{
-    Normal,
-    Small,
-    Head
-}
-
 public enum PlayerState
 {
     Idle,
