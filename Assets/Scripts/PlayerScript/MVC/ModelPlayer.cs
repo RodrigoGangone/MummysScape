@@ -49,9 +49,7 @@ public class ModelPlayer
         limitVelocityHook = () => //Limitar velocidad del player //TODO: Esto deberia ir en la maquina de estados
         {
             if (_rb.velocity.magnitude > _player.Speed)
-            {
                 _rb.velocity = _rb.velocity.normalized * _player.Speed;
-            }
         };
 
         resetSpringForHook = () => //Reset del springJoint
@@ -127,11 +125,12 @@ public class ModelPlayer
             case "Hook":
                 _springJoint.anchor = Vector3.zero;
                 _springJoint.connectedBody = _beetleHook;
-                _springJoint.maxDistance = 2.5f;
-                _springJoint.minDistance = 1.5f;
+                _springJoint.maxDistance = 5f;
+                _springJoint.minDistance = 4f;
                 _springJoint.spring = 75;
                 _springJoint.damper = 12f;
                 break;
+
             case "BeetleJump":
                 _springJoint.anchor = Vector3.zero;
                 _springJoint.connectedBody = _beetleHook;
@@ -140,6 +139,7 @@ public class ModelPlayer
                 _springJoint.spring = 100;
                 _springJoint.damper = 1;
                 break;
+
             case "Null":
                 break;
         }
