@@ -63,8 +63,7 @@ public class ControllerPlayer
             _model.drawBandageHook?.Invoke(); //TODO: Esto deberia ir en la maquina de estados
             _model.limitVelocityHook?.Invoke(); //TODO: Esto deberia ir en la maquina de estados
         }
-
-
+        
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (!_model.hasObject)

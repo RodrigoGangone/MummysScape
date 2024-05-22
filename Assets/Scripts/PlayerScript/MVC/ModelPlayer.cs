@@ -118,6 +118,8 @@ public class ModelPlayer
         return _detectionBeetle.currentBeetle.gameObject.tag;
     }
 
+    //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'
+    //TODO: sirve para limitar los movimientos en X/Y/Z, verificar eso
     public void Hook()
     {
         switch (SelectHook())
