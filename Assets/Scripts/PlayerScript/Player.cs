@@ -15,7 +15,7 @@ public class Player : MonoBehaviour
     public SpringJoint _springJoint { get; private set; }
     public LineRenderer _bandage { get; private set; }
 
-    public DetectionBeetle _detectionBeetle { get; private set; }
+    public DetectionBeetle _detectionBeetle;
 
     public StateMachinePlayer _stateMachinePlayer;
 
