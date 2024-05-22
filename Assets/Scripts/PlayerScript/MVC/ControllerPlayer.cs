@@ -49,22 +49,21 @@ public class ControllerPlayer
                 isMoveTank = true;
         }
 
-        if (Input.GetKey(KeyCode.Space) && !_model.objectToHookUpdated)
+        if (Input.GetKey(KeyCode.Space) && !_model.isHooking)
         {
-            _model.HookBalanced();
+            _model.Hook();
+        }
+        else if (Input.GetKeyUp(KeyCode.Space))
+        {
+            _model.resetSpringForHook?.Invoke();
         }
 
-        if (_model.objectToHookUpdated)
+        if (_model.isHooking)
         {
-            _model.lineCurrent?.Invoke();
-            _model.limitVelocity?.Invoke();
+            _model.drawBandageHook?.Invoke(); //TODO: Esto deberia ir en la maquina de estados
+            _model.limitVelocityHook?.Invoke(); //TODO: Esto deberia ir en la maquina de estados
         }
-
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-            _model.reset?.Invoke();
-        }
-
+        
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (!_model.hasObject)
@@ -72,7 +71,7 @@ public class ControllerPlayer
             else
                 _model.DropObject();
         }
-        
+
         if (Input.GetKeyDown(KeyCode.Q))
         {
             _player._stateMachinePlayer.ChangeState(PlayerState.Shoot);

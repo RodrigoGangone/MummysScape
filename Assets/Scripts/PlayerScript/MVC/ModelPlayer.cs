@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-
 public class ModelPlayer
 {
     Player _player;
@@ -11,18 +10,15 @@ public class ModelPlayer
     private DetectionBeetle _detectionBeetle;
 
     //HOOK
-    Vector3 _objectToHook = Vector3.zero;
-    private LineRenderer _bandage;
-    private SpringJoint _joint;
-    public bool objectToHookUpdated;
-    private Collider[] _hookBeetle;
+    private Rigidbody _beetleHook;
+    private LineRenderer _bandageHook;
+    private SpringJoint _springJoint;
 
-    public Action reset;
-    public Action lineCurrent;
-    public Action limitVelocity;
-    public Action jointPreferencesBalanced;
-    public Action jointPreferencesJump;
-    public Action createSpring;
+    public bool isHooking;
+
+    public Action resetSpringForHook;
+    public Action drawBandageHook;
+    public Action limitVelocityHook;
     //HOOK
 
     //PICK UP
@@ -39,63 +35,28 @@ public class ModelPlayer
         _player = p;
 
         _rb = _player._rigidbody;
-        _bandage = _player._bandage;
-        _joint = _player._springJoint;
+        _bandageHook = _player._bandage;
+        _springJoint = _player._springJoint;
         _detectionBeetle = _player._detectionBeetle;
 
-        reset = () =>
+        drawBandageHook = () => //Feedback visual de vendas //TODO: Esto deberia ir en la maquina de estados
         {
-            Object.Destroy(_joint);
-            _bandage.enabled = false;
-            objectToHookUpdated = false;
-            _hookBeetle = null;
-        }; //RESET DE HOOK
+            _bandageHook.enabled = true;
+            _bandageHook.SetPosition(0, _player.transform.position);
+            _bandageHook.SetPosition(1, _beetleHook.transform.position);
+        };
 
-        lineCurrent = () =>
-        {
-            _bandage.enabled = true;
-            _bandage.SetPosition(0, _player.transform.position);
-            _bandage.SetPosition(1, _objectToHook);
-        }; //VISUAL PROVISORIO, PARA MOSTRAR EL LINERENDERER
-
-        limitVelocity = () =>
+        limitVelocityHook = () => //Limitar velocidad del player //TODO: Esto deberia ir en la maquina de estados
         {
             if (_rb.velocity.magnitude > _player.Speed)
-            {
                 _rb.velocity = _rb.velocity.normalized * _player.Speed;
-            }
-        }; //LIMITO LA VELOCIDAD DEL RIGIDBODY
-
-        jointPreferencesBalanced = () =>
-        {
-            createSpring?.Invoke();
-            _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
-            _joint.maxDistance = 2.5f;
-            _joint.minDistance = 1.5f;
-            _joint.spring = 75;
-            _joint.damper = 12f;
         };
 
-        jointPreferencesJump = () =>
+        resetSpringForHook = () => //Reset del springJoint
         {
-            createSpring?.Invoke();
-            _joint.connectedAnchor = _objectToHook; //SETEO DE LAS PREFERENCES DEL SPRINGJOINT
-            _joint.maxDistance = 0.2f;
-            _joint.minDistance = 0.1f;
-            _joint.spring = 100;
-            _joint.damper = 7;
-            _joint.breakTorque = 1;
-            _joint.massScale = 4.5f;
-        };
-
-        createSpring = () =>
-        {
-            if (_joint == null)
-            {
-                _joint = _player.gameObject.AddComponent<SpringJoint>();
-                _joint.autoConfigureConnectedAnchor = false;
-                objectToHookUpdated = true;
-            }
+            Object.Destroy(_springJoint);
+            _bandageHook.enabled = false;
+            isHooking = false;
         };
     }
 
@@ -137,27 +98,52 @@ public class ModelPlayer
         {
             _player.CurrentNumOfShoot++;
             SizeHandler();
+            //_player.transform.localScale -= new Vector3(0.25f, 0.25f, 0.25f);
             BulletFactory.Instance.GetObjectFromPool();
         }
 
         _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
 
-    public void HookBalanced()
+    public string SelectHook()
     {
-        if (_player.CurrentPlayerSize.Equals(PlayerSize.Head)) return;
+        if (_detectionBeetle.currentBeetle == null || _springJoint != null) return "Null";
 
-        if (_detectionBeetle.currentBeetle.gameObject.CompareTag("Hook"))
+        _springJoint = _player.gameObject.AddComponent<SpringJoint>();
+        _springJoint.autoConfigureConnectedAnchor = false;
+        isHooking = true;
+
+        _beetleHook = _detectionBeetle.currentBeetle;
+
+        return _detectionBeetle.currentBeetle.gameObject.tag;
+    }
+
+    //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'
+    //TODO: sirve para limitar los movimientos en X/Y/Z, verificar eso
+    public void Hook()
+    {
+        switch (SelectHook())
         {
-            _objectToHook = _detectionBeetle.currentBeetle.transform.position;
+            case "Hook":
+                _springJoint.anchor = Vector3.zero;
+                _springJoint.connectedBody = _beetleHook;
+                _springJoint.maxDistance = 5f;
+                _springJoint.minDistance = 4f;
+                _springJoint.spring = 75;
+                _springJoint.damper = 12f;
+                break;
 
-            jointPreferencesBalanced?.Invoke();
-        }
-        else if (_detectionBeetle.currentBeetle.gameObject.CompareTag("BeetleJump"))
-        {
-            _objectToHook = _detectionBeetle.currentBeetle.transform.position;
+            case "BeetleJump":
+                _springJoint.anchor = Vector3.zero;
+                _springJoint.connectedBody = _beetleHook;
+                _springJoint.maxDistance = 2.5f;
+                _springJoint.minDistance = 2.4f;
+                _springJoint.spring = 100;
+                _springJoint.damper = 1;
+                break;
 
-            jointPreferencesJump?.Invoke();
+            case "Null":
+                break;
         }
     }
 
@@ -217,28 +203,32 @@ public class ModelPlayer
     {
         switch (_player.CurrentNumOfShoot)
         {
-            case 0: //Normal size
+            case 0:
+                //Normal size
                 _player.MummyNormal.SetActive(true);
                 _player.MummySmall.SetActive(false);
                 _player.MummyHead.SetActive(false);
 
                 _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
-            case 1: //Small size
+            case 1:
+                //Small size
                 _player.MummyNormal.SetActive(false);
                 _player.MummySmall.SetActive(true);
                 _player.MummyHead.SetActive(false);
 
                 _player.CurrentPlayerSize = PlayerSize.Small;
                 break;
-            case 2: //Head size
+            case 2:
+                //Head size
                 _player.MummyNormal.SetActive(false);
                 _player.MummySmall.SetActive(false);
                 _player.MummyHead.SetActive(true);
 
                 _player.CurrentPlayerSize = PlayerSize.Head;
                 break;
-            default: //size def
+            default:
+                //size def
                 _player.MummyNormal.SetActive(true);
                 _player.MummySmall.SetActive(false);
                 _player.MummyHead.SetActive(false);
