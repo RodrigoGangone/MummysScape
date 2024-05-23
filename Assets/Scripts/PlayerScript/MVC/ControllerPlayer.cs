@@ -1,39 +1,51 @@
-using Unity.Mathematics;
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class ControllerPlayer
 {
-    ModelPlayer _model;
-    ViewPlayer _view;
-    Player _player;
-    float _rotationInput;
-    float _moveInput;
-    private bool _whatmovement = true;
-    private bool isMoveTank;
+    private ModelPlayer _model;
+
+    private float _rotationInput;
+    private float _moveInput;
 
     //Obj picked vars//
-    float _rotationInputObj;
-    float _moveInputObj;
+    private bool _isGrabing;
+    private float _rotationInputObj;
+    private float _moveInputObj;
+
+    //Actions
+    public event Func<bool> OnGetCanShoot;
+    public event Action<PlayerState> OnStateChange = delegate { };
+    public event Func<string> OnGetState = () => "ERROR OnGetState (Controller Player)";
 
     public ControllerPlayer(Player player)
     {
         _model = player._modelPlayer;
-        _view = player._viewPlayer;
-        _player = player;
     }
 
     public void ControllerUpdate()
     {
-        if (_model == null || _view == null) return;
-
-        _rotationInput = Input.GetAxisRaw("Horizontal");
-        _moveInput = Input.GetAxisRaw("Vertical");
-
-        if (_model.hasObject)
+        if (CanWalkState() && IsWalking())
         {
-            _rotationInputObj = Input.GetAxisRaw("Object Horizontal");
-            _moveInputObj = Input.GetAxisRaw("Object Vertical");
+            OnStateChange(PlayerState.Walk);
+        }
+
+        if (CanIdleState() && !IsWalking())
+        {
+            OnStateChange(PlayerState.Idle);
+        }
+
+        if (CanHookState() && Input.GetKey(KeyCode.Space))
+        {
+            if (OnGetCanShoot.Invoke())
+                OnStateChange(PlayerState.Hook);
+        }
+
+        if (CanShootState() && Input.GetKeyDown(KeyCode.Q))
+        {
+            if (OnGetCanShoot.Invoke())
+                OnStateChange(PlayerState.Shoot);
         }
 
         if (Input.GetKeyDown(KeyCode.R))
@@ -41,30 +53,15 @@ public class ControllerPlayer
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
-        if (Input.GetKeyDown(KeyCode.T))
+        //GRAB OBJECTS//
+
+        if (_model.hasObject)
         {
-            if (isMoveTank)
-                isMoveTank = false;
-            else
-                isMoveTank = true;
+            //TODO: activar por VIEW las particulas necesarias
+            _rotationInputObj = Input.GetAxisRaw("Object Horizontal");
+            _moveInputObj = Input.GetAxisRaw("Object Vertical");
         }
 
-        if (Input.GetKey(KeyCode.Space) && !_model.isHooking)
-        {
-            _model.Hook();
-        }
-        
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-            _model.resetSpringForHook?.Invoke();
-        }
-
-        if (_model.isHooking)
-        {
-            _model.drawBandageHook?.Invoke(); //TODO: Esto deberia ir en la maquina de estados
-            _model.limitVelocityHook?.Invoke(); //TODO: Esto deberia ir en la maquina de estados
-        }
-        
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (!_model.hasObject)
@@ -73,29 +70,76 @@ public class ControllerPlayer
                 _model.DropObject();
         }
 
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            _player._stateMachinePlayer.ChangeState(PlayerState.Shoot);
-        }
+        //END GRAB OBJECTS//
     }
 
     public void ControllerFixedUpdate()
     {
-        //Movimiento del player
-
-        if (_rotationInput != 0 || _moveInput != 0)
-        {
-            if (isMoveTank)
-                _model.MoveTank(_rotationInput, _moveInput);
-            else
-                _model.MoveVariant(_rotationInput, _moveInput);
-        }
-
-
         //Movimiento del objeto
         if (_rotationInputObj != 0 || _moveInputObj != 0)
         {
             _model.MoveObject(_rotationInputObj, _moveInputObj);
         }
+    }
+
+    private bool IsWalking()
+    {
+        return Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0;
+    }
+
+    private bool CanIdleState()
+    {
+        return OnGetState?.Invoke() switch
+        {
+            "SM_Idle" => false,
+            "SM_Shoot" => true,
+            "SM_Walk" => true,
+            "SM_Hook" => false,
+            "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
+            "SM_Damage" => true,
+            "SM_Dead" => false,
+        };
+    }
+
+    private bool CanWalkState()
+    {
+        return OnGetState?.Invoke() switch
+        {
+            "SM_Idle" => true,
+            "SM_Shoot" => false,
+            "SM_Walk" => false,
+            "SM_Hook" => false,
+            "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
+            "SM_Damage" => false,
+            "SM_Dead" => false,
+        };
+    }
+
+    private bool CanShootState()
+    {
+        return OnGetState?.Invoke() switch
+        {
+            "SM_Idle" => true,
+            "SM_Shoot" => false,
+            "SM_Walk" => true,
+            "SM_Hook" => true,
+            "SM_Grab" => false,
+            "SM_Damage" => false,
+            "SM_Dead" => false,
+        };
+    }
+
+    private bool CanHookState()
+    {
+        return OnGetState?.Invoke() switch
+        {
+            "SM_Idle" => true,
+            "SM_Shoot" => true,
+            "SM_Walk" => true,
+            "SM_Hook" => false,
+            "SM_Grab" => false, //Ver que hacer con el grab ya que la animacion seria otra
+            "SM_Damage" => false,
+            "SM_Dead" => false,
+        };
     }
 }

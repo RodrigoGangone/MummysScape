@@ -6,7 +6,11 @@ public class SM_Idle : State
 {
     public override void OnEnter()
     {
-        
+        Debug.Log("STATE: IDLE");
+    }
+    
+    public override void OnExit()
+    {
     }
 
     public override void OnUpdate()
@@ -14,10 +18,6 @@ public class SM_Idle : State
     }
 
     public override void OnFixedUpdate()
-    {
-    }
-
-    public override void OnExit()
     {
     }
 }

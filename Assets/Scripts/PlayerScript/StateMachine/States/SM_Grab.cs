@@ -8,16 +8,16 @@ public class SM_Grab : State
     {
         
     }
+    
+    public override void OnExit()
+    {
+    }
 
     public override void OnUpdate()
     {
     }
 
     public override void OnFixedUpdate()
-    {
-    }
-
-    public override void OnExit()
     {
     }
 }

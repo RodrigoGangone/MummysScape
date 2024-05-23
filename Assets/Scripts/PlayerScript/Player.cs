@@ -38,19 +38,15 @@ public class Player : MonoBehaviour
     [SerializeField] public GameObject MummyHead;
 
     //TODO: Mejorar esto a futuro
-    #region Getters & Setters
 
+    #region Getters & Setters
     public float Life
     {
         get => _life;
         set => _life = value;
     }
 
-    public float Speed
-    {
-        get => _speed;
-        set { }
-    }
+    public float Speed => _speed;
 
     public float SpeedRotation
     {
@@ -58,11 +54,7 @@ public class Player : MonoBehaviour
         set => _speedRotation = value;
     }
 
-    public int MaxNumOfShoot
-    {
-        get => _maxNumOfShoot;
-        set { }
-    }
+    public int MaxNumOfShoot => _maxNumOfShoot;
 
     public int CurrentNumOfShoot
     {
@@ -81,7 +73,7 @@ public class Player : MonoBehaviour
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
-        
+
         _springJoint = GetComponent<SpringJoint>();
         _bandage = GetComponent<LineRenderer>();
         _detectionBeetle = GetComponentInChildren<DetectionBeetle>();
@@ -89,6 +81,11 @@ public class Player : MonoBehaviour
         _viewPlayer = new ViewPlayer(this);
         _modelPlayer = new ModelPlayer(this);
         _controllerPlayer = new ControllerPlayer(this);
+        
+        //Actions subscribe
+        _controllerPlayer.OnGetCanShoot += CanShoot;
+        _controllerPlayer.OnStateChange += ChangeState;
+        _controllerPlayer.OnGetState += CurrentState;
     }
 
     private void Start()
@@ -98,12 +95,14 @@ public class Player : MonoBehaviour
         _stateMachinePlayer = new StateMachinePlayer();
 
         _stateMachinePlayer.AddState(PlayerState.Idle, new SM_Idle());
-        _stateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(this));
-        _stateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk());
-        _stateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook());
+        _stateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(_modelPlayer, _viewPlayer));
+        _stateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk(_modelPlayer, _viewPlayer));
+        _stateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Grab, new SM_Grab());
         _stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage());
         _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead());
+        
+        _stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
 
     private void Update()
@@ -111,7 +110,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.Update();
         _controllerPlayer.ControllerUpdate();
     }
-    
+
     private void FixedUpdate()
     {
         _stateMachinePlayer.FixedUpdate();
@@ -128,23 +127,10 @@ public class Player : MonoBehaviour
         return _stateMachinePlayer.getCurrentState();
     }
     
-    private void OnDrawGizmos()
+    bool CanShoot()
     {
-        // Guardar la posición y rotación del jugador
-        Vector3 pos = transform.position;
-        Quaternion rot = transform.rotation;
-
-        // Calcular la posición del boxcast
-        Vector3 boxcastPos = pos + rot * new Vector3(0, 2, 5f);
-
-        // Calcular la rotación del boxcast
-        Quaternion boxcastRot = rot;
-
-        // Dibujar el boxcast
-        Gizmos.color = Color.red;
-        Gizmos.matrix = Matrix4x4.TRS(boxcastPos, boxcastRot, Vector3.one);
-        Gizmos.DrawWireCube(Vector3.zero, new Vector3(5, 8, 10));
-        Gizmos.matrix = Matrix4x4.identity; // Restaurar la matriz de gizmos a la identidad
+        Debug.Log("CAN SHOOT : " + (_currNumOfShoot < _maxNumOfShoot));
+        return _currNumOfShoot < _maxNumOfShoot;
     }
 }
 

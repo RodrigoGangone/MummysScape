@@ -4,25 +4,29 @@ using UnityEngine;
 
 public class SM_Shoot : State
 {
-    Player _player;
-    public SM_Shoot(Player player)
+    private ModelPlayer _model;
+    private ViewPlayer _view;
+
+    public SM_Shoot(ModelPlayer model, ViewPlayer view)
     {
-        _player = player;
+        _model = model;
+        _view = view;
     }
     public override void OnEnter()
     {
-        _player._modelPlayer.Shoot();   
+        Debug.Log("STATE: SHOOT");
+        _model.Shoot();   
     }
 
+    public override void OnExit()
+    {
+    }
+    
     public override void OnUpdate()
     {
     }
 
     public override void OnFixedUpdate()
-    {
-    }
-
-    public override void OnExit()
     {
     }
 }

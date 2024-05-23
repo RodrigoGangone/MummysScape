@@ -4,7 +4,21 @@ using UnityEngine;
 
 public class SM_Walk : State
 {
+    private ModelPlayer _model;
+    private ViewPlayer _view;
+
+    public SM_Walk(ModelPlayer model, ViewPlayer view)
+    {
+        _model = model;
+        _view = view;
+    }
+
     public override void OnEnter()
+    {
+        Debug.Log("STATE: WALK");
+    }
+
+    public override void OnExit()
     {
     }
 
@@ -14,9 +28,7 @@ public class SM_Walk : State
 
     public override void OnFixedUpdate()
     {
-    }
-
-    public override void OnExit()
-    {
+        _model.MoveVariant(Input.GetAxisRaw("Horizontal"),
+            Input.GetAxisRaw("Vertical"));
     }
 }
