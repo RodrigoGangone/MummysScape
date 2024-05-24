@@ -10,9 +10,9 @@ public class ModelPlayer
     public DetectionBeetle _detectionBeetle;
 
     //HOOK
-    private Rigidbody _beetleHook;
     public LineRenderer _bandageHook;
     private SpringJoint _springJoint;
+    private Rigidbody _hookBeetle;
 
     public bool isHooking;
 
@@ -40,7 +40,7 @@ public class ModelPlayer
         drawBandageHook = () => //Feedback visual de vendas //TODO: Esto deberia ir en la maquina de estados
         {
             _bandageHook.SetPosition(0, _player.transform.position);
-            _bandageHook.SetPosition(1, _beetleHook.transform.position);
+            _bandageHook.SetPosition(1, _hookBeetle.transform.position);
         };
 
         limitVelocityRB = () => //Limitar velocidad del player //TODO: Esto deberia ir en la maquina de estados
@@ -121,28 +121,23 @@ public class ModelPlayer
         _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
 
-    public string SelectHook()
-    {
-        if (_detectionBeetle.currentBeetle == null || _springJoint != null) return "Null";
-
-        _springJoint = _player.gameObject.AddComponent<SpringJoint>();
-        _springJoint.autoConfigureConnectedAnchor = false;
-        isHooking = true;
-
-        _beetleHook = _detectionBeetle.currentBeetle;
-
-        return _detectionBeetle.currentBeetle.gameObject.tag;
-    }
 
     //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'
     //TODO: sirve para limitar los movimientos en X/Y/Z, verificar eso
     public void Hook()
     {
-        switch (SelectHook())
+        if (isHooking) return;
+
+        _springJoint = _player.gameObject.AddComponent<SpringJoint>();
+        _springJoint.autoConfigureConnectedAnchor = false;
+        _hookBeetle = _detectionBeetle.currentBeetle;
+        isHooking = true;
+
+        switch (_detectionBeetle.currentBeetle.gameObject.tag)
         {
             case "Hook":
                 _springJoint.anchor = Vector3.zero;
-                _springJoint.connectedBody = _beetleHook;
+                _springJoint.connectedBody = _detectionBeetle.currentBeetle;
                 _springJoint.maxDistance = 5f;
                 _springJoint.minDistance = 4f;
                 _springJoint.spring = 75;
@@ -151,14 +146,11 @@ public class ModelPlayer
 
             case "BeetleJump":
                 _springJoint.anchor = Vector3.zero;
-                _springJoint.connectedBody = _beetleHook;
+                _springJoint.connectedBody = _detectionBeetle.currentBeetle;
                 _springJoint.maxDistance = 1.5f;
                 _springJoint.minDistance = 2f;
                 _springJoint.spring = 1000;
                 _springJoint.damper = 12;
-                break;
-
-            case "Null":
                 break;
         }
     }
