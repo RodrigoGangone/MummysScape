@@ -36,6 +36,9 @@ public class Player : MonoBehaviour
     [SerializeField] public GameObject MummyNormal;
     [SerializeField] public GameObject MummySmall;
     [SerializeField] public GameObject MummyHead;
+    
+    //FX
+    [SerializeField] public ParticleSystem _puffFX;
 
     //TODO: Mejorar esto a futuro
 

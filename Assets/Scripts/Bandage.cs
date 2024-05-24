@@ -11,21 +11,26 @@ public class Bandage : MonoBehaviour
     {
         _bulletInstance = bulletIntance;
     }
-    
+
     private void OnTriggerEnter(Collider collision)
     {
         //Verifica que pueda tomar la venda
         if (!collision.gameObject.CompareTag("Player")) return;
-        var playerRef = collision.gameObject.GetComponentInParent<Player>().GetComponentInParent<Player>(); //buscar componente en el padre del padre
+        var playerRef =
+            collision.gameObject.GetComponentInParent<Player>()
+                .GetComponentInParent<Player>(); //buscar componente en el padre del padre
 
         if (playerRef.CurrentNumOfShoot <= playerRef.MaxNumOfShoot)
         {
             playerRef.CurrentNumOfShoot--;
             playerRef._modelPlayer.SizeHandler();
 
-            if (_bulletInstance != null) //Puede que la venda no venga de un disparo, sino que se spawnee al romper jarrones
-                BulletFactory.Instance.ReturnObjectToPool(_bulletInstance); 
-            
+            if (_bulletInstance !=
+                null) //Puede que la venda no venga de un disparo, sino que se spawnee al romper jarrones
+            {
+                BulletFactory.Instance.ReturnObjectToPool(_bulletInstance);
+            }
+
             Destroy(gameObject);
         }
     }

@@ -3,10 +3,15 @@ using UnityEngine;
 public class ViewPlayer
 {
     Player _player;
-
+    
     public ViewPlayer(Player p)
     {
         _player = p;
+    }
+
+    public void PLAY_PUFF()
+    {
+        _player._puffFX.Play();
     }
 
     // ───────▄▀▀▀▀▀▀▀▀▀▀▄▄

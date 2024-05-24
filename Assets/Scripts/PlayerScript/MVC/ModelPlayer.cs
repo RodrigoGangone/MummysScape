@@ -157,6 +157,7 @@ public class ModelPlayer
 
     public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
+        _player._viewPlayer.PLAY_PUFF();
         switch (_player.CurrentNumOfShoot)
         {
             case 0:
