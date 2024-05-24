@@ -89,7 +89,7 @@ public class ModelPlayer
         _rb.MovePosition(_player.transform.position + heading * (_player.Speed * Time.deltaTime));
     }
 
-    public void MoveHooked(bool canMove ,float movimientoHorizontal, float movimientoVertical)
+    public void MoveHooked(float movimientoHorizontal, float movimientoVertical)
     {
         Debug.Log("MOVE HOOKED");
         _player.SpeedRotation = 10;
