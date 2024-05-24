@@ -17,14 +17,13 @@ public class MovePlatform : MonoBehaviour
         _startPosition = transform.position;
     }
 
-    // Update is called once per frame
     void Update()
     {
         _time += Time.deltaTime * speed;
 
-        float x = Mathf.Sin(_time) * moveX;
-        float y = Mathf.Sin(_time) * moveY;
-        float z = Mathf.Sin(_time) * moveZ;
+        float x = moveX != 0 ? Mathf.Sin(_time) * moveX : 0f;
+        float y = moveY != 0 ? Mathf.Sin(_time) * moveY : 0f;
+        float z = moveZ != 0 ? Mathf.Sin(_time) * moveZ : 0f;
 
         transform.position = _startPosition + new Vector3(x, y, z);
     }
