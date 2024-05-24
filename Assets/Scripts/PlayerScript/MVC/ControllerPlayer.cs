@@ -31,12 +31,12 @@ public class ControllerPlayer
             OnStateChange(PlayerState.Walk);
         }
 
-        if (CanIdleState() && !IsWalking())
+        if (CanIdleState() && !IsWalking() && !_model.isHooking)
         {
             OnStateChange(PlayerState.Idle);
         }
 
-        if (CanHookState() && Input.GetKey(KeyCode.Space))
+        if (CanHookState() && Input.GetKeyDown(KeyCode.Space))
         {
             if (OnGetCanShoot.Invoke())
                 OnStateChange(PlayerState.Hook);
@@ -94,7 +94,7 @@ public class ControllerPlayer
             "SM_Idle" => false,
             "SM_Shoot" => true,
             "SM_Walk" => true,
-            "SM_Hook" => false,
+            "SM_Hook" => true,
             "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
             "SM_Damage" => true,
             "SM_Dead" => false,

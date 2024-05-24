@@ -22,6 +22,8 @@ public class SM_Hook : State
     public override void OnExit()
     {
         Debug.Log("STATE: HOOK - ON EXIT");
+        _model.resetSpringForHook?.Invoke();
+
     }
 
     public override void OnUpdate()
@@ -29,7 +31,6 @@ public class SM_Hook : State
         if (Input.GetKeyUp(KeyCode.Space))
         {
             Debug.Log("STATE: HOOK - UP SPACE");
-            _model.resetSpringForHook?.Invoke();
             OnExit();
         }
         else
@@ -41,5 +42,7 @@ public class SM_Hook : State
     public override void OnFixedUpdate()
     {
         _model.limitVelocityHook?.Invoke();
+        _model.Move(Input.GetAxisRaw("Horizontal"),
+            Input.GetAxisRaw("Vertical"));
     }
 }

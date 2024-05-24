@@ -69,7 +69,7 @@ public class ModelPlayer
         _rb.MovePosition(_rb.position + movemente);
     }
 
-    public void MoveVariant(float movimientoHorizontal, float movimientoVertical)
+    public void Move(float movimientoHorizontal, float movimientoVertical)
     {
         _player.SpeedRotation = 10;
 
@@ -88,6 +88,28 @@ public class ModelPlayer
         _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
 
         _rb.MovePosition(_player.transform.position + heading * (_player.Speed * Time.deltaTime));
+    }
+    
+    public void MoveHooked(float movimientoHorizontal, float movimientoVertical)
+    {
+        _player.SpeedRotation = 10;
+
+        Vector3 forward =
+            new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
+
+        Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
+
+        Vector3 righMovement = right * (_player.Speed * Time.deltaTime * movimientoHorizontal);
+        Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * movimientoVertical);
+
+        Vector3 heading = (righMovement + upMovement).normalized;
+
+        Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
+
+        _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
+
+        _rb.MovePosition(_player.transform.position + heading * (_player.Speed * Time.deltaTime));
+        
     }
 
     public void Shoot()

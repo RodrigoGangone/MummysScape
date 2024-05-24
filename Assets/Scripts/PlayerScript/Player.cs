@@ -107,13 +107,13 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        _stateMachinePlayer.Update();
+        _stateMachinePlayer?.Update();
         _controllerPlayer.ControllerUpdate();
     }
 
     private void FixedUpdate()
     {
-        _stateMachinePlayer.FixedUpdate();
+        _stateMachinePlayer?.FixedUpdate();
         _controllerPlayer.ControllerFixedUpdate();
     }
 

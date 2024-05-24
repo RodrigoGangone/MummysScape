@@ -28,7 +28,7 @@ public class SM_Walk : State
 
     public override void OnFixedUpdate()
     {
-        _model.MoveVariant(Input.GetAxisRaw("Horizontal"),
+        _model.Move(Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical"));
     }
 }
