@@ -12,18 +12,18 @@ public class SM_Hook : State
         _model = model;
         _view = view;
     }
-    
+
     public override void OnEnter()
     {
         Debug.Log("STATE: HOOK");
         _model.Hook();
+        _model._bandageHook.enabled = true;
     }
-    
+
     public override void OnExit()
     {
         Debug.Log("STATE: HOOK - ON EXIT");
         _model.resetSpringForHook?.Invoke();
-
     }
 
     public override void OnUpdate()
@@ -41,7 +41,7 @@ public class SM_Hook : State
 
     public override void OnFixedUpdate()
     {
-        _model.limitVelocityHook?.Invoke();
+        _model.limitVelocityRB?.Invoke();
         _model.Move(Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical"));
     }

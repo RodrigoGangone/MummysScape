@@ -7,18 +7,18 @@ public class ModelPlayer
     Player _player;
     ControllerPlayer _controller;
     Rigidbody _rb;
-    private DetectionBeetle _detectionBeetle;
+    public DetectionBeetle _detectionBeetle;
 
     //HOOK
     private Rigidbody _beetleHook;
-    private LineRenderer _bandageHook;
+    public LineRenderer _bandageHook;
     private SpringJoint _springJoint;
 
     public bool isHooking;
 
     public Action resetSpringForHook;
     public Action drawBandageHook;
-    public Action limitVelocityHook;
+    public Action limitVelocityRB;
 
     //PICK UP
     private LayerMask pickableLayer = LayerMask.GetMask("Pickable");
@@ -39,12 +39,11 @@ public class ModelPlayer
 
         drawBandageHook = () => //Feedback visual de vendas //TODO: Esto deberia ir en la maquina de estados
         {
-            _bandageHook.enabled = true;
             _bandageHook.SetPosition(0, _player.transform.position);
             _bandageHook.SetPosition(1, _beetleHook.transform.position);
         };
 
-        limitVelocityHook = () => //Limitar velocidad del player //TODO: Esto deberia ir en la maquina de estados
+        limitVelocityRB = () => //Limitar velocidad del player //TODO: Esto deberia ir en la maquina de estados
         {
             if (_rb.velocity.magnitude > _player.Speed)
                 _rb.velocity = _rb.velocity.normalized * _player.Speed;
@@ -53,8 +52,8 @@ public class ModelPlayer
         resetSpringForHook = () => //Reset del springJoint
         {
             Object.Destroy(_springJoint);
-            _bandageHook.enabled = false;
             isHooking = false;
+            _bandageHook.enabled = false;
         };
     }
 

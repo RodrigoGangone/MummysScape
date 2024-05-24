@@ -131,7 +131,7 @@ public class ControllerPlayer
 
     private bool CanHookState()
     {
-        return OnGetState?.Invoke() switch
+        return _model._detectionBeetle.currentBeetle != null && OnGetState?.Invoke() switch
         {
             "SM_Idle" => true,
             "SM_Shoot" => true,
