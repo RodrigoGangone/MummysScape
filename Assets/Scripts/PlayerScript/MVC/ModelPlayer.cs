@@ -89,8 +89,9 @@ public class ModelPlayer
         _rb.MovePosition(_player.transform.position + heading * (_player.Speed * Time.deltaTime));
     }
 
-    public void MoveHooked(float movimientoHorizontal, float movimientoVertical)
+    public void MoveHooked(bool canMove ,float movimientoHorizontal, float movimientoVertical)
     {
+        Debug.Log("MOVE HOOKED");
         _player.SpeedRotation = 10;
         Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z)
             .normalized;

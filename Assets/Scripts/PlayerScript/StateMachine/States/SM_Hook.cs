@@ -36,13 +36,21 @@ public class SM_Hook : State
         else
         {
             _model.drawBandageHook?.Invoke(); //TODO: Es visual, pasar al view #Maxy
+            IsSwinging();
         }
     }
 
     public override void OnFixedUpdate()
     {
         _model.limitVelocityRB?.Invoke();
+
+        if (!IsSwinging()) return;
         _model.MoveHooked(Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical"));
+    }
+
+    private bool IsSwinging()
+    {
+        return Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0;
     }
 }
