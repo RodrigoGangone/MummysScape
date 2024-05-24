@@ -37,8 +37,7 @@ public class MovePlatform : MonoBehaviour
         //Rotation
         float ry = rotateY != 0 ? rotateY * 0.01f * _time : 0f;
 
-        //transform.position = new Vector3(x, y, z);
-        transform.position.Set(x, y, z);
+        transform.position = centerOfSin.position + new Vector3(x, y, z);
         transform.Rotate(0, ry, 0);
     }
 
