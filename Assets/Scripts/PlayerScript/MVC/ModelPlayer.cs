@@ -10,9 +10,9 @@ public class ModelPlayer
     public DetectionBeetle _detectionBeetle;
 
     //HOOK
-    private Rigidbody _beetleHook;
     public LineRenderer _bandageHook;
     private SpringJoint _springJoint;
+    private Rigidbody _hookBeetle;
 
     public bool isHooking;
 
@@ -40,7 +40,7 @@ public class ModelPlayer
         drawBandageHook = () => //Feedback visual de vendas //TODO: Esto deberia ir en la maquina de estados
         {
             _bandageHook.SetPosition(0, _player.transform.position);
-            _bandageHook.SetPosition(1, _beetleHook.transform.position);
+            _bandageHook.SetPosition(1, _hookBeetle.transform.position);
         };
 
         limitVelocityRB = () => //Limitar velocidad del player //TODO: Esto deberia ir en la maquina de estados
@@ -88,28 +88,25 @@ public class ModelPlayer
 
         _rb.MovePosition(_player.transform.position + heading * (_player.Speed * Time.deltaTime));
     }
-    
+
     public void MoveHooked(float movimientoHorizontal, float movimientoVertical)
     {
         _player.SpeedRotation = 10;
-
-        Vector3 forward =
-            new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
-
+        Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z)
+            .normalized;
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
+        Vector3 rightMovement = right * (movimientoHorizontal * _player.Speed);
+        Vector3 forwardMovement = forward * (movimientoVertical * _player.Speed);
 
-        Vector3 righMovement = right * (_player.Speed * Time.deltaTime * movimientoHorizontal);
-        Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * movimientoVertical);
-
-        Vector3 heading = (righMovement + upMovement).normalized;
-
-        Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
-
-        _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
-
-        _rb.MovePosition(_player.transform.position + heading * (_player.Speed * Time.deltaTime));
-        
+        Vector3 movement = rightMovement + forwardMovement;
+        if (movement.sqrMagnitude > 0.01f)
+        {
+            _rb.AddForce(movement, ForceMode.Acceleration);
+            Quaternion targetRotation = Quaternion.LookRotation(movement, Vector3.up);
+            _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
+        }
     }
+
 
     public void Shoot()
     {
@@ -124,28 +121,23 @@ public class ModelPlayer
         _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
 
-    public string SelectHook()
-    {
-        if (_detectionBeetle.currentBeetle == null || _springJoint != null) return "Null";
-
-        _springJoint = _player.gameObject.AddComponent<SpringJoint>();
-        _springJoint.autoConfigureConnectedAnchor = false;
-        isHooking = true;
-
-        _beetleHook = _detectionBeetle.currentBeetle;
-
-        return _detectionBeetle.currentBeetle.gameObject.tag;
-    }
 
     //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'
     //TODO: sirve para limitar los movimientos en X/Y/Z, verificar eso
     public void Hook()
     {
-        switch (SelectHook())
+        if (isHooking) return;
+
+        _springJoint = _player.gameObject.AddComponent<SpringJoint>();
+        _springJoint.autoConfigureConnectedAnchor = false;
+        _hookBeetle = _detectionBeetle.currentBeetle;
+        isHooking = true;
+
+        switch (_detectionBeetle.currentBeetle.gameObject.tag)
         {
             case "Hook":
                 _springJoint.anchor = Vector3.zero;
-                _springJoint.connectedBody = _beetleHook;
+                _springJoint.connectedBody = _detectionBeetle.currentBeetle;
                 _springJoint.maxDistance = 5f;
                 _springJoint.minDistance = 4f;
                 _springJoint.spring = 75;
@@ -154,18 +146,15 @@ public class ModelPlayer
 
             case "BeetleJump":
                 _springJoint.anchor = Vector3.zero;
-                _springJoint.connectedBody = _beetleHook;
-                _springJoint.maxDistance = 2.5f;
-                _springJoint.minDistance = 2.4f;
-                _springJoint.spring = 100;
-                _springJoint.damper = 1;
-                break;
-
-            case "Null":
+                _springJoint.connectedBody = _detectionBeetle.currentBeetle;
+                _springJoint.maxDistance = 1.5f;
+                _springJoint.minDistance = 2f;
+                _springJoint.spring = 1000;
+                _springJoint.damper = 12;
                 break;
         }
     }
-    
+
     public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         switch (_player.CurrentNumOfShoot)
@@ -204,61 +193,62 @@ public class ModelPlayer
                 break;
         }
     }
-    
+
     //TODO: ver que hacer con "Tomar objetos"
+
     #region PickUpItems
 
-        public void PickObject()
+    public void PickObject()
+    {
+        Debug.DrawRay(_player.transform.position, _player.transform.forward * 30, Color.green, 0.5f);
+        RaycastHit hit;
+        if (Physics.Raycast(_player.transform.position, _player.transform.forward, out hit, Mathf.Infinity,
+                pickableLayer))
         {
-            Debug.DrawRay(_player.transform.position, _player.transform.forward * 30, Color.green, 0.5f);
-            RaycastHit hit;
-            if (Physics.Raycast(_player.transform.position, _player.transform.forward, out hit, Mathf.Infinity,
-                    pickableLayer))
+            Debug.Log("Objeto recogido: " + hit.collider.gameObject.name);
+            hasObject = true;
+            _objSelected = hit.transform;
+        }
+    }
+
+    public void MoveObject(float movimientoHorizontal, float movimientoVertical)
+    {
+        Debug.DrawRay(_objSelected.transform.position, _player.transform.position - _objSelected.transform.position,
+            Color.red, 0.5f);
+        RaycastHit hit;
+
+        if (Physics.Raycast(_objSelected.transform.position,
+                _player.transform.position - _objSelected.transform.position, out hit))
+        {
+            if (hit.collider.gameObject.tag != "Player")
+                DropObject();
+            else
             {
-                Debug.Log("Objeto recogido: " + hit.collider.gameObject.name);
-                hasObject = true;
-                _objSelected = hit.transform;
+                Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0,
+                    _player._cameraTransform.transform.forward.z).normalized;
+
+                Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
+
+                Vector3 righMovement = right * (_objSpeed * Time.deltaTime * movimientoHorizontal);
+                Vector3 upMovement = forward * (_objSpeed * Time.deltaTime * movimientoVertical);
+
+                Vector3 heading = (righMovement + upMovement).normalized;
+
+                Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
+
+                var _rbObj = _objSelected.GetComponent<Rigidbody>();
+                _rbObj.MoveRotation(Quaternion.Lerp(_rbObj.rotation, targetRotation, Time.deltaTime * _objRotation));
+                _rbObj.MovePosition(_objSelected.transform.position + heading * (_objSpeed * Time.deltaTime));
             }
         }
-    
-        public void MoveObject(float movimientoHorizontal, float movimientoVertical)
-        {
-            Debug.DrawRay(_objSelected.transform.position, _player.transform.position - _objSelected.transform.position,
-                Color.red, 0.5f);
-            RaycastHit hit;
-    
-            if (Physics.Raycast(_objSelected.transform.position,
-                    _player.transform.position - _objSelected.transform.position, out hit))
-            {
-                if (hit.collider.gameObject.tag != "Player")
-                    DropObject();
-                else
-                {
-                    Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0,
-                        _player._cameraTransform.transform.forward.z).normalized;
-    
-                    Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
-    
-                    Vector3 righMovement = right * (_objSpeed * Time.deltaTime * movimientoHorizontal);
-                    Vector3 upMovement = forward * (_objSpeed * Time.deltaTime * movimientoVertical);
-    
-                    Vector3 heading = (righMovement + upMovement).normalized;
-    
-                    Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
-    
-                    var _rbObj = _objSelected.GetComponent<Rigidbody>();
-                    _rbObj.MoveRotation(Quaternion.Lerp(_rbObj.rotation, targetRotation, Time.deltaTime * _objRotation));
-                    _rbObj.MovePosition(_objSelected.transform.position + heading * (_objSpeed * Time.deltaTime));
-                }
-            }
-        }
-    
-        public void DropObject()
-        {
-            Debug.Log("Objeto soltado: " + _objSelected.name);
-            hasObject = false;
-            _objSelected = null;
-        }
+    }
+
+    public void DropObject()
+    {
+        Debug.Log("Objeto soltado: " + _objSelected.name);
+        hasObject = false;
+        _objSelected = null;
+    }
 
     #endregion
 }

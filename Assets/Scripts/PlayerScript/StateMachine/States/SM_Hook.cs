@@ -42,7 +42,7 @@ public class SM_Hook : State
     public override void OnFixedUpdate()
     {
         _model.limitVelocityRB?.Invoke();
-        _model.Move(Input.GetAxisRaw("Horizontal"),
+        _model.MoveHooked(Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical"));
     }
 }
