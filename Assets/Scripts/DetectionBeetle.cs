@@ -8,7 +8,7 @@ public class DetectionBeetle : MonoBehaviour
 {
     public List<Collider> _beetles;
     public Rigidbody currentBeetle;
-    
+
     private void OnTriggerEnter(Collider other) // Agregar el Beetle con el que colisiono el trigger a la lista
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Beetle"))
@@ -33,18 +33,21 @@ public class DetectionBeetle : MonoBehaviour
 
                     currentBeetle = beetle.GetComponent<Rigidbody>();
 
-                    currentBeetle.transform.GetChild(0).GetComponent<ParticleSystem>().Play();
+                    var obj = other.transform.GetChild(0);
+                    obj.gameObject.SetActive(true);
                 }
                 else
                 {
-                    beetle.transform.GetChild(0).GetComponent<ParticleSystem>().Stop();
+                    var obj = other.transform.GetChild(0);
+                    obj.gameObject.SetActive(false);
                 }
             }
         }
         else if (_beetles.Count == 1)
         {
             currentBeetle = _beetles[0].GetComponent<Rigidbody>();
-            _beetles[0].transform.GetChild(0).GetComponent<ParticleSystem>().Play();
+            var obj = other.transform.GetChild(0);
+            obj.gameObject.SetActive(true);
         }
         else
         {
@@ -57,7 +60,8 @@ public class DetectionBeetle : MonoBehaviour
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Beetle"))
         {
-            other.transform.GetChild(0).GetComponent<ParticleSystem>().Stop();
+            var obj = other.transform.GetChild(0);
+            obj.gameObject.SetActive(false);
 
             if (currentBeetle == other) currentBeetle = null;
 
