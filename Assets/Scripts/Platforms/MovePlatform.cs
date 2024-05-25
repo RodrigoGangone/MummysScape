@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -44,5 +45,21 @@ public class MovePlatform : MonoBehaviour
     private void ActivatePlatform()
     {
         transform.Rotate(0f, 90f, 0f);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("PlayerFather"))
+        {
+            other.transform.SetParent(transform);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.CompareTag("PlayerFather"))
+        {
+            other.transform.SetParent(null);
+        }
     }
 }
