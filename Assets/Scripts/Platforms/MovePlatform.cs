@@ -32,13 +32,41 @@ public class MovePlatform : MonoBehaviour
             transform.position = centerOfSin.position;
     }
 
+    void Update()
+    {
+        if (_type.Equals(TypeOfPlatform.Rotate90))
+        {
+            Rotate90();
+        }
+
+        if (!isActive) return;
+
+        switch (_type)
+        {
+            case TypeOfPlatform.MoveAxis:
+            {
+                MoveInAxis();
+                break;
+            }
+            case TypeOfPlatform.RotateConstant:
+            {
+                RotateConstant();
+                break;
+            }
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+    
     public void StartAction()
     {
-        isActive = !isActive;
-        
-        _destiny = Quaternion.Euler(0f, transform.eulerAngles.y + _rotateY, 0f);
+        //Si no es de tipo Rotate90, activa
+        if (!_type.Equals(TypeOfPlatform.Rotate90))
+            isActive = !isActive;
+        else
+            _destiny = Quaternion.Euler(0f, transform.eulerAngles.y + _rotateY, 0f);
     }
-
+    
     private void MoveInAxis()
     {
         _time += Time.deltaTime * speed;
@@ -61,34 +89,7 @@ public class MovePlatform : MonoBehaviour
 
     private void Rotate90()
     {
-        transform.rotation = Quaternion.Lerp(transform.rotation, _destiny, 2 * Time.deltaTime);
-    }
-
-    void Update()
-    {
-        if (_type.Equals(TypeOfPlatform.Rotate90))
-        {
-            Rotate90();
-        }
-
-        if (!isActive)
-            return;
-
-        switch (_type)
-        {
-            case TypeOfPlatform.MoveAxis:
-            {
-                MoveInAxis();
-                break;
-            }
-            case TypeOfPlatform.RotateConstant:
-            {
-                RotateConstant();
-                break;
-            }
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        transform.rotation = Quaternion.Lerp(transform.rotation, _destiny, 5 * Time.deltaTime);
     }
 
 
