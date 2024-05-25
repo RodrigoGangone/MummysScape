@@ -38,7 +38,6 @@ public class DetectionBeetle : MonoBehaviour
                     nearestDistance = distance;
 
                     currentBeetle = beetle.GetComponent<Rigidbody>();
-
                    
                     _beetleFX.gameObject.SetActive(true);
                 }

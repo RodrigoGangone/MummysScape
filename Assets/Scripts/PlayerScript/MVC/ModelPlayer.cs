@@ -165,7 +165,7 @@ public class ModelPlayer
                 _springJoint.connectedBody = _detectionBeetle.currentBeetle;
                 _springJoint.maxDistance = 1.5f;
                 _springJoint.minDistance = 2f;
-                _springJoint.spring = 1000;
+                _springJoint.spring = 100;
                 _springJoint.damper = 12;
                 break;
         }
