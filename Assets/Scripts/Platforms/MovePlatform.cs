@@ -55,11 +55,6 @@ public class MovePlatform : MonoBehaviour
         }
     }
 
-    private void OnTriggerStay(Collider other)
-    {
-        throw new NotImplementedException();
-    }
-
     private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.CompareTag("PlayerFather"))
