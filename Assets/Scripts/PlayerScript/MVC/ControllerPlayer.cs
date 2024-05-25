@@ -95,6 +95,7 @@ public class ControllerPlayer
             "SM_Shoot" => true,
             "SM_Walk" => true,
             "SM_Hook" => true,
+            "SM_Fall" => true,
             "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
             "SM_Damage" => true,
             "SM_Dead" => false,
@@ -109,6 +110,7 @@ public class ControllerPlayer
             "SM_Shoot" => false,
             "SM_Walk" => false,
             "SM_Hook" => false,
+            "SM_Fall" => true,
             "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
             "SM_Damage" => false,
             "SM_Dead" => false,
@@ -123,6 +125,7 @@ public class ControllerPlayer
             "SM_Shoot" => false,
             "SM_Walk" => true,
             "SM_Hook" => true,
+            "SM_Fall" => true,
             "SM_Grab" => false,
             "SM_Damage" => false,
             "SM_Dead" => false,
@@ -137,6 +140,7 @@ public class ControllerPlayer
             "SM_Shoot" => true,
             "SM_Walk" => true,
             "SM_Hook" => false,
+            "SM_Fall" => true,
             "SM_Grab" => false, //Ver que hacer con el grab ya que la animacion seria otra
             "SM_Damage" => false,
             "SM_Dead" => false,

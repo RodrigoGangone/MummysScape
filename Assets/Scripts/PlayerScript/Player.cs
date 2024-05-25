@@ -104,6 +104,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook(_modelPlayer, _viewPlayer));
+        _stateMachinePlayer.AddState(PlayerState.Fall, new SM_Fall(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Grab, new SM_Grab());
         _stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage());
         _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead());
@@ -154,6 +155,7 @@ public enum PlayerState
     Walk,
     Head,
     Hook,
+    Fall,
     Grab,
     Damage,
     Dead

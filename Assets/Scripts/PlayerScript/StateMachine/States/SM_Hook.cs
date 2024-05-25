@@ -31,7 +31,7 @@ public class SM_Hook : State
         if (Input.GetKeyUp(KeyCode.Space))
         {
             Debug.Log("STATE: HOOK - UP SPACE");
-            StateMachine.ChangeState(PlayerState.Idle);
+            StateMachine.ChangeState(PlayerState.Fall);
         }
         else
         {
