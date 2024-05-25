@@ -35,8 +35,8 @@ public class MovePlatform : MonoBehaviour
     public void StartAction()
     {
         isActive = !isActive;
-
-        _destiny = Quaternion.Euler(0f, transform.rotation.y + _rotateY, 0f);
+        
+        _destiny = Quaternion.Euler(0f, transform.eulerAngles.y + _rotateY, 0f);
     }
 
     private void MoveInAxis()
