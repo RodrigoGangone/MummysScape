@@ -111,11 +111,10 @@ public class ModelPlayer
 
     public void Shoot()
     {
-        if (_player.CurrentNumOfShoot < _player.MaxNumOfShoot)
+        if (_player.CurrentBandageStock > _player.MinBandageStock)
         {
-            _player.CurrentNumOfShoot++;
+            _player.CurrentBandageStock--;
             SizeHandler();
-            //_player.transform.localScale -= new Vector3(0.25f, 0.25f, 0.25f);
             BulletFactory.Instance.GetObjectFromPool();
         }
 
@@ -159,9 +158,9 @@ public class ModelPlayer
     public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         _player._viewPlayer.PLAY_PUFF();
-        switch (_player.CurrentNumOfShoot)
+        switch (_player.CurrentBandageStock)
         {
-            case 0:
+            case 2:
                 //Normal size
                 _player.MummyNormal.SetActive(true);
                 _player.MummySmall.SetActive(false);
@@ -177,7 +176,7 @@ public class ModelPlayer
 
                 _player.CurrentPlayerSize = PlayerSize.Small;
                 break;
-            case 2:
+            case 0:
                 //Head size
                 _player.MummyNormal.SetActive(false);
                 _player.MummySmall.SetActive(false);

@@ -20,9 +20,9 @@ public class Bandage : MonoBehaviour
             collision.gameObject.GetComponentInParent<Player>()
                 .GetComponentInParent<Player>(); //buscar componente en el padre del padre
 
-        if (playerRef.CurrentNumOfShoot <= playerRef.MaxNumOfShoot && playerRef.CurrentNumOfShoot > 0)
+        if (playerRef.CurrentBandageStock >= playerRef.MinBandageStock && playerRef.CurrentBandageStock < playerRef.MaxBandageStock)
         {
-            playerRef.CurrentNumOfShoot--;
+            playerRef.CurrentBandageStock++;
             playerRef._modelPlayer.SizeHandler();
 
             if (_bulletInstance !=

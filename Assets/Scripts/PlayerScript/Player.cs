@@ -21,23 +21,25 @@ public class Player : MonoBehaviour
 
     private string _currentState;
 
+    [Header("ATRIBUTES")]
     [SerializeField] private float _life;
     [SerializeField] private float _speed;
     [SerializeField] private float _maxSpeed;
     [SerializeField] private float _speedRotation;
 
-    [SerializeField] private int _maxNumOfShoot = 2;
-    [SerializeField] private int _currNumOfShoot = 0;
+    [Header("BANDAGE")]
+    [SerializeField] private int _maxBandageStock = 2;
+    [SerializeField] private int _minBandageStock = 0;
+    [SerializeField] private int _currBandageStock = 2;
 
-    //Var para saber el tamaño actual del player.
+    [Header("SIZES")]
     [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
-
-    //Los GameObjets con los 3 tamaños de la Mummy
+    
     [SerializeField] public GameObject MummyNormal;
     [SerializeField] public GameObject MummySmall;
     [SerializeField] public GameObject MummyHead;
     
-    //FX
+    [Header("FXS")]
     [SerializeField] public ParticleSystem _puffFX;
 
     //TODO: Mejorar esto a futuro
@@ -57,12 +59,13 @@ public class Player : MonoBehaviour
         set => _speedRotation = value;
     }
 
-    public int MaxNumOfShoot => _maxNumOfShoot;
+    public int MaxBandageStock => _maxBandageStock;
+    public int MinBandageStock => _minBandageStock;
 
-    public int CurrentNumOfShoot
+    public int CurrentBandageStock
     {
-        get => _currNumOfShoot;
-        set => _currNumOfShoot = value;
+        get => _currBandageStock;
+        set => _currBandageStock = value;
     }
 
     public PlayerSize CurrentPlayerSize
@@ -132,8 +135,8 @@ public class Player : MonoBehaviour
     
     bool CanShoot()
     {
-        Debug.Log("CAN SHOOT : " + (_currNumOfShoot < _maxNumOfShoot));
-        return _currNumOfShoot < _maxNumOfShoot;
+        Debug.Log("Bandage Stock : " + _currBandageStock);
+        return _currBandageStock > _minBandageStock;
     }
 }
 
