@@ -20,6 +20,7 @@ public class SM_Walk : State
 
     public override void OnExit()
     {
+        _model.ClampMovement();
     }
 
     public override void OnUpdate()

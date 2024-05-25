@@ -86,9 +86,25 @@ public class ModelPlayer
 
         _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
 
-        _rb.MovePosition(_player.transform.position + heading * (_player.Speed * Time.deltaTime));
+        _rb.velocity += heading;
+
+        if (Math.Abs(_rb.velocity.x) > _player.Speed || Math.Abs(_rb.velocity.z) > _player.Speed)
+        {
+            var velocity = Vector3.ClampMagnitude(_rb.velocity, _player.Speed);
+            velocity.y = _rb.velocity.y;
+            _rb.velocity = velocity;
+        }
     }
 
+    public void ClampMovement()
+    {
+        var velocity = _rb.velocity;
+        velocity.x = 0;
+        velocity.z = 0;
+
+        _rb.velocity = velocity;
+    }
+    
     public void MoveHooked(float movimientoHorizontal, float movimientoVertical)
     {
         Debug.Log("MOVE HOOKED");
