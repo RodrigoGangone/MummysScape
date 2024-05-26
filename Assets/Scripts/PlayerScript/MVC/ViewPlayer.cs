@@ -3,10 +3,12 @@ using UnityEngine;
 public class ViewPlayer
 {
     Player _player;
-    
+    public Material hookMaterial;
+
     public ViewPlayer(Player p)
     {
         _player = p;
+        hookMaterial = _player._bandage.GetComponent<LineRenderer>().material;
     }
 
     public void PLAY_PUFF()
