@@ -59,8 +59,6 @@ public class ModelPlayer
 
     public void MoveTank(float rotationInput, float moveInput)
     {
-        _player.SpeedRotation = 150;
-
         Quaternion _rotation = Quaternion.Euler(0f, rotationInput * _player.SpeedRotation * Time.deltaTime, 0f);
         _rb.rotation = (_rb.rotation * _rotation);
 
@@ -70,8 +68,6 @@ public class ModelPlayer
 
     public void Move(float movimientoHorizontal, float movimientoVertical)
     {
-        _player.SpeedRotation = 10;
-
         Vector3 forward =
             new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
 
@@ -104,11 +100,10 @@ public class ModelPlayer
 
         _rb.velocity = velocity;
     }
-    
+
     public void MoveHooked(float movimientoHorizontal, float movimientoVertical)
     {
         Debug.Log("MOVE HOOKED");
-        _player.SpeedRotation = 10;
         Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z)
             .normalized;
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;

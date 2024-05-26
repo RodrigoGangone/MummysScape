@@ -1,17 +1,25 @@
+using UnityEditor.Animations;
 using UnityEngine;
 
 public class ViewPlayer
 {
     Player _player;
-    
+    public Animator _animatorController;
+
     public ViewPlayer(Player p)
     {
         _player = p;
+        _animatorController = _player._anim;
     }
 
     public void PLAY_PUFF()
     {
         _player._puffFX.Play();
+    }
+
+    public void PLAY_ANIM(string anim)
+    {
+        _animatorController.SetTrigger(anim);
     }
 
     // ───────▄▀▀▀▀▀▀▀▀▀▀▄▄

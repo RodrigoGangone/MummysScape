@@ -1,4 +1,5 @@
 using System;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -9,9 +10,8 @@ public class Player : MonoBehaviour
     public ControllerPlayer _controllerPlayer { get; private set; }
 
     public Rigidbody _rigidbody { get; private set; }
-
+    public Animator _anim { get; private set; }
     public Transform _cameraTransform { get; private set; }
-
     public SpringJoint _springJoint { get; private set; }
     public LineRenderer _bandage { get; private set; }
 
@@ -79,9 +79,10 @@ public class Player : MonoBehaviour
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
-
         _springJoint = GetComponent<SpringJoint>();
         _bandage = GetComponent<LineRenderer>();
+        
+        _anim = GetComponentInChildren<Animator>();
         _detectionBeetle = GetComponentInChildren<DetectionBeetle>();
 
         _viewPlayer = new ViewPlayer(this);
@@ -100,7 +101,7 @@ public class Player : MonoBehaviour
 
         _stateMachinePlayer = new StateMachinePlayer();
 
-        _stateMachinePlayer.AddState(PlayerState.Idle, new SM_Idle());
+        _stateMachinePlayer.AddState(PlayerState.Idle, new SM_Idle(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook(_modelPlayer, _viewPlayer));

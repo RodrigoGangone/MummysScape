@@ -14,6 +14,7 @@ public class SM_Shoot : State
     }
     public override void OnEnter()
     {
+        _view.PLAY_ANIM("Shoot");
         Debug.Log("STATE: SHOOT");
         _model.Shoot();   
     }

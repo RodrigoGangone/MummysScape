@@ -15,6 +15,7 @@ public class SM_Walk : State
 
     public override void OnEnter()
     {
+        _view.PLAY_ANIM("Walk");
         Debug.Log("STATE: WALK");
     }
 
