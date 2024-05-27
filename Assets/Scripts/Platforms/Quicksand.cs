@@ -1,57 +1,53 @@
 using System;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 public class Quicksand : MonoBehaviour
 {
-    [SerializeField] private Transform _startPosInvisible;
-    [SerializeField] private List<Transform> _sandPos;
-    
-    [SerializeField] private float _speedSink;
-    
+    [Header("ATRIBUTES INVISIBLE")] [SerializeField]
+    private Transform _startPosInvisible;
+
+    [SerializeField] Transform _invisiblePlatform;
+
+    [Header("VARIABLES")] [SerializeField] private float _speedSink;
     private bool _onQuicksand;
     private Player _player;
     private float _time;
 
-    private Transform _invisiblePlatform;
+    public int _nextPos = 0;
+    [SerializeField] private List<Transform> _sandPos;
 
     private void Start()
     {
-        _invisiblePlatform = transform.Find("QuicksandPlatform");
+        transform.position = _sandPos[0].position;
     }
 
-    private void OnCollisionEnter(Collision other)
-    {
-        if (!other.gameObject.CompareTag("PlayerFather")) return;
-        
-        _player = other.gameObject.GetComponent<Player>();
-        _player.ChangeSpeed();
-        _onQuicksand = true;
-        other.transform.SetParent(transform);
-    }
 
-    private void NextPosSand()
-    {
-        
-    }
-    
     private void Update()
     {
+        if (Vector3.Distance(transform.position, _sandPos[_nextPos].position) > 0)
+        {
+            MoveSand();
+        }
+
         if (!_onQuicksand) return;
         DownPlatform();
     }
 
-    private void DownPlatform()
-    {
-        _time += Time.deltaTime * _speedSink;
+    #region DownQuickSand
 
-        var y = _speedSink != 0 ? _time : 0f;
-        transform.position = _startPosInvisible.position + new Vector3(0, -y, 0);
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!other.gameObject.CompareTag("PlayerFather")) return;
+
+        _player = other.gameObject.GetComponent<Player>();
+        _player.ChangeSpeed();
+        _onQuicksand = true;
+        other.transform.SetParent(_invisiblePlatform);
     }
 
-    private void OnCollisionExit(Collision other)
+    private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.CompareTag("PlayerFather")) ;
         {
@@ -62,4 +58,38 @@ public class Quicksand : MonoBehaviour
             transform.position = _startPosInvisible.position;
         }
     }
+
+    private void DownPlatform()
+    {
+        _time += Time.deltaTime * _speedSink;
+
+        var y = _speedSink != 0 ? _time : 0f;
+
+        transform.position = _startPosInvisible.position + new Vector3(0, -y, 0);
+    }
+
+    #endregion
+
+    #region MoveQuickSand
+
+    public void NextPosSand(TypeSandButton type) //Recibe por medio del boton si debe subir o bajar su posicion
+    {
+        if (_nextPos < _sandPos.Count && _nextPos > 0)
+        {
+            if (type == TypeSandButton.DownSand)
+                _nextPos--;
+
+            if (type == TypeSandButton.UpSand)
+                _nextPos++;
+        }
+    }
+
+    private void MoveSand()
+    {
+        _time += Time.deltaTime * _speedSink;
+        
+        transform.position += new Vector3(0, _time, 0);
+    }
+
+    #endregion
 }
