@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using Unity.VisualScripting.ReorderableList;
 using UnityEngine;
 
 public class DetectionBeetle : MonoBehaviour
@@ -9,11 +7,9 @@ public class DetectionBeetle : MonoBehaviour
     public Rigidbody currentBeetle;
 
     private bool _isWall = false;
-
     private Transform _beetleFX;
 
-
-    private void OnTriggerEnter(Collider other) // Agregar el Beetle con el que colisiono el trigger a la lista
+    private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Beetle"))
         {
@@ -21,7 +17,7 @@ public class DetectionBeetle : MonoBehaviour
         }
     }
 
-    private void OnTriggerStay(Collider other) //Recorrer una lista de collider para saber cual es el mas cercano
+    private void OnTriggerStay(Collider other)
     {
         if (other.gameObject.layer != LayerMask.NameToLayer("Beetle") || _beetles.Count == 0) return;
         if (!isPosibleHook(other)) return;
@@ -56,26 +52,18 @@ public class DetectionBeetle : MonoBehaviour
             _beetleFX.gameObject.SetActive(true);
         }
     }
-
-
+    
     private bool isPosibleHook(Collider other)
     {
         RaycastHit hit;
         Vector3 direction = other.transform.position - transform.position;
-        float distance = direction.magnitude;
-        int waterLayerMask = LayerMask.GetMask("Water");
 
-        Debug.DrawLine(transform.position, other.transform.position, Color.red);
-
-        if (Physics.Raycast(transform.position, direction, out hit, distance, waterLayerMask))
+        if (Physics.Raycast(transform.position, direction, out hit, direction.magnitude, LayerMask.GetMask("Water")))
         {
-            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Water"))
-            {
-                Debug.Log("VERDADERO - Water detected");
-                return false;
-            }
+            Debug.Log("VERDADERO - Water detected");
+            return false;
         }
-        
+
         return true;
     }
 

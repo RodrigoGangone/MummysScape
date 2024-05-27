@@ -13,13 +13,12 @@ public class Quicksand : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        if (other.gameObject.CompareTag("PlayerFather")) ;
-        {
-            _player = other.gameObject.GetComponent<Player>();
-            _player.ChangeSpeed();
-            _onQuicksand = true;
-            other.transform.SetParent(transform);
-        }
+        if (!other.gameObject.CompareTag("PlayerFather")) return;
+        
+        _player = other.gameObject.GetComponent<Player>();
+        _player.ChangeSpeed();
+        _onQuicksand = true;
+        other.transform.SetParent(transform);
     }
 
     private void Update()
@@ -32,7 +31,7 @@ public class Quicksand : MonoBehaviour
     {
         _time += Time.deltaTime * _speedSink;
 
-        float y = _speedSink != 0 ? _time : 0f;
+        var y = _speedSink != 0 ? _time : 0f;
         transform.position = _startPosition.position + new Vector3(0, -y, 0);
     }
 

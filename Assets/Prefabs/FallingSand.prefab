@@ -11,9 +11,7 @@ GameObject:
   - component: {fileID: 7906267744330708877}
   - component: {fileID: 7293086300475489612}
   - component: {fileID: 4084694065269337755}
-  - component: {fileID: 873238891897828215}
   - component: {fileID: 483635309593981755}
-  - component: {fileID: 1386800606442112342}
   m_Layer: 0
   m_Name: FallingSand
   m_TagString: Untagged
@@ -29,13 +27,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7469686253242887733}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.09, y: 0.57, z: -0.53}
+  m_LocalScale: {x: 1, y: 0.77447, z: 1.1927}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 473142725454554471}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!33 &7293086300475489612
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -86,27 +85,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &873238891897828215
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7469686253242887733}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 2.5034387, y: 3.6020346, z: 3.466267}
-  m_Center: {x: 0.00000035762787, y: -1.8010173, z: 0.60531574}
 --- !u!114 &483635309593981755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1087,13 +1065,46 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: -2332435624945990313, guid: 378b3431e5ab67249afa700438e12d6d, type: 3}
   m_Mode: 0
---- !u!65 &1386800606442112342
+--- !u!1 &8892287524941945049
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 473142725454554471}
+  - component: {fileID: 873238891897828215}
+  - component: {fileID: 857601497301207601}
+  m_Layer: 0
+  m_Name: QuicksandPlatform
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &473142725454554471
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8892287524941945049}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7906267744330708877}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &873238891897828215
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7469686253242887733}
+  m_GameObject: {fileID: 8892287524941945049}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -1108,3 +1119,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.5034387, y: 3.6020346, z: 3.466267}
   m_Center: {x: 0.00000035762787, y: -1.8010173, z: 0.60531574}
+--- !u!114 &857601497301207601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8892287524941945049}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2c2d5113466e1047820888a19024f97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _speedOriginal: 0
+  _speedSink: 1
+  _startPosition: {fileID: 0}
