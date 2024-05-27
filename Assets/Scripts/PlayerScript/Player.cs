@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -21,37 +22,41 @@ public class Player : MonoBehaviour
 
     private string _currentState;
 
-    [Header("ATRIBUTES")]
-    [SerializeField] private float _life;
+    [Header("ATRIBUTES")] [SerializeField] private float _life;
+    [SerializeField] private float _speedOriginal = 5;
     [SerializeField] private float _speed;
     [SerializeField] private float _maxSpeed;
     [SerializeField] private float _speedRotation;
 
-    [Header("BANDAGE")]
-    [SerializeField] private int _maxBandageStock = 2;
+    [Header("BANDAGE")] [SerializeField] private int _maxBandageStock = 2;
     [SerializeField] private int _minBandageStock = 0;
     [SerializeField] private int _currBandageStock = 2;
 
-    [Header("SIZES")]
-    [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
-    
+    [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
+
     [SerializeField] public GameObject MummyNormal;
     [SerializeField] public GameObject MummySmall;
     [SerializeField] public GameObject MummyHead;
-    
-    [Header("FXS")]
-    [SerializeField] public ParticleSystem _puffFX;
+
+    [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
 
     //TODO: Mejorar esto a futuro
 
     #region Getters & Setters
+
     public float Life
     {
         get => _life;
         set => _life = value;
     }
 
-    public float Speed => _speed;
+    public float SpeedOriginal => _speedOriginal;
+
+    public float Speed
+    {
+        get => _speed;
+        set => _speed = value;
+    }
 
     public float SpeedRotation
     {
@@ -81,14 +86,14 @@ public class Player : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody>();
         _springJoint = GetComponent<SpringJoint>();
         _bandage = GetComponent<LineRenderer>();
-        
+
         _anim = GetComponentInChildren<Animator>();
         _detectionBeetle = GetComponentInChildren<DetectionBeetle>();
 
         _viewPlayer = new ViewPlayer(this);
         _modelPlayer = new ModelPlayer(this);
         _controllerPlayer = new ControllerPlayer(this);
-        
+
         //Actions subscribe
         _controllerPlayer.OnGetCanShoot += CanShoot;
         _controllerPlayer.OnStateChange += ChangeState;
@@ -109,7 +114,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Grab, new SM_Grab());
         _stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage());
         _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead());
-        
+
         _stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
 
@@ -134,11 +139,27 @@ public class Player : MonoBehaviour
     {
         return _stateMachinePlayer.getCurrentState();
     }
-    
+
     bool CanShoot()
     {
         Debug.Log("Bandage Stock : " + _currBandageStock);
         return _currBandageStock > _minBandageStock;
+    }
+
+    public void ChangeSpeed()
+    {
+        switch (CurrentPlayerSize)
+        {
+            case PlayerSize.Normal:
+                _speed = 2;
+                break;
+            case PlayerSize.Small:
+                _speed = 4;
+                break;
+            case PlayerSize.Head:
+                _speed = _speedOriginal;
+                break;
+        }
     }
 }
 

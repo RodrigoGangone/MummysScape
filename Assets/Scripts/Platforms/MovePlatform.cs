@@ -57,7 +57,7 @@ public class MovePlatform : MonoBehaviour
                 throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     public void StartAction()
     {
         //Si no es de tipo Rotate90, activa
@@ -66,7 +66,7 @@ public class MovePlatform : MonoBehaviour
         else
             _destiny = Quaternion.Euler(0f, transform.eulerAngles.y + _rotateY, 0f);
     }
-    
+
     private void MoveInAxis()
     {
         _time += Time.deltaTime * speed;
