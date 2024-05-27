@@ -128,8 +128,6 @@ public class ModelPlayer
             SizeHandler();
             BulletFactory.Instance.GetObjectFromPool();
         }
-
-        _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
 
 
