@@ -72,21 +72,24 @@ public class Quicksand : MonoBehaviour
 
     #region MoveQuickSand
 
-    public void NextPosSand(TypeSandButton type) //Recibe por medio del boton si debe subir o bajar su posicion
-    {
-        if (_nextPos < _sandPos.Count && _nextPos > 0)
-        {
-            if (type == TypeSandButton.DownSand)
-                _nextPos--;
-
-            if (type == TypeSandButton.UpSand)
-                _nextPos++;
-        }
-    }
+    //public void NextPosSand(TypeSandButton type) //Recibe por medio del boton si debe subir o bajar su posicion
+    //{
+    //    Debug.Log("ENTRE A NEXT POST SAND");
+    //    if (_nextPos < _sandPos.Count || _nextPos > 0)
+    //    {
+    //        if (type == TypeSandButton.DownSand)
+    //            _nextPos--;
+//
+    //        if (type == TypeSandButton.UpSand)
+    //            _nextPos++;
+    //    }
+    //}
 
     private void MoveSand()
     {
-        _time += Time.deltaTime * _speedSink;
+        Debug.Log("MoveSand");
+
+        _time += Time.deltaTime * 0.01f;
         
         transform.position += new Vector3(0, _time, 0);
     }

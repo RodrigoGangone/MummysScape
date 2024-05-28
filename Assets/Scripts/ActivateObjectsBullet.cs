@@ -4,11 +4,12 @@ using UnityEngine;
 public class ActivateObjectsBullet : MonoBehaviour
 {
     [SerializeField] private List<GameObject> _platformsAll;
-    [SerializeField] private TypeSandButton _typeSandButton;
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag("Bullet")) return;
+        
+        Debug.Log("ENTRE A ACTIBAOJECTS");
 
         foreach (GameObject platform in _platformsAll)
         {
@@ -17,16 +18,10 @@ public class ActivateObjectsBullet : MonoBehaviour
             if (movePlatform != null)
                 movePlatform.StartAction();
 
-            Quicksand quicksand = platform.GetComponent<Quicksand>();
+            QuickSandNEW quicksand = platform.GetComponent<QuickSandNEW>();
 
             if (quicksand != null)
-                quicksand.NextPosSand(_typeSandButton);
+                quicksand.ActivateSand();
         }
     }
-}
-
-public enum TypeSandButton
-{
-    DownSand,
-    UpSand
 }
