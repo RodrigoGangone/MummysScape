@@ -9,8 +9,6 @@ public class ActivateObjectsBullet : MonoBehaviour
     {
         if (!other.gameObject.CompareTag("Bullet")) return;
         
-        Debug.Log("ENTRE A ACTIBAOJECTS");
-
         foreach (GameObject platform in _platformsAll)
         {
             MovePlatform movePlatform = platform.GetComponent<MovePlatform>();

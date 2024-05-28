@@ -18,7 +18,7 @@ public class QuickSandNEW : MonoBehaviour
     [SerializeField] private float _speedSink; //Velocidad de hundision
     [SerializeField] private float _speedMove; //Velocidad de movision
     private bool _onQuicksand; //verifico si el player esta en la arena movediza
-    private bool isActivated; //Si se activo el metodo para mover la arena
+    [SerializeField] private bool isActivated; //Si se activo el metodo para mover la arena
     private float _timeInvPlat;
     private float _timeActSand;
 
@@ -49,11 +49,10 @@ public class QuickSandNEW : MonoBehaviour
         isActivated = true;
         
         _timeActSand += Time.deltaTime * _speedMove;
-        var y = _speedMove != 0 ? _timeActSand : 0f;
         
-        transform.position = Vector3.Lerp(_startPosQuickSand, _endPosQuickSand, 3f);
+        transform.position = Vector3.Lerp(_startPosQuickSand, _endPosQuickSand, _timeActSand);
 
-        if (Vector3.Distance(_startPosQuickSand, _endPosQuickSand) <= 0.1f)
+        if (Vector3.Distance(transform.position, _endPosQuickSand) <= 0.1f)
         {
             isActivated = false;
 
@@ -62,6 +61,7 @@ public class QuickSandNEW : MonoBehaviour
 
             _startPosQuickSand = newStartPos;
             _endPosQuickSand = oldStartPos;
+            _timeActSand = 0;
         }
     }
 
@@ -85,8 +85,8 @@ public class QuickSandNEW : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerFather")) ;
-        {
+        if (!other.gameObject.CompareTag("PlayerFather")) return;
+        
             _onQuicksand = false;
             _timeInvPlat = 0;
 
@@ -95,6 +95,5 @@ public class QuickSandNEW : MonoBehaviour
             other.transform.SetParent(null);
 
             transform.position = _startPosInvisible;
-        }
     }
 }
