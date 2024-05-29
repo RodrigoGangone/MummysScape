@@ -7,29 +7,23 @@ public class Bandage : MonoBehaviour
 {
     private Bullet _bulletInstance;
 
-    public void setInstantiator(Bullet bulletIntance)
+    /*public void setInstantiator(Bullet bulletIntance)
     {
         _bulletInstance = bulletIntance;
-    }
+    }*/
 
     private void OnTriggerEnter(Collider collision)
     {
         //Verifica que pueda tomar la venda
         if (!collision.gameObject.CompareTag("Player")) return;
-        var playerRef =
-            collision.gameObject.GetComponentInParent<Player>()
-                .GetComponentInParent<Player>(); //buscar componente en el padre del padre
-
-        if (playerRef.CurrentBandageStock >= playerRef.MinBandageStock && playerRef.CurrentBandageStock < playerRef.MaxBandageStock)
+        
+        //buscar componente en el padre del padre
+        var playerRef = collision.gameObject.GetComponentInParent<Player>().GetComponentInParent<Player>(); 
+        if (playerRef.CurrentBandageStock >= playerRef.MinBandageStock &&
+            playerRef.CurrentBandageStock < playerRef.MaxBandageStock)
         {
             playerRef.CurrentBandageStock++;
             playerRef._modelPlayer.SizeHandler();
-
-            if (_bulletInstance !=
-                null) //Puede que la venda no venga de un disparo, sino que se spawnee al romper jarrones
-            {
-                BulletFactory.Instance.ReturnObjectToPool(_bulletInstance);
-            }
 
             Destroy(gameObject);
         }

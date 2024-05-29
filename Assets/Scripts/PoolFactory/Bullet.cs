@@ -16,7 +16,6 @@ public class Bullet : MonoBehaviour
         _target = GameObject.Find("Target");
 
         _rb.rotation = _target.transform.rotation;
-        //_rb.AddForce(_target.transform.forward * _speed, ForceMode.Impulse);
         _rb.velocity = _target.transform.forward * _speed;
     }
 
@@ -36,13 +35,15 @@ public class Bullet : MonoBehaviour
         b.gameObject.SetActive(false);
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnCollisionEnter()
     {
-        //Instancio un prefab de la bandaje cuando choca la bullet con la wall, y le paso referecia del bullet
-        gameObject.SetActive(false);
+        BulletFactory.Instance.ReturnObjectToPool(this);
+        SpawnBandage();
+    }
+
+    private void SpawnBandage()
+    {
         var bandageGO = Instantiate(_prefabBandage, transform.position, Quaternion.identity);
-        Bandage bandageScript = bandageGO.GetComponent<Bandage>();
-        bandageScript.setInstantiator(this);
         PLAY_HIT_FX(bandageGO);
     }
 
