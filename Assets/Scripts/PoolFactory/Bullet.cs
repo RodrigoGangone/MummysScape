@@ -15,7 +15,8 @@ public class Bullet : MonoBehaviour
         _playerPos = GameObject.Find("Mummy");
         _target = GameObject.Find("Target");
 
-        _rb.AddForce(_playerPos.transform.forward * _speed, ForceMode.Impulse);
+        _rb.rotation = _target.transform.rotation;
+        _rb.AddForce(_target.transform.forward * _speed, ForceMode.Impulse);
     }
 
     public void Reset()
@@ -37,8 +38,6 @@ public class Bullet : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         //Instancio un prefab de la bandaje cuando choca la bullet con la wall, y le paso referecia del bullet
-        if (collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("PlayerFather") ) return;
-
         var bandageGO = Instantiate(_prefabBandage, transform.position, Quaternion.identity);
         Bandage bandageScript = bandageGO.GetComponent<Bandage>();
         bandageScript.setInstantiator(this);
