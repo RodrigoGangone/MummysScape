@@ -4,13 +4,13 @@ using UnityEngine;
 public class ViewPlayer
 {
     Player _player;
-    public Animator _animatorController;
+    private Animator[] _animatorController;
+
     public Material hookMaterial;
 
     public ViewPlayer(Player p)
     {
         _player = p;
-        _animatorController = _player._anim;
         hookMaterial = _player._bandage.GetComponent<LineRenderer>().material;
     }
 
@@ -21,7 +21,12 @@ public class ViewPlayer
 
     public void PLAY_ANIM(string anim)
     {
-        _animatorController.SetTrigger(anim);
+        _animatorController = _player.GetComponentsInChildren<Animator>();
+
+        foreach (var controller in _animatorController)
+        {
+            controller.SetTrigger(anim);
+        }
     }
 
     // ───────▄▀▀▀▀▀▀▀▀▀▀▄▄
