@@ -37,7 +37,7 @@ public class Bullet : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         //Instancio un prefab de la bandaje cuando choca la bullet con la wall, y le paso referecia del bullet
-        if (!collision.gameObject.CompareTag("Wall")) return;
+        if (collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("PlayerFather") ) return;
 
         var bandageGO = Instantiate(_prefabBandage, transform.position, Quaternion.identity);
         Bandage bandageScript = bandageGO.GetComponent<Bandage>();
