@@ -18,12 +18,14 @@ public class SM_Hook : State
         Debug.Log("STATE: HOOK");
         _model.Hook();
         _model._bandageHook.enabled = true;
+
+        _view.hookMaterial.SetFloat("_leftThreshold", Mathf.Lerp(-1.5f, 1.5f, 2f));
     }
 
     public override void OnExit()
     {
         Debug.Log("STATE: HOOK - ON EXIT");
-        _model.resetSpringForHook?.Invoke();
+        _model.resetSpringForHook?.Invoke();      
     }
 
     public override void OnUpdate()
