@@ -1,18 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8237547213469427224
-MonoBehaviour:
-  m_ObjectHideFlags: 11
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  version: 7
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -20,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PortalRune_Mat
-  m_Shader: {fileID: -6465566751694194690, guid: 16492b5d5467cde4f9e6a181e983c648, type: 3}
+  m_Name: VerticalMovableStucco_Mat
+  m_Shader: {fileID: -6465566751694194690, guid: b0bda05d339f5bc4abe949cf68a3c577, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -36,8 +23,16 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _Texture:
-        m_Texture: {fileID: 2800000, guid: ff3652d5a4486dd45a0216594473e9d4, type: 3}
+    - _StuccoAO:
+        m_Texture: {fileID: 2800000, guid: 23828db525db623479c03e21bf286922, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _StuccoBaseColor:
+        m_Texture: {fileID: 2800000, guid: 2e0f648c40ff06b4fa175cc49ae31fa5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _StuccoNormal:
+        m_Texture: {fileID: 2800000, guid: 01dc2f2e158ce4d4bbf6216bfca7428a, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -54,12 +49,23 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _EmisasioIntensity: 1.24
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Speed: 0.05
-    - _Tiling: 4.08
+    - _Smoothness: 0
+    - _StuccoTile: 1
     m_Colors:
-    - _Black: {r: 0.33962262, g: 0.20906015, b: 0.078497685, a: 0}
-    - _White: {r: 0.8207547, g: 0.4880806, b: 0.18970275, a: 0}
+    - _StuccoColor: {r: 0.8666667, g: 0.8352941, b: 0.8235294, a: 0}
   m_BuildTextureStacks: []
+--- !u!114 &145281972621775850
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7
