@@ -28,13 +28,25 @@ public class ControllerPlayer
     {
         if (CanWalkState() && IsWalking())
         {
+            Debug.Log("ENTRE POR CONTROLLER A : WALK");
             OnStateChange(PlayerState.Walk);
         }
-
-        if (CanIdleState() && !IsWalking() && !_model.isHooking)
+        
+        if (CanIdleState() && !IsWalking())
         {
+            Debug.Log("ENTRE POR CONTROLLER A : IDLE");
             OnStateChange(PlayerState.Idle);
         }
+        
+        /*if (CanIdleState() && !IsWalking())
+        {
+            OnStateChange(PlayerState.Idle);
+        }*/
+
+        /*if (CanIdleState() && !IsWalking() && !_model.isHooking)
+        {
+            OnStateChange(PlayerState.Idle);
+        }*/
 
         if (CanHookState() && Input.GetKeyDown(KeyCode.Space))
         {
@@ -84,7 +96,9 @@ public class ControllerPlayer
 
     private bool IsWalking()
     {
-        return Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0;
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+        return Math.Abs(horizontal) > 0 || Math.Abs(vertical) > 0;
     }
 
     private bool CanIdleState()
@@ -92,10 +106,10 @@ public class ControllerPlayer
         return OnGetState?.Invoke() switch
         {
             "SM_Idle" => false,
-            "SM_Shoot" => true,
+            "SM_Shoot" => false,
             "SM_Walk" => true,
             "SM_Hook" => true,
-            "SM_Fall" => true,
+            "SM_Fall" => true, // Averiguar cuando toca el suelo para pasarlo a idle
             "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
             "SM_Damage" => true,
             "SM_Dead" => false,
@@ -110,7 +124,7 @@ public class ControllerPlayer
             "SM_Shoot" => false,
             "SM_Walk" => false,
             "SM_Hook" => false,
-            "SM_Fall" => true,
+            "SM_Fall" => false, //Averiguar cuando toca el suelo para cambiar a idle o walk
             "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
             "SM_Damage" => false,
             "SM_Dead" => false,

@@ -168,7 +168,7 @@ public class ModelPlayer
     public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         _player._viewPlayer.PLAY_PUFF();
-        
+        //TODO: cambiar el tamaño del capsule collider dependiendo el tamaño
         switch (_player.CurrentBandageStock)
         {
             case 2:

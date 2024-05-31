@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+
 public class Pool<T>
 //Generic Class, se puede crear una pool de lo que sea desde otro script reemplazando la T
 {
@@ -49,7 +50,6 @@ public class Pool<T>
         {
             result = _factoryMethod(); //Si no hay más, se crea uno
         }
-
         else
         {
             result = _currentStock[0]; //Si hay, se agarra el primero de la lista.

@@ -13,4 +13,9 @@ public class AnimationEventReceiver : MonoBehaviour
     {
         _player._modelPlayer.Shoot();
     }
+    
+    public void EVENT_ANIM_GO_IDLE()
+    {
+        _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
+    }
 }
