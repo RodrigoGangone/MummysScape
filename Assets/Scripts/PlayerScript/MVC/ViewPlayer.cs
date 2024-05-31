@@ -4,7 +4,10 @@ using UnityEngine;
 public class ViewPlayer
 {
     Player _player;
+    
     private Animator[] _animatorController;
+
+    private SkinnedMeshRenderer skinnedMesh;
 
     public Material hookMaterial;
 
@@ -12,8 +15,14 @@ public class ViewPlayer
     {
         _player = p;
         hookMaterial = _player._bandage.GetComponent<LineRenderer>().material;
+        skinnedMesh = _player.GetComponentInChildren<SkinnedMeshRenderer>();
     }
 
+    public void ChangeMesh(Mesh mesh)
+    {
+        skinnedMesh.sharedMesh = mesh;
+    }
+    
     public void PLAY_PUFF()
     {
         _player._puffFX.Play();

@@ -32,11 +32,15 @@ public class Player : MonoBehaviour
     [SerializeField] private int _minBandageStock = 0;
     [SerializeField] private int _currBandageStock = 2;
 
-    [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
+    [Header("SIZES")] 
+    [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
 
-    [SerializeField] public GameObject MummyNormal;
+    [SerializeField]
+    public Mesh[] _Meshes;
+    
+    /*[SerializeField] public GameObject MummyNormal;
     [SerializeField] public GameObject MummySmall;
-    [SerializeField] public GameObject MummyHead;
+    [SerializeField] public GameObject MummyHead;*/
 
     [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
 

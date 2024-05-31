@@ -164,41 +164,34 @@ public class ModelPlayer
         }
     }
 
+    //TODO:Al cambiar el tamaño del pj: cambiar mesh del body_low ... cambiar el tamaño del capsule collider
     public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         _player._viewPlayer.PLAY_PUFF();
+        
         switch (_player.CurrentBandageStock)
         {
             case 2:
                 //Normal size
-                _player.MummyNormal.SetActive(true);
-                _player.MummySmall.SetActive(false);
-                _player.MummyHead.SetActive(false);
-
+                _player._viewPlayer.ChangeMesh(_player._Meshes[(int) PlayerSize.Normal]);
+                _player._anim.SetLayerWeight(1, 0);
                 _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
             case 1:
                 //Small size
-                _player.MummyNormal.SetActive(false);
-                _player.MummySmall.SetActive(true);
-                _player.MummyHead.SetActive(false);
-
+                _player._viewPlayer.ChangeMesh(_player._Meshes[(int) PlayerSize.Small]);
+                _player._anim.SetLayerWeight(1, 1);
                 _player.CurrentPlayerSize = PlayerSize.Small;
                 break;
             case 0:
                 //Head size
-                _player.MummyNormal.SetActive(false);
-                _player.MummySmall.SetActive(false);
-                _player.MummyHead.SetActive(true);
-
+                _player._viewPlayer.ChangeMesh(_player._Meshes[(int) PlayerSize.Small]);
                 _player.CurrentPlayerSize = PlayerSize.Head;
                 break;
             default:
                 //size def
-                _player.MummyNormal.SetActive(true);
-                _player.MummySmall.SetActive(false);
-                _player.MummyHead.SetActive(false);
-
+                _player._viewPlayer.ChangeMesh(_player._Meshes[(int) PlayerSize.Normal]);
+                _player._anim.SetLayerWeight(1, 0);
                 _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
         }
