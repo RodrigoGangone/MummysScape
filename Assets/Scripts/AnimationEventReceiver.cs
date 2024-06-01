@@ -6,7 +6,7 @@ public class AnimationEventReceiver : MonoBehaviour
 
     private void Start()
     {
-        _player = GameObject.Find("Mummy").GetComponent<Player>();
+        _player = GetComponentInParent<Player>();
     }
 
     public void EVENT_ANIM_SHOOT() //Se usa en animacion : Shoot
