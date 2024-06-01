@@ -6,6 +6,9 @@ public class SM_Hook : State
 {
     private ModelPlayer _model;
     private ViewPlayer _view;
+    
+    private bool _isHookDestiny;
+    private float _time = 0;
 
     public SM_Hook(ModelPlayer model, ViewPlayer view)
     {
@@ -15,38 +18,48 @@ public class SM_Hook : State
 
     public override void OnEnter()
     {
-        Debug.Log("STATE: HOOK");
         _model.Hook();
-        _model._bandageHook.enabled = true;
-
-        _view.hookMaterial.SetFloat("_leftThreshold", Mathf.Lerp(-1.5f, 1.5f, 2f));
+        _view.bandageHook.enabled = true;
     }
 
     public override void OnExit()
     {
-        Debug.Log("STATE: HOOK - ON EXIT");
-        _model.resetSpringForHook?.Invoke();      
+        ResetHook();
     }
 
     public override void OnUpdate()
     {
+        if (!_isHookDestiny)
+        {
+            _time += Time.deltaTime;
+
+            float newValue = Mathf.Lerp(1.5f, -1.5f, _time / 0.25f);
+
+            _view.hookMaterial.SetFloat("_rightThreshold", newValue);
+
+            if (_view.hookMaterial.GetFloat("_rightThreshold") == -1.5f)
+            {
+                _isHookDestiny = true;
+            }
+        }
+
         if (Input.GetKeyUp(KeyCode.Space))
         {
-            Debug.Log("STATE: HOOK - UP SPACE");
             StateMachine.ChangeState(PlayerState.Fall);
         }
         else
         {
-            _model.drawBandageHook?.Invoke(); //TODO: Es visual, pasar al view #Maxy
+            _view.DrawBandageHOOK();
             IsSwinging();
         }
     }
 
     public override void OnFixedUpdate()
     {
-        _model.limitVelocityRB?.Invoke();
+        _model.LimitVelocityRB();
 
         if (!IsSwinging()) return;
+
         _model.MoveHooked(Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical"));
     }
@@ -54,5 +67,15 @@ public class SM_Hook : State
     private bool IsSwinging()
     {
         return Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0;
+    }
+
+    private void ResetHook()
+    {
+        _time = 0;
+        _view.hookMaterial.SetFloat("_rightThreshold", 1.5f);
+        _isHookDestiny = false;
+        _view.bandageHook.enabled = false;
+        Object.Destroy(_model.springJoint);
+        _model.isHooking = false;
     }
 }

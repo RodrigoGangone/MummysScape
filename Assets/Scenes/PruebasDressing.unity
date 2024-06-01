@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.4022059, g: 0.3477844, b: 0.28113347, a: 1}
+  m_IndirectSpecularColor: {r: 0.4022132, g: 0.3477894, b: 0.2811353, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -18869,6 +18869,11 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!4 &1482115509 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2401735160476489113, guid: e252dab61b1a3f2468057b4301eacb09, type: 3}
+  m_PrefabInstance: {fileID: 7479457704590206983}
+  m_PrefabAsset: {fileID: 0}
 --- !u!43 &1547861072
 Mesh:
   m_ObjectHideFlags: 0
@@ -43061,6 +43066,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5137229158164446309, guid: e252dab61b1a3f2468057b4301eacb09, type: 3}
+      propertyPath: m_Parameters.widthCurve.m_Curve.Array.data[0].value
+      value: 0.1377449
+      objectReference: {fileID: 0}
+    - target: {fileID: 6690243958329030600, guid: e252dab61b1a3f2468057b4301eacb09, type: 3}
+      propertyPath: target
+      value: 
+      objectReference: {fileID: 1482115509}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

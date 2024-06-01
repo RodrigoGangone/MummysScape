@@ -31,13 +31,13 @@ public class ControllerPlayer
             Debug.Log("ENTRE POR CONTROLLER A : WALK");
             OnStateChange(PlayerState.Walk);
         }
-        
+
         if (CanIdleState() && !IsWalking())
         {
             Debug.Log("ENTRE POR CONTROLLER A : IDLE");
             OnStateChange(PlayerState.Idle);
         }
-        
+
         /*if (CanIdleState() && !IsWalking())
         {
             OnStateChange(PlayerState.Idle);
@@ -103,10 +103,10 @@ public class ControllerPlayer
     {
         return OnGetState?.Invoke() switch
         {
-            "SM_Idle" => false,// se puede borrar porque no se pisa//
+            "SM_Idle" => false, // se puede borrar porque no se pisa//
             "SM_Shoot" => false,
             "SM_Walk" => true,
-            "SM_Hook" => true,
+            "SM_Hook" => false,
             "SM_Fall" => true, // Averiguar cuando toca el suelo para pasarlo a idle
             "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
             "SM_Damage" => true,
@@ -120,7 +120,7 @@ public class ControllerPlayer
         {
             "SM_Idle" => true,
             "SM_Shoot" => false,
-            "SM_Walk" => false,// se puede borrar porque no se pisa//
+            "SM_Walk" => false, // se puede borrar porque no se pisa//
             "SM_Hook" => false,
             "SM_Fall" => false, //Averiguar cuando toca el suelo para cambiar a idle o walk
             "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
@@ -134,7 +134,7 @@ public class ControllerPlayer
         return OnGetState?.Invoke() switch
         {
             "SM_Idle" => true,
-            "SM_Shoot" => false,// se puede borrar porque no se pisa//
+            "SM_Shoot" => false, // se puede borrar porque no se pisa//
             "SM_Walk" => true,
             "SM_Hook" => true,
             "SM_Fall" => true,
@@ -146,7 +146,7 @@ public class ControllerPlayer
 
     private bool CanHookState()
     {
-        return _model._detectionBeetle.currentBeetle != null && OnGetState?.Invoke() switch
+        return _model.detectionBeetle.currentBeetle != null && OnGetState?.Invoke() switch
         {
             "SM_Idle" => true,
             "SM_Shoot" => true,

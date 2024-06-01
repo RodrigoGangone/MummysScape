@@ -27,7 +27,8 @@ public class Player : MonoBehaviour
     [Header("BANDAGE")] [SerializeField] private int _maxBandageStock = 2;
     [SerializeField] private int _minBandageStock = 0;
     [SerializeField] private int _currBandageStock = 2;
-
+    [SerializeField] public Transform target;
+    
     [Header("SIZES")] 
     [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
 

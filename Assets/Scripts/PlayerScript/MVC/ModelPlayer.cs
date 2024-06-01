@@ -7,22 +7,18 @@ public class ModelPlayer
     Player _player;
     ControllerPlayer _controller;
     Rigidbody _rb;
-    public DetectionBeetle _detectionBeetle;
 
     //HOOK
-    public LineRenderer _bandageHook;
-    private SpringJoint _springJoint;
-    private Rigidbody _hookBeetle;
+    public DetectionBeetle detectionBeetle;
+    public SpringJoint springJoint;
+    public Rigidbody hookBeetle;
 
     public bool isHooking;
-
-    public Action resetSpringForHook;
-    public Action drawBandageHook;
-    public Action limitVelocityRB;
 
     //PICK UP
     private LayerMask pickableLayer = LayerMask.GetMask("Pickable");
     public bool hasObject { get; private set; }
+
     private Transform _objSelected;
 
     private float _objRotation = 10f;
@@ -31,30 +27,10 @@ public class ModelPlayer
     public ModelPlayer(Player p)
     {
         _player = p;
-
         _rb = _player._rigidbody;
-        _bandageHook = _player._bandage;
-        _springJoint = _player._springJoint;
-        _detectionBeetle = _player._detectionBeetle;
 
-        drawBandageHook = () => //Feedback visual de vendas //TODO: Esto deberia ir en la maquina de estados
-        {
-            _bandageHook.SetPosition(0, _player.transform.position);
-            _bandageHook.SetPosition(1, _hookBeetle.transform.position);
-        };
-
-        limitVelocityRB = () => //Limitar velocidad del player //TODO: Esto deberia ir en la maquina de estados
-        {
-            if (_rb.velocity.magnitude > _player.Speed)
-                _rb.velocity = _rb.velocity.normalized * _player.Speed;
-        };
-
-        resetSpringForHook = () => //Reset del springJoint
-        {
-            Object.Destroy(_springJoint);
-            isHooking = false;
-            _bandageHook.enabled = false;
-        };
+        springJoint = _player._springJoint;
+        detectionBeetle = _player._detectionBeetle;
     }
 
     public void MoveTank(float rotationInput, float moveInput)
@@ -137,29 +113,29 @@ public class ModelPlayer
     {
         if (isHooking) return;
 
-        _springJoint = _player.gameObject.AddComponent<SpringJoint>();
-        _springJoint.autoConfigureConnectedAnchor = false;
-        _hookBeetle = _detectionBeetle.currentBeetle;
+        springJoint = _player.gameObject.AddComponent<SpringJoint>();
+        springJoint.autoConfigureConnectedAnchor = false;
+        hookBeetle = detectionBeetle.currentBeetle;
         isHooking = true;
 
-        switch (_detectionBeetle.currentBeetle.gameObject.tag)
+        switch (detectionBeetle.currentBeetle.gameObject.tag)
         {
             case "Hook":
-                _springJoint.anchor = Vector3.zero;
-                _springJoint.connectedBody = _detectionBeetle.currentBeetle;
-                _springJoint.maxDistance = 5f;
-                _springJoint.minDistance = 4f;
-                _springJoint.spring = 75;
-                _springJoint.damper = 12f;
+                springJoint.anchor = Vector3.zero;
+                springJoint.connectedBody = detectionBeetle.currentBeetle;
+                springJoint.maxDistance = 5f;
+                springJoint.minDistance = 4f;
+                springJoint.spring = 75;
+                springJoint.damper = 12f;
                 break;
 
             case "BeetleJump":
-                _springJoint.anchor = Vector3.zero;
-                _springJoint.connectedBody = _detectionBeetle.currentBeetle;
-                _springJoint.maxDistance = 1.5f;
-                _springJoint.minDistance = 2f;
-                _springJoint.spring = 100;
-                _springJoint.damper = 12;
+                springJoint.anchor = Vector3.zero;
+                springJoint.connectedBody = detectionBeetle.currentBeetle;
+                springJoint.maxDistance = 1.5f;
+                springJoint.minDistance = 2f;
+                springJoint.spring = 100;
+                springJoint.damper = 12;
                 break;
         }
     }
@@ -173,24 +149,24 @@ public class ModelPlayer
         {
             case 2:
                 //Normal size
-                _player._viewPlayer.ChangeMesh(_player._Meshes[(int) PlayerSize.Normal]);
+                _player._viewPlayer.ChangeMesh(_player._Meshes[(int)PlayerSize.Normal]);
                 _player._anim.SetLayerWeight(1, 0); //TODO MODIFICAR ESTO PARA QUE QUEDE EN LA VIEW
                 _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
             case 1:
                 //Small size
-                _player._viewPlayer.ChangeMesh(_player._Meshes[(int) PlayerSize.Small]);
+                _player._viewPlayer.ChangeMesh(_player._Meshes[(int)PlayerSize.Small]);
                 _player._anim.SetLayerWeight(1, 1);
                 _player.CurrentPlayerSize = PlayerSize.Small;
                 break;
             case 0:
                 //Head size
-                _player._viewPlayer.ChangeMesh(_player._Meshes[(int) PlayerSize.Small]);
+                _player._viewPlayer.ChangeMesh(_player._Meshes[(int)PlayerSize.Small]);
                 _player.CurrentPlayerSize = PlayerSize.Head;
                 break;
             default:
                 //size def
-                _player._viewPlayer.ChangeMesh(_player._Meshes[(int) PlayerSize.Normal]);
+                _player._viewPlayer.ChangeMesh(_player._Meshes[(int)PlayerSize.Normal]);
                 _player._anim.SetLayerWeight(1, 0);
                 _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
@@ -198,6 +174,12 @@ public class ModelPlayer
     }
 
     //TODO: ver que hacer con "Tomar objetos"
+
+    public void LimitVelocityRB()
+    {
+        if (_rb.velocity.magnitude > _player.Speed)
+            _rb.velocity = _rb.velocity.normalized * _player.Speed;
+    }
 
     #region PickUpItems
 
