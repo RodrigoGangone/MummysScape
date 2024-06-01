@@ -205,7 +205,7 @@ public class ModelPlayer
         if (Physics.Raycast(_objSelected.transform.position,
                 _player.transform.position - _objSelected.transform.position, out hit))
         {
-            if (hit.collider.gameObject.tag != "Player")
+            if (hit.collider.gameObject.tag != "PlayerFather")
                 DropObject();
             else
             {
