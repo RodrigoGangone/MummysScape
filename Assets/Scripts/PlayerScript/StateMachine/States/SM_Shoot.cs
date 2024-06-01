@@ -14,12 +14,12 @@ public class SM_Shoot : State
     }
     public override void OnEnter()
     {
-        Debug.Log("STATE: SHOOT");
-        _view.PLAY_ANIM("Shoot");
+        _view.PLAY_ANIM("Shoot", true);
     }
 
     public override void OnExit()
     {
+        _view.PLAY_ANIM("Shoot", false);
     }
     
     public override void OnUpdate()

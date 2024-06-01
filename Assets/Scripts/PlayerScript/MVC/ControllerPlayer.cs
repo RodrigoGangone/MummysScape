@@ -96,16 +96,14 @@ public class ControllerPlayer
 
     private bool IsWalking()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-        return Math.Abs(horizontal) > 0 || Math.Abs(vertical) > 0;
+        return Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0;
     }
 
     private bool CanIdleState()
     {
         return OnGetState?.Invoke() switch
         {
-            "SM_Idle" => false,
+            "SM_Idle" => false,// se puede borrar porque no se pisa//
             "SM_Shoot" => false,
             "SM_Walk" => true,
             "SM_Hook" => true,
@@ -122,7 +120,7 @@ public class ControllerPlayer
         {
             "SM_Idle" => true,
             "SM_Shoot" => false,
-            "SM_Walk" => false,
+            "SM_Walk" => false,// se puede borrar porque no se pisa//
             "SM_Hook" => false,
             "SM_Fall" => false, //Averiguar cuando toca el suelo para cambiar a idle o walk
             "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
@@ -136,7 +134,7 @@ public class ControllerPlayer
         return OnGetState?.Invoke() switch
         {
             "SM_Idle" => true,
-            "SM_Shoot" => false,
+            "SM_Shoot" => false,// se puede borrar porque no se pisa//
             "SM_Walk" => true,
             "SM_Hook" => true,
             "SM_Fall" => true,

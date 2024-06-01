@@ -4,11 +4,8 @@ using UnityEngine;
 public class ViewPlayer
 {
     Player _player;
-    
     private Animator[] _animatorController;
-
     private SkinnedMeshRenderer skinnedMesh;
-
     public Material hookMaterial;
 
     public ViewPlayer(Player p)
@@ -28,35 +25,8 @@ public class ViewPlayer
         _player._puffFX.Play();
     }
 
-    public void PLAY_ANIM(string anim)
+    public void PLAY_ANIM(string anim, bool value)
     {
-        _animatorController = _player.GetComponentsInChildren<Animator>();
-
-        foreach (var controller in _animatorController)
-        {
-            controller.SetTrigger(anim);
-        }
+        _player._anim.SetBool(anim, value);
     }
-
-    // ───────▄▀▀▀▀▀▀▀▀▀▀▄▄
-    // ────▄▀▀░░░░░░░░░░░░░▀▄
-    // ──▄▀░░░░░░░░░░░░░░░░░░▀▄
-    // ──█░░░░░░░░░░░░░░░░░░░░░▀▄
-    // ─▐▌░░░░░░░░▄▄▄▄▄▄▄░░░░░░░▐▌
-    // ─█░░░░░░░░░░░▄▄▄▄░░▀▀▀▀▀░░█
-    // ▐▌░░░░░░░▀▀▀▀░░░░░▀▀▀▀▀░░░▐▌
-    // █░░░░░░░░░▄▄▀▀▀▀▀░░░░▀▀▀▀▄░█
-    // █░░░░░░░░░░░░░░░░▀░░░▐░░░░░▐▌
-    // ▐▌░░░░░░░░░▐▀▀██▄░░░░░░▄▄▄░▐▌
-    // ─█░░░░░░░░░░░▀▀▀░░░░░░▀▀██░░█
-    // ─▐▌░░░░▄░░░░░░░░░░░░░▌░░░░░░█
-    // ──▐▌░░▐░░░░░░░░░░░░░░▀▄░░░░░█
-    // ───█░░░▌░░░░░░░░▐▀░░░░▄▀░░░▐▌
-    // ───▐▌░░▀▄░░░░░░░░▀░▀░▀▀░░░▄▀
-    // ───▐▌░░▐▀▄░░░░░░░░░░░░░░░░█
-    // ───▐▌░░░▌░▀▄░░░░▀▀▀▀▀▀░░░█
-    // ───█░░░▀░░░░▀▄░░░░░░░░░░▄▀
-    // ──▐▌░░░░░░░░░░▀▄░░░░░░▄▀
-    // ─▄▀░░░▄▀░░░░░░░░▀▀▀▀█▀
-    // ▀░░░▄▀░░░░░░░░░░▀░░░▀▀▀▀▄▄▄▄▄
 }

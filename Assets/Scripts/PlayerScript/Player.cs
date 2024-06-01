@@ -1,8 +1,4 @@
-using System;
-using Unity.VisualScripting;
-using UnityEditor.Animations;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class Player : MonoBehaviour
 {
@@ -35,12 +31,7 @@ public class Player : MonoBehaviour
     [Header("SIZES")] 
     [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
 
-    [SerializeField]
-    public Mesh[] _Meshes;
-    
-    /*[SerializeField] public GameObject MummyNormal;
-    [SerializeField] public GameObject MummySmall;
-    [SerializeField] public GameObject MummyHead;*/
+    [SerializeField] public Mesh[] _Meshes;
 
     [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
 

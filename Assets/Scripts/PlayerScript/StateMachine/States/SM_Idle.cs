@@ -14,12 +14,12 @@ public class SM_Idle : State
     }
     public override void OnEnter()
     {
-        _view.PLAY_ANIM("Idle");
-        Debug.Log("STATE: IDLE");
+        _view.PLAY_ANIM("Idle", true);
     }
     
     public override void OnExit()
     {
+        _view.PLAY_ANIM("Idle", false);
     }
 
     public override void OnUpdate()
