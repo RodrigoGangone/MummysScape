@@ -15,7 +15,7 @@ public class Bandage : MonoBehaviour
     private void OnTriggerEnter(Collider collision)
     {
         //Verifica que pueda tomar la venda
-        if (!collision.gameObject.CompareTag("Player")) return;
+        if (!collision.gameObject.CompareTag("PlayerFather")) return;
         
         //buscar componente en el padre del padre
         var playerRef = collision.gameObject.GetComponentInParent<Player>().GetComponentInParent<Player>(); 
