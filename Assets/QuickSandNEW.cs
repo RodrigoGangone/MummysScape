@@ -10,17 +10,17 @@ public class QuickSandNEW : MonoBehaviour
     private Transform _invisiblePlatform; //referencia de la plataforma invisible
     
     [Header("MOVE QUICKSAND")]
+    [SerializeField] private float yVariant;
     private Vector3 _startPosQuickSand;
     private Vector3 _endPosQuickSand; //Se setea por hierarchy
-    [SerializeField] private float yVariant;
 
     [Header("VARIABLES")] 
     [SerializeField] private float _speedSink; //Velocidad de hundision
     [SerializeField] private float _speedMove; //Velocidad de movision
-    private bool _onQuicksand; //verifico si el player esta en la arena movediza
     [SerializeField] private bool isActivated; //Si se activo el metodo para mover la arena
     private float _timeInvPlat;
     private float _timeActSand;
+    private bool _onQuicksand; //verifico si el player esta en la arena movediza
 
 
     private void Awake()

@@ -5,9 +5,10 @@ using UnityEngine;
 public class CamCollider : MonoBehaviour
 {
     [SerializeField] public int posCam;
+
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("PlayerFather"))
         {
             Camera.main.GetComponent<CameraPos>().SetCam(posCam);
         }

@@ -12,6 +12,9 @@ GameObject:
   - component: {fileID: 9033935912190063742}
   - component: {fileID: 3375610539539043540}
   - component: {fileID: 3420638470775035205}
+  - component: {fileID: 4016549150331938283}
+  - component: {fileID: 8609284157279201426}
+  - component: {fileID: 7480494268496522507}
   m_Layer: 0
   m_Name: Shrine
   m_TagString: Untagged
@@ -1356,6 +1359,62 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: -5989938443601595269, guid: f5469620da786b34b9ff9d06c4b64c69, type: 3}
   m_Mode: 0
+--- !u!64 &4016549150331938283
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93721123019433722}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
+--- !u!114 &8609284157279201426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93721123019433722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fc736780d300494eae53889a2f92f8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _fxPortal: {fileID: 2229404928798147772}
+--- !u!135 &7480494268496522507
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93721123019433722}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.3
+  m_Center: {x: 0, y: 0, z: 0.35}
 --- !u!1001 &3742289765873872608
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1413,6 +1472,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2478b77eec7d3934085024b837cb217d, type: 3}
+--- !u!198 &2229404928798147772 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 3251360673639770716, guid: 2478b77eec7d3934085024b837cb217d, type: 3}
+  m_PrefabInstance: {fileID: 3742289765873872608}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8166739366501932286 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4807978091319538206, guid: 2478b77eec7d3934085024b837cb217d, type: 3}

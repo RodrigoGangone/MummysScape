@@ -23,13 +23,15 @@ public class MovePlatform : MonoBehaviour
     private Transform centerOfSin;
 
     private bool isActive;
+    private bool isCenter;
+
     private float _time;
+
+    private Collider _collider;
 
     void Start()
     {
-        //metodo para ir hasta el centerposition
-        if (centerOfSin != null)
-            transform.position = centerOfSin.position;
+        _collider = GetComponent<BoxCollider>();
     }
 
     void Update()
@@ -39,7 +41,14 @@ public class MovePlatform : MonoBehaviour
             Rotate90();
         }
 
+        if (_type.Equals(TypeOfPlatform.MoveWithoutAct))
+        {
+            MoveWithoutAct();
+        }
+
         if (!isActive) return;
+
+        Debug.Log(transform.position);
 
         switch (_type)
         {
@@ -53,8 +62,6 @@ public class MovePlatform : MonoBehaviour
                 RotateConstant();
                 break;
             }
-            default:
-                throw new ArgumentOutOfRangeException();
         }
     }
 
@@ -69,14 +76,31 @@ public class MovePlatform : MonoBehaviour
 
     private void MoveInAxis()
     {
-        _time += Time.deltaTime * speed;
+        if (Vector3.Distance(transform.position, centerOfSin.position) > 0.1f && !isCenter)
+            MoveToCenter();
+        else
+        {
+            _time += Time.deltaTime * speed;
 
-        //Move
-        float x = moveX != 0 ? Mathf.Sin(_time) * moveX : 0f;
-        float y = moveY != 0 ? Mathf.Sin(_time) * moveY : 0f;
-        float z = moveZ != 0 ? Mathf.Sin(_time) * moveZ : 0f;
+            //Move
+            float x = moveX != 0 ? Mathf.Sin(_time) * moveX : 0f;
+            float y = moveY != 0 ? Mathf.Sin(_time) * moveY : 0f;
+            float z = moveZ != 0 ? Mathf.Sin(_time) * moveZ : 0f;
 
-        transform.position = centerOfSin.position + new Vector3(x, y, z);
+            transform.position = centerOfSin.position + new Vector3(x, y, z);
+        }
+    }
+
+    private void MoveToCenter()
+    {
+        float step = speed * Time.deltaTime; // Calcula la distancia a moverse en este frame
+        transform.position = Vector3.MoveTowards(transform.position, centerOfSin.position, step);
+
+        if (Vector3.Distance(transform.position, centerOfSin.position) <= 0.1f)
+        {
+            isCenter = true;
+            _collider.enabled = true;
+        }
     }
 
     private void RotateConstant()
@@ -90,6 +114,18 @@ public class MovePlatform : MonoBehaviour
     private void Rotate90()
     {
         transform.rotation = Quaternion.Lerp(transform.rotation, _destiny, 5 * Time.deltaTime);
+    }
+
+    private void MoveWithoutAct()
+    {
+        _time += Time.deltaTime * speed;
+
+        //Move
+        float x = moveX != 0 ? Mathf.Sin(_time) * moveX : 0f;
+        float y = moveY != 0 ? Mathf.Sin(_time) * moveY : 0f;
+        float z = moveZ != 0 ? Mathf.Sin(_time) * moveZ : 0f;
+
+        transform.position = centerOfSin.position + new Vector3(x, y, z);
     }
 
 
@@ -114,5 +150,6 @@ public enum TypeOfPlatform
 {
     MoveAxis,
     RotateConstant,
-    Rotate90
+    Rotate90,
+    MoveWithoutAct
 }
