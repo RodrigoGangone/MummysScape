@@ -7,13 +7,13 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Tornado_Mat
-  m_Shader: {fileID: -6465566751694194690, guid: 7ed3ff5f7d4407c48893b4fb606b7d51, type: 3}
+  m_Name: Player_Mat
+  m_Shader: {fileID: -6465566751694194690, guid: 92e3d5bd0fa28fa469759b52a4b184a7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
-  m_LightmapFlags: 2
+  m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
@@ -23,8 +23,20 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _Noise:
-        m_Texture: {fileID: 2800000, guid: b775dfe760e52294795c1d57046ae1f0, type: 3}
+    - _BaseColor:
+        m_Texture: {fileID: 2800000, guid: a5be9409853ff534aaf582b86eb8f86f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Emissive:
+        m_Texture: {fileID: 2800000, guid: d95975ddcf562e744baaabe0f2b2415c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Metallic:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal:
+        m_Texture: {fileID: 2800000, guid: 10e6a5b0c6450494caeb88e26de78073, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -41,24 +53,21 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Alpha: 2.17
-    - _Clip: 0.176
-    - _Emission: 1.18
-    - _Fuzziness: 2.19
+    - _CutoffLight: 4.5
+    - _DissolveScale: 50.57
+    - _DotsEdge: 1.02
+    - _DotsIntensity: 34.4
+    - _DotsOffset: 0.59
+    - _EdgeWidth: -0.29
+    - _NoiseStrength: 2.7
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _TextureSpeed: -1.02
-    - _Tiling: 3.04
-    - _WaveAmount: 0
-    - _WavesSpeed: 0
-    - _fresnel_power: -0.36
+    - _ShadowTreshold: 0.63
     m_Colors:
-    - _BackColor: {r: 0.754717, g: 0.7150978, b: 0.34531865, a: 0}
-    - _Color: {r: 0.5754717, g: 0.39751133, b: 0.23616058, a: 0}
-    - _FrontColor: {r: 0.5283019, g: 0.34530517, b: 0.18191527, a: 0}
-    - _Reel: {r: 1, g: 1, b: 1, a: 0}
+    - _DotsColor: {r: 0.30641457, g: 0.16794232, b: 0.6981132, a: 0}
+    - _EdgeColor: {r: 0.32358807, g: 0.18956926, b: 0.5660378, a: 0}
   m_BuildTextureStacks: []
---- !u!114 &7857908620443570328
+--- !u!114 &5236715307085968425
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

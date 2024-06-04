@@ -7,13 +7,13 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Tornado_Mat
-  m_Shader: {fileID: -6465566751694194690, guid: 7ed3ff5f7d4407c48893b4fb606b7d51, type: 3}
+  m_Name: HalfTone_Mat
+  m_Shader: {fileID: -6465566751694194690, guid: 95406f5ea2ceb454286478801a9841b0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
-  m_LightmapFlags: 2
+  m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
@@ -23,10 +23,6 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _Noise:
-        m_Texture: {fileID: 2800000, guid: b775dfe760e52294795c1d57046ae1f0, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -41,24 +37,17 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Alpha: 2.17
-    - _Clip: 0.176
-    - _Emission: 1.18
-    - _Fuzziness: 2.19
+    - _DotsDensity: 45.1
+    - _FirstEdge: 1
+    - _Offset: 0.97
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _TextureSpeed: -1.02
-    - _Tiling: 3.04
-    - _WaveAmount: 0
-    - _WavesSpeed: 0
-    - _fresnel_power: -0.36
+    - _ShadowThreshold: 0.5
     m_Colors:
-    - _BackColor: {r: 0.754717, g: 0.7150978, b: 0.34531865, a: 0}
-    - _Color: {r: 0.5754717, g: 0.39751133, b: 0.23616058, a: 0}
-    - _FrontColor: {r: 0.5283019, g: 0.34530517, b: 0.18191527, a: 0}
-    - _Reel: {r: 1, g: 1, b: 1, a: 0}
+    - _BaseColor: {r: 1, g: 0.8703732, b: 0.5896226, a: 0}
+    - _DotsColor: {r: 0.2735849, g: 0.19503896, b: 0, a: 0}
   m_BuildTextureStacks: []
---- !u!114 &7857908620443570328
+--- !u!114 &6463221991889196938
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
