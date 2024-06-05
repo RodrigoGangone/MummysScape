@@ -150,24 +150,29 @@ public class ModelPlayer
             case 2:
                 //Normal size
                 _player._viewPlayer.ChangeMesh(_player._Meshes[(int)PlayerSize.Normal]);
-                _player._anim.SetLayerWeight(1, 0); //TODO MODIFICAR ESTO PARA QUE QUEDE EN LA VIEW
+                _player._anim.SetLayerWeight(1, 0);
+                _player._anim.SetLayerWeight(2, 0); //TODO MODIFICAR ESTO PARA QUE QUEDE EN LA VIEW
                 _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
             case 1:
                 //Small size
                 _player._viewPlayer.ChangeMesh(_player._Meshes[(int)PlayerSize.Small]);
                 _player._anim.SetLayerWeight(1, 1);
+                _player._anim.SetLayerWeight(2, 0);
                 _player.CurrentPlayerSize = PlayerSize.Small;
                 break;
             case 0:
                 //Head size
-                _player._viewPlayer.ChangeMesh(_player._Meshes[(int)PlayerSize.Small]);
+                _player._viewPlayer.ChangeMesh(_player._Meshes[(int)PlayerSize.Head]);
+                _player._anim.SetLayerWeight(1, 0);
+                _player._anim.SetLayerWeight(2, 1);
                 _player.CurrentPlayerSize = PlayerSize.Head;
                 break;
             default:
                 //size def
                 _player._viewPlayer.ChangeMesh(_player._Meshes[(int)PlayerSize.Normal]);
                 _player._anim.SetLayerWeight(1, 0);
+                _player._anim.SetLayerWeight(2, 0);
                 _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
         }

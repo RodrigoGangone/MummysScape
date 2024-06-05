@@ -4,7 +4,7 @@ using UnityEngine;
 public class ViewPlayer
 {
     Player _player;
-    
+
     private Animator[] _animatorController;
     private SkinnedMeshRenderer skinnedMesh;
 
@@ -37,9 +37,14 @@ public class ViewPlayer
         _player._anim.SetBool(anim, value);
     }
 
+    public void PLAY_ANIM_TRIGGER(string anim)
+    {
+        _player._anim.SetTrigger(anim);
+    }
+
     public void DrawBandageHOOK()
     {
-        bandageHook.SetPosition(0,_player.target.transform.position);
-        bandageHook.SetPosition(1,_player._modelPlayer.hookBeetle.transform.position);
+        bandageHook.SetPosition(0, _player.target.transform.position);
+        bandageHook.SetPosition(1, _player._modelPlayer.hookBeetle.transform.position);
     }
 }

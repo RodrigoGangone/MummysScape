@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Player : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class Player : MonoBehaviour
 
     public DetectionBeetle _detectionBeetle;
 
+    public LevelManager levelManager;
+
     public StateMachinePlayer _stateMachinePlayer;
 
     private string _currentState;
@@ -28,9 +31,8 @@ public class Player : MonoBehaviour
     [SerializeField] private int _minBandageStock = 0;
     [SerializeField] private int _currBandageStock = 2;
     [SerializeField] public Transform target;
-    
-    [Header("SIZES")] 
-    [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
+
+    [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
 
     [SerializeField] public Mesh[] _Meshes;
 
@@ -82,6 +84,7 @@ public class Player : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody>();
         _springJoint = GetComponent<SpringJoint>();
         _bandage = GetComponent<LineRenderer>();
+        levelManager = FindObjectOfType<LevelManager>();
 
         _anim = GetComponentInChildren<Animator>();
         _detectionBeetle = GetComponentInChildren<DetectionBeetle>();
@@ -94,6 +97,8 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnGetCanShoot += CanShoot;
         _controllerPlayer.OnStateChange += ChangeState;
         _controllerPlayer.OnGetState += CurrentState;
+
+        levelManager.playerWin += Win;
     }
 
     private void Start()
@@ -156,6 +161,14 @@ public class Player : MonoBehaviour
                 _speed = _speedOriginal;
                 break;
         }
+    }
+
+    void Win()
+    {
+        _viewPlayer.PLAY_ANIM_TRIGGER("Win");
+
+        enabled = false;
+        //TODO: SETEAR MATERIAL
     }
 }
 
