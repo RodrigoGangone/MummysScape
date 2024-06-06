@@ -104,13 +104,14 @@ public class ControllerPlayer
         return OnGetState?.Invoke() switch
         {
             "SM_Idle" => false, // se puede borrar porque no se pisa//
-            "SM_Shoot" => false,
+            "SM_Shoot" => true,
             "SM_Walk" => true,
             "SM_Hook" => false,
             "SM_Fall" => true, // Averiguar cuando toca el suelo para pasarlo a idle
             "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
             "SM_Damage" => true,
             "SM_Dead" => false,
+            "No hay estado" => true,
         };
     }
 
@@ -141,6 +142,7 @@ public class ControllerPlayer
             "SM_Grab" => false,
             "SM_Damage" => false,
             "SM_Dead" => false,
+            "No hay estado" => true,
         };
     }
 
