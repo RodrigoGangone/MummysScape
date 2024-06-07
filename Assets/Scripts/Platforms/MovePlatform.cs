@@ -47,9 +47,7 @@ public class MovePlatform : MonoBehaviour
         }
 
         if (!isActive) return;
-
-        Debug.Log(transform.position);
-
+        
         switch (_type)
         {
             case TypeOfPlatform.MoveAxis:

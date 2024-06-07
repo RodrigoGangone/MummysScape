@@ -17,13 +17,11 @@ public class SM_Shoot : State
 
     public override void OnEnter()
     {
-        Debug.Log("ON ENTEEEEEEEEEEEEEEEEEEEEEEEEER SHOOOOOOOOOOOOOOOOOOOT");
         _view.PLAY_ANIM("Shoot", true);
     }
 
     public override void OnExit()
     {
-        Debug.Log("ON EXITTTTTTTTTTTTTTTTTTT SHOOOOOOOOOOOOOOOOOOOT");
         _view.PLAY_ANIM("Shoot", false);
     }
 
