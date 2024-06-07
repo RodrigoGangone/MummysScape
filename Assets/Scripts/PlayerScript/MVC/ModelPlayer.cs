@@ -176,6 +176,8 @@ public class ModelPlayer
                 _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
         }
+        
+        _player._viewPlayer.AdjustColliderSize();
     }
 
     //TODO: ver que hacer con "Tomar objetos"

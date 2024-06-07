@@ -5,6 +5,8 @@ public class ViewPlayer
 {
     Player _player;
 
+    private CapsuleCollider _capsuleCollider;
+
     private Animator[] _animatorController;
     private SkinnedMeshRenderer skinnedMesh;
 
@@ -14,6 +16,8 @@ public class ViewPlayer
     public ViewPlayer(Player p)
     {
         _player = p;
+
+        _capsuleCollider = _player.GetComponent<CapsuleCollider>();
 
         hookMaterial = _player._bandage.material;
 
@@ -25,6 +29,25 @@ public class ViewPlayer
     public void ChangeMesh(Mesh mesh)
     {
         skinnedMesh.sharedMesh = mesh;
+    }
+    
+    public void AdjustColliderSize()
+    {
+        switch (_player.CurrentPlayerSize)
+        {
+            case PlayerSize.Normal:
+                _capsuleCollider.height = 1.8f;
+                _capsuleCollider.center = new Vector3(0, 0.9f, 0);
+                break;
+            case PlayerSize.Small:
+                _capsuleCollider.height = 1.2f;
+                _capsuleCollider.center = new Vector3(0, 0.6f, 0);
+                break;
+            case PlayerSize.Head:
+                _capsuleCollider.height = 0.5f;
+                _capsuleCollider.center = new Vector3(0, 0.5f, 0);
+                break;
+        }
     }
 
     public void PLAY_PUFF()
