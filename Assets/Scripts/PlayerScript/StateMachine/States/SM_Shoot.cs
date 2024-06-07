@@ -11,22 +11,32 @@ public class SM_Shoot : State
     {
         _model = model;
         _view = view;
+
+        _model.shoot += GoIdle;
     }
+
     public override void OnEnter()
     {
+        Debug.Log("ON ENTEEEEEEEEEEEEEEEEEEEEEEEEER SHOOOOOOOOOOOOOOOOOOOT");
         _view.PLAY_ANIM("Shoot", true);
     }
 
     public override void OnExit()
     {
+        Debug.Log("ON EXITTTTTTTTTTTTTTTTTTT SHOOOOOOOOOOOOOOOOOOOT");
         _view.PLAY_ANIM("Shoot", false);
     }
-    
+
     public override void OnUpdate()
     {
     }
 
     public override void OnFixedUpdate()
     {
+    }
+
+    public void GoIdle()
+    {
+        StateMachine.ChangeState(PlayerState.Idle);
     }
 }

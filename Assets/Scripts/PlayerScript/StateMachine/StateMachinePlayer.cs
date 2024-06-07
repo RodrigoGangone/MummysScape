@@ -42,7 +42,7 @@ public class StateMachinePlayer : MonoBehaviour
         {
             _currentState?.OnExit();
             if (_allStates.ContainsKey(name)) _currentState = _allStates[name];
-            _currentState?.OnEnter();   
+            _currentState?.OnEnter();
         }
     }
 }

@@ -14,6 +14,7 @@ public class SM_Idle : State
     }
     public override void OnEnter()
     {
+        Debug.Log("ONENTER IDLE STATE");
         _view.PLAY_ANIM("Idle", true);
     }
     

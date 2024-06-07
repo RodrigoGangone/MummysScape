@@ -24,6 +24,8 @@ public class ModelPlayer
     private float _objRotation = 10f;
     private float _objSpeed = 5f;
 
+    public Action shoot;
+
     public ModelPlayer(Player p)
     {
         _player = p;
@@ -95,7 +97,6 @@ public class ModelPlayer
         }
     }
 
-
     public void Shoot()
     {
         if (_player.CurrentBandageStock > _player.MinBandageStock)
@@ -105,7 +106,6 @@ public class ModelPlayer
             BulletFactory.Instance.GetObjectFromPool();
         }
     }
-
 
     //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'
     //TODO: sirve para limitar los movimientos en X/Y/Z, verificar eso
