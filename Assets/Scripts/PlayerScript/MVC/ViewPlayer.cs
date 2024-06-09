@@ -1,3 +1,4 @@
+using System;
 using UnityEditor.Animations;
 using UnityEngine;
 
@@ -33,21 +34,35 @@ public class ViewPlayer
     
     public void AdjustColliderSize()
     {
+        if (_capsuleCollider == null) return;
+        
+        float height, radius, centerY;
+        
         switch (_player.CurrentPlayerSize)
         {
             case PlayerSize.Normal:
-                _capsuleCollider.height = 1.8f;
-                _capsuleCollider.center = new Vector3(0, 0.9f, 0);
+                height = 1.8f;
+                radius = 0.5f;
+                centerY = 0.9f;
                 break;
             case PlayerSize.Small:
-                _capsuleCollider.height = 1.2f;
-                _capsuleCollider.center = new Vector3(0, 0.6f, 0);
+                height = 1.2f;
+                radius = 0.5f;
+                centerY = 0.6f;
                 break;
             case PlayerSize.Head:
-                _capsuleCollider.height = 0.5f;
-                _capsuleCollider.center = new Vector3(0, 0.5f, 0);
+                height = 0.5f;
+                radius = 0.4f;
+                centerY = 0.5f;
                 break;
+            default:
+                Debug.LogWarning("Unknown player size.");
+                return;
         }
+        
+        _capsuleCollider.height = height;
+        _capsuleCollider.radius = radius;
+        _capsuleCollider.center = new Vector3(0, centerY, 0);
     }
 
     public void PLAY_PUFF()
