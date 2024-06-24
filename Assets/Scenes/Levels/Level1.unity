@@ -9180,6 +9180,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4382052082526704800}
     m_Modifications:
+    - target: {fileID: 268916186088974340, guid: 56990a164a845424087baae522754112, type: 3}
+      propertyPath: m_Radius
+      value: 1.02
+      objectReference: {fileID: 0}
     - target: {fileID: 1581429415559360427, guid: 56990a164a845424087baae522754112, type: 3}
       propertyPath: m_Name
       value: Boton
@@ -38521,8 +38525,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1761977435}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.4008979, y: 0.002497792, z: -0.0010169892, w: 0.91611874}
-  m_LocalPosition: {x: 5.420795, y: 7.421829, z: -10.500635}
+  m_LocalRotation: {x: 0.22748847, y: -0.00027321372, z: 0.00016750995, w: 0.97378075}
+  m_LocalPosition: {x: 5.4282565, y: 8.154056, z: -16.768719}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -62530,6 +62534,7 @@ GameObject:
   - component: {fileID: 5051551177457780565}
   - component: {fileID: 8961221340071516041}
   - component: {fileID: 8961221340071516042}
+  - component: {fileID: 8961221340071516043}
   m_Layer: 0
   m_Name: Cube1:Cube
   m_TagString: Untagged
@@ -64103,6 +64108,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 11.208689, y: 2.623317, z: 21.45281}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8961221340071516043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8894003113847336436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07c326d14cf291940976610963f22936, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  yVariant: 0
+  _speedSink: 0.5
+  _speedMove: 1
+  isActivated: 0
 --- !u!1001 &9104125261373486064
 PrefabInstance:
   m_ObjectHideFlags: 0
