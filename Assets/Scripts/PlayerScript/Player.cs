@@ -115,6 +115,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Fall, new SM_Fall(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Grab, new SM_Grab());
         _stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage());
+        _stateMachinePlayer.AddState(PlayerState.Win, new SM_Win(this));
         _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead());
 
         _stateMachinePlayer.ChangeState(PlayerState.Idle);
@@ -167,26 +168,34 @@ public class Player : MonoBehaviour
 
     void Win()
     {
-        _viewPlayer.PLAY_ANIM_TRIGGER("Win");
-        StartCoroutine(Disolve(5));
-        enabled = false;
+        //_viewPlayer.PLAY_ANIM_TRIGGER("Win");
+        _stateMachinePlayer.ChangeState(PlayerState.Win);
+        //enabled = false;
+        //StartCoroutine(Disolve(5));
         //TODO: SETEAR MATERIAL
     }
 
-    private IEnumerator Disolve(float t)
+    public IEnumerator Disolve(float t)
     {
         float tick = 0f;
         float value = 1;
 
+        Quaternion initialRotation = transform.rotation;
+        Quaternion finalRotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + 180f, transform.eulerAngles.z); //Lo roto solo en Y
+        
         while (value > 0f)
         {
             Debug.Log(value);
             value = Mathf.Lerp(1f, 0f, tick);
             _viewPlayer.playerMat.SetFloat("_CutoffLight", value);
+            
+            //Rotacion progresiva
+            float rotationTick = Mathf.Clamp01(tick * 2f);
+            transform.rotation = Quaternion.Slerp(initialRotation, finalRotation, rotationTick);
+            
             tick += Time.deltaTime / t;
             yield return null;
         }
-
     }
 }
 
@@ -207,5 +216,6 @@ public enum PlayerState
     Fall,
     Grab,
     Damage,
+    Win,
     Dead
 }

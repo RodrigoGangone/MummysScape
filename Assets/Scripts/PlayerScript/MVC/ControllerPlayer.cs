@@ -110,6 +110,7 @@ public class ControllerPlayer
             "SM_Fall" => true, // Averiguar cuando toca el suelo para pasarlo a idle
             "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
             "SM_Damage" => true,
+            "SM_Win" => false,
             "SM_Dead" => false,
             "No hay estado" => true,
         };
@@ -126,6 +127,7 @@ public class ControllerPlayer
             "SM_Fall" => false, //Averiguar cuando toca el suelo para cambiar a idle o walk
             "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
             "SM_Damage" => false,
+            "SM_Win" => false,
             "SM_Dead" => false,
         };
     }
@@ -141,6 +143,7 @@ public class ControllerPlayer
             "SM_Fall" => true,
             "SM_Grab" => false,
             "SM_Damage" => false,
+            "SM_Win" => false,
             "SM_Dead" => false,
             "No hay estado" => true,
         };
@@ -157,6 +160,7 @@ public class ControllerPlayer
             "SM_Fall" => true,
             "SM_Grab" => false, //Ver que hacer con el grab ya que la animacion seria otra
             "SM_Damage" => false,
+            "SM_Win" => false,
             "SM_Dead" => false,
         };
     }
