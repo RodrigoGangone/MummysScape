@@ -6,10 +6,11 @@ using UnityEngine;
 public class Breakable : MonoBehaviour
 {
     [SerializeField] private GameObject _destroyeVersion;
-    private void Update()
+
+    private void OnTriggerEnter(Collider other)
     {
-        if(Input.GetKeyDown(KeyCode.B))
-        {
+        if (other.gameObject.CompareTag("Bullet") || other.gameObject.CompareTag("PlayerFather"))
+        { 
             Instantiate(_destroyeVersion, transform.position, transform.rotation);
             Destroy(gameObject);
         }
