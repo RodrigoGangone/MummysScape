@@ -14,7 +14,7 @@ public class Player : MonoBehaviour
     public SpringJoint _springJoint { get; private set; }
     public LineRenderer _bandage { get; private set; }
 
-    public DetectionBeetle _detectionBeetle;
+    public DetectionHook _detectionBeetle;
 
     public LevelManager levelManager;
 
@@ -88,7 +88,7 @@ public class Player : MonoBehaviour
         levelManager = FindObjectOfType<LevelManager>();
 
         _anim = GetComponentInChildren<Animator>();
-        _detectionBeetle = GetComponentInChildren<DetectionBeetle>();
+        _detectionBeetle = GetComponentInChildren<DetectionHook>();
 
         _viewPlayer = new ViewPlayer(this);
         _modelPlayer = new ModelPlayer(this);

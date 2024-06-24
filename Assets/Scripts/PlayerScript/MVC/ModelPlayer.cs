@@ -9,7 +9,7 @@ public class ModelPlayer
     Rigidbody _rb;
 
     //HOOK
-    public DetectionBeetle detectionBeetle;
+    public DetectionHook detectionBeetle;
     public SpringJoint springJoint;
     public Rigidbody hookBeetle;
 
@@ -115,23 +115,23 @@ public class ModelPlayer
 
         springJoint = _player.gameObject.AddComponent<SpringJoint>();
         springJoint.autoConfigureConnectedAnchor = false;
-        hookBeetle = detectionBeetle.currentBeetle;
+        hookBeetle = detectionBeetle.currentHook;
         isHooking = true;
 
-        switch (detectionBeetle.currentBeetle.gameObject.tag)
+        switch (detectionBeetle.currentHook.gameObject.tag)
         {
             case "Hook":
                 springJoint.anchor = Vector3.zero;
-                springJoint.connectedBody = detectionBeetle.currentBeetle;
+                springJoint.connectedBody = detectionBeetle.currentHook;
                 springJoint.maxDistance = 5f;
                 springJoint.minDistance = 4f;
                 springJoint.spring = 75;
                 springJoint.damper = 12f;
                 break;
 
-            case "BeetleJump":
+            case "HookJump":
                 springJoint.anchor = Vector3.zero;
-                springJoint.connectedBody = detectionBeetle.currentBeetle;
+                springJoint.connectedBody = detectionBeetle.currentHook;
                 springJoint.maxDistance = 1.5f;
                 springJoint.minDistance = 2f;
                 springJoint.spring = 100;
