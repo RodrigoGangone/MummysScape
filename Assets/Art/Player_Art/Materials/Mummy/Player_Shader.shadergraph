@@ -137,6 +137,9 @@
         },
         {
             "m_Id": "63355cd040174ab1bddc63d1996e3d74"
+        },
+        {
+            "m_Id": "72d624e2fd2647138748af664bcb3daf"
         }
     ],
     "m_GroupDatas": [],
@@ -179,9 +182,9 @@
             },
             "m_InputSlot": {
                 "m_Node": {
-                    "m_Id": "297b209032aa4f22b49ba713512aa438"
+                    "m_Id": "72d624e2fd2647138748af664bcb3daf"
                 },
-                "m_SlotId": 1
+                "m_SlotId": 0
             }
         },
         {
@@ -306,6 +309,20 @@
             "m_InputSlot": {
                 "m_Node": {
                     "m_Id": "c9ab8248be2c48da927afcf2b8381ba4"
+                },
+                "m_SlotId": 1
+            }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "72d624e2fd2647138748af664bcb3daf"
+                },
+                "m_SlotId": 3
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "297b209032aa4f22b49ba713512aa438"
                 },
                 "m_SlotId": 1
             }
@@ -606,7 +623,7 @@
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "003e80179af242e3b8b44e0aa5072ad4",
     "m_Id": 0,
-    "m_DisplayName": "CutoffLight",
+    "m_DisplayName": "_CutoffLight",
     "m_SlotType": 1,
     "m_Hidden": false,
     "m_ShaderOutputName": "Out",
@@ -1070,10 +1087,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -1660.0001220703125,
-            "y": -122.0000228881836,
+            "x": -2192.0,
+            "y": 1.0000193119049073,
             "width": 134.0,
-            "height": 34.00001525878906
+            "height": 33.99998092651367
         }
     },
     "m_Slots": [
@@ -1091,6 +1108,30 @@
     },
     "m_Property": {
         "m_Id": "fc001003e19d4fa48c5cc05d56adfb02"
+    }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.DynamicVectorMaterialSlot",
+    "m_ObjectId": "1c8f8562b586484f81017bb6ec2b38cc",
+    "m_Id": 3,
+    "m_DisplayName": "Out",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Out",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
     }
 }
 
@@ -1187,6 +1228,27 @@
     "m_CustomColors": {
         "m_SerializableColors": []
     }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector2MaterialSlot",
+    "m_ObjectId": "295508aa223145b5b35df04c6dd5a46e",
+    "m_Id": 2,
+    "m_DisplayName": "Out Min Max",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "OutMinMax",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": -2.0,
+        "y": 2.5
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0
+    },
+    "m_Labels": []
 }
 
 {
@@ -1598,6 +1660,30 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.DynamicVectorMaterialSlot",
+    "m_ObjectId": "4630062beba04696a3221ec780bb7f69",
+    "m_Id": 0,
+    "m_DisplayName": "In",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "In",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": -1.0,
+        "y": -1.0,
+        "z": -1.0,
+        "w": -1.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    }
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.BlockNode",
     "m_ObjectId": "47a40ff51b4e4e92909a88d31cca0d57",
     "m_Group": {
@@ -1642,10 +1728,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -1732.0001220703125,
-            "y": -69.99996948242188,
+            "x": -1710.0001220703125,
+            "y": 126.99999237060547,
             "width": 206.0,
-            "height": 131.00001525878907
+            "height": 131.00003051757813
         }
     },
     "m_Slots": [
@@ -1745,11 +1831,11 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
-    "m_Value": 0.15000000596046449,
+    "m_Value": -0.20000000298023225,
     "m_FloatType": 1,
     "m_RangeValues": {
-        "x": 0.0,
-        "y": 1.0
+        "x": -0.5,
+        "y": 0.0
     }
 }
 
@@ -1946,6 +2032,48 @@
         "m_Guid": ""
     },
     "m_DefaultType": 0
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.RemapNode",
+    "m_ObjectId": "72d624e2fd2647138748af664bcb3daf",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "Remap",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": -1761.0001220703125,
+            "y": -80.00000762939453,
+            "width": 186.0,
+            "height": 142.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "4630062beba04696a3221ec780bb7f69"
+        },
+        {
+            "m_Id": "c52216eb2b40434f92912aa2b46da617"
+        },
+        {
+            "m_Id": "295508aa223145b5b35df04c6dd5a46e"
+        },
+        {
+            "m_Id": "1c8f8562b586484f81017bb6ec2b38cc"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": false,
+    "m_DismissedVersion": 0,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    }
 }
 
 {
@@ -3099,6 +3227,27 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector2MaterialSlot",
+    "m_ObjectId": "c52216eb2b40434f92912aa2b46da617",
+    "m_Id": 1,
+    "m_DisplayName": "In Min Max",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "InMinMax",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 1.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0
+    },
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
     "m_ObjectId": "c66ee2842aff4a9abee9be451843650a",
     "m_Group": {
@@ -3859,9 +4008,9 @@
     "m_Guid": {
         "m_GuidSerialized": "6b63c3b1-1362-4a5b-a593-8e3351cfe1d1"
     },
-    "m_Name": "CutoffLight",
+    "m_Name": "_CutoffLight",
     "m_DefaultRefNameVersion": 1,
-    "m_RefNameGeneratedByDisplayName": "CutoffLight",
+    "m_RefNameGeneratedByDisplayName": "_CutoffLight",
     "m_DefaultReferenceName": "_CutoffLight",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
@@ -3872,11 +4021,11 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
-    "m_Value": 0.5,
+    "m_Value": 1.0,
     "m_FloatType": 1,
     "m_RangeValues": {
-        "x": -2.0,
-        "y": 2.5
+        "x": 0.0,
+        "y": 1.0
     }
 }
 

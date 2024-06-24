@@ -11,6 +11,9 @@ public class ViewPlayer
     private Animator[] _animatorController;
     private SkinnedMeshRenderer skinnedMesh;
 
+    public Material playerMat;
+    public float disolve;
+
     public Material hookMaterial;
     public LineRenderer bandageHook;
 
@@ -25,6 +28,10 @@ public class ViewPlayer
         bandageHook = _player._bandage;
 
         skinnedMesh = _player.GetComponentInChildren<SkinnedMeshRenderer>();
+
+        playerMat = skinnedMesh.material;
+        
+        disolve = 1f;
     }
 
     public void ChangeMesh(Mesh mesh)

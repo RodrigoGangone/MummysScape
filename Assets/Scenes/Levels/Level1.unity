@@ -6715,11 +6715,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1088383556989064656, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
       propertyPath: posCam
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6693663414584827080, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
       propertyPath: m_Name
-      value: CamCollider (3)
+      value: CamCollider 4
       objectReference: {fileID: 0}
     - target: {fileID: 7800521857585399337, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
       propertyPath: m_LocalScale.x
@@ -12064,7 +12064,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6693663414584827080, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
       propertyPath: m_Name
-      value: CamCollider
+      value: CamCollider 1
       objectReference: {fileID: 0}
     - target: {fileID: 7800521857585399337, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
       propertyPath: m_LocalScale.x
@@ -19221,8 +19221,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1561880079}
   - {fileID: 1467300406}
+  - {fileID: 1561880079}
   - {fileID: 465759758}
   - {fileID: 1002293340}
   - {fileID: 2134414224}
@@ -20421,7 +20421,7 @@ GameObject:
   m_Component:
   - component: {fileID: 774251929}
   m_Layer: 0
-  m_Name: Pos3
+  m_Name: Pos4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -20435,8 +20435,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 774251928}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.06075197, y: -0.9367003, z: 0.20553379, w: 0.2768713}
-  m_LocalPosition: {x: 11.021798, y: 10.87013, z: 19.231785}
+  m_LocalRotation: {x: -0.14018624, y: 0.784348, z: -0.1919624, w: -0.5729717}
+  m_LocalPosition: {x: 9.647015, y: 6.1570873, z: 10.437218}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -21651,13 +21651,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 602816962}
     m_Modifications:
+    - target: {fileID: 669352592393217119, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
+      propertyPath: m_Size.x
+      value: 0.52919906
+      objectReference: {fileID: 0}
+    - target: {fileID: 669352592393217119, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
+      propertyPath: m_Center.x
+      value: -0.23540154
+      objectReference: {fileID: 0}
     - target: {fileID: 1088383556989064656, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
       propertyPath: posCam
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6693663414584827080, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
       propertyPath: m_Name
-      value: CamCollider (1)
+      value: CamCollider 2
       objectReference: {fileID: 0}
     - target: {fileID: 7800521857585399337, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
       propertyPath: m_LocalScale.x
@@ -30182,6 +30190,37 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &1418824998
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1418824999}
+  m_Layer: 0
+  m_Name: Pos3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1418824999
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1418824998}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.15346417, y: 0.69513506, z: -0.15583329, w: -0.6848008}
+  m_LocalPosition: {x: 13.255365, y: 5.2247677, z: -1.9029827}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1561880079}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1419032760
 GameObject:
   m_ObjectHideFlags: 0
@@ -30401,7 +30440,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1467300403}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.20421995, y: -0.47321862, z: 0.108028434, w: -0.8501107}
+  m_LocalRotation: {x: -0.20421997, y: -0.47321862, z: 0.10802844, w: -0.8501107}
   m_LocalPosition: {x: -13.26, y: 4.1799994, z: -6.3899994}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -30468,6 +30507,7 @@ MonoBehaviour:
   positions:
   - {fileID: 2104138328}
   - {fileID: 1761977436}
+  - {fileID: 1418824999}
   - {fileID: 774251929}
   pos: 0
   speed: 0.005
@@ -31754,6 +31794,7 @@ Transform:
   m_Children:
   - {fileID: 2104138328}
   - {fileID: 1761977436}
+  - {fileID: 1418824999}
   - {fileID: 774251929}
   m_Father: {fileID: 602816962}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -38480,8 +38521,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1761977435}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.13971289, y: -0.695158, z: 0.14055374, w: 0.6909995}
-  m_LocalPosition: {x: 16.672033, y: 8.344042, z: -3.2072387}
+  m_LocalRotation: {x: 0.4008979, y: 0.002497792, z: -0.0010169892, w: 0.91611874}
+  m_LocalPosition: {x: 5.420795, y: 7.421829, z: -10.500635}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -45690,8 +45731,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2104138327}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.20421994, y: -0.47321862, z: 0.10802843, w: -0.8501107}
-  m_LocalPosition: {x: -6.921394, y: 6.3077765, z: -6.2164454}
+  m_LocalRotation: {x: 0.15339753, y: 0.56766397, z: -0.10847218, w: 0.8015364}
+  m_LocalPosition: {x: -7.42, y: 4.25, z: -1.97}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -45705,13 +45746,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 602816962}
     m_Modifications:
+    - target: {fileID: 669352592393217119, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
+      propertyPath: m_Size.x
+      value: 1.1420078
+      objectReference: {fileID: 0}
+    - target: {fileID: 669352592393217119, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
+      propertyPath: m_Size.z
+      value: 1.3174175
+      objectReference: {fileID: 0}
+    - target: {fileID: 669352592393217119, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
+      propertyPath: m_Center.x
+      value: -0.07100383
+      objectReference: {fileID: 0}
+    - target: {fileID: 669352592393217119, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
+      propertyPath: m_Center.z
+      value: -0.15870851
+      objectReference: {fileID: 0}
     - target: {fileID: 1088383556989064656, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
       propertyPath: posCam
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6693663414584827080, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
       propertyPath: m_Name
-      value: CamCollider (2)
+      value: CamCollider 3
       objectReference: {fileID: 0}
     - target: {fileID: 7800521857585399337, guid: df6ff333b33f1194b841d5cc85e475c5, type: 3}
       propertyPath: m_LocalScale.x

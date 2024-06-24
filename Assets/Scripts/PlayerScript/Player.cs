@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Serialization;
+using System.Collections;
 
 public class Player : MonoBehaviour
 {
@@ -21,22 +22,22 @@ public class Player : MonoBehaviour
 
     private string _currentState;
 
-    [Header("ATRIBUTES")] [SerializeField] private float _life;
+    [Header("ATRIBUTES")][SerializeField] private float _life;
     [SerializeField] private float _speedOriginal = 5;
     [SerializeField] private float _speed;
     [SerializeField] private float _maxSpeed;
     [SerializeField] private float _speedRotation;
 
-    [Header("BANDAGE")] [SerializeField] private int _maxBandageStock = 2;
+    [Header("BANDAGE")][SerializeField] private int _maxBandageStock = 2;
     [SerializeField] private int _minBandageStock = 0;
     [SerializeField] private int _currBandageStock = 2;
     [SerializeField] public Transform target;
 
-    [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
+    [Header("SIZES")][SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
 
     [SerializeField] public Mesh[] _Meshes;
 
-    [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
+    [Header("FXS")][SerializeField] public ParticleSystem _puffFX;
 
     //TODO: Mejorar esto a futuro
 
@@ -123,6 +124,7 @@ public class Player : MonoBehaviour
     {
         _stateMachinePlayer?.Update();
         _controllerPlayer.ControllerUpdate();
+
     }
 
     private void FixedUpdate()
@@ -166,9 +168,25 @@ public class Player : MonoBehaviour
     void Win()
     {
         _viewPlayer.PLAY_ANIM_TRIGGER("Win");
-
+        StartCoroutine(Disolve(5));
         enabled = false;
         //TODO: SETEAR MATERIAL
+    }
+
+    private IEnumerator Disolve(float t)
+    {
+        float tick = 0f;
+        float value = 1;
+
+        while (value > 0f)
+        {
+            Debug.Log(value);
+            value = Mathf.Lerp(1f, 0f, tick);
+            _viewPlayer.playerMat.SetFloat("_CutoffLight", value);
+            tick += Time.deltaTime / t;
+            yield return null;
+        }
+
     }
 }
 
