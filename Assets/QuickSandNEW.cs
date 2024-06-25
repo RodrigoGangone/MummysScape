@@ -1,30 +1,33 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class QuickSandNEW : MonoBehaviour
 {
     [Header("ATRIBUTES INVISIBLE")]
-    private Vector3 _startPosInvisible; //posicion a la que va a regresar la plat invisible
+    private Vector3 _startPosInvisible; //Posicion a la que va a regresar la plat invisible
 
-    private Transform _invisiblePlatform; //referencia de la plataforma invisible
+    private Transform _invisiblePlatform; //Referencia de la plataforma invisible
+
+    private StatePlatform _state; //Direccion hacia donde tiene que ir la plataforma
 
     [Header("MOVE QUICKSAND")] [SerializeField]
     private float yVariant;
 
-    private Vector3 _startPosQuickSand;
+    private Vector3 _startPosQuickSand; //Pos inicial
     private Vector3 _endPosQuickSand; //Se setea por hierarchy
 
     [Header("VARIABLES")] [SerializeField] private float _speedSink; //Velocidad de hundision
     [SerializeField] private float _speedMove; //Velocidad de movision
-    [SerializeField] private bool isActivated; //Si se activo el metodo para mover la arena
+
+    private bool isActivated; //Si se activo el metodo para mover la arena
+    private bool _onModifyQuickSand; //Verifico si el player esta en la arena movediza
+
     private float _timeInvPlat;
     private float _timeActSand;
-    private bool _onQuicksand; //verifico si el player esta en la arena movediza
 
 
-    private void Awake()
+    void Awake()
     {
         //Posicion inicial de la arena (visual e invisible)
         _startPosQuickSand = transform.position;
@@ -36,13 +39,18 @@ public class QuickSandNEW : MonoBehaviour
         _invisiblePlatform = transform.GetChild(0);
     }
 
+    //TODO: MODIFICAR PARA QUE NO DESAPAREZCA EL COLLIDER, SINO QUE MATE AL JUGADOR
+    //TODO: BARAJAR LA IDEA DE QUE YA QUE EXISTE UN STARPOSTINVISIBLE, QUE HAYA UN ENDPOSINVISIBLE, ENTONCES MANEJARIAMOS DOS VECTOR3.LERP
+    //TODO: SEGUIR MEJORANDO LOGICA PARA QUE _onModifyQuickSand PASE A FALSE, ACTUALMENTE FUNCIONA PERO NO ES LO IDEAL
+
     void Update()
     {
         if (isActivated)
             ActivateSand();
 
-        if (!_onQuicksand) return;
-        DownInvisiblePlatform();
+        if (!_onModifyQuickSand) return;
+
+        _invisiblePlatform.position = StateSand(_state, _invisiblePlatform.position);
     }
 
     public void ActivateSand()
@@ -66,46 +74,98 @@ public class QuickSandNEW : MonoBehaviour
         }
     }
 
-    private void DownInvisiblePlatform()
+    Vector3 StateSand(StatePlatform statePlatform, Vector3 inv)
     {
+        var heightDescend = -3;
+
         _timeInvPlat += Time.deltaTime * _speedSink;
-        var y = _speedSink != 0 ? _timeInvPlat : 0f;
-        _invisiblePlatform.position = _startPosInvisible + new Vector3(0, -y, 0);
+
+        _invisiblePlatform.GetComponent<Collider>().enabled = _invisiblePlatform.position.y != heightDescend;
+
+        if (statePlatform == StatePlatform.DownSand)
+        {
+            var endPosInvisiblePlatform = new Vector3(_startPosInvisible.x, heightDescend, _startPosInvisible.z);
+
+            return Vector3.MoveTowards(inv, endPosInvisiblePlatform, _timeInvPlat);
+        }
+
+        if (Vector3.Distance(_invisiblePlatform.position, _startPosInvisible) < 0.01f)
+            _onModifyQuickSand = false;
+
+        return Vector3.MoveTowards(inv, _startPosInvisible, _timeInvPlat);
     }
 
-    private void OnTriggerStay(Collider other)
+    void OnTriggerStay(Collider other)
     {
         if (!other.gameObject.CompareTag("PlayerFather")) return;
 
         var player = other.gameObject.GetComponent<Player>();
 
-        player.ChangeSpeed();
-
         if (player.CurrentPlayerSize == PlayerSize.Head)
         {
-            _onQuicksand = false;
-            _timeInvPlat = 0;
-            _invisiblePlatform.position = _startPosInvisible;
+            _state = StatePlatform.UpSand;
             other.transform.SetParent(null);
         }
         else
         {
-            _onQuicksand = true;
+            _state = StatePlatform.DownSand;
             other.transform.SetParent(_invisiblePlatform);
         }
     }
 
-    private void OnTriggerExit(Collider other)
+    void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag("PlayerFather")) return;
 
-        _onQuicksand = false;
+        _onModifyQuickSand = true;
+        _state = StatePlatform.DownSand;
+
+        _timeInvPlat = 0;
+
+        other.gameObject.GetComponent<Player>().ChangeSpeed();
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (!other.gameObject.CompareTag("PlayerFather")) return;
+
+        _state = StatePlatform.UpSand;
+
         _timeInvPlat = 0;
 
         var player = other.gameObject.GetComponent<Player>();
         player.Speed = player.SpeedOriginal;
         other.transform.SetParent(null);
 
-        transform.position = _startPosInvisible;
+        StartCoroutine(ResetInvisiblePlatform()); //Restaurar posicion al salir de la arena de forma casi instantanea
     }
+
+    private IEnumerator
+        ResetInvisiblePlatform() // Se hizo esto para que no te pegue el invisible platform en los pies de golpe al salir de la arena
+    {
+        var distanceToStartPos = Vector3.Distance(_invisiblePlatform.position, _startPosInvisible);
+        float timeToReturn;
+
+        switch (distanceToStartPos)
+        {
+            case <= 0.5f:
+                timeToReturn = 0.2f;
+                break;
+            case > 0.5f:
+                timeToReturn = 0.3f;
+                break;
+            default:
+                timeToReturn = 0.2f;
+                break;
+        }
+
+        yield return new WaitForSeconds(timeToReturn);
+        _invisiblePlatform.position = _startPosInvisible;
+    }
+}
+
+enum StatePlatform
+{
+    DownSand,
+    UpSand
 }
