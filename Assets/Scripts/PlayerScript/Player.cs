@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections;
@@ -196,6 +197,15 @@ public class Player : MonoBehaviour
 
             tick += Time.deltaTime / t;
             yield return null;
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("KillPlane"))
+        {
+            Debug.Log("Player murio por killPlane");
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
 }
