@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 public class ModelPlayer
 {
@@ -24,7 +23,7 @@ public class ModelPlayer
     private float _objRotation = 10f;
     private float _objSpeed = 5f;
 
-    public Action shoot;
+    public Action sizeModify;
 
     public ModelPlayer(Player p)
     {
@@ -144,6 +143,7 @@ public class ModelPlayer
     public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         _player._viewPlayer.PLAY_PUFF();
+        sizeModify?.Invoke();
         //TODO: cambiar el tamaño del capsule collider dependiendo el tamaño
         switch (_player.CurrentBandageStock)
         {
@@ -176,7 +176,7 @@ public class ModelPlayer
                 _player.CurrentPlayerSize = PlayerSize.Normal;
                 break;
         }
-        
+
         _player._viewPlayer.AdjustColliderSize();
     }
 

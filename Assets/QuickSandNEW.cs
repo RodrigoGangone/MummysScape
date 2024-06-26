@@ -1,25 +1,29 @@
+using System;
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class QuickSandNEW : MonoBehaviour
 {
+    private Player _player;
+
     [Header("ATRIBUTES INVISIBLE")] //Plataforma invisible dentro de la arena
     private Vector3 _startPosInvisible; //Posicion a la que va a regresar la plat invisible
+
     private Vector3 _endPosInvisible;
-    
+
     private Transform _invisiblePlatform; //Referencia de la plataforma invisible
 
     [SerializeField] private StatePlatform _state; //Direccion hacia donde tiene que ir la plataforma
 
     [Header("MOVE QUICKSAND")] //Al subir o bajar la Arena
-    [SerializeField] private float yVariant;
+    [SerializeField]
+    private float yVariant;
 
     private Vector3 _startPosQuickSand; //Pos inicial
     private Vector3 _endPosQuickSand; //Se setea por hierarchy
 
-    [Header("VARIABLES")] 
-    [SerializeField] private float _speedSink; //Velocidad de hundision
+    [Header("VARIABLES")] [SerializeField] private float _speedSink; //Velocidad de hundision
     [SerializeField] private float _speedMove; //Velocidad de movision
 
     private bool isActivated; //Si se activo el metodo para mover la arena
@@ -28,6 +32,11 @@ public class QuickSandNEW : MonoBehaviour
     [SerializeField] private float _timeInvPlat;
     private float _timeActSand;
 
+    private Action _sizeModify;
+    private LevelManager _levelManager;
+
+    //TODO: SE CREO UN ACTION EN EL MODELO PARA SABER CADA VEZ QUE EL PLAYER CAMBIA SU SIZE
+    //TODO: ESTO SERVIRA A FUTURO PARA INFORMARLE A (POR EJEMPLO) LA UI QUE LA MOMIA CAMBIO SU TAMANO
 
     void Awake()
     {
@@ -38,11 +47,18 @@ public class QuickSandNEW : MonoBehaviour
         //Posicion inicial/final de la plat inv (Invisible)
         _startPosInvisible = transform.position;
         _endPosInvisible = new Vector3(_startPosInvisible.x, _startPosInvisible.y - 3, _startPosInvisible.z);
-        
+
         //Referencia de plataforma invisible
         _invisiblePlatform = transform.GetChild(0);
+
+        _player = FindObjectOfType<Player>();
+        _levelManager = FindObjectOfType<LevelManager>();
+
+        _player._modelPlayer.sizeModify += _sizeModify;
+
+        _sizeModify = () => { _timeInvPlat = 0; };
     }
-    
+
     void Update()
     {
         if (isActivated)
@@ -77,9 +93,9 @@ public class QuickSandNEW : MonoBehaviour
     Vector3 StateSand(StatePlatform statePlatform, Vector3 currentInvPos)
     {
         _timeInvPlat += Time.deltaTime * _speedSink;
-        
+
         if (currentInvPos.y.Equals(_endPosInvisible.y))
-            Debug.Log("EL PLAYER MURIO"); //TODO: hacer action para que ejecute muerte de player
+            _levelManager.playerDeath?.Invoke();
 
         if (statePlatform == StatePlatform.DownSand)
             return Vector3.MoveTowards(currentInvPos, _endPosInvisible, _timeInvPlat);
@@ -94,9 +110,7 @@ public class QuickSandNEW : MonoBehaviour
     {
         if (!other.gameObject.CompareTag("PlayerFather")) return;
 
-        var player = other.gameObject.GetComponent<Player>();
-
-        if (player.CurrentPlayerSize == PlayerSize.Head)
+        if (_player.CurrentPlayerSize == PlayerSize.Head)
         {
             _state = StatePlatform.UpSand;
             _speedSink = 0.001f; //Velocidad para subir
@@ -106,11 +120,11 @@ public class QuickSandNEW : MonoBehaviour
             _onModifyQuickSand = true;
             _state = StatePlatform.DownSand;
 
-            if (player.CurrentPlayerSize.Equals(PlayerSize.Normal)) //Velocidad para hundir
+            if (_player.CurrentPlayerSize.Equals(PlayerSize.Normal)) //Velocidad para hundir
                 _speedSink = 0.001f;
             else
                 _speedSink = 0.0001f;
-            
+
             other.transform.SetParent(_invisiblePlatform);
         }
     }
@@ -134,8 +148,7 @@ public class QuickSandNEW : MonoBehaviour
 
         _timeInvPlat = 0;
 
-        var player = other.gameObject.GetComponent<Player>();
-        player.Speed = player.SpeedOriginal;
+        _player.Speed = _player.SpeedOriginal;
         other.transform.SetParent(null);
 
         StartCoroutine(ResetInvisiblePlatform()); //Delay al reposicionar invPlatform

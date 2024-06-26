@@ -12,7 +12,7 @@ public class SM_Shoot : State
         _model = model;
         _view = view;
 
-        _model.shoot += GoIdle;
+        _model.sizeModify += GoIdle;
     }
 
     public override void OnEnter()

@@ -170,42 +170,18 @@ public class Player : MonoBehaviour
     {
         _stateMachinePlayer.ChangeState(PlayerState.Win);
     }
-    
+
     void Death()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
-
-    public IEnumerator Disolve(float t)
-    {
-        float tick = 0f;
-        float value = 1;
-
-        Quaternion initialRotation = transform.rotation;
-        Quaternion finalRotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + 180f,
-            transform.eulerAngles.z); //Lo roto solo en Y
-
-        while (value > 0f)
-        {
-            Debug.Log(value);
-            value = Mathf.Lerp(1f, 0f, tick);
-            _viewPlayer.playerMat.SetFloat("_CutoffLight", value);
-
-            //Rotacion progresiva
-            float rotationTick = Mathf.Clamp01(tick * 2f);
-            transform.rotation = Quaternion.Slerp(initialRotation, finalRotation, rotationTick);
-
-            tick += Time.deltaTime / t;
-            yield return null;
-        }
-    }
-
+    
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("KillPlane"))
         {
             Debug.Log("Player murio por killPlane");
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            Death();
         }
     }
 }

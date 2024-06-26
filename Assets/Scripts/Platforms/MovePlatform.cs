@@ -1,4 +1,5 @@
 using System;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -7,7 +8,7 @@ public class MovePlatform : MonoBehaviour
     [Header("TYPE OF PLATFORM")] [SerializeField]
     private TypeOfPlatform _type;
 
-    [Header("SPEED")] [SerializeField] private float speed = 1.0f;
+    [Header("SPEED")] public float speed;
 
     [Header("MOVE")] [SerializeField] private float moveX;
     [SerializeField] private float moveY;
@@ -47,7 +48,7 @@ public class MovePlatform : MonoBehaviour
         }
 
         if (!isActive) return;
-        
+
         switch (_type)
         {
             case TypeOfPlatform.MoveAxis:
@@ -125,7 +126,6 @@ public class MovePlatform : MonoBehaviour
 
         transform.position = centerOfSin.position + new Vector3(x, y, z);
     }
-
 
     private void OnTriggerEnter(Collider other)
     {
