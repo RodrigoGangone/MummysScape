@@ -28,25 +28,13 @@ public class ControllerPlayer
     {
         if (CanWalkState() && IsWalking())
         {
-            Debug.Log("ENTRE POR CONTROLLER A : WALK");
             OnStateChange(PlayerState.Walk);
         }
 
         if (CanIdleState() && !IsWalking())
         {
-            Debug.Log("ENTRE POR CONTROLLER A : IDLE");
             OnStateChange(PlayerState.Idle);
         }
-
-        /*if (CanIdleState() && !IsWalking())
-        {
-            OnStateChange(PlayerState.Idle);
-        }*/
-
-        /*if (CanIdleState() && !IsWalking() && !_model.isHooking)
-        {
-            OnStateChange(PlayerState.Idle);
-        }*/
 
         if (CanHookState() && Input.GetKeyDown(KeyCode.Space))
         {

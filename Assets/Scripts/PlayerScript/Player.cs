@@ -145,7 +145,6 @@ public class Player : MonoBehaviour
 
     bool CanShoot()
     {
-        Debug.Log("Bandage Stock : " + _currBandageStock);
         return _currBandageStock > _minBandageStock;
     }
 
