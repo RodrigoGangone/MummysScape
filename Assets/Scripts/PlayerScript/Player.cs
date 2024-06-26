@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections;
@@ -167,6 +168,14 @@ public class Player : MonoBehaviour
     void Win()
     {
         _stateMachinePlayer.ChangeState(PlayerState.Win);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("KillPlane"))
+        {
+            Debug.Log("Murio el player por kill plane"); //TODO ejecutar action de muerte
+        }
     }
 }
 

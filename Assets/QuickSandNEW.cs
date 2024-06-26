@@ -10,7 +10,7 @@ public class QuickSandNEW : MonoBehaviour
     
     private Transform _invisiblePlatform; //Referencia de la plataforma invisible
 
-    private StatePlatform _state; //Direccion hacia donde tiene que ir la plataforma
+    [SerializeField] private StatePlatform _state; //Direccion hacia donde tiene que ir la plataforma
 
     [Header("MOVE QUICKSAND")] //Al subir o bajar la Arena
     [SerializeField] private float yVariant;
@@ -23,7 +23,7 @@ public class QuickSandNEW : MonoBehaviour
     [SerializeField] private float _speedMove; //Velocidad de movision
 
     private bool isActivated; //Si se activo el metodo para mover la arena
-    private bool _onModifyQuickSand; //Verifico si el player esta en la arena movediza
+    [SerializeField] private bool _onModifyQuickSand; //Verifico si el player esta en la arena movediza
 
     [SerializeField] private float _timeInvPlat;
     private float _timeActSand;
@@ -100,10 +100,10 @@ public class QuickSandNEW : MonoBehaviour
         {
             _state = StatePlatform.UpSand;
             _speedSink = 0.001f; //Velocidad para subir
-            //other.transform.SetParent(null);
         }
         else
         {
+            _onModifyQuickSand = true;
             _state = StatePlatform.DownSand;
 
             if (player.CurrentPlayerSize.Equals(PlayerSize.Normal)) //Velocidad para hundir
