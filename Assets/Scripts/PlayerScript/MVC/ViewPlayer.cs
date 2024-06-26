@@ -60,7 +60,7 @@ public class ViewPlayer
             case PlayerSize.Head:
                 height = 0.5f;
                 radius = 0.4f;
-                centerY = 0.5f;
+                centerY = 0.3f;
                 break;
             default:
                 Debug.LogWarning("Unknown player size.");
