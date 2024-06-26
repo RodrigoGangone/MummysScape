@@ -42,11 +42,7 @@ public class QuickSandNEW : MonoBehaviour
         //Referencia de plataforma invisible
         _invisiblePlatform = transform.GetChild(0);
     }
-
-    //TODO: MODIFICAR PARA QUE NO DESAPAREZCA EL COLLIDER, SINO QUE MATE AL JUGADOR
-    //TODO: BARAJAR LA IDEA DE QUE YA QUE EXISTE UN STARPOSTINVISIBLE, QUE HAYA UN ENDPOSINVISIBLE, ENTONCES MANEJARIAMOS DOS VECTOR3.LERP
-    //TODO: SEGUIR MEJORANDO LOGICA PARA QUE _onModifyQuickSand PASE A FALSE, ACTUALMENTE FUNCIONA PERO NO ES LO IDEAL
-
+    
     void Update()
     {
         if (isActivated)
@@ -83,7 +79,7 @@ public class QuickSandNEW : MonoBehaviour
         _timeInvPlat += Time.deltaTime * _speedSink;
         
         if (currentInvPos.y.Equals(_endPosInvisible.y))
-            Debug.Log("EL PLAYER MURIO");
+            Debug.Log("EL PLAYER MURIO"); //TODO: hacer action para que ejecute muerte de player
 
         if (statePlatform == StatePlatform.DownSand)
             return Vector3.MoveTowards(currentInvPos, _endPosInvisible, _timeInvPlat);
