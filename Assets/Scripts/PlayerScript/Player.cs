@@ -169,7 +169,7 @@ public class Player : MonoBehaviour
     {
         _stateMachinePlayer.ChangeState(PlayerState.Win);
     }
-
+    
     void Death()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
