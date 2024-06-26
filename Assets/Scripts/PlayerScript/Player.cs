@@ -1,14 +1,13 @@
-using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
     public ModelPlayer _modelPlayer { get; private set; }
     public ViewPlayer _viewPlayer { get; private set; }
     public ControllerPlayer _controllerPlayer { get; private set; }
-
     public Rigidbody _rigidbody { get; private set; }
     public Animator _anim { get; private set; }
     public Transform _cameraTransform { get; private set; }
@@ -23,22 +22,22 @@ public class Player : MonoBehaviour
 
     private string _currentState;
 
-    [Header("ATRIBUTES")][SerializeField] private float _life;
+    [Header("ATRIBUTES")] [SerializeField] private float _life;
     [SerializeField] private float _speedOriginal = 5;
     [SerializeField] private float _speed;
     [SerializeField] private float _maxSpeed;
     [SerializeField] private float _speedRotation;
 
-    [Header("BANDAGE")][SerializeField] private int _maxBandageStock = 2;
+    [Header("BANDAGE")] [SerializeField] private int _maxBandageStock = 2;
     [SerializeField] private int _minBandageStock = 0;
     [SerializeField] private int _currBandageStock = 2;
     [SerializeField] public Transform target;
 
-    [Header("SIZES")][SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
+    [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
 
     [SerializeField] public Mesh[] _Meshes;
 
-    [Header("FXS")][SerializeField] public ParticleSystem _puffFX;
+    [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
 
     //TODO: Mejorar esto a futuro
 
@@ -101,6 +100,7 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnGetState += CurrentState;
 
         levelManager.playerWin += Win;
+        levelManager.playerDeath += Death;
     }
 
     private void Start()
@@ -169,12 +169,33 @@ public class Player : MonoBehaviour
     {
         _stateMachinePlayer.ChangeState(PlayerState.Win);
     }
-
-    private void OnTriggerEnter(Collider other)
+    
+    void Death()
     {
-        if (other.CompareTag("KillPlane"))
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public IEnumerator Disolve(float t)
+    {
+        float tick = 0f;
+        float value = 1;
+
+        Quaternion initialRotation = transform.rotation;
+        Quaternion finalRotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + 180f,
+            transform.eulerAngles.z); //Lo roto solo en Y
+
+        while (value > 0f)
         {
-            Debug.Log("Murio el player por kill plane"); //TODO ejecutar action de muerte
+            Debug.Log(value);
+            value = Mathf.Lerp(1f, 0f, tick);
+            _viewPlayer.playerMat.SetFloat("_CutoffLight", value);
+
+            //Rotacion progresiva
+            float rotationTick = Mathf.Clamp01(tick * 2f);
+            transform.rotation = Quaternion.Slerp(initialRotation, finalRotation, rotationTick);
+
+            tick += Time.deltaTime / t;
+            yield return null;
         }
     }
 }
