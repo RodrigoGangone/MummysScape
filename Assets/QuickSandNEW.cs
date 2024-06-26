@@ -104,7 +104,7 @@ public class QuickSandNEW : MonoBehaviour
         {
             _state = StatePlatform.UpSand;
             _speedSink = 0.001f; //Velocidad para subir
-            other.transform.SetParent(null);
+            //other.transform.SetParent(null);
         }
         else
         {

@@ -15,7 +15,6 @@ public class SM_Fall : State
 
     public override void OnEnter()
     {
-        Debug.Log("ONENTER STATE: FALL");
         //TODO: AGREGAR ANIMACION DE CAIDA, ESTE ESTADO SOLO SE USA PARA FEEDBACKS Y DE "PUENTE" DESDE HOOK A TODOS LOS ESTADOS
     }
 

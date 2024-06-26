@@ -125,7 +125,6 @@ public class Player : MonoBehaviour
     {
         _stateMachinePlayer?.Update();
         _controllerPlayer.ControllerUpdate();
-
     }
 
     private void FixedUpdate()

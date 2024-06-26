@@ -18,7 +18,6 @@ public class SM_Win : State
 
     public override void OnEnter()
     {
-        Debug.Log("ONENTER WIN STATE");
         _startTime = Time.timeSinceLevelLoad;
         _materialChanged = false;
         _rotationStarted = false;
