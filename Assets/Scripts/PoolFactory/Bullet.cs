@@ -9,6 +9,7 @@ public class Bullet : MonoBehaviour
     [SerializeField] private GameObject _prefabBandage;
     private GameObject _playerPos;
     private GameObject _target;
+    [SerializeField] private GameObject _fxBullet;
 
     void OnEnable()
     {
@@ -43,14 +44,7 @@ public class Bullet : MonoBehaviour
 
     private void SpawnBandage()
     {
-        var bandageGO = Instantiate(_prefabBandage, transform.position, Quaternion.identity);
-        PLAY_HIT_FX(bandageGO);
-    }
-
-    private void PLAY_HIT_FX(GameObject bandage)
-    {
-        var _hitBandage = bandage.transform.GetChild(0);
-
-        _hitBandage.GetComponent<ParticleSystem>().Play();
+        Instantiate(_prefabBandage, transform.position, Quaternion.identity);
+        Instantiate(_fxBullet, transform.position, transform.rotation);
     }
 }
