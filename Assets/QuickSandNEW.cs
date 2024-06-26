@@ -4,37 +4,41 @@ using UnityEngine;
 
 public class QuickSandNEW : MonoBehaviour
 {
-    [Header("ATRIBUTES INVISIBLE")]
+    [Header("ATRIBUTES INVISIBLE")] //Plataforma invisible dentro de la arena
     private Vector3 _startPosInvisible; //Posicion a la que va a regresar la plat invisible
-
+    private Vector3 _endPosInvisible;
+    
     private Transform _invisiblePlatform; //Referencia de la plataforma invisible
 
     private StatePlatform _state; //Direccion hacia donde tiene que ir la plataforma
 
-    [Header("MOVE QUICKSAND")] [SerializeField]
-    private float yVariant;
+    [Header("MOVE QUICKSAND")] //Al subir o bajar la Arena
+    [SerializeField] private float yVariant;
 
     private Vector3 _startPosQuickSand; //Pos inicial
     private Vector3 _endPosQuickSand; //Se setea por hierarchy
 
-    [Header("VARIABLES")] [SerializeField] private float _speedSink; //Velocidad de hundision
+    [Header("VARIABLES")] 
+    [SerializeField] private float _speedSink; //Velocidad de hundision
     [SerializeField] private float _speedMove; //Velocidad de movision
 
     private bool isActivated; //Si se activo el metodo para mover la arena
     private bool _onModifyQuickSand; //Verifico si el player esta en la arena movediza
 
-    private float _timeInvPlat;
+    [SerializeField] private float _timeInvPlat;
     private float _timeActSand;
 
 
     void Awake()
     {
-        //Posicion inicial de la arena (visual e invisible)
+        //Posicion inicial/final de la arena (Visual)
         _startPosQuickSand = transform.position;
         _endPosQuickSand = new Vector3(_startPosQuickSand.x, yVariant, _startPosQuickSand.z);
 
-        //La posicion inicial a donde debe volver la plat invisible
+        //Posicion inicial/final de la plat inv (Invisible)
         _startPosInvisible = transform.position;
+        _endPosInvisible = new Vector3(_startPosInvisible.x, _startPosInvisible.y - 3, _startPosInvisible.z);
+        
         //Referencia de plataforma invisible
         _invisiblePlatform = transform.GetChild(0);
     }
@@ -74,25 +78,20 @@ public class QuickSandNEW : MonoBehaviour
         }
     }
 
-    Vector3 StateSand(StatePlatform statePlatform, Vector3 inv)
+    Vector3 StateSand(StatePlatform statePlatform, Vector3 currentInvPos)
     {
-        var heightDescend = -3;
-
         _timeInvPlat += Time.deltaTime * _speedSink;
-
-        _invisiblePlatform.GetComponent<Collider>().enabled = _invisiblePlatform.position.y != heightDescend;
+        
+        if (currentInvPos.y.Equals(_endPosInvisible.y))
+            Debug.Log("EL PLAYER MURIO");
 
         if (statePlatform == StatePlatform.DownSand)
-        {
-            var endPosInvisiblePlatform = new Vector3(_startPosInvisible.x, heightDescend, _startPosInvisible.z);
-
-            return Vector3.MoveTowards(inv, endPosInvisiblePlatform, _timeInvPlat);
-        }
+            return Vector3.MoveTowards(currentInvPos, _endPosInvisible, _timeInvPlat);
 
         if (Vector3.Distance(_invisiblePlatform.position, _startPosInvisible) < 0.01f)
             _onModifyQuickSand = false;
 
-        return Vector3.MoveTowards(inv, _startPosInvisible, _timeInvPlat);
+        return Vector3.MoveTowards(currentInvPos, _startPosInvisible, _timeInvPlat);
     }
 
     void OnTriggerStay(Collider other)
@@ -104,11 +103,18 @@ public class QuickSandNEW : MonoBehaviour
         if (player.CurrentPlayerSize == PlayerSize.Head)
         {
             _state = StatePlatform.UpSand;
+            _speedSink = 0.001f; //Velocidad para subir
             other.transform.SetParent(null);
         }
         else
         {
             _state = StatePlatform.DownSand;
+
+            if (player.CurrentPlayerSize.Equals(PlayerSize.Normal)) //Velocidad para hundir
+                _speedSink = 0.001f;
+            else
+                _speedSink = 0.0001f;
+            
             other.transform.SetParent(_invisiblePlatform);
         }
     }
@@ -121,7 +127,6 @@ public class QuickSandNEW : MonoBehaviour
         _state = StatePlatform.DownSand;
 
         _timeInvPlat = 0;
-
         other.gameObject.GetComponent<Player>().ChangeSpeed();
     }
 
@@ -137,29 +142,12 @@ public class QuickSandNEW : MonoBehaviour
         player.Speed = player.SpeedOriginal;
         other.transform.SetParent(null);
 
-        StartCoroutine(ResetInvisiblePlatform()); //Restaurar posicion al salir de la arena de forma casi instantanea
+        StartCoroutine(ResetInvisiblePlatform()); //Delay al reposicionar invPlatform
     }
 
-    private IEnumerator
-        ResetInvisiblePlatform() // Se hizo esto para que no te pegue el invisible platform en los pies de golpe al salir de la arena
+    private IEnumerator ResetInvisiblePlatform()
     {
-        var distanceToStartPos = Vector3.Distance(_invisiblePlatform.position, _startPosInvisible);
-        float timeToReturn;
-
-        switch (distanceToStartPos)
-        {
-            case <= 0.5f:
-                timeToReturn = 0.2f;
-                break;
-            case > 0.5f:
-                timeToReturn = 0.3f;
-                break;
-            default:
-                timeToReturn = 0.2f;
-                break;
-        }
-
-        yield return new WaitForSeconds(timeToReturn);
+        yield return new WaitForSeconds(0.2f);
         _invisiblePlatform.position = _startPosInvisible;
     }
 }

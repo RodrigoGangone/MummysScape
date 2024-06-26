@@ -168,11 +168,7 @@ public class Player : MonoBehaviour
 
     void Win()
     {
-        //_viewPlayer.PLAY_ANIM_TRIGGER("Win");
         _stateMachinePlayer.ChangeState(PlayerState.Win);
-        //enabled = false;
-        //StartCoroutine(Disolve(5));
-        //TODO: SETEAR MATERIAL
     }
 
     public IEnumerator Disolve(float t)
