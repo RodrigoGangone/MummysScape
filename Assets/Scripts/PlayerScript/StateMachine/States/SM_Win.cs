@@ -58,7 +58,7 @@ public class SM_Win : State
             _timerToChangeLvl += Time.deltaTime;
 
             if (_timerToChangeLvl >= 2f)
-                GameManager.instance.ChangeScene();
+                GameManager.Instance.ChangeScene();
         }
     }
 

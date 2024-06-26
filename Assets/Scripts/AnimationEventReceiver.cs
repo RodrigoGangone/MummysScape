@@ -21,6 +21,6 @@ public class AnimationEventReceiver : MonoBehaviour
 
     public void EVENT_ANIM_NEXT_SCENE()
     {
-        GameManager.instance.ChangeScene();
+        GameManager.Instance.ChangeScene();
     }
 }
