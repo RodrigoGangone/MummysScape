@@ -76,6 +76,12 @@ public class ViewPlayer
     {
         _player._puffFX.Play();
     }
+    
+    public void PLAY_WALK(bool act)
+    {
+        _player._walkFX.Play();
+        _player._walkFX.loop = act;
+    }
 
     public void PLAY_ANIM(string anim, bool value)
     {
