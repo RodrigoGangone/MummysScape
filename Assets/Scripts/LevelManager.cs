@@ -3,14 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
     [SerializeField] private ParticleSystem _fxPortal;
 
-    [SerializeField] private float _timeDeath = 30f;
-
+    [SerializeField] private float _currentTimeDeath;
+    [SerializeField] private float _maxTimeDeath = 30f;
     private UIManager _uiManager;
+    
 
     public Action playerWin;
     public Action playerDeath;
@@ -25,22 +27,22 @@ public class LevelManager : MonoBehaviour
 
     private void Update()
     {
-        if (_timeDeath >= 30f && _player.CurrentPlayerSize != PlayerSize.Head) return;
+        if (_currentTimeDeath >= _maxTimeDeath && _player.CurrentPlayerSize != PlayerSize.Head) return;
 
         SetTimerDeath(_player.CurrentPlayerSize);
+        
+        _uiManager.UISetTimerDeath(_currentTimeDeath, _maxTimeDeath);
 
-        _uiManager.UISetTimerDeath(_timeDeath);
-
-        if (_timeDeath <= 0)
+        if (_currentTimeDeath <= 0)
             playerDeath?.Invoke();
     }
 
     private void SetTimerDeath(PlayerSize playerSize)
     {
         if (playerSize == PlayerSize.Head)
-            _timeDeath -= Time.deltaTime;
+            _currentTimeDeath -= Time.deltaTime;
         else
-            _timeDeath += Time.deltaTime * 10f;
+            _currentTimeDeath += Time.deltaTime * 30f;
     }
 
     private void OnTriggerEnter(Collider other)

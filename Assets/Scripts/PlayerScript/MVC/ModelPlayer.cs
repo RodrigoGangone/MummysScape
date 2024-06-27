@@ -32,6 +32,7 @@ public class ModelPlayer
 
         springJoint = _player._springJoint;
         detectionBeetle = _player._detectionBeetle;
+        
     }
 
     public void MoveTank(float rotationInput, float moveInput)
