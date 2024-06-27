@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3950711827235208631}
   - component: {fileID: 7293930560690192477}
   - component: {fileID: 2111442322326993857}
+  - component: {fileID: 351267025783734018}
   m_Layer: 0
   m_Name: HalfWall
   m_TagString: Untagged
@@ -27,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 216783729455708364}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -100,7 +101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_PolyMesh:
-    name: PolybrushMesh51446
+    name: PolybrushMesh-109936
     vertices:
     - {x: -0.83652097, y: 0.947624, z: -0.21133362}
     - {x: -0.83652097, y: 1.4318861, z: -0.21133362}
@@ -616,5 +617,26 @@ MonoBehaviour:
       m_Topology: 0
     m_Mesh: {fileID: 0}
   m_SkinMeshRef: {fileID: 0}
-  m_OriginalMeshObject: {fileID: -7843526606762953986, guid: 378b3431e5ab67249afa700438e12d6d, type: 3}
+  m_OriginalMeshObject: {fileID: 0}
   m_Mode: 0
+--- !u!65 &351267025783734018
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 216783729455708364}
+  m_Material: {fileID: 13400000, guid: 79b8f8c9e2e3aa64db86e8399ce69f12, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.6730468, y: 3.684416, z: 1.072511}
+  m_Center: {x: 0, y: 0, z: 0}
