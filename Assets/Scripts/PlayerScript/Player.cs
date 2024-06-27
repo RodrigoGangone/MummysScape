@@ -39,7 +39,6 @@ public class Player : MonoBehaviour
     [SerializeField] public Mesh[] _Meshes;
 
     [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
-    [SerializeField] public ParticleSystem _walkFX;
 
     //TODO: Mejorar esto a futuro
 
@@ -176,7 +175,7 @@ public class Player : MonoBehaviour
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
-
+    
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("KillPlane"))
