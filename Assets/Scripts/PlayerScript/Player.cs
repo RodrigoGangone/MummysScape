@@ -39,7 +39,8 @@ public class Player : MonoBehaviour
     [SerializeField] public Mesh[] _Meshes;
 
     [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
-
+    [SerializeField] public ParticleSystem _walkFX;
+    
     //TODO: Mejorar esto a futuro
 
     #region Getters & Setters
