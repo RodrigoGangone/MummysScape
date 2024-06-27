@@ -21,7 +21,6 @@ public class SM_Hook : State
         Debug.Log("ON ENTER HOOK");
 
         _view.PLAY_ANIM("Hook", true);
-        //_model.Hook();
         _view.bandageHook.enabled = true;
     }
 
@@ -33,26 +32,20 @@ public class SM_Hook : State
 
     public override void OnUpdate()
     {
-        if (!_model.finishAnimationHook) return;
+        if (!_model.isHooking) return;
 
         if (!_isHookDestiny)
         {
             _time += Time.deltaTime;
-
             float newValue = Mathf.Lerp(1.5f, -1.5f, _time / 0.25f);
-
             _view.hookMaterial.SetFloat("_rightThreshold", newValue);
 
             if (_view.hookMaterial.GetFloat("_rightThreshold") == -1.5f)
-            {
                 _isHookDestiny = true;
-            }
         }
 
         if (Input.GetKeyUp(KeyCode.Space))
-        {
             StateMachine.ChangeState(PlayerState.Fall);
-        }
         else
         {
             _view.DrawBandageHOOK();
@@ -78,12 +71,12 @@ public class SM_Hook : State
     private void ResetHook()
     {
         _time = 0;
-        _model.finishAnimationHook = false;
-        _view.hookMaterial.SetFloat("_rightThreshold", 1.5f);
         _view.rigBuilder.weight = 0;
+        _view.hookMaterial.SetFloat("_rightThreshold", 1.5f);
         _isHookDestiny = false;
-        _view.bandageHook.enabled = false;
-        Object.Destroy(_model.springJoint);
         _model.isHooking = false;
+        _view.bandageHook.enabled = false;
+
+        Object.Destroy(_model.springJoint);
     }
 }
