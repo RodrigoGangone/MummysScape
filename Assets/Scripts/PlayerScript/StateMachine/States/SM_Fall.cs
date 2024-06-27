@@ -34,5 +34,7 @@ public class SM_Fall : State
 
     public override void OnFixedUpdate()
     {
+        _model.Move(Input.GetAxisRaw("Horizontal"),
+            Input.GetAxisRaw("Vertical"));
     }
 }

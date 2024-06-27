@@ -95,7 +95,7 @@ public class ViewPlayer
 
     public void DrawBandageHOOK()
     {
-        rigBuilder.weight = 1;
+        //rigBuilder.weight = 1;
 
         _player.rightHand.data.target = _player._modelPlayer.hookBeetle.transform;
 

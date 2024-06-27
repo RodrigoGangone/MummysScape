@@ -247,7 +247,9 @@ public class ModelPlayer
 
     public bool CheckGround()
     {
-        return Physics.Raycast(_player.transform.position, Vector3.down, out _, 0.5f);
+        Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.05f);
+
+        return Physics.Raycast(_player.transform.position, Vector3.down, out _, 0.05f);
     }
 
     #endregion
