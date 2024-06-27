@@ -6,7 +6,7 @@ public class SM_Hook : State
 {
     private ModelPlayer _model;
     private ViewPlayer _view;
-    
+
     private bool _isHookDestiny;
     private float _time = 0;
 
@@ -18,17 +18,23 @@ public class SM_Hook : State
 
     public override void OnEnter()
     {
-        _model.Hook();
+        Debug.Log("ON ENTER HOOK");
+
+        _view.PLAY_ANIM("Hook", true);
+        //_model.Hook();
         _view.bandageHook.enabled = true;
     }
 
     public override void OnExit()
     {
+        _view.PLAY_ANIM("Hook", false);
         ResetHook();
     }
 
     public override void OnUpdate()
     {
+        if (!_model.finishAnimationHook) return;
+
         if (!_isHookDestiny)
         {
             _time += Time.deltaTime;
@@ -72,7 +78,9 @@ public class SM_Hook : State
     private void ResetHook()
     {
         _time = 0;
+        _model.finishAnimationHook = false;
         _view.hookMaterial.SetFloat("_rightThreshold", 1.5f);
+        _view.rigBuilder.weight = 0;
         _isHookDestiny = false;
         _view.bandageHook.enabled = false;
         Object.Destroy(_model.springJoint);

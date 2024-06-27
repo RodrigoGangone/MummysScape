@@ -1,6 +1,7 @@
 using System;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 public class ViewPlayer
 {
@@ -13,10 +14,14 @@ public class ViewPlayer
     public Material playerMat;
     public Material hookMaterial;
     public LineRenderer bandageHook;
-    
+
+    public Rig rigBuilder;
+
     public ViewPlayer(Player p)
     {
         _player = p;
+
+        rigBuilder = _player.GetComponentInChildren<Rig>();
 
         _capsuleCollider = _player.GetComponent<CapsuleCollider>();
 
@@ -90,6 +95,10 @@ public class ViewPlayer
 
     public void DrawBandageHOOK()
     {
+        rigBuilder.weight = 1;
+
+        _player.rightHand.data.target = _player._modelPlayer.hookBeetle.transform;
+
         bandageHook.SetPosition(0, _player.target.transform.position);
         bandageHook.SetPosition(1, _player._modelPlayer.hookBeetle.transform.position);
     }

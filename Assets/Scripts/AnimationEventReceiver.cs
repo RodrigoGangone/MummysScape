@@ -19,6 +19,11 @@ public class AnimationEventReceiver : MonoBehaviour
         _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
 
+    public void EVENT_ANIM_HOOK()
+    {
+        _player._modelPlayer.Hook();
+    }
+
     public void EVENT_ANIM_NEXT_SCENE()
     {
         GameManager.Instance.ChangeScene();

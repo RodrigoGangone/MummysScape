@@ -13,6 +13,7 @@ public class ModelPlayer
     public Rigidbody hookBeetle;
 
     public bool isHooking;
+    public bool finishAnimationHook;
 
     //PICK UP
     private LayerMask pickableLayer = LayerMask.GetMask("Pickable");
@@ -32,7 +33,6 @@ public class ModelPlayer
 
         springJoint = _player._springJoint;
         detectionBeetle = _player._detectionBeetle;
-        
     }
 
     public void MoveTank(float rotationInput, float moveInput)
@@ -138,6 +138,8 @@ public class ModelPlayer
                 springJoint.damper = 12;
                 break;
         }
+
+        finishAnimationHook = true;
     }
 
     //TODO:Al cambiar el tamaño del pj: cambiar mesh del body_low ... cambiar el tamaño del capsule collider
@@ -241,6 +243,11 @@ public class ModelPlayer
         Debug.Log("Objeto soltado: " + _objSelected.name);
         hasObject = false;
         _objSelected = null;
+    }
+
+    public bool CheckGround()
+    {
+        return Physics.Raycast(_player.transform.position, Vector3.down, out _, 0.5f);
     }
 
     #endregion

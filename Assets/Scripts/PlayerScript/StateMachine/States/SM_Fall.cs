@@ -15,16 +15,21 @@ public class SM_Fall : State
 
     public override void OnEnter()
     {
+        Debug.Log("ON ENTER FALL");
+        _view.PLAY_ANIM("Fall", true);
         //TODO: AGREGAR ANIMACION DE CAIDA, ESTE ESTADO SOLO SE USA PARA FEEDBACKS Y DE "PUENTE" DESDE HOOK A TODOS LOS ESTADOS
     }
 
     public override void OnExit()
     {
+        _view.PLAY_ANIM("Fall", false);
         Debug.Log("ONEXIT STATE: FALL");
     }
 
     public override void OnUpdate()
     {
+        if (_model.CheckGround())
+            StateMachine.ChangeState(PlayerState.Idle);
     }
 
     public override void OnFixedUpdate()

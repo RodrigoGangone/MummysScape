@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
@@ -40,7 +41,8 @@ public class Player : MonoBehaviour
 
     [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
-    
+
+    [SerializeField] public TwoBoneIKConstraint rightHand;
     //TODO: Mejorar esto a futuro
 
     #region Getters & Setters
@@ -176,7 +178,7 @@ public class Player : MonoBehaviour
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
-    
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("KillPlane"))
