@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,6 +8,7 @@ public class UIManager : MonoBehaviour
 {
     [SerializeField] Slider _lifetime;
     [SerializeField] Slider _shootSlider;
+    [SerializeField] Image _beetleCount;
     private Player _player;
     int previousVandage = 0;
 
@@ -21,6 +23,7 @@ public class UIManager : MonoBehaviour
     {
         _lifetime.value = Mathf.Clamp01(currentTimer / maxtime);
     }
+
     public void UISetShootSlider()
     {
         StartCoroutine(SetValue(1, _player.CurrentBandageStock));
@@ -28,7 +31,6 @@ public class UIManager : MonoBehaviour
 
     IEnumerator SetValue(float time, int currentVandage)
     {
-        
         int starlerp = previousVandage;
         int endlerp = currentVandage;
 
@@ -43,6 +45,26 @@ public class UIManager : MonoBehaviour
             tick += Time.deltaTime / time;
             yield return null;
         }
+
         previousVandage = endlerp;
+    }
+
+    public void UISetCollectibleCount(int count)
+    {
+        switch (count)
+        {
+            case 0:
+                _beetleCount.fillAmount = 0;
+                break;
+            case 1:
+                _beetleCount.fillAmount = 0.25f;
+                break;
+            case 2:
+                _beetleCount.fillAmount = 0.50f;
+                break;
+            case 3:
+                _beetleCount.fillAmount = 0.75f;
+                break;
+        }
     }
 }

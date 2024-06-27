@@ -11,8 +11,10 @@ public class LevelManager : MonoBehaviour
 
     [SerializeField] private float _currentTimeDeath;
     [SerializeField] private float _maxTimeDeath = 30f;
+
     private UIManager _uiManager;
-    
+
+    private List<Collectible> _collectibles = new();
 
     public Action playerWin;
     public Action playerDeath;
@@ -30,7 +32,7 @@ public class LevelManager : MonoBehaviour
         if (_currentTimeDeath >= _maxTimeDeath && _player.CurrentPlayerSize != PlayerSize.Head) return;
 
         SetTimerDeath(_player.CurrentPlayerSize);
-        
+
         _uiManager.UISetTimerDeath(_currentTimeDeath, _maxTimeDeath);
 
         if (_currentTimeDeath <= 0)
@@ -43,6 +45,12 @@ public class LevelManager : MonoBehaviour
             _currentTimeDeath -= Time.deltaTime;
         else
             _currentTimeDeath += Time.deltaTime * 30f;
+    }
+
+    public void AddCollectible(Collectible beetle)
+    {
+        _collectibles.Add(beetle);
+        _uiManager.UISetCollectibleCount(_collectibles.Count);
     }
 
     private void OnTriggerEnter(Collider other)
