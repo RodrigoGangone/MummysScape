@@ -16,11 +16,13 @@ public class SM_Walk : State
     public override void OnEnter()
     {
         _view.PLAY_ANIM("Walk", true);
+        _view.PLAY_WALK(true);
     }
 
     public override void OnExit()
     {
         _model.ClampMovement();
+        _view.PLAY_WALK(false);
         _view.PLAY_ANIM("Walk", false);
     }
 
