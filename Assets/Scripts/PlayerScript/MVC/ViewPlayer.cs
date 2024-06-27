@@ -7,16 +7,13 @@ public class ViewPlayer
     Player _player;
 
     private CapsuleCollider _capsuleCollider;
-
     private Animator[] _animatorController;
     private SkinnedMeshRenderer skinnedMesh;
 
     public Material playerMat;
-    public float disolve;
-
     public Material hookMaterial;
     public LineRenderer bandageHook;
-
+    
     public ViewPlayer(Player p)
     {
         _player = p;
@@ -30,21 +27,19 @@ public class ViewPlayer
         skinnedMesh = _player.GetComponentInChildren<SkinnedMeshRenderer>();
 
         playerMat = skinnedMesh.material;
-        
-        disolve = 1f;
     }
 
     public void ChangeMesh(Mesh mesh)
     {
         skinnedMesh.sharedMesh = mesh;
     }
-    
+
     public void AdjustColliderSize()
     {
         if (_capsuleCollider == null) return;
-        
+
         float height, radius, centerY;
-        
+
         switch (_player.CurrentPlayerSize)
         {
             case PlayerSize.Normal:
@@ -66,7 +61,7 @@ public class ViewPlayer
                 Debug.LogWarning("Unknown player size.");
                 return;
         }
-        
+
         _capsuleCollider.height = height;
         _capsuleCollider.radius = radius;
         _capsuleCollider.center = new Vector3(0, centerY, 0);
@@ -76,7 +71,7 @@ public class ViewPlayer
     {
         _player._puffFX.Play();
     }
-    
+
     public void PLAY_WALK(bool act)
     {
         _player._walkFX.Play();
