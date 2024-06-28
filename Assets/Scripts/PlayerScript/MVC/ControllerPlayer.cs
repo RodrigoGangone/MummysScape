@@ -36,7 +36,7 @@ public class ControllerPlayer
             OnStateChange(PlayerState.Idle);
         }
 
-        if (CanHookState() && Input.GetKeyDown(KeyCode.Space))
+        if (CanHookState() && Input.GetKey(KeyCode.Space))
         {
             if (OnGetCanShoot.Invoke())
                 OnStateChange(PlayerState.Hook);
