@@ -9,16 +9,18 @@ public class ViewPlayer
 
     private CapsuleCollider _capsuleCollider;
     private Animator[] _animatorController;
-    private SkinnedMeshRenderer skinnedMesh;
+    private SkinnedMeshRenderer bodySkinnedMesh;
+    private SkinnedMeshRenderer headSkinnedMesh;
 
-    public Material playerMat;
+    private Material _bodyMat;
+    private Material _headMat;
     public Material hookMaterial;
     public LineRenderer bandageHook;
 
     public RigBuilder rigBuilder;
     public TwoBoneIKConstraint rightHand;
 
-    public ViewPlayer(Player p)
+    public ViewPlayer(Player p, SkinnedMeshRenderer body, SkinnedMeshRenderer head)
     {
         _player = p;
 
@@ -32,14 +34,21 @@ public class ViewPlayer
 
         bandageHook = _player._bandage;
 
-        skinnedMesh = _player.GetComponentInChildren<SkinnedMeshRenderer>();
+        bodySkinnedMesh = body;
+        headSkinnedMesh = head;
 
-        playerMat = skinnedMesh.material;
+        _bodyMat = bodySkinnedMesh.material;
+        _headMat = headSkinnedMesh.material;
+    }
+    public void SetValueMaterial(float value)
+    {
+        _bodyMat.SetFloat("_CutoffLight", value);
+        _headMat.SetFloat("_CutoffLight", value);
     }
 
     public void ChangeMesh(Mesh mesh)
     {
-        skinnedMesh.sharedMesh = mesh;
+        bodySkinnedMesh.sharedMesh = mesh;
     }
 
     public void AdjustColliderSize()

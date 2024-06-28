@@ -16,6 +16,10 @@ public class Player : MonoBehaviour
     public SpringJoint _springJoint { get; private set; }
     public LineRenderer _bandage { get; private set; }
 
+    [SerializeField] public SkinnedMeshRenderer bodySM;
+
+    [SerializeField] public SkinnedMeshRenderer headSM;
+
     public DetectionHook _detectionBeetle;
 
     public LevelManager levelManager;
@@ -96,7 +100,7 @@ public class Player : MonoBehaviour
         _anim = GetComponentInChildren<Animator>();
         _detectionBeetle = GetComponentInChildren<DetectionHook>();
 
-        _viewPlayer = new ViewPlayer(this);
+        _viewPlayer = new ViewPlayer(this,bodySM,headSM);
         _modelPlayer = new ModelPlayer(this);
         _controllerPlayer = new ControllerPlayer(this);
 

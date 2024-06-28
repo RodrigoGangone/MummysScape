@@ -38,7 +38,7 @@ public class SM_Win : State
         {
             float t = Mathf.Clamp01((Time.timeSinceLevelLoad - _startTime) / _materialTransitionDuration);
             float value = Mathf.Lerp(1f, 0f, t);
-            _player._viewPlayer.playerMat.SetFloat("_CutoffLight", value);
+            _player._viewPlayer.SetValueMaterial(value);
 
             if (t >= 1f)
             {
