@@ -22,6 +22,7 @@ public class SM_Hook : State
 
         _view.PLAY_ANIM("Hook", true);
         _view.bandageHook.enabled = true;
+        _view.rigBuilder.enabled = true;
     }
 
     public override void OnExit()
@@ -71,11 +72,18 @@ public class SM_Hook : State
     private void ResetHook()
     {
         _time = 0;
-        _view.rigBuilder.weight = 0;
-        _view.hookMaterial.SetFloat("_rightThreshold", 1.5f);
-        _isHookDestiny = false;
-        _model.isHooking = false;
+
+        _view.rigBuilder.enabled = false;
+
         _view.bandageHook.enabled = false;
+
+        _view.rightHand.data.target = null;
+
+        _view.hookMaterial.SetFloat("_rightThreshold", 1.5f);
+
+        _isHookDestiny = false;
+
+        _model.isHooking = false;
 
         Object.Destroy(_model.springJoint);
     }

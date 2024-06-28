@@ -15,13 +15,16 @@ public class ViewPlayer
     public Material hookMaterial;
     public LineRenderer bandageHook;
 
-    public Rig rigBuilder;
+    public RigBuilder rigBuilder;
+    public TwoBoneIKConstraint rightHand;
 
     public ViewPlayer(Player p)
     {
         _player = p;
 
-        rigBuilder = _player.GetComponentInChildren<Rig>();
+        rigBuilder = _player.GetComponentInChildren<RigBuilder>();
+
+        rightHand = _player.rightHand;
 
         _capsuleCollider = _player.GetComponent<CapsuleCollider>();
 
@@ -72,6 +75,14 @@ public class ViewPlayer
         _capsuleCollider.center = new Vector3(0, centerY, 0);
     }
 
+    public void DrawBandageHOOK()
+    {
+        rightHand.data.target = _player._modelPlayer.hookBeetle.transform;
+        
+        bandageHook.SetPosition(0, _player.target.transform.position);
+        bandageHook.SetPosition(1, _player._modelPlayer.hookBeetle.transform.position);
+    }
+
     public void PLAY_PUFF()
     {
         _player._puffFX.Play();
@@ -91,15 +102,5 @@ public class ViewPlayer
     public void PLAY_ANIM_TRIGGER(string anim)
     {
         _player._anim.SetTrigger(anim);
-    }
-
-    public void DrawBandageHOOK()
-    {
-        //rigBuilder.weight = 1;
-
-        _player.rightHand.data.target = _player._modelPlayer.hookBeetle.transform;
-
-        bandageHook.SetPosition(0, _player.target.transform.position);
-        bandageHook.SetPosition(1, _player._modelPlayer.hookBeetle.transform.position);
     }
 }
