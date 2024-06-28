@@ -39,14 +39,14 @@ public class SM_Hook : State
         if (!_isHookDestiny)
         {
             _time += Time.deltaTime;
-            float newValue = Mathf.Lerp(1.5f, -1.5f, _time / 0.25f);
+            var newValue = Mathf.Lerp(1.5f, -1.5f, _time / 0.25f);
             _view.hookMaterial.SetFloat("_rightThreshold", newValue);
 
             if (_view.hookMaterial.GetFloat("_rightThreshold") == -1.5f)
                 _isHookDestiny = true;
         }
 
-        if (Input.GetKeyUp(KeyCode.Space))
+        if (!Input.GetKey(KeyCode.Space))
             StateMachine.ChangeState(PlayerState.Fall);
         else
         {
@@ -73,7 +73,7 @@ public class SM_Hook : State
     private void ResetHook()
     {
         _time = 0;
-        
+
         _view.bandageHook.enabled = false;
 
         _view.rightHand.data.target = null;
