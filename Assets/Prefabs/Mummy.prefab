@@ -4959,6 +4959,7 @@ MonoBehaviour:
   _puffFX: {fileID: 6877499864803373640}
   _walkFX: {fileID: 833570744582829568}
   rightHand: {fileID: 8959279123585388697}
+  rigBuilder: {fileID: 7271772858043175343}
 --- !u!136 &2633432684626094177
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -5288,7 +5289,6 @@ GameObject:
   - component: {fileID: 3077534031476151425}
   - component: {fileID: 9060922741112305107}
   - component: {fileID: 1701742793807495871}
-  - component: {fileID: 6516630425863110814}
   m_Layer: 0
   m_Name: Detected
   m_TagString: Untagged
@@ -5346,20 +5346,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _hooks: []
   currentHook: {fileID: 0}
---- !u!114 &6516630425863110814
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4411722142574341004}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 363554fdc8b2ff046af397e7f409b7d3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _hooks: []
-  currentHook: {fileID: 0}
+  _player: {fileID: 0}
 --- !u!1 &5510836434369371066
 GameObject:
   m_ObjectHideFlags: 0
@@ -15286,7 +15273,7 @@ Transform:
   m_GameObject: {fileID: 8165592710464705570}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.98, y: -0.76, z: 5}
+  m_LocalPosition: {x: 0, y: 0, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -15305,7 +15292,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70b342d8ce5c2fd48b8fa3147d48d1d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Weight: 0
+  m_Weight: 1
   m_Effectors: []
 --- !u!1 &8631918486161737692
 GameObject:
@@ -30817,7 +30804,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9191200666407963344}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b2d8418b0b9634b1892b0268dd9c2743, type: 3}
   m_Name: 

@@ -20,14 +20,15 @@ public class SM_Hook : State
     {
         Debug.Log("ON ENTER HOOK");
 
+        _view.StateRigBuilder(true);
         _view.PLAY_ANIM("Hook", true);
         _view.bandageHook.enabled = true;
-        _view.rigBuilder.enabled = true;
     }
 
     public override void OnExit()
     {
         _view.PLAY_ANIM("Hook", false);
+        _view.StateRigBuilder(false);
         ResetHook();
     }
 
@@ -72,9 +73,7 @@ public class SM_Hook : State
     private void ResetHook()
     {
         _time = 0;
-
-        _view.rigBuilder.enabled = false;
-
+        
         _view.bandageHook.enabled = false;
 
         _view.rightHand.data.target = null;

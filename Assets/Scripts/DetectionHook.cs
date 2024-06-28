@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +9,12 @@ public class DetectionHook : MonoBehaviour
 
     private bool _isWall = false;
     private Transform _hook;
+    public Player _player;
+
+    private void Start()
+    {
+        _player = FindObjectOfType<Player>();
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -51,8 +58,10 @@ public class DetectionHook : MonoBehaviour
             currentHook = _hooks[0].GetComponent<Rigidbody>();
             _hook.gameObject.SetActive(true);
         }
+
+        _player.rightHand.data.target = currentHook.transform;
     }
-    
+
     private bool isPosibleHook(Collider other)
     {
         RaycastHit hit;

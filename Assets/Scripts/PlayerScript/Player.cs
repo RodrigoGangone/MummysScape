@@ -42,7 +42,9 @@ public class Player : MonoBehaviour
     [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
 
-    [SerializeField] public TwoBoneIKConstraint rightHand;
+    [FormerlySerializedAs("_rightHand")] [SerializeField]
+    public TwoBoneIKConstraint rightHand;
+    [SerializeField] public RigBuilder rigBuilder;
     //TODO: Mejorar esto a futuro
 
     #region Getters & Setters

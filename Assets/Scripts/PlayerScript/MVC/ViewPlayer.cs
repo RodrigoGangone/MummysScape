@@ -22,7 +22,7 @@ public class ViewPlayer
     {
         _player = p;
 
-        rigBuilder = _player.GetComponentInChildren<RigBuilder>();
+        rigBuilder = _player.rigBuilder;
 
         rightHand = _player.rightHand;
 
@@ -77,10 +77,13 @@ public class ViewPlayer
 
     public void DrawBandageHOOK()
     {
-        rightHand.data.target = _player._modelPlayer.hookBeetle.transform;
-        
         bandageHook.SetPosition(0, _player.target.transform.position);
         bandageHook.SetPosition(1, _player._modelPlayer.hookBeetle.transform.position);
+    }
+
+    public void StateRigBuilder(bool act)
+    {
+        rigBuilder.enabled = act;
     }
 
     public void PLAY_PUFF()
