@@ -1,5 +1,3 @@
-using System;
-using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
