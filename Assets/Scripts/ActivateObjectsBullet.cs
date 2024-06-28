@@ -27,10 +27,10 @@ public class ActivateObjectsBullet : MonoBehaviour
             if (movePlatform != null)
                 movePlatform.StartAction();
 
-            QuickSandNEW quicksand = platform.GetComponent<QuickSandNEW>();
+            //Quicksand quicksand = platform.GetComponent<Quicksand>();
 
-            if (quicksand != null)
-                quicksand.ActivateSand();
+            /*if (quicksand != null)
+                quicksand.ActivateSand();*/
         }
     }
 
