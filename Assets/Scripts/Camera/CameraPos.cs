@@ -8,16 +8,18 @@ public class CameraPos : MonoBehaviour
     [SerializeField] List<Transform> positions;
     public int pos;
     float minDistance = 0.1f;
-    [SerializeField]  float speed;
+    [SerializeField] float speed;
 
-    void Update()
+    void FixedUpdate()
     {
-        if (Vector3.Distance(transform.position,positions[pos].position)>minDistance) 
+        if (Vector3.Distance(transform.position, positions[pos].position) > minDistance)
         {
             transform.position = Vector3.Lerp(transform.position, positions[pos].position, speed);
         }
+
         transform.LookAt(_player);
     }
+
     public void SetCam(int pos)
     {
         this.pos = pos;
