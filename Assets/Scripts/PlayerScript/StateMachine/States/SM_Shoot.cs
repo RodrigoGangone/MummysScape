@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class SM_Shoot : State
@@ -18,6 +19,7 @@ public class SM_Shoot : State
     public override void OnEnter()
     {
         _view.PLAY_ANIM("Shoot", true);
+        _model.RotatePreShoot();
     }
 
     public override void OnExit()

@@ -84,7 +84,7 @@ public class ViewPlayer
 
     public void DrawBandageHOOK()
     {
-        bandageHook.SetPosition(0, _player.target.transform.position);
+        bandageHook.SetPosition(0, _player.handTarget.transform.position);
         bandageHook.SetPosition(1, _player._modelPlayer.hookBeetle.transform.position);
     }
 

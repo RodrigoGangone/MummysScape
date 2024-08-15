@@ -37,10 +37,10 @@ public class Player : MonoBehaviour
     [Header("BANDAGE")] [SerializeField] private int _maxBandageStock = 2;
     [SerializeField] private int _minBandageStock = 0;
     [SerializeField] private int _currBandageStock = 2;
-    [SerializeField] public Transform target;
+    [SerializeField] public Transform handTarget;
+    [SerializeField] public Transform shootTarget;
 
     [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
-
     [SerializeField] public Mesh[] _Meshes;
 
     [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
@@ -48,6 +48,7 @@ public class Player : MonoBehaviour
 
     [FormerlySerializedAs("_rightHand")] [SerializeField]
     public TwoBoneIKConstraint rightHand;
+
     [SerializeField] public RigBuilder rigBuilder;
     //TODO: Mejorar esto a futuro
 
@@ -71,6 +72,30 @@ public class Player : MonoBehaviour
     {
         get => _speedRotation;
         set => _speedRotation = value;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Vector3[] origin = new Vector3[]
+        {
+            shootTarget.transform.position,
+            shootTarget.transform.position + new Vector3(0.25f, 0, 0),
+            shootTarget.transform.position + new Vector3(0.50f, 0, 0),
+            shootTarget.transform.position + new Vector3(-0.25f, 0, 0),
+            shootTarget.transform.position + new Vector3(-0.50f, 0, 0),
+        };
+
+        foreach (var ori in origin)
+        {
+            RaycastHit hit;
+
+            if (Physics.Raycast(ori, shootTarget.forward, out hit, 100f))
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(ori, hit.point);
+                Gizmos.DrawSphere(hit.point, 0.1f);
+            }
+        }
     }
 
     public int MaxBandageStock => _maxBandageStock;
@@ -100,7 +125,7 @@ public class Player : MonoBehaviour
         _anim = GetComponentInChildren<Animator>();
         _detectionBeetle = GetComponentInChildren<DetectionHook>();
 
-        _viewPlayer = new ViewPlayer(this,bodySM,headSM);
+        _viewPlayer = new ViewPlayer(this, bodySM, headSM);
         _modelPlayer = new ModelPlayer(this);
         _controllerPlayer = new ControllerPlayer(this);
 

@@ -101,10 +101,52 @@ public class ModelPlayer
     {
         if (_player.CurrentBandageStock > _player.MinBandageStock)
         {
+            BulletFactory.Instance.GetObjectFromPool();
             _player.CurrentBandageStock--;
             SizeHandler();
-            BulletFactory.Instance.GetObjectFromPool();
         }
+    }
+
+    public void RotatePreShoot()
+    {
+        (bool buttonFound, Vector3 hitPoint) = CheckForButton();
+
+        if (buttonFound)
+        {
+            Vector3 directionToButton = hitPoint - _player.transform.position;
+            Quaternion targetRotation = Quaternion.LookRotation(directionToButton);
+
+            _player.transform.rotation = targetRotation;
+
+            Debug.Log("SHOOT - COLLISION CON BUTTON");
+        }
+    }
+
+    private (bool, Vector3) CheckForButton()
+    {
+        var position = _player.shootTarget.transform.position;
+
+        Vector3[] origins =
+        {
+            position,
+            position + new Vector3(0.25f, 0, 0),
+            position + new Vector3(0.50f, 0, 0),
+            position + new Vector3(-0.25f, 0, 0),
+            position + new Vector3(-0.50f, 0, 0),
+        };
+
+        foreach (var origin in origins)
+        {
+            if (Physics.Raycast(origin, _player.shootTarget.transform.forward, out var hit, 100f))
+            {
+                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
+                {
+                    return (true, hit.transform.position);
+                }
+            }
+        }
+
+        return (false, Vector3.zero);
     }
 
     //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'
@@ -232,7 +274,8 @@ public class ModelPlayer
                 Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
 
                 var _rbObj = _objSelected.GetComponent<Rigidbody>();
-                _rbObj.MoveRotation(Quaternion.Lerp(_rbObj.rotation, targetRotation, Time.deltaTime * _objRotation));
+                _rbObj.MoveRotation(Quaternion.Lerp(_rbObj.rotation, targetRotation,
+                    Time.deltaTime * _objRotation));
                 _rbObj.MovePosition(_objSelected.transform.position + heading * (_objSpeed * Time.deltaTime));
             }
         }

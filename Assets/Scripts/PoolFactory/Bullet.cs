@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
@@ -7,15 +5,13 @@ public class Bullet : MonoBehaviour
     [SerializeField] Rigidbody _rb;
     [SerializeField] float _speed;
     [SerializeField] private GameObject _prefabBandage;
-    private GameObject _playerPos;
     private GameObject _target;
     [SerializeField] private GameObject _fxBullet;
 
     void OnEnable()
     {
-        _playerPos = GameObject.Find("Mummy");
         _target = GameObject.Find("Target");
-
+        
         _rb.rotation = _target.transform.rotation;
         _rb.velocity = _target.transform.forward * _speed;
     }
