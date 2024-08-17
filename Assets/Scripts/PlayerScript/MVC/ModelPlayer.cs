@@ -121,6 +121,40 @@ public class ModelPlayer
             Debug.Log("SHOOT - COLLISION CON BUTTON");
         }
     }
+    
+    public void RotatePreShootNew(Vector3 targetPosition)
+    {
+        Vector3 direction = (targetPosition - _player.transform.position).normalized;
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        _player.transform.rotation = Quaternion.Slerp(_player.transform.rotation, targetRotation, Time.deltaTime * 10f);
+    }
+
+    public Vector3? CheckForButtonNEW()
+    {
+        var position = _player.shootTarget.transform.position;
+
+        Vector3[] origins =
+        {
+            position,
+            position + new Vector3(0.25f, 0, 0),
+            position + new Vector3(0.50f, 0, 0),
+            position + new Vector3(-0.25f, 0, 0),
+            position + new Vector3(-0.50f, 0, 0),
+        };
+
+        foreach (var origin in origins)
+        {
+            if (Physics.Raycast(origin, _player.shootTarget.transform.forward, out var hit, 100f))
+            {
+                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
+                {
+                    return hit.transform.position;
+                }
+                return null;
+            }
+        }
+        return null;
+    }
 
     private (bool, Vector3) CheckForButton()
     {
