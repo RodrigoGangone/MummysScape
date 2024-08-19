@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class ModelPlayer
@@ -109,78 +110,55 @@ public class ModelPlayer
 
     public void RotatePreShoot()
     {
-        (bool buttonFound, Vector3 hitPoint) = CheckForButton();
+        var hitPoint = ButtonPosition();
 
-        if (buttonFound)
-        {
-            Vector3 directionToButton = hitPoint - _player.transform.position;
-            Quaternion targetRotation = Quaternion.LookRotation(directionToButton);
-
-            _player.transform.rotation = targetRotation;
-
-            Debug.Log("SHOOT - COLLISION CON BUTTON");
-        }
+        if (hitPoint != null)
+            _player.StartCoroutine(SmoothRotation(hitPoint.Value));
     }
     
-    public void RotatePreShootNew(Vector3 targetPosition)
+    public IEnumerator SmoothRotation(Vector3 buttonPosition)
     {
-        Vector3 direction = (targetPosition - _player.transform.position).normalized;
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
-        _player.transform.rotation = Quaternion.Slerp(_player.transform.rotation, targetRotation, Time.deltaTime * 10f);
+        Quaternion startRotation = _player.transform.rotation;
+        Vector3 directionToButton = (buttonPosition - _player.transform.position).normalized;
+        Quaternion targetRotation = Quaternion.LookRotation(directionToButton);
+
+        float duration = 0.5f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            _player.transform.rotation = Quaternion.Lerp(startRotation, targetRotation, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        _player.transform.rotation = targetRotation;
     }
 
-    public Vector3? CheckForButtonNEW()
+    public Vector3? ButtonPosition()
     {
-        var position = _player.shootTarget.transform.position;
-
-        Vector3[] origins =
-        {
-            position,
-            position + new Vector3(0.25f, 0, 0),
-            position + new Vector3(0.50f, 0, 0),
-            position + new Vector3(-0.25f, 0, 0),
-            position + new Vector3(-0.50f, 0, 0),
+        Vector3[] origins = {
+            _player.shootTarget.transform.position,
+            _player.shootTarget.transform.position + _player.transform.right * 0.25f,
+            _player.shootTarget.transform.position + _player.transform.right * 0.50f,
+            _player.shootTarget.transform.position - _player.transform.right * 0.25f,
+            _player.shootTarget.transform.position - _player.transform.right * 0.50f
         };
 
         foreach (var origin in origins)
         {
-            if (Physics.Raycast(origin, _player.shootTarget.transform.forward, out var hit, 100f))
+            RaycastHit hit;
+
+            if (Physics.Raycast(origin, _player.transform.forward, out hit, 100f))
             {
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
                 {
                     return hit.transform.position;
                 }
-                return null;
             }
         }
+        
         return null;
-    }
-
-    private (bool, Vector3) CheckForButton()
-    {
-        var position = _player.shootTarget.transform.position;
-
-        Vector3[] origins =
-        {
-            position,
-            position + new Vector3(0.25f, 0, 0),
-            position + new Vector3(0.50f, 0, 0),
-            position + new Vector3(-0.25f, 0, 0),
-            position + new Vector3(-0.50f, 0, 0),
-        };
-
-        foreach (var origin in origins)
-        {
-            if (Physics.Raycast(origin, _player.shootTarget.transform.forward, out var hit, 100f))
-            {
-                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
-                {
-                    return (true, hit.transform.position);
-                }
-            }
-        }
-
-        return (false, Vector3.zero);
     }
 
     //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'

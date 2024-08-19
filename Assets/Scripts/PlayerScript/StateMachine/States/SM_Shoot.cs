@@ -7,7 +7,7 @@ public class SM_Shoot : State
 {
     private ModelPlayer _model;
     private ViewPlayer _view;
-    private Vector3? targetButtonPosition;
+    private Vector3? targetButtonPosition; //Posicion del boton hacia el que apunta
     
     public SM_Shoot(ModelPlayer model, ViewPlayer view)
     {
@@ -20,8 +20,7 @@ public class SM_Shoot : State
     public override void OnEnter()
     {
         _view.PLAY_ANIM("Shoot", true);
-        //_model.RotatePreShoot();
-        targetButtonPosition = _model.CheckForButtonNEW(); //obtengo la posicion del boton o null
+        _model.RotatePreShoot();
     }
 
     public override void OnExit()
@@ -29,17 +28,9 @@ public class SM_Shoot : State
         _view.PLAY_ANIM("Shoot", false);
     }
 
-    public override void OnUpdate()
-    {
-        if (targetButtonPosition.HasValue)
-        {
-            _model.RotatePreShootNew(targetButtonPosition.Value);
-        }
-    }
+    public override void OnUpdate() {}
 
-    public override void OnFixedUpdate()
-    {
-    }
+    public override void OnFixedUpdate() {}
 
     public void GoIdle()
     {
