@@ -74,30 +74,6 @@ public class Player : MonoBehaviour
         set => _speedRotation = value;
     }
 
-    private void OnDrawGizmos()
-    {
-        Vector3[] origin = new Vector3[]
-        {
-            shootTarget.transform.position,
-            shootTarget.transform.position + new Vector3(0.25f, 0, 0),
-            shootTarget.transform.position + new Vector3(0.50f, 0, 0),
-            shootTarget.transform.position + new Vector3(-0.25f, 0, 0),
-            shootTarget.transform.position + new Vector3(-0.50f, 0, 0),
-        };
-
-        foreach (var ori in origin)
-        {
-            RaycastHit hit;
-
-            if (Physics.Raycast(ori, shootTarget.forward, out hit, 100f))
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(ori, hit.point);
-                Gizmos.DrawSphere(hit.point, 0.1f);
-            }
-        }
-    }
-
     public int MaxBandageStock => _maxBandageStock;
     public int MinBandageStock => _minBandageStock;
 
@@ -216,6 +192,29 @@ public class Player : MonoBehaviour
         {
             Debug.Log("Player murio por killPlane");
             Death();
+        }
+    }
+    
+    private void OnDrawGizmos()
+    {
+        Vector3[] origins = {
+            shootTarget.transform.position, 
+            shootTarget.transform.position + transform.right * 0.25f,
+            shootTarget.transform.position + transform.right * 0.50f,
+            shootTarget.transform.position - transform.right * 0.25f,
+            shootTarget.transform.position - transform.right * 0.50f,
+        };
+
+        foreach (var origin in origins)
+        {
+            RaycastHit hit;
+
+            if (Physics.Raycast(origin, transform.forward, out hit, 100f))
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(origin, hit.point);
+                Gizmos.DrawSphere(hit.point, 0.1f);
+            }
         }
     }
 }
