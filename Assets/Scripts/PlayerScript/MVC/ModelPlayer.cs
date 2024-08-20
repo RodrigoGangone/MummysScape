@@ -14,6 +14,7 @@ public class ModelPlayer
 
     public bool isHooking;
     public bool finishAnimationHook;
+    public bool moveTank;
 
     //PICK UP
     private LayerMask pickableLayer = LayerMask.GetMask("Pickable");
@@ -37,6 +38,8 @@ public class ModelPlayer
 
     public void MoveTank(float rotationInput, float moveInput)
     {
+        _player.SpeedRotation = 100;
+        
         Quaternion _rotation = Quaternion.Euler(0f, rotationInput * _player.SpeedRotation * Time.deltaTime, 0f);
         _rb.rotation = (_rb.rotation * _rotation);
 
@@ -46,6 +49,8 @@ public class ModelPlayer
 
     public void Move(float movimientoHorizontal, float movimientoVertical)
     {
+        _player.SpeedRotation = 6;
+        
         Vector3 forward =
             new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
 

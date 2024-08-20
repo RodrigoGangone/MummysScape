@@ -32,7 +32,11 @@ public class SM_Walk : State
 
     public override void OnFixedUpdate()
     {
-        _model.Move(Input.GetAxisRaw("Horizontal"),
-            Input.GetAxisRaw("Vertical"));
+        if (_model.moveTank)
+            _model.MoveTank(Input.GetAxisRaw("Horizontal"),
+                Input.GetAxisRaw("Vertical"));
+        else
+            _model.Move(Input.GetAxisRaw("Horizontal"),
+                Input.GetAxisRaw("Vertical"));
     }
 }
