@@ -5,7 +5,7 @@ using UnityEngine;
 public class ActivateObjectsBullet : MonoBehaviour
 {
     [SerializeField] private List<GameObject> _platformsAll;
-    [SerializeField] private ParticleSystem _sparkles;
+    [SerializeField] private ParticleSystem _shiningParticles;
     Material material;
 
     private void Start()
@@ -17,7 +17,6 @@ public class ActivateObjectsBullet : MonoBehaviour
     {
         if (!other.gameObject.CompareTag("Bullet")) return;
 
-        _sparkles.Play();
         StartCoroutine(SineIntensity());
 
         foreach (GameObject platform in _platformsAll)
@@ -26,18 +25,13 @@ public class ActivateObjectsBullet : MonoBehaviour
 
             if (movePlatform != null)
                 movePlatform.StartAction();
-
-            //Quicksand quicksand = platform.GetComponent<Quicksand>();
-
-            /*if (quicksand != null)
-                quicksand.ActivateSand();*/
         }
     }
 
     IEnumerator SineIntensity()
     {
-            yield return StartCoroutine(ChangeIntensity(0f, 1f, 0.8f));
-            yield return StartCoroutine(ChangeIntensity(1f, 0f, 0.8f));
+        yield return StartCoroutine(ChangeIntensity(0f, 1f, 0.8f));
+        yield return StartCoroutine(ChangeIntensity(1f, 0f, 0.8f));
     }
 
     IEnumerator ChangeIntensity(float startValue, float endValue, float duration)
@@ -52,6 +46,14 @@ public class ActivateObjectsBullet : MonoBehaviour
             yield return null;
         }
 
-        material.SetFloat("_intensity", endValue); 
+        material.SetFloat("_intensity", endValue);
+    }
+
+    public void ActivateParticles()
+    {
+        if (_shiningParticles != null && !_shiningParticles.isPlaying)
+            _shiningParticles.Play();
+        else
+            _shiningParticles.Stop();
     }
 }
