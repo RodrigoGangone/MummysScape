@@ -165,10 +165,10 @@ public class Player : MonoBehaviour
                 _speed = _speedOriginal;
                 break;
             case PlayerSize.Small:
-                _speed = _speedOriginal * 2f;
+                _speed = _speedOriginal * 1.5f;
                 break;
             case PlayerSize.Head:
-                _speed = _speedOriginal * 1.5f;
+                _speed = _speedOriginal * 1.25f;
                 break;
         }
 
@@ -183,10 +183,10 @@ public class Player : MonoBehaviour
                 _speedRotation = _speedRotationOriginal;
                 break;
             case PlayerSize.Small:
-                _speedRotation = _speedRotationOriginal * 2f;
+                _speedRotation = _speedRotationOriginal;
                 break;
             case PlayerSize.Head:
-                _speedRotation = _speedRotationOriginal * 1.5f;
+                _speedRotation = _speedRotationOriginal;
                 break;
         }
 
