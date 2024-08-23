@@ -70,6 +70,8 @@ public class ControllerPlayer
                 _model.DropObject();
         }
 
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+            _model.moveTank = !_model.moveTank;
 
         //END GRAB OBJECTS//
     }

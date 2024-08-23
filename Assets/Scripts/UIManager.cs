@@ -11,6 +11,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] Image _beetleCount;
     private Player _player;
     int previousVandage = 0;
+    [SerializeField] private Material _UIMaterialFill;
+    [SerializeField] private Material _UIMaterialHandler;
 
     void Start()
     {
@@ -37,6 +39,7 @@ public class UIManager : MonoBehaviour
         float tick = 0f;
         float value = starlerp;
 
+
         while (value != endlerp)
         {
             value = Mathf.Lerp(starlerp, endlerp, tick);
@@ -46,6 +49,9 @@ public class UIManager : MonoBehaviour
             yield return null;
         }
 
+        _UIMaterialFill.SetFloat("_Velocity", endlerp == 0 ? 50 : 0);
+        _UIMaterialHandler.SetFloat("_Velocity", endlerp == 0 ? 50 : 0);
+        
         previousVandage = endlerp;
     }
 

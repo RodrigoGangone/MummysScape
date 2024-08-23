@@ -7,7 +7,8 @@ public class SM_Shoot : State
 {
     private ModelPlayer _model;
     private ViewPlayer _view;
-
+    private Vector3? targetButtonPosition; //Posicion del boton hacia el que apunta
+    
     public SM_Shoot(ModelPlayer model, ViewPlayer view)
     {
         _model = model;
@@ -27,13 +28,9 @@ public class SM_Shoot : State
         _view.PLAY_ANIM("Shoot", false);
     }
 
-    public override void OnUpdate()
-    {
-    }
+    public override void OnUpdate() {}
 
-    public override void OnFixedUpdate()
-    {
-    }
+    public override void OnFixedUpdate() {}
 
     public void GoIdle()
     {

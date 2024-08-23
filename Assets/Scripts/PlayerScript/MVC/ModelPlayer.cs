@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class ModelPlayer
@@ -14,6 +15,7 @@ public class ModelPlayer
 
     public bool isHooking;
     public bool finishAnimationHook;
+    public bool moveTank;
 
     //PICK UP
     private LayerMask pickableLayer = LayerMask.GetMask("Pickable");
@@ -37,6 +39,8 @@ public class ModelPlayer
 
     public void MoveTank(float rotationInput, float moveInput)
     {
+        _player.SpeedRotation = 100;
+        
         Quaternion _rotation = Quaternion.Euler(0f, rotationInput * _player.SpeedRotation * Time.deltaTime, 0f);
         _rb.rotation = (_rb.rotation * _rotation);
 
@@ -46,6 +50,8 @@ public class ModelPlayer
 
     public void Move(float movimientoHorizontal, float movimientoVertical)
     {
+        _player.SpeedRotation = 6;
+        
         Vector3 forward =
             new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
 
@@ -109,44 +115,55 @@ public class ModelPlayer
 
     public void RotatePreShoot()
     {
-        (bool buttonFound, Vector3 hitPoint) = CheckForButton();
+        var hitPoint = ButtonPosition();
 
-        if (buttonFound)
+        if (hitPoint != null)
+            _player.StartCoroutine(SmoothRotation(hitPoint.Value));
+    }
+    
+    public IEnumerator SmoothRotation(Vector3 buttonPosition)
+    {
+        Quaternion startRotation = _player.transform.rotation;
+        Vector3 directionToButton = (buttonPosition - _player.transform.position).normalized;
+        Quaternion targetRotation = Quaternion.LookRotation(directionToButton);
+
+        float duration = 0.5f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
         {
-            Vector3 directionToButton = hitPoint - _player.transform.position;
-            Quaternion targetRotation = Quaternion.LookRotation(directionToButton);
-
-            _player.transform.rotation = targetRotation;
-
-            Debug.Log("SHOOT - COLLISION CON BUTTON");
+            _player.transform.rotation = Quaternion.Lerp(startRotation, targetRotation, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
         }
+
+        _player.transform.rotation = targetRotation;
     }
 
-    private (bool, Vector3) CheckForButton()
+    public Vector3? ButtonPosition()
     {
-        var position = _player.shootTarget.transform.position;
-
-        Vector3[] origins =
-        {
-            position,
-            position + new Vector3(0.25f, 0, 0),
-            position + new Vector3(0.50f, 0, 0),
-            position + new Vector3(-0.25f, 0, 0),
-            position + new Vector3(-0.50f, 0, 0),
+        Vector3[] origins = {
+            _player.shootTarget.transform.position,
+            _player.shootTarget.transform.position + _player.transform.right * 0.25f,
+            _player.shootTarget.transform.position + _player.transform.right * 0.50f,
+            _player.shootTarget.transform.position - _player.transform.right * 0.25f,
+            _player.shootTarget.transform.position - _player.transform.right * 0.50f
         };
 
         foreach (var origin in origins)
         {
-            if (Physics.Raycast(origin, _player.shootTarget.transform.forward, out var hit, 100f))
+            RaycastHit hit;
+
+            if (Physics.Raycast(origin, _player.transform.forward, out hit, 100f))
             {
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
                 {
-                    return (true, hit.transform.position);
+                    return hit.transform.position;
                 }
             }
         }
-
-        return (false, Vector3.zero);
+        
+        return null;
     }
 
     //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'

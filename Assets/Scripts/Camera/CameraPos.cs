@@ -8,7 +8,7 @@ public class CameraPos : MonoBehaviour
     [SerializeField] List<Transform> positions;
     public int pos;
     float minDistance = 0.1f;
-    [SerializeField] float speed;
+    private float speed = 0.05f;
 
     void FixedUpdate()
     {
