@@ -214,20 +214,16 @@ public class Player : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Vector3[] origins =
-        {
-            shootTarget.transform.position,
-            shootTarget.transform.position + transform.right * 0.25f,
-            shootTarget.transform.position + transform.right * 0.50f,
-            shootTarget.transform.position - transform.right * 0.25f,
-            shootTarget.transform.position - transform.right * 0.50f,
+        Vector3[] origins = {
+            shootTarget.transform.position + transform.right * 0.75f,
+            shootTarget.transform.position - transform.right * 0.75f,
         };
 
         foreach (var origin in origins)
         {
             RaycastHit hit;
 
-            if (Physics.Raycast(origin, transform.forward, out hit, 100f))
+            if (Physics.Raycast(origin, transform.forward, out hit, 12))
             {
                 Gizmos.color = Color.red;
                 Gizmos.DrawLine(origin, hit.point);
