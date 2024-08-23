@@ -38,7 +38,6 @@ public class ModelPlayer
 
     public void Move(float movimientoHorizontal, float movimientoVertical)
     {
-        _player.SpeedRotation = 6;
         
         Vector3 forward =
             new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
