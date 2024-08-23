@@ -163,17 +163,16 @@ public class ModelPlayer
     public void Hook()
     {
         if (isHooking) return;
+        isHooking = true;
 
         springJoint = _player.gameObject.AddComponent<SpringJoint>();
         springJoint.autoConfigureConnectedAnchor = false;
-        hookBeetle = detectionBeetle.currentHook;
-        isHooking = true;
 
-        switch (detectionBeetle.currentHook.gameObject.tag)
+        switch (hookBeetle.gameObject.tag)
         {
             case "Hook":
                 springJoint.anchor = Vector3.zero;
-                springJoint.connectedBody = detectionBeetle.currentHook;
+                springJoint.connectedBody = hookBeetle;
                 springJoint.maxDistance = 5f;
                 springJoint.minDistance = 4f;
                 springJoint.spring = 75;
@@ -182,7 +181,7 @@ public class ModelPlayer
 
             case "HookJump":
                 springJoint.anchor = Vector3.zero;
-                springJoint.connectedBody = detectionBeetle.currentHook;
+                springJoint.connectedBody = hookBeetle;
                 springJoint.maxDistance = 1.5f;
                 springJoint.minDistance = 2f;
                 springJoint.spring = 100;
