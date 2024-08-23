@@ -39,7 +39,6 @@ public class UIManager : MonoBehaviour
         float tick = 0f;
         float value = starlerp;
 
-
         while (value != endlerp)
         {
             value = Mathf.Lerp(starlerp, endlerp, tick);
@@ -49,10 +48,16 @@ public class UIManager : MonoBehaviour
             yield return null;
         }
 
-        _UIMaterialFill.SetFloat("_Velocity", endlerp == 0 ? 50 : 0);
-        _UIMaterialHandler.SetFloat("_Velocity", endlerp == 0 ? 50 : 0);
-        
+        if (endlerp != 0)
+            SetMaterialUI(0);
+
         previousVandage = endlerp;
+    }
+
+    public void SetMaterialUI(float vel)
+    {
+        _UIMaterialFill.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
+        _UIMaterialHandler.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
     }
 
     public void UISetCollectibleCount(int count)
