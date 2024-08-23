@@ -37,20 +37,18 @@ public class ModelPlayer
         detectionBeetle = _player._detectionBeetle;
     }
 
-    public void MoveTank(float rotationInput, float moveInput)
-    {
-        _player.SpeedRotation = 100;
-        
-        Quaternion _rotation = Quaternion.Euler(0f, rotationInput * _player.SpeedRotation * Time.deltaTime, 0f);
-        _rb.rotation = (_rb.rotation * _rotation);
-
-        Vector3 movemente = _player.transform.forward * (moveInput * _player.Speed * Time.deltaTime);
-        _rb.MovePosition(_rb.position + movemente);
-    }
+    //public void MoveTank(float rotationInput, float moveInput)
+    //{
+    //    
+    //    Quaternion _rotation = Quaternion.Euler(0f, rotationInput * _player.SpeedRotation * Time.deltaTime, 0f);
+    //    _rb.rotation = (_rb.rotation * _rotation);
+    //
+    //    Vector3 movemente = _player.transform.forward * (moveInput * _player.Speed * Time.deltaTime);
+    //    _rb.MovePosition(_rb.position + movemente);
+    //}
 
     public void Move(float movimientoHorizontal, float movimientoVertical)
     {
-        _player.SpeedRotation = 6;
         
         Vector3 forward =
             new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;

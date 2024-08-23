@@ -29,9 +29,9 @@ public class Player : MonoBehaviour
     private string _currentState;
 
     [Header("ATRIBUTES")] [SerializeField] private float _life;
-    [SerializeField] private float _speedOriginal = 5;
+    [SerializeField] private float _speedOriginal;
+    [SerializeField] private float _speedRotationOriginal;
     [SerializeField] private float _speed;
-    [SerializeField] private float _maxSpeed;
     [SerializeField] private float _speedRotation;
 
     [Header("BANDAGE")] [SerializeField] private int _maxBandageStock = 2;
@@ -46,10 +46,10 @@ public class Player : MonoBehaviour
     [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
 
-    [FormerlySerializedAs("_rightHand")] [SerializeField]
-    public TwoBoneIKConstraint rightHand;
+    [SerializeField] public TwoBoneIKConstraint rightHand;
 
     [SerializeField] public RigBuilder rigBuilder;
+
     //TODO: Mejorar esto a futuro
 
     #region Getters & Setters
@@ -60,18 +60,15 @@ public class Player : MonoBehaviour
         set => _life = value;
     }
 
-    public float SpeedOriginal => _speedOriginal;
 
     public float Speed
     {
-        get => _speed;
-        set => _speed = value;
+        get => CurrentSpeed();
     }
 
     public float SpeedRotation
     {
-        get => _speedRotation;
-        set => _speedRotation = value;
+        get => CurrentRotation();
     }
 
     public int MaxBandageStock => _maxBandageStock;
@@ -160,20 +157,40 @@ public class Player : MonoBehaviour
         return _currBandageStock > _minBandageStock;
     }
 
-    public void ChangeSpeed()
+    private float CurrentSpeed()
     {
         switch (CurrentPlayerSize)
         {
             case PlayerSize.Normal:
-                _speed = 2;
-                break;
-            case PlayerSize.Small:
-                _speed = 4;
-                break;
-            case PlayerSize.Head:
                 _speed = _speedOriginal;
                 break;
+            case PlayerSize.Small:
+                _speed = _speedOriginal * 2f;
+                break;
+            case PlayerSize.Head:
+                _speed = _speedOriginal * 1.5f;
+                break;
         }
+
+        return _speed;
+    }
+
+    private float CurrentRotation()
+    {
+        switch (CurrentPlayerSize)
+        {
+            case PlayerSize.Normal:
+                _speedRotation = _speedRotationOriginal;
+                break;
+            case PlayerSize.Small:
+                _speedRotation = _speedRotationOriginal * 2f;
+                break;
+            case PlayerSize.Head:
+                _speedRotation = _speedRotationOriginal * 1.5f;
+                break;
+        }
+
+        return _speedRotation;
     }
 
     void Win()
@@ -194,11 +211,12 @@ public class Player : MonoBehaviour
             Death();
         }
     }
-    
+
     private void OnDrawGizmos()
     {
-        Vector3[] origins = {
-            shootTarget.transform.position, 
+        Vector3[] origins =
+        {
+            shootTarget.transform.position,
             shootTarget.transform.position + transform.right * 0.25f,
             shootTarget.transform.position + transform.right * 0.50f,
             shootTarget.transform.position - transform.right * 0.25f,
