@@ -50,14 +50,14 @@ public class UIManager : MonoBehaviour
 
         if (endlerp != 0)
             SetMaterialUI(0);
-        
+
         previousVandage = endlerp;
     }
 
     public void SetMaterialUI(float vel)
     {
-        _UIMaterialFill.SetFloat("_Velocity", Mathf.Lerp(0, 50, vel * 0.05f));
-        _UIMaterialHandler.SetFloat("_Velocity", Mathf.Lerp(0, 50, vel * 0.05f));
+        _UIMaterialFill.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
+        _UIMaterialHandler.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
     }
 
     public void UISetCollectibleCount(int count)
