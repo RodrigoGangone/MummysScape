@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +7,7 @@ public class DetectionHook : MonoBehaviour
     public Rigidbody currentHook;
 
     private bool _isWall = false;
-    private Transform _hook;
+    private ParticleSystem _hookParticleSystem;
     public Player _player;
 
     private void Start()
@@ -29,7 +28,7 @@ public class DetectionHook : MonoBehaviour
         if (other.gameObject.layer != LayerMask.NameToLayer("Hook") || _hooks.Count == 0) return;
         if (!isPosibleHook(other)) return;
 
-        _hook = other.transform.GetChild(0);
+        var hookParticleSystem = other.transform.GetChild(0).GetComponent<ParticleSystem>();
 
         float nearestDistance = float.MaxValue;
 
@@ -45,18 +44,18 @@ public class DetectionHook : MonoBehaviour
 
                     currentHook = hook.GetComponent<Rigidbody>();
 
-                    _hook.gameObject.SetActive(true);
+                    if (!hookParticleSystem.isPlaying) hookParticleSystem.Play();
                 }
                 else
                 {
-                    _hook.gameObject.SetActive(false);
+                    if (hookParticleSystem.isPlaying) hookParticleSystem.Stop();
                 }
             }
         }
         else if (_hooks.Count == 1)
         {
             currentHook = _hooks[0].GetComponent<Rigidbody>();
-            _hook.gameObject.SetActive(true);
+            if (!hookParticleSystem.isPlaying) hookParticleSystem.Play();
         }
 
         _player.rightHand.data.target = currentHook.transform;
@@ -64,10 +63,9 @@ public class DetectionHook : MonoBehaviour
 
     private bool isPosibleHook(Collider other)
     {
-        RaycastHit hit;
         Vector3 direction = other.transform.position - transform.position;
 
-        if (Physics.Raycast(transform.position, direction, out hit, direction.magnitude, LayerMask.GetMask("Wall")))
+        if (Physics.Raycast(transform.position, direction, out RaycastHit hit, direction.magnitude, LayerMask.GetMask("Wall")))
         {
             Debug.Log("VERDADERO - Wall detected");
             return false;
@@ -79,9 +77,10 @@ public class DetectionHook : MonoBehaviour
     private void OnTriggerExit(Collider other) // Eliminar el Beetle que agregue
     {
         if (other.gameObject.layer != LayerMask.NameToLayer("Hook")) return;
-
-        _hook = other.transform.GetChild(0);
-        _hook.gameObject.SetActive(false);
+        
+        //Apagar particula del beetle que ya no veria
+        var hookParticleSystem = other.transform.GetChild(0).GetComponent<ParticleSystem>();
+        if (hookParticleSystem.isPlaying) hookParticleSystem.Stop();
 
         var cur = other.GetComponent<Rigidbody>();
 
