@@ -1,130 +1,69 @@
-using System;
-using Unity.Mathematics;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class MovePlatform : MonoBehaviour
 {
-    [Header("TYPE OF PLATFORM")] [SerializeField]
-    private TypeOfPlatform _type;
+    [Header("TYPE OF PLATFORM")] 
+    [SerializeField] private TypeOfPlatform _type;
 
     [Header("SPEED")] public float speed;
 
-    [Header("MOVE")] [SerializeField] private float moveX;
-    [SerializeField] private float moveY;
-    [SerializeField] private float moveZ;
+    [Header("WAYPOINTS")] 
+    [SerializeField] private Transform[] waypoints; // Lista de puntos a los que la plataforma se moverá
 
-    [Header("ROTATE CONSTANT")] [SerializeField]
-    private float _speedRotateY;
+    private int currentWaypointIndex = 0;
+    private bool isPaused;
+    private bool isMoving = true;
 
-    [Header("ROTATE 90")] [SerializeField] private float _rotateY;
-    private Quaternion _destiny;
-
-    [Header("START POSITION")] [SerializeField]
-    private Transform centerOfSin;
-
-    private bool isActive;
-    private bool isCenter;
-
-    private float _time;
-
-    private Collider _collider;
-
-    void Start()
+    private void Start()
     {
-        _collider = GetComponent<BoxCollider>();
+        // Mueve la plataforma al primer waypoint al iniciar
+        if (waypoints.Length > 0)
+        {
+            transform.position = waypoints[0].position;
+        }
     }
 
-    void Update()
+    private void Update()
     {
-        if (_type.Equals(TypeOfPlatform.Rotate90))
+        if (isMoving && waypoints.Length > 0)
         {
-            Rotate90();
+            MoveTowardsWaypoint();
         }
+    }
 
-        if (_type.Equals(TypeOfPlatform.MoveWithoutAct))
+    private void MoveTowardsWaypoint()
+    {
+        if (isPaused) return;
+
+        // Calcula la dirección y mueve la plataforma hacia el waypoint actual
+        Transform targetWaypoint = waypoints[currentWaypointIndex];
+        float step = speed * Time.deltaTime;
+
+        transform.position = Vector3.MoveTowards(transform.position, targetWaypoint.position, step);
+
+        // Si la plataforma ha alcanzado el waypoint, inicia la pausa
+        if (Vector3.Distance(transform.position, targetWaypoint.position) < 0.1f)
         {
-            MoveWithoutAct();
+            StartCoroutine(PauseAtWaypoint());
         }
+    }
 
-        if (!isActive) return;
+    private IEnumerator PauseAtWaypoint()
+    {
+        isPaused = true;
 
-        switch (_type)
-        {
-            case TypeOfPlatform.MoveAxis:
-            {
-                MoveInAxis();
-                break;
-            }
-            case TypeOfPlatform.RotateConstant:
-            {
-                RotateConstant();
-                break;
-            }
-        }
+        // Espera 0.25 segundos antes de continuar
+        yield return new WaitForSeconds(0.25f);
+
+        // Avanza al siguiente waypoint
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
+        isPaused = false;
     }
 
     public void StartAction()
     {
-        //Si no es de tipo Rotate90, activa
-        if (!_type.Equals(TypeOfPlatform.Rotate90))
-            isActive = !isActive;
-        else
-            _destiny = Quaternion.Euler(0f, transform.eulerAngles.y + _rotateY, 0f);
-    }
-
-    private void MoveInAxis()
-    {
-        if (Vector3.Distance(transform.position, centerOfSin.position) > 0.1f && !isCenter)
-            MoveToCenter();
-        else
-        {
-            _time += Time.deltaTime * speed;
-
-            //Move
-            float x = moveX != 0 ? Mathf.Sin(_time) * moveX : 0f;
-            float y = moveY != 0 ? Mathf.Sin(_time) * moveY : 0f;
-            float z = moveZ != 0 ? Mathf.Sin(_time) * moveZ : 0f;
-
-            transform.position = centerOfSin.position + new Vector3(x, y, z);
-        }
-    }
-
-    private void MoveToCenter()
-    {
-        float step = speed * Time.deltaTime; // Calcula la distancia a moverse en este frame
-        transform.position = Vector3.MoveTowards(transform.position, centerOfSin.position, step);
-
-        if (Vector3.Distance(transform.position, centerOfSin.position) <= 0.1f)
-        {
-            isCenter = true;
-            _collider.enabled = true;
-        }
-    }
-
-    private void RotateConstant()
-    {
-        //Rotation
-        float ry = _speedRotateY != 0 ? _speedRotateY * 0.01f : 0f;
-
-        transform.Rotate(0, ry, 0);
-    }
-
-    private void Rotate90()
-    {
-        transform.rotation = Quaternion.Lerp(transform.rotation, _destiny, 5 * Time.deltaTime);
-    }
-
-    private void MoveWithoutAct()
-    {
-        _time += Time.deltaTime * speed;
-
-        //Move
-        float x = moveX != 0 ? Mathf.Sin(_time) * moveX : 0f;
-        float y = moveY != 0 ? Mathf.Sin(_time) * moveY : 0f;
-        float z = moveZ != 0 ? Mathf.Sin(_time) * moveZ : 0f;
-
-        transform.position = centerOfSin.position + new Vector3(x, y, z);
+        isMoving = !isMoving;
     }
 
     private void OnTriggerEnter(Collider other)
