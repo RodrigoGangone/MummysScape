@@ -14,21 +14,51 @@ public class MovePlatform : MonoBehaviour
     private int currentWaypointIndex = 0;
     private bool isPaused;
     private bool isMoving = true;
+    private bool isMovingToFirstWaypoint = false;
 
     private void Start()
     {
-        // Mueve la plataforma al primer waypoint al iniciar
         if (waypoints.Length > 0)
         {
-            transform.position = waypoints[0].position;
+            // Si la plataforma no está en la posición del primer waypoint
+            if (Vector3.Distance(transform.position, waypoints[0].position) > 0.1f)
+            {
+                // Iniciar movimiento suave hacia el primer waypoint
+                isMovingToFirstWaypoint = true;
+            }
+            else
+            {
+                // Si ya está en el primer waypoint, comenzar normalmente
+                transform.position = waypoints[0].position;
+            }
         }
     }
 
     private void Update()
     {
-        if (isMoving && waypoints.Length > 0)
+        if (isMovingToFirstWaypoint)
+        {
+            MoveToFirstWaypoint();
+        }
+        else if (isMoving && waypoints.Length > 0)
         {
             MoveTowardsWaypoint();
+        }
+    }
+    
+    private void MoveToFirstWaypoint()
+    {
+        // Mueve la plataforma hacia el primer waypoint
+        Transform firstWaypoint = waypoints[0];
+        float step = speed * Time.deltaTime;
+
+        transform.position = Vector3.MoveTowards(transform.position, firstWaypoint.position, step);
+
+        // Si la plataforma ha alcanzado el primer waypoint
+        if (Vector3.Distance(transform.position, firstWaypoint.position) < 0.1f)
+        {
+            isMovingToFirstWaypoint = false;
+            currentWaypointIndex = 1; // Empieza a moverse hacia el segundo waypoint
         }
     }
 
