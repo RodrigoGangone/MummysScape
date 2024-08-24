@@ -9,26 +9,24 @@ public class MovePlatform : MonoBehaviour
     [Header("SPEED")] public float speed;
 
     [Header("WAYPOINTS")] 
-    [SerializeField] private Transform[] waypoints; // Lista de puntos a los que la plataforma se moverá
+    [SerializeField] private Transform[] waypoints; // Lista puntos a los que se mueve la platform
 
     private int currentWaypointIndex = 0;
     private bool isPaused;
-    private bool isMoving = true;
-    private bool isMovingToFirstWaypoint = false;
+    private bool isMoving;
+    private bool isMovingToFirstWaypoint;
 
     private void Start()
     {
-        if (waypoints.Length > 0)
+        if (waypoints.Length > 0 && isMoving)
         {
-            // Si la plataforma no está en la posición del primer waypoint
+            // Si la plataforma no está en la posicion del primer waypoint
             if (Vector3.Distance(transform.position, waypoints[0].position) > 0.1f)
             {
-                // Iniciar movimiento suave hacia el primer waypoint
                 isMovingToFirstWaypoint = true;
             }
             else
             {
-                // Si ya está en el primer waypoint, comenzar normalmente
                 transform.position = waypoints[0].position;
             }
         }
@@ -66,13 +64,13 @@ public class MovePlatform : MonoBehaviour
     {
         if (isPaused) return;
 
-        // Calcula la dirección y mueve la plataforma hacia el waypoint actual
+        // Calcula la direcc y mueve la plataform hacia el waypoint actual
         Transform targetWaypoint = waypoints[currentWaypointIndex];
         float step = speed * Time.deltaTime;
 
         transform.position = Vector3.MoveTowards(transform.position, targetWaypoint.position, step);
 
-        // Si la plataforma ha alcanzado el waypoint, inicia la pausa
+        // Pausa al llegar a un punto
         if (Vector3.Distance(transform.position, targetWaypoint.position) < 0.1f)
         {
             StartCoroutine(PauseAtWaypoint());
@@ -83,7 +81,6 @@ public class MovePlatform : MonoBehaviour
     {
         isPaused = true;
 
-        // Espera 0.25 segundos antes de continuar
         yield return new WaitForSeconds(0.25f);
 
         // Avanza al siguiente waypoint
