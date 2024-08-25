@@ -22,13 +22,9 @@ public class MovePlatform : MonoBehaviour
         {
             // Si la plataforma no está en la posicion del primer waypoint
             if (Vector3.Distance(transform.position, waypoints[0].position) > 0.1f)
-            {
                 isMovingToFirstWaypoint = true;
-            }
             else
-            {
                 transform.position = waypoints[0].position;
-            }
         }
     }
 
@@ -42,6 +38,8 @@ public class MovePlatform : MonoBehaviour
         {
             MoveTowardsWaypoint();
         }
+        
+        Debug.Log("currentWaypointIndex :" + currentWaypointIndex);
     }
     
     private void MoveToFirstWaypoint()
@@ -91,6 +89,14 @@ public class MovePlatform : MonoBehaviour
     public void StartAction()
     {
         isMoving = !isMoving;
+    }
+
+    public void ReturnToPrevious()
+    {
+        if (currentWaypointIndex > 0)
+            currentWaypointIndex--;
+        else
+            currentWaypointIndex++;
     }
 
     private void OnTriggerEnter(Collider other)

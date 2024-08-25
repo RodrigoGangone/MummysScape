@@ -12,12 +12,9 @@ public class MovePlatfornNoPush : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("PlayerFather"))
-            _movePlatform.speed = 0;
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("PlayerFather"))
-            _movePlatform.speed = 1;
+        {
+            Debug.Log("COLISIONO CON PLAYER");
+            _movePlatform.ReturnToPrevious();
+        }
     }
 }

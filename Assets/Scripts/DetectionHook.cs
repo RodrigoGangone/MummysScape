@@ -67,7 +67,6 @@ public class DetectionHook : MonoBehaviour
 
         if (Physics.Raycast(transform.position, direction, out RaycastHit hit, direction.magnitude, LayerMask.GetMask("Wall")))
         {
-            Debug.Log("VERDADERO - Wall detected");
             return false;
         }
 
