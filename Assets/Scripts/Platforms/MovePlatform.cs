@@ -3,18 +3,20 @@ using UnityEngine;
 
 public class MovePlatform : MonoBehaviour
 {
-    [Header("TYPE OF PLATFORM")] 
-    [SerializeField] private TypeOfPlatform _type;
-
-    [Header("SPEED")] public float speed;
+    [Header("PLAY ON AWAKE")]
+    [SerializeField] private bool isMoving;
+    
+    [Header("SPEED")]
+    public float speed = 1;
+    public float stopTime = 0.25f;
 
     [Header("WAYPOINTS")] 
     [SerializeField] private Transform[] waypoints; // Lista puntos a los que se mueve la platform
-
-    private int currentWaypointIndex = 0;
+    
     private bool isPaused;
-    private bool isMoving;
     private bool isMovingToFirstWaypoint;
+    
+    private int currentWaypointIndex = 0;
 
     private void Start()
     {
@@ -79,7 +81,7 @@ public class MovePlatform : MonoBehaviour
     {
         isPaused = true;
 
-        yield return new WaitForSeconds(0.25f);
+        yield return new WaitForSeconds(stopTime);
 
         // Avanza al siguiente waypoint
         currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
@@ -114,12 +116,4 @@ public class MovePlatform : MonoBehaviour
             other.transform.SetParent(null);
         }
     }
-}
-
-public enum TypeOfPlatform
-{
-    MoveAxis,
-    RotateConstant,
-    Rotate90,
-    MoveWithoutAct
 }
