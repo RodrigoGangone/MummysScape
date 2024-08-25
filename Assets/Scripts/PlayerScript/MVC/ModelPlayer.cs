@@ -17,7 +17,7 @@ public class ModelPlayer
     public bool finishAnimationHook;
 
     //PICK UP
-    private LayerMask pickableLayer = LayerMask.GetMask("Pickable");
+    private LayerMask _pickableLayer = LayerMask.GetMask("Pickable");
     public bool hasObject { get; private set; }
 
     private Transform _objSelected;
@@ -26,6 +26,7 @@ public class ModelPlayer
     private float _objSpeed = 5f;
 
     public Action sizeModify;
+    public Func<Transform, GameObject> createBandage;
 
     public ModelPlayer(Player p)
     {
@@ -36,9 +37,23 @@ public class ModelPlayer
         detectionBeetle = _player._detectionBeetle;
     }
 
+    public void SpawnBandage(Transform trans)
+    {
+        createBandage(trans);
+    }
+    public void SpawnBandage()
+    {
+        createBandage(_player.dropTarget);
+        SubtractBandage();
+    }
+
+    public void SubtractBandage()
+    {
+        _player.CurrentBandageStock--;
+        SizeHandler();
+    }
     public void Move(float movimientoHorizontal, float movimientoVertical)
     {
-        
         Vector3 forward =
             new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
 
@@ -62,7 +77,6 @@ public class ModelPlayer
             _rb.velocity = velocity;
         }
     }
-
     public void ClampMovement()
     {
         var velocity = _rb.velocity;
@@ -71,7 +85,6 @@ public class ModelPlayer
 
         _rb.velocity = velocity;
     }
-
     public void MoveHooked(float movimientoHorizontal, float movimientoVertical)
     {
         Debug.Log("MOVE HOOKED");
@@ -89,17 +102,14 @@ public class ModelPlayer
             _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
         }
     }
-
     public void Shoot()
     {
         if (_player.CurrentBandageStock > _player.MinBandageStock)
         {
             BulletFactory.Instance.GetObjectFromPool();
-            _player.CurrentBandageStock--;
-            SizeHandler();
+            SubtractBandage();
         }
     }
-
     public void RotatePreShoot()
     {
         var hitPoint = ButtonHit()?.transform.position;
@@ -107,7 +117,6 @@ public class ModelPlayer
         if (hitPoint != null)
             _player.StartCoroutine(SmoothRotation(hitPoint.Value));
     }
-    
     public IEnumerator SmoothRotation(Vector3 buttonPosition)
     {
         Quaternion startRotation = _player.transform.rotation;
@@ -126,10 +135,10 @@ public class ModelPlayer
 
         _player.transform.rotation = targetRotation;
     }
-
     private RaycastHit? ButtonHit()
     {
-        Vector3[] origins = {
+        Vector3[] origins =
+        {
             _player.shootTarget.transform.position + _player.transform.right * 0.75f,
             _player.shootTarget.transform.position - _player.transform.right * 0.75f,
         };
@@ -143,16 +152,16 @@ public class ModelPlayer
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button")) return hit;
             }
         }
+
         return null;
     }
-
     public void ActivateParticleButtonInView()
     {
         //Check si hay boton chocando con raycast de disparo
         if (ButtonHit().HasValue)
         {
             var activateObjects = ButtonHit()?.collider.gameObject.GetComponent<ActivateObjectsBullet>();
-            if (activateObjects != null){}
+            if (activateObjects != null) 
                 activateObjects.ActivateParticles();
         }
     }
@@ -190,7 +199,6 @@ public class ModelPlayer
 
         finishAnimationHook = true;
     }
-
     public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         _player._viewPlayer.PLAY_PUFF();
@@ -230,8 +238,7 @@ public class ModelPlayer
 
         _player._viewPlayer.AdjustColliderSize();
     }
-    
-    public void LimitVelocityRB()
+    public void LimitVelocityRb()
     {
         if (_rb.velocity.magnitude > _player.Speed)
             _rb.velocity = _rb.velocity.normalized * _player.Speed;
@@ -244,7 +251,7 @@ public class ModelPlayer
         Debug.DrawRay(_player.transform.position, _player.transform.forward * 30, Color.green, 0.5f);
         RaycastHit hit;
         if (Physics.Raycast(_player.transform.position, _player.transform.forward, out hit, Mathf.Infinity,
-                pickableLayer))
+                _pickableLayer))
         {
             Debug.Log("Objeto recogido: " + hit.collider.gameObject.name);
             hasObject = true;
