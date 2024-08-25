@@ -41,26 +41,28 @@ public class ModelPlayer
     {
         createBandage(trans);
     }
+
     public void SpawnBandage()
     {
+        CountBandage(-1);
         createBandage(_player.dropTarget);
-        SubtractBandage();
     }
 
-    public void SubtractBandage()
+    public void CountBandage(int sum)
     {
-        _player.CurrentBandageStock--;
+        _player.CurrentBandageStock += sum;
         SizeHandler();
     }
-    public void Move(float movimientoHorizontal, float movimientoVertical)
+
+    public void Move(float moveHorizontal, float moveVertical)
     {
         Vector3 forward =
             new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
 
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
 
-        Vector3 righMovement = right * (_player.Speed * Time.deltaTime * movimientoHorizontal);
-        Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * movimientoVertical);
+        Vector3 righMovement = right * (_player.Speed * Time.deltaTime * moveHorizontal);
+        Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * moveVertical);
 
         Vector3 heading = (righMovement + upMovement).normalized;
 
@@ -77,6 +79,7 @@ public class ModelPlayer
             _rb.velocity = velocity;
         }
     }
+
     public void ClampMovement()
     {
         var velocity = _rb.velocity;
@@ -85,14 +88,15 @@ public class ModelPlayer
 
         _rb.velocity = velocity;
     }
-    public void MoveHooked(float movimientoHorizontal, float movimientoVertical)
+
+    public void MoveHooked(float moveHorizontal, float moveVertical)
     {
         Debug.Log("MOVE HOOKED");
         Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z)
             .normalized;
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
-        Vector3 rightMovement = right * (movimientoHorizontal * _player.Speed);
-        Vector3 forwardMovement = forward * (movimientoVertical * _player.Speed);
+        Vector3 rightMovement = right * (moveHorizontal * _player.Speed);
+        Vector3 forwardMovement = forward * (moveVertical * _player.Speed);
 
         Vector3 movement = rightMovement + forwardMovement;
         if (movement.sqrMagnitude > 0.01f)
@@ -102,14 +106,16 @@ public class ModelPlayer
             _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
         }
     }
+
     public void Shoot()
     {
         if (_player.CurrentBandageStock > _player.MinBandageStock)
         {
             BulletFactory.Instance.GetObjectFromPool();
-            SubtractBandage();
+            CountBandage(-1);
         }
     }
+
     public void RotatePreShoot()
     {
         var hitPoint = ButtonHit()?.transform.position;
@@ -117,6 +123,7 @@ public class ModelPlayer
         if (hitPoint != null)
             _player.StartCoroutine(SmoothRotation(hitPoint.Value));
     }
+
     public IEnumerator SmoothRotation(Vector3 buttonPosition)
     {
         Quaternion startRotation = _player.transform.rotation;
@@ -135,6 +142,7 @@ public class ModelPlayer
 
         _player.transform.rotation = targetRotation;
     }
+
     private RaycastHit? ButtonHit()
     {
         Vector3[] origins =
@@ -155,13 +163,14 @@ public class ModelPlayer
 
         return null;
     }
+
     public void ActivateParticleButtonInView()
     {
         //Check si hay boton chocando con raycast de disparo
         if (ButtonHit().HasValue)
         {
             var activateObjects = ButtonHit()?.collider.gameObject.GetComponent<ActivateObjectsBullet>();
-            if (activateObjects != null) 
+            if (activateObjects != null)
                 activateObjects.ActivateParticles();
         }
     }
@@ -199,6 +208,7 @@ public class ModelPlayer
 
         finishAnimationHook = true;
     }
+
     public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         _player._viewPlayer.PLAY_PUFF();
@@ -238,6 +248,7 @@ public class ModelPlayer
 
         _player._viewPlayer.AdjustColliderSize();
     }
+
     public void LimitVelocityRb()
     {
         if (_rb.velocity.magnitude > _player.Speed)

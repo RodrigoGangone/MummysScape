@@ -33,10 +33,10 @@ public class Bullet : MonoBehaviour
 
     private void OnCollisionEnter()
     {
-        SpawnBandage();
+        SpawnMummyBandage();
     }
 
-    private void SpawnBandage()
+    private void SpawnMummyBandage()
     {
         BulletFactory.Instance.ReturnObjectToPool(this);
         _player._modelPlayer.SpawnBandage(transform);
