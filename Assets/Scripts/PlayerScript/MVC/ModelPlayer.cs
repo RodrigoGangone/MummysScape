@@ -25,8 +25,8 @@ public class ModelPlayer
     private float _objRotation = 10f;
     private float _objSpeed = 5f;
 
-    public Action sizeModify;
-    public Func<Transform, GameObject> createBandage;
+    public Action SizeModify;
+    public Func<Transform, GameObject> CreateBandage;
 
     public ModelPlayer(Player p)
     {
@@ -36,22 +36,16 @@ public class ModelPlayer
         springJoint = _player._springJoint;
         detectionBeetle = _player._detectionBeetle;
     }
-
-    public void SpawnBandage(Transform trans)
-    {
-        createBandage(trans);
-    }
-
-    public void SpawnBandage()
-    {
-        CountBandage(-1);
-        createBandage(_player.dropTarget);
-    }
-
+    
     public void CountBandage(int sum)
     {
         _player.CurrentBandageStock += sum;
         SizeHandler();
+    }
+    
+    public void SpawnBandage(Transform trans = null)
+    {
+        CreateBandage(trans ?? _player.dropTarget);
     }
 
     public void Move(float moveHorizontal, float moveVertical)
@@ -124,7 +118,7 @@ public class ModelPlayer
             _player.StartCoroutine(SmoothRotation(hitPoint.Value));
     }
 
-    public IEnumerator SmoothRotation(Vector3 buttonPosition)
+    private IEnumerator SmoothRotation(Vector3 buttonPosition)
     {
         Quaternion startRotation = _player.transform.rotation;
         Vector3 directionToButton = (buttonPosition - _player.transform.position).normalized;
@@ -209,10 +203,10 @@ public class ModelPlayer
         finishAnimationHook = true;
     }
 
-    public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
+    private void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         _player._viewPlayer.PLAY_PUFF();
-        sizeModify?.Invoke();
+        SizeModify?.Invoke();
         //TODO: cambiar el tamaño del capsule collider dependiendo el tamaño
         switch (_player.CurrentBandageStock)
         {

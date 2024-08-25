@@ -105,7 +105,7 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnStateChange += ChangeState;
         _controllerPlayer.OnGetState += CurrentState;
         
-        _modelPlayer.createBandage = CreateBandage;
+        _modelPlayer.CreateBandage += CreateBandage;
         
         levelManager.playerWin += Win;
         levelManager.playerDeath += Death;

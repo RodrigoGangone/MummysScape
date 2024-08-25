@@ -17,7 +17,7 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         _player = FindObjectOfType<Player>();
-        _player._modelPlayer.sizeModify += UISetShootSlider;
+        _player._modelPlayer.SizeModify += UISetShootSlider;
         StartCoroutine(SetValue(1, _player.CurrentBandageStock));
     }
 
