@@ -208,13 +208,14 @@ public class Player : MonoBehaviour
         if (other.CompareTag("KillPlane"))
         {
             Debug.Log("Player murio por killPlane");
-            Death();
+            levelManager.OnPlayerDeath?.Invoke();
         }
     }
 
     private void OnDrawGizmos()
     {
-        Vector3[] origins = {
+        Vector3[] origins =
+        {
             shootTarget.transform.position + transform.right * 0.75f,
             shootTarget.transform.position - transform.right * 0.75f,
         };
