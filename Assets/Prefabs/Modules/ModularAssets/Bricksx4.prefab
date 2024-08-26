@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4342292348623074331}
   - component: {fileID: 6822772964365857041}
   - component: {fileID: 7465999020800892297}
-  - component: {fileID: 3212622234613504156}
+  - component: {fileID: 1501283717744120326}
   m_Layer: 0
   m_Name: Bricksx4
   m_TagString: Untagged
@@ -995,8 +995,8 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 7559056562874996803, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
---- !u!64 &3212622234613504156
-MeshCollider:
+--- !u!65 &1501283717744120326
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1013,7 +1013,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 3
+  m_Size: {x: 0.5317688, y: 0.404978, z: 2.399119}
+  m_Center: {x: 0, y: 0, z: 0}

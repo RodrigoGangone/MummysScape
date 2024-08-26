@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 9157956102658178715}
   - component: {fileID: 4365161866038880215}
   - component: {fileID: 3441903641473913125}
-  - component: {fileID: 2375725277174019290}
+  - component: {fileID: 5887404111296355002}
   m_Layer: 0
   m_Name: Pillar_Midx1
   m_TagString: Untagged
@@ -250,8 +250,8 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 4892701087792134781, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
---- !u!64 &2375725277174019290
-MeshCollider:
+--- !u!136 &5887404111296355002
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -268,7 +268,8 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 2
+  m_Radius: 0.68522215
+  m_Height: 2.1806293
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.011516809, z: 0}

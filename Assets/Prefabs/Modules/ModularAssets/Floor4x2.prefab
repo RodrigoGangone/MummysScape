@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4994388075291047263}
   - component: {fileID: 1354390392996345466}
   - component: {fileID: 5603531142627305608}
-  - component: {fileID: 6968110122656056630}
+  - component: {fileID: 2506297043428186145}
   m_Layer: 0
   m_Name: Floor4x2
   m_TagString: Untagged
@@ -255,8 +255,8 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 7082871616590237213, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
---- !u!64 &6968110122656056630
-MeshCollider:
+--- !u!65 &2506297043428186145
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -273,7 +273,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 3
+  m_Size: {x: 1.1995605, y: 0, z: 2.399119}
+  m_Center: {x: 0, y: 2.842171e-16, z: 0}

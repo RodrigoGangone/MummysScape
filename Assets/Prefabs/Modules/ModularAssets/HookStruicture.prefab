@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 1647370243532444604}
   - component: {fileID: 7241145106648306989}
   - component: {fileID: 824141173160084453}
+  - component: {fileID: 1262084812140308205}
+  - component: {fileID: 5582576997343999438}
   m_Layer: 0
   m_Name: HookStruicture
   m_TagString: Untagged
@@ -1015,6 +1017,48 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: -7602770855311013557, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
+--- !u!65 &1262084812140308205
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 683532093200817827}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.6996164, y: 0.5086399, z: 0.3998535}
+  m_Center: {x: -0.45178747, y: 0.4721459, z: 0}
+--- !u!65 &5582576997343999438
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 683532093200817827}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.53310144, y: 0.85190153, z: 0.3998535}
+  m_Center: {x: 0.6314698, y: -0.20618546, z: 0}
 --- !u!1001 &8480838232751249818
 PrefabInstance:
   m_ObjectHideFlags: 0

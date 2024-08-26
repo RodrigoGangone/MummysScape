@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3831906320190113556}
   - component: {fileID: 11357044698429318}
   - component: {fileID: 6797219898948982405}
-  - component: {fileID: 7147716951361200085}
+  - component: {fileID: 331341314874630160}
   m_Layer: 0
   m_Name: Wall4x5
   m_TagString: Untagged
@@ -227,8 +227,8 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 5433354751765189195, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
---- !u!64 &7147716951361200085
-MeshCollider:
+--- !u!65 &331341314874630160
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -245,7 +245,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 5433354751765189195, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 0.0000012207031, y: 2.5285437, z: 1.1995596}
+  m_Center: {x: 0, y: 0, z: 0}

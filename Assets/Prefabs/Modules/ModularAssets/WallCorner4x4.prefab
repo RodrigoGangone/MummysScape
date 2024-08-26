@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8314411790652533498}
   - component: {fileID: 2839947460297565389}
   - component: {fileID: 8755269484297825477}
-  - component: {fileID: 1101198001214822871}
+  - component: {fileID: 3775568566734696912}
   m_Layer: 0
   m_Name: WallCorner4x4
   m_TagString: Untagged
@@ -84,8 +84,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &1101198001214822871
-MeshCollider:
+--- !u!65 &3775568566734696912
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -102,7 +102,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -5171118607666660011, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 0.24237426, y: 2.5285437, z: 0.24237183}
+  m_Center: {x: 0, y: 0, z: 0}

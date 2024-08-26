@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3546773020459750639}
   - component: {fileID: 5548616553532732108}
   - component: {fileID: 8664154441376507723}
-  - component: {fileID: 377451101153171071}
+  - component: {fileID: 7308690758047950757}
   m_Layer: 0
   m_Name: Pillar_Bot
   m_TagString: Untagged
@@ -365,8 +365,8 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 7186189855699828213, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
---- !u!64 &377451101153171071
-MeshCollider:
+--- !u!136 &7308690758047950757
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -383,7 +383,8 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 2
+  m_Radius: 0.81079316
+  m_Height: 1.6215863
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.24233627, z: 0}

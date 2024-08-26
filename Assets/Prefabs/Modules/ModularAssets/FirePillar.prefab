@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3255593549003404651}
   - component: {fileID: 8083602542214365941}
   - component: {fileID: 3340513401483740784}
-  - component: {fileID: 7185740372775182372}
+  - component: {fileID: 4418557341692824395}
   m_Layer: 0
   m_Name: FirePillar
   m_TagString: Untagged
@@ -3736,8 +3736,8 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 382841740883438084, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
---- !u!64 &7185740372775182372
-MeshCollider:
+--- !u!65 &4418557341692824395
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -3754,10 +3754,9 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 3
+  m_Size: {x: 1.0215247, y: 1.4018537, z: 1.0215237}
+  m_Center: {x: 0, y: 0.17652994, z: 0}
 --- !u!1 &7980918384856161298
 GameObject:
   m_ObjectHideFlags: 0

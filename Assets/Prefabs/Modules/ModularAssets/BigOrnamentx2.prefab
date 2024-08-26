@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4012078273536526979}
   - component: {fileID: 8602718127866792994}
   - component: {fileID: 4304123160223233491}
-  - component: {fileID: 2473942427501874355}
+  - component: {fileID: 596237869332925858}
   m_Layer: 0
   m_Name: BigOrnamentx2
   m_TagString: Untagged
@@ -475,8 +475,8 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: -8744099420176707404, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
---- !u!64 &2473942427501874355
-MeshCollider:
+--- !u!65 &596237869332925858
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -493,7 +493,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 3
+  m_Size: {x: 1.0522608, y: 0.50268614, z: 1.1995599}
+  m_Center: {x: 0, y: 0, z: 0}

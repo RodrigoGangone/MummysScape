@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5336622470888172509}
   - component: {fileID: 7815721694042167236}
   - component: {fileID: 1541074479600425121}
-  - component: {fileID: 6163247819864203518}
+  - component: {fileID: 5571865960559511109}
   m_Layer: 0
   m_Name: BigOrnamentCorner
   m_TagString: Untagged
@@ -435,8 +435,8 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: -371993190194034903, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
---- !u!64 &6163247819864203518
-MeshCollider:
+--- !u!65 &5571865960559511109
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -453,7 +453,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 3
+  m_Size: {x: 1.052262, y: 0.50268614, z: 0.2689331}
+  m_Center: {x: 0, y: 0, z: 0}

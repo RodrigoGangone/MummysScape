@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6748165091363343011}
   - component: {fileID: 3214164703733670788}
   - component: {fileID: 2922372652376145809}
-  - component: {fileID: 5932260724017196735}
+  - component: {fileID: 7360952976671616325}
   m_Layer: 0
   m_Name: BrickWall2x2
   m_TagString: Untagged
@@ -395,8 +395,8 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: -2356108630351284954, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
---- !u!64 &5932260724017196735
-MeshCollider:
+--- !u!65 &7360952976671616325
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -413,7 +413,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 3
+  m_Size: {x: 0.5317688, y: 1.2642719, z: 1.1971518}
+  m_Center: {x: 0, y: 0, z: 0}
