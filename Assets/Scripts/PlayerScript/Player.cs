@@ -107,8 +107,8 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnStateChange += ChangeState;
         _controllerPlayer.OnGetState += CurrentState;
 
-        levelManager.playerWin += Win;
-        levelManager.playerDeath += Death;
+        levelManager.OnPlayerWin += Win;
+        levelManager.OnPlayerDeath += Death;
     }
 
     private void Start()

@@ -1,42 +1,47 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-
 public class LevelManager : MonoBehaviour
 {
-    [SerializeField] private ParticleSystem _fxPortal;
+    private Player _player;
+    private UIManager _uiManager;
 
+    [SerializeField] private ParticleSystem _fxPortal;
     [SerializeField] private float _currentTimeDeath;
     [SerializeField] private float _maxTimeDeath = 30f;
 
-    private UIManager _uiManager;
+    private List<Collectible> _collectibles;
 
-    private List<Collectible> _collectibles = new();
+    private LevelState _currentLevelState = LevelState.Playing;
 
-    public Action playerWin;
-    public Action playerDeath;
-
-    public Player _player;
+    public Action OnPlayerWin;
+    public Action OnPlayerDeath;
 
     private void Start()
     {
         _player = FindObjectOfType<Player>();
         _uiManager = FindObjectOfType<UIManager>();
+
+        OnPlayerWin += Win;
+        OnPlayerDeath += Lose;
     }
 
     private void Update()
     {
+        if (_currentLevelState == LevelState.Playing)
+            HandleGameplay();
+    }
+
+    private void HandleGameplay()
+    {
         if (_currentTimeDeath >= _maxTimeDeath && _player.CurrentPlayerSize != PlayerSize.Head) return;
 
         SetTimerDeath(_player.CurrentPlayerSize);
-
+        
         _uiManager.UISetTimerDeath(_currentTimeDeath, _maxTimeDeath);
 
         if (_currentTimeDeath <= 0)
-            playerDeath?.Invoke();
+            ChangeState(LevelState.Lost);
     }
 
     private void SetTimerDeath(PlayerSize playerSize)
@@ -46,9 +51,8 @@ public class LevelManager : MonoBehaviour
             _currentTimeDeath -= Time.deltaTime;
             _uiManager.SetMaterialUI(_currentTimeDeath <= _maxTimeDeath / 2 ? _currentTimeDeath : 0);
         }
-        else
+        else 
             _currentTimeDeath += Time.deltaTime * 30f;
-        
     }
 
     public void AddCollectible(Collectible beetle)
@@ -60,8 +64,42 @@ public class LevelManager : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag("PlayerFather")) return;
-
-        _fxPortal.Play();
-        playerWin?.Invoke();
+        ChangeState(LevelState.Won);
     }
+
+    private void ChangeState(LevelState newState)
+    {
+        if (_currentLevelState == newState) return;
+
+        _currentLevelState = newState;
+
+        switch (newState)
+        {
+            case LevelState.Won:
+                OnPlayerWin?.Invoke();
+                break;
+
+            case LevelState.Lost:
+                OnPlayerDeath?.Invoke();
+                break;
+        }
+    }
+    
+    private void Win()
+    {
+        _fxPortal.Play();
+        Debug.Log("Ganaste!");
+    }
+
+    private void Lose()
+    {
+        Debug.Log("Perdiste!");
+    }
+}
+
+public enum LevelState
+{
+    Playing,
+    Won,
+    Lost
 }
