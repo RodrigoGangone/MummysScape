@@ -12,13 +12,14 @@ public class ViewPlayer
 
     private Material _bodyMat;
     private Material _headMat;
+    private Material _fireMat;
     public Material hookMaterial;
     public LineRenderer bandageHook;
 
     public RigBuilder rigBuilder;
     public TwoBoneIKConstraint rightHand;
 
-    public ViewPlayer(Player p, SkinnedMeshRenderer body, SkinnedMeshRenderer head)
+    public ViewPlayer(Player p, SkinnedMeshRenderer body, SkinnedMeshRenderer head, MeshRenderer fire)
     {
         _player = p;
 
@@ -34,6 +35,7 @@ public class ViewPlayer
 
         bodySkinnedMesh = body;
         headSkinnedMesh = head;
+        _fireMat = fire.material;
 
         _bodyMat = bodySkinnedMesh.material;
         _headMat = headSkinnedMesh.material;
@@ -42,6 +44,7 @@ public class ViewPlayer
     {
         _bodyMat.SetFloat("_CutoffLight", value);
         _headMat.SetFloat("_CutoffLight", value);
+        _fireMat.SetFloat("_Dissolve_Distortion", value);
     }
 
     public void ChangeMesh(Mesh mesh)

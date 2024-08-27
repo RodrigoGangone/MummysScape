@@ -19,6 +19,7 @@ public class Player : MonoBehaviour
 
     [SerializeField] public SkinnedMeshRenderer bodySM;
     [SerializeField] public SkinnedMeshRenderer headSM;
+    [SerializeField] public MeshRenderer fireMR;
 
     public DetectionHook _detectionBeetle;
     public LevelManager levelManager;
@@ -96,7 +97,7 @@ public class Player : MonoBehaviour
         _anim = GetComponentInChildren<Animator>();
         _detectionBeetle = GetComponentInChildren<DetectionHook>();
 
-        _viewPlayer = new ViewPlayer(this, bodySM, headSM);
+        _viewPlayer = new ViewPlayer(this, bodySM, headSM, fireMR);
         _modelPlayer = new ModelPlayer(this);
         _controllerPlayer = new ControllerPlayer(this);
 
