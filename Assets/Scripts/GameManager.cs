@@ -37,4 +37,10 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.T))
+            ChangeScene();
+    }
 }
