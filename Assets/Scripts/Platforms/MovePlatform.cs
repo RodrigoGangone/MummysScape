@@ -1,130 +1,104 @@
-using System;
-using Unity.Mathematics;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class MovePlatform : MonoBehaviour
 {
-    [Header("TYPE OF PLATFORM")] [SerializeField]
-    private TypeOfPlatform _type;
+    [Header("PLAY ON AWAKE")]
+    [SerializeField] private bool isMoving;
+    
+    [Header("SPEED")]
+    public float speed = 1;
+    public float stopTime = 0.25f;
 
-    [Header("SPEED")] public float speed;
+    [Header("WAYPOINTS")] 
+    [SerializeField] private Transform[] waypoints; // Lista puntos a los que se mueve la platform
+    
+    private bool isPaused;
+    private bool isMovingToFirstWaypoint;
+    
+    private int currentWaypointIndex = 0;
 
-    [Header("MOVE")] [SerializeField] private float moveX;
-    [SerializeField] private float moveY;
-    [SerializeField] private float moveZ;
-
-    [Header("ROTATE CONSTANT")] [SerializeField]
-    private float _speedRotateY;
-
-    [Header("ROTATE 90")] [SerializeField] private float _rotateY;
-    private Quaternion _destiny;
-
-    [Header("START POSITION")] [SerializeField]
-    private Transform centerOfSin;
-
-    private bool isActive;
-    private bool isCenter;
-
-    private float _time;
-
-    private Collider _collider;
-
-    void Start()
+    private void Start()
     {
-        _collider = GetComponent<BoxCollider>();
+        if (waypoints.Length > 0 && isMoving)
+        {
+            // Si la plataforma no está en la posicion del primer waypoint
+            if (Vector3.Distance(transform.position, waypoints[0].position) > 0.1f)
+                isMovingToFirstWaypoint = true;
+            else
+                transform.position = waypoints[0].position;
+        }
     }
 
-    void Update()
+    private void Update()
     {
-        if (_type.Equals(TypeOfPlatform.Rotate90))
+        if (isMovingToFirstWaypoint)
         {
-            Rotate90();
+            MoveToFirstWaypoint();
         }
-
-        if (_type.Equals(TypeOfPlatform.MoveWithoutAct))
+        else if (isMoving && waypoints.Length > 0)
         {
-            MoveWithoutAct();
+            MoveTowardsWaypoint();
         }
+        
+        Debug.Log("currentWaypointIndex :" + currentWaypointIndex);
+    }
+    
+    private void MoveToFirstWaypoint()
+    {
+        // Mueve la plataforma hacia el primer waypoint
+        Transform firstWaypoint = waypoints[0];
+        float step = speed * Time.deltaTime;
 
-        if (!isActive) return;
+        transform.position = Vector3.MoveTowards(transform.position, firstWaypoint.position, step);
 
-        switch (_type)
+        // Si la plataforma ha alcanzado el primer waypoint
+        if (Vector3.Distance(transform.position, firstWaypoint.position) < 0.1f)
         {
-            case TypeOfPlatform.MoveAxis:
-            {
-                MoveInAxis();
-                break;
-            }
-            case TypeOfPlatform.RotateConstant:
-            {
-                RotateConstant();
-                break;
-            }
+            isMovingToFirstWaypoint = false;
+            currentWaypointIndex = 1; // Empieza a moverse hacia el segundo waypoint
         }
+    }
+
+    private void MoveTowardsWaypoint()
+    {
+        if (isPaused) return;
+
+        // Calcula la direcc y mueve la plataform hacia el waypoint actual
+        Transform targetWaypoint = waypoints[currentWaypointIndex];
+        float step = speed * Time.deltaTime;
+
+        transform.position = Vector3.MoveTowards(transform.position, targetWaypoint.position, step);
+
+        // Pausa al llegar a un punto
+        if (Vector3.Distance(transform.position, targetWaypoint.position) < 0.1f)
+        {
+            StartCoroutine(PauseAtWaypoint());
+        }
+    }
+
+    private IEnumerator PauseAtWaypoint()
+    {
+        isPaused = true;
+
+        yield return new WaitForSeconds(stopTime);
+
+        // Avanza al siguiente waypoint
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
+        isPaused = false;
     }
 
     public void StartAction()
     {
-        //Si no es de tipo Rotate90, activa
-        if (!_type.Equals(TypeOfPlatform.Rotate90))
-            isActive = !isActive;
+        isMoving = !isMoving;
+    }
+
+    public void ReturnToPrevious()
+    {
+        if (currentWaypointIndex > 0)
+            currentWaypointIndex--;
         else
-            _destiny = Quaternion.Euler(0f, transform.eulerAngles.y + _rotateY, 0f);
-    }
-
-    private void MoveInAxis()
-    {
-        if (Vector3.Distance(transform.position, centerOfSin.position) > 0.1f && !isCenter)
-            MoveToCenter();
-        else
-        {
-            _time += Time.deltaTime * speed;
-
-            //Move
-            float x = moveX != 0 ? Mathf.Sin(_time) * moveX : 0f;
-            float y = moveY != 0 ? Mathf.Sin(_time) * moveY : 0f;
-            float z = moveZ != 0 ? Mathf.Sin(_time) * moveZ : 0f;
-
-            transform.position = centerOfSin.position + new Vector3(x, y, z);
-        }
-    }
-
-    private void MoveToCenter()
-    {
-        float step = speed * Time.deltaTime; // Calcula la distancia a moverse en este frame
-        transform.position = Vector3.MoveTowards(transform.position, centerOfSin.position, step);
-
-        if (Vector3.Distance(transform.position, centerOfSin.position) <= 0.1f)
-        {
-            isCenter = true;
-            _collider.enabled = true;
-        }
-    }
-
-    private void RotateConstant()
-    {
-        //Rotation
-        float ry = _speedRotateY != 0 ? _speedRotateY * 0.01f : 0f;
-
-        transform.Rotate(0, ry, 0);
-    }
-
-    private void Rotate90()
-    {
-        transform.rotation = Quaternion.Lerp(transform.rotation, _destiny, 5 * Time.deltaTime);
-    }
-
-    private void MoveWithoutAct()
-    {
-        _time += Time.deltaTime * speed;
-
-        //Move
-        float x = moveX != 0 ? Mathf.Sin(_time) * moveX : 0f;
-        float y = moveY != 0 ? Mathf.Sin(_time) * moveY : 0f;
-        float z = moveZ != 0 ? Mathf.Sin(_time) * moveZ : 0f;
-
-        transform.position = centerOfSin.position + new Vector3(x, y, z);
+            currentWaypointIndex++;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -142,12 +116,4 @@ public class MovePlatform : MonoBehaviour
             other.transform.SetParent(null);
         }
     }
-}
-
-public enum TypeOfPlatform
-{
-    MoveAxis,
-    RotateConstant,
-    Rotate90,
-    MoveWithoutAct
 }
