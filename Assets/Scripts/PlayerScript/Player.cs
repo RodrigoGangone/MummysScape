@@ -106,9 +106,9 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnGetState += CurrentState;
         
         _modelPlayer.CreateBandage += CreateBandage;
-        
-        levelManager.playerWin += Win;
-        levelManager.playerDeath += Death;
+
+        levelManager.OnPlayerWin += Win;
+        levelManager.OnPlayerDeath += Death;
     }
 
     private void Start()
@@ -213,13 +213,14 @@ public class Player : MonoBehaviour
         if (other.CompareTag("KillPlane"))
         {
             Debug.Log("Player murio por killPlane");
-            Death();
+            levelManager.OnPlayerDeath?.Invoke();
         }
     }
 
     void OnDrawGizmos()
     {
-        Vector3[] origins = {
+        Vector3[] origins =
+        {
             shootTarget.transform.position + transform.right * 0.75f,
             shootTarget.transform.position - transform.right * 0.75f,
         };
