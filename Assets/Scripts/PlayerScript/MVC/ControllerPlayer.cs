@@ -37,10 +37,16 @@ public class ControllerPlayer
                 OnStateChange(PlayerState.Hook);
         }
 
-        if (CanShootState() && Input.GetKeyDown(KeyCode.Q))
+        if (CanShootState() && Input.GetKeyDown(KeyCode.E))
         {
             if (OnGetCanShoot.Invoke())
                 OnStateChange(PlayerState.Shoot);
+        }
+
+        if (CanDropState() && Input.GetKeyDown(KeyCode.Q))
+        {
+            if (OnGetCanShoot.Invoke()) 
+                OnStateChange(PlayerState.Drop);
         }
 
         if (Input.GetKeyDown(KeyCode.R))
@@ -51,7 +57,6 @@ public class ControllerPlayer
 
     public void ControllerFixedUpdate()
     {
-        
     }
 
     private bool IsWalking()
@@ -119,6 +124,23 @@ public class ControllerPlayer
             "SM_Hook" => false,
             "SM_Fall" => true,
             "SM_Grab" => false, //Ver que hacer con el grab ya que la animacion seria otra
+            "SM_Damage" => false,
+            "SM_Win" => false,
+            "SM_Dead" => false,
+        };
+    }
+
+    private bool CanDropState()
+    {
+        return OnGetState?.Invoke() switch
+        {
+            "SM_Idle" => true,
+            "SM_Shoot" => false,
+            "SM_Walk" => false,
+            "SM_Hook" => false,
+            "SM_Fall" => false,
+            "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
+            "SM_Drop" => false,
             "SM_Damage" => false,
             "SM_Win" => false,
             "SM_Dead" => false,

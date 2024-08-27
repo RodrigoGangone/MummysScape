@@ -10,7 +10,7 @@ public class SM_Shoot : State
     {
         _model = model;
         _view = view;
-        _model.sizeModify += GoIdle;
+        _model.SizeModify += GoIdle;
     }
 
     public override void OnEnter()

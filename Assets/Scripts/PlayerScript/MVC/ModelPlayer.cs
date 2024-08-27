@@ -17,7 +17,7 @@ public class ModelPlayer
     public bool finishAnimationHook;
 
     //PICK UP
-    private LayerMask pickableLayer = LayerMask.GetMask("Pickable");
+    private LayerMask _pickableLayer = LayerMask.GetMask("Pickable");
     public bool hasObject { get; private set; }
 
     private Transform _objSelected;
@@ -25,7 +25,8 @@ public class ModelPlayer
     private float _objRotation = 10f;
     private float _objSpeed = 5f;
 
-    public Action sizeModify;
+    public Action SizeModify;
+    public Func<Transform, GameObject> CreateBandage;
 
     public ModelPlayer(Player p)
     {
@@ -35,17 +36,27 @@ public class ModelPlayer
         springJoint = _player._springJoint;
         detectionBeetle = _player._detectionBeetle;
     }
-
-    public void Move(float movimientoHorizontal, float movimientoVertical)
+    
+    public void CountBandage(int sum)
     {
-        
+        _player.CurrentBandageStock += sum;
+        SizeHandler();
+    }
+    
+    public void SpawnBandage(Transform trans = null)
+    {
+        CreateBandage(trans ?? _player.dropTarget);
+    }
+
+    public void Move(float moveHorizontal, float moveVertical)
+    {
         Vector3 forward =
             new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
 
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
 
-        Vector3 righMovement = right * (_player.Speed * Time.deltaTime * movimientoHorizontal);
-        Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * movimientoVertical);
+        Vector3 righMovement = right * (_player.Speed * Time.deltaTime * moveHorizontal);
+        Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * moveVertical);
 
         Vector3 heading = (righMovement + upMovement).normalized;
 
@@ -72,14 +83,14 @@ public class ModelPlayer
         _rb.velocity = velocity;
     }
 
-    public void MoveHooked(float movimientoHorizontal, float movimientoVertical)
+    public void MoveHooked(float moveHorizontal, float moveVertical)
     {
         Debug.Log("MOVE HOOKED");
         Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z)
             .normalized;
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
-        Vector3 rightMovement = right * (movimientoHorizontal * _player.Speed);
-        Vector3 forwardMovement = forward * (movimientoVertical * _player.Speed);
+        Vector3 rightMovement = right * (moveHorizontal * _player.Speed);
+        Vector3 forwardMovement = forward * (moveVertical * _player.Speed);
 
         Vector3 movement = rightMovement + forwardMovement;
         if (movement.sqrMagnitude > 0.01f)
@@ -95,8 +106,7 @@ public class ModelPlayer
         if (_player.CurrentBandageStock > _player.MinBandageStock)
         {
             BulletFactory.Instance.GetObjectFromPool();
-            _player.CurrentBandageStock--;
-            SizeHandler();
+            CountBandage(-1);
         }
     }
 
@@ -107,8 +117,8 @@ public class ModelPlayer
         if (hitPoint != null)
             _player.StartCoroutine(SmoothRotation(hitPoint.Value));
     }
-    
-    public IEnumerator SmoothRotation(Vector3 buttonPosition)
+
+    private IEnumerator SmoothRotation(Vector3 buttonPosition)
     {
         Quaternion startRotation = _player.transform.rotation;
         Vector3 directionToButton = (buttonPosition - _player.transform.position).normalized;
@@ -129,7 +139,8 @@ public class ModelPlayer
 
     private RaycastHit? ButtonHit()
     {
-        Vector3[] origins = {
+        Vector3[] origins =
+        {
             _player.shootTarget.transform.position + _player.transform.right * 0.75f,
             _player.shootTarget.transform.position - _player.transform.right * 0.75f,
         };
@@ -143,6 +154,7 @@ public class ModelPlayer
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button")) return hit;
             }
         }
+
         return null;
     }
 
@@ -152,7 +164,7 @@ public class ModelPlayer
         if (ButtonHit().HasValue)
         {
             var activateObjects = ButtonHit()?.collider.gameObject.GetComponent<ActivateObjectsBullet>();
-            if (activateObjects != null){}
+            if (activateObjects != null)
                 activateObjects.ActivateParticles();
         }
     }
@@ -191,10 +203,10 @@ public class ModelPlayer
         finishAnimationHook = true;
     }
 
-    public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
+    private void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         _player._viewPlayer.PLAY_PUFF();
-        sizeModify?.Invoke();
+        SizeModify?.Invoke();
         //TODO: cambiar el tamaño del capsule collider dependiendo el tamaño
         switch (_player.CurrentBandageStock)
         {
@@ -230,8 +242,8 @@ public class ModelPlayer
 
         _player._viewPlayer.AdjustColliderSize();
     }
-    
-    public void LimitVelocityRB()
+
+    public void LimitVelocityRb()
     {
         if (_rb.velocity.magnitude > _player.Speed)
             _rb.velocity = _rb.velocity.normalized * _player.Speed;
@@ -244,7 +256,7 @@ public class ModelPlayer
         Debug.DrawRay(_player.transform.position, _player.transform.forward * 30, Color.green, 0.5f);
         RaycastHit hit;
         if (Physics.Raycast(_player.transform.position, _player.transform.forward, out hit, Mathf.Infinity,
-                pickableLayer))
+                _pickableLayer))
         {
             Debug.Log("Objeto recogido: " + hit.collider.gameObject.name);
             hasObject = true;

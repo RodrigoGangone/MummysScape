@@ -57,7 +57,7 @@ public class SM_Hook : State
 
     public override void OnFixedUpdate()
     {
-        _model.LimitVelocityRB();
+        _model.LimitVelocityRb();
 
         if (!IsSwinging()) return;
 

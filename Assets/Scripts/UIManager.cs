@@ -19,9 +19,9 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         _player = FindObjectOfType<Player>();
-        levelManager = FindObjectOfType<LevelManager>();
+        _player._modelPlayer.SizeModify += UISetShootSlider;
 
-        _player._modelPlayer.sizeModify += UISetShootSlider;
+        levelManager = FindObjectOfType<LevelManager>();
         levelManager.OnPlayerWin += Win;
         levelManager.OnPlayerDeath += Lose;
 
