@@ -22,9 +22,7 @@ public class Bandage : MonoBehaviour
         if (playerRef.CurrentBandageStock >= playerRef.MinBandageStock &&
             playerRef.CurrentBandageStock < playerRef.MaxBandageStock)
         {
-            playerRef.CurrentBandageStock++;
-            playerRef._modelPlayer.SizeHandler();
-
+            playerRef._modelPlayer.CountBandage(1);
             Destroy(gameObject);
         }
     }

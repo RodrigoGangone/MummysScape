@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SM_Walk : State
@@ -32,11 +30,10 @@ public class SM_Walk : State
 
     public override void OnFixedUpdate()
     {
-        if (_model.moveTank)
-            _model.MoveTank(Input.GetAxisRaw("Horizontal"),
-                Input.GetAxisRaw("Vertical"));
-        else
-            _model.Move(Input.GetAxisRaw("Horizontal"),
-                Input.GetAxisRaw("Vertical"));
+
+        _model.Move(Input.GetAxisRaw("Horizontal"),
+            Input.GetAxisRaw("Vertical"));
+        
+        _model.ActivateParticleButtonInView();
     }
 }

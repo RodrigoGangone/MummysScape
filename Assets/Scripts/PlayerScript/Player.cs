@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections;
+using Unity.Mathematics;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.SceneManagement;
 
@@ -17,39 +18,37 @@ public class Player : MonoBehaviour
     public LineRenderer _bandage { get; private set; }
 
     [SerializeField] public SkinnedMeshRenderer bodySM;
-
     [SerializeField] public SkinnedMeshRenderer headSM;
+    [SerializeField] public MeshRenderer fireMR;
 
     public DetectionHook _detectionBeetle;
-
     public LevelManager levelManager;
-
     public StateMachinePlayer _stateMachinePlayer;
 
     private string _currentState;
 
     [Header("ATRIBUTES")] [SerializeField] private float _life;
-    [SerializeField] private float _speedOriginal = 5;
+    [SerializeField] private float _speedOriginal;
+    [SerializeField] private float _speedRotationOriginal;
     [SerializeField] private float _speed;
-    [SerializeField] private float _maxSpeed;
     [SerializeField] private float _speedRotation;
 
-    [Header("BANDAGE")] [SerializeField] private int _maxBandageStock = 2;
+    [Header("BANDAGE")] [SerializeField] public GameObject _prefabBandage;
+    [SerializeField] private int _maxBandageStock = 2;
     [SerializeField] private int _minBandageStock = 0;
     [SerializeField] private int _currBandageStock = 2;
     [SerializeField] public Transform handTarget;
     [SerializeField] public Transform shootTarget;
+    [SerializeField] public Transform dropTarget;
 
     [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
     [SerializeField] public Mesh[] _Meshes;
 
     [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
-
-    [FormerlySerializedAs("_rightHand")] [SerializeField]
-    public TwoBoneIKConstraint rightHand;
-
+    [SerializeField] public TwoBoneIKConstraint rightHand;
     [SerializeField] public RigBuilder rigBuilder;
+
     //TODO: Mejorar esto a futuro
 
     #region Getters & Setters
@@ -60,18 +59,15 @@ public class Player : MonoBehaviour
         set => _life = value;
     }
 
-    public float SpeedOriginal => _speedOriginal;
 
     public float Speed
     {
-        get => _speed;
-        set => _speed = value;
+        get => CurrentSpeed();
     }
 
     public float SpeedRotation
     {
-        get => _speedRotation;
-        set => _speedRotation = value;
+        get => CurrentRotation();
     }
 
     public int MaxBandageStock => _maxBandageStock;
@@ -101,7 +97,7 @@ public class Player : MonoBehaviour
         _anim = GetComponentInChildren<Animator>();
         _detectionBeetle = GetComponentInChildren<DetectionHook>();
 
-        _viewPlayer = new ViewPlayer(this, bodySM, headSM);
+        _viewPlayer = new ViewPlayer(this, bodySM, headSM, fireMR);
         _modelPlayer = new ModelPlayer(this);
         _controllerPlayer = new ControllerPlayer(this);
 
@@ -109,9 +105,11 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnGetCanShoot += CanShoot;
         _controllerPlayer.OnStateChange += ChangeState;
         _controllerPlayer.OnGetState += CurrentState;
+        
+        _modelPlayer.CreateBandage += CreateBandage;
 
-        levelManager.playerWin += Win;
-        levelManager.playerDeath += Death;
+        levelManager.OnPlayerWin += Win;
+        levelManager.OnPlayerDeath += Death;
     }
 
     private void Start()
@@ -125,6 +123,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Fall, new SM_Fall(_modelPlayer, _viewPlayer));
+        _stateMachinePlayer.AddState(PlayerState.Drop, new SM_Drop(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Grab, new SM_Grab());
         _stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage());
         _stateMachinePlayer.AddState(PlayerState.Win, new SM_Win(this));
@@ -144,7 +143,11 @@ public class Player : MonoBehaviour
         _stateMachinePlayer?.FixedUpdate();
         _controllerPlayer.ControllerFixedUpdate();
     }
-
+    
+    GameObject CreateBandage(Transform trans)
+    {
+        return Instantiate(_prefabBandage, trans.position, trans.rotation);
+    }
     void ChangeState(PlayerState playerState)
     {
         _stateMachinePlayer.ChangeState(playerState);
@@ -160,20 +163,40 @@ public class Player : MonoBehaviour
         return _currBandageStock > _minBandageStock;
     }
 
-    public void ChangeSpeed()
+    float CurrentSpeed()
     {
         switch (CurrentPlayerSize)
         {
             case PlayerSize.Normal:
-                _speed = 2;
-                break;
-            case PlayerSize.Small:
-                _speed = 4;
-                break;
-            case PlayerSize.Head:
                 _speed = _speedOriginal;
                 break;
+            case PlayerSize.Small:
+                _speed = _speedOriginal * 1.5f;
+                break;
+            case PlayerSize.Head:
+                _speed = _speedOriginal * 1.25f;
+                break;
         }
+
+        return _speed;
+    }
+
+    float CurrentRotation()
+    {
+        switch (CurrentPlayerSize)
+        {
+            case PlayerSize.Normal:
+                _speedRotation = _speedRotationOriginal;
+                break;
+            case PlayerSize.Small:
+                _speedRotation = _speedRotationOriginal;
+                break;
+            case PlayerSize.Head:
+                _speedRotation = _speedRotationOriginal;
+                break;
+        }
+
+        return _speedRotation;
     }
 
     void Win()
@@ -186,30 +209,28 @@ public class Player : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    private void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("KillPlane"))
         {
             Debug.Log("Player murio por killPlane");
-            Death();
+            levelManager.OnPlayerDeath?.Invoke();
         }
     }
-    
-    private void OnDrawGizmos()
+
+    void OnDrawGizmos()
     {
-        Vector3[] origins = {
-            shootTarget.transform.position, 
-            shootTarget.transform.position + transform.right * 0.25f,
-            shootTarget.transform.position + transform.right * 0.50f,
-            shootTarget.transform.position - transform.right * 0.25f,
-            shootTarget.transform.position - transform.right * 0.50f,
+        Vector3[] origins =
+        {
+            shootTarget.transform.position + transform.right * 0.75f,
+            shootTarget.transform.position - transform.right * 0.75f,
         };
 
         foreach (var origin in origins)
         {
             RaycastHit hit;
 
-            if (Physics.Raycast(origin, transform.forward, out hit, 100f))
+            if (Physics.Raycast(origin, transform.forward, out hit, 12))
             {
                 Gizmos.color = Color.red;
                 Gizmos.DrawLine(origin, hit.point);
@@ -235,6 +256,7 @@ public enum PlayerState
     Hook,
     Fall,
     Grab,
+    Drop,
     Damage,
     Win,
     Dead

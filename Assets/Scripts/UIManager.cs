@@ -1,23 +1,30 @@
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
+    private Player _player;
+    private LevelManager levelManager;
+    
     [SerializeField] Slider _lifetime;
     [SerializeField] Slider _shootSlider;
     [SerializeField] Image _beetleCount;
-    private Player _player;
-    int previousVandage = 0;
+    
     [SerializeField] private Material _UIMaterialFill;
     [SerializeField] private Material _UIMaterialHandler;
+    
+    int previousVandage = 0;
 
     void Start()
     {
         _player = FindObjectOfType<Player>();
-        _player._modelPlayer.sizeModify += UISetShootSlider;
+        _player._modelPlayer.SizeModify += UISetShootSlider;
+
+        levelManager = FindObjectOfType<LevelManager>();
+        levelManager.OnPlayerWin += Win;
+        levelManager.OnPlayerDeath += Lose;
+
         StartCoroutine(SetValue(1, _player.CurrentBandageStock));
     }
 
@@ -39,7 +46,6 @@ public class UIManager : MonoBehaviour
         float tick = 0f;
         float value = starlerp;
 
-
         while (value != endlerp)
         {
             value = Mathf.Lerp(starlerp, endlerp, tick);
@@ -49,10 +55,16 @@ public class UIManager : MonoBehaviour
             yield return null;
         }
 
-        _UIMaterialFill.SetFloat("_Velocity", endlerp == 0 ? 50 : 0);
-        _UIMaterialHandler.SetFloat("_Velocity", endlerp == 0 ? 50 : 0);
-        
+        if (endlerp != 0)
+            SetMaterialUI(0);
+
         previousVandage = endlerp;
+    }
+
+    public void SetMaterialUI(float vel)
+    {
+        _UIMaterialFill.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
+        _UIMaterialHandler.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
     }
 
     public void UISetCollectibleCount(int count)
@@ -72,5 +84,16 @@ public class UIManager : MonoBehaviour
                 _beetleCount.fillAmount = 0.75f;
                 break;
         }
+    }
+    
+    private void Win()
+    {
+        Debug.Log("Ganaste el nivel - UIManager");
+        //TODO: Aca va el visual de la UI
+    }
+    private void Lose()
+    {
+        Debug.Log("Perdiste el nivel - UIManager");
+        //TODO: Aca va el visual de la UI
     }
 }

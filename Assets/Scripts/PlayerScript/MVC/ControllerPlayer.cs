@@ -9,11 +9,6 @@ public class ControllerPlayer
     private float _rotationInput;
     private float _moveInput;
 
-    //Obj picked vars//
-    private bool _isGrabing;
-    private float _rotationInputObj;
-    private float _moveInputObj;
-
     //Actions
     public event Func<bool> OnGetCanShoot;
     public event Action<PlayerState> OnStateChange = delegate { };
@@ -42,47 +37,26 @@ public class ControllerPlayer
                 OnStateChange(PlayerState.Hook);
         }
 
-        if (CanShootState() && Input.GetKeyDown(KeyCode.Q))
+        if (CanShootState() && Input.GetKeyDown(KeyCode.E))
         {
             if (OnGetCanShoot.Invoke())
                 OnStateChange(PlayerState.Shoot);
+        }
+
+        if (CanDropState() && Input.GetKeyDown(KeyCode.Q))
+        {
+            if (OnGetCanShoot.Invoke()) 
+                OnStateChange(PlayerState.Drop);
         }
 
         if (Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
-
-        //GRAB OBJECTS//
-
-        if (_model.hasObject)
-        {
-            //TODO: activar por VIEW las particulas necesarias
-            _rotationInputObj = Input.GetAxisRaw("Object Horizontal");
-            _moveInputObj = Input.GetAxisRaw("Object Vertical");
-        }
-
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            if (!_model.hasObject)
-                _model.PickObject();
-            else
-                _model.DropObject();
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-            _model.moveTank = !_model.moveTank;
-
-        //END GRAB OBJECTS//
     }
 
     public void ControllerFixedUpdate()
     {
-        //Movimiento del objeto
-        if (_rotationInputObj != 0 || _moveInputObj != 0)
-        {
-            _model.MoveObject(_rotationInputObj, _moveInputObj);
-        }
     }
 
     private bool IsWalking()
@@ -150,6 +124,23 @@ public class ControllerPlayer
             "SM_Hook" => false,
             "SM_Fall" => true,
             "SM_Grab" => false, //Ver que hacer con el grab ya que la animacion seria otra
+            "SM_Damage" => false,
+            "SM_Win" => false,
+            "SM_Dead" => false,
+        };
+    }
+
+    private bool CanDropState()
+    {
+        return OnGetState?.Invoke() switch
+        {
+            "SM_Idle" => true,
+            "SM_Shoot" => false,
+            "SM_Walk" => false,
+            "SM_Hook" => false,
+            "SM_Fall" => false,
+            "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
+            "SM_Drop" => false,
             "SM_Damage" => false,
             "SM_Win" => false,
             "SM_Dead" => false,

@@ -18,8 +18,8 @@ public class SM_Hook : State
 
     public override void OnEnter()
     {
-        Debug.Log("ON ENTER HOOK");
-
+        _model.hookBeetle = _model.detectionBeetle.currentHook;
+        
         _view.StateRigBuilder(true);
         _view.PLAY_ANIM("Hook", true);
         _view.bandageHook.enabled = true;
@@ -57,7 +57,7 @@ public class SM_Hook : State
 
     public override void OnFixedUpdate()
     {
-        _model.LimitVelocityRB();
+        _model.LimitVelocityRb();
 
         if (!IsSwinging()) return;
 
@@ -83,6 +83,8 @@ public class SM_Hook : State
         _isHookDestiny = false;
 
         _model.isHooking = false;
+
+        _model.hookBeetle = null;
 
         Object.Destroy(_model.springJoint);
     }

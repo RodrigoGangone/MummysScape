@@ -15,10 +15,9 @@ public class ModelPlayer
 
     public bool isHooking;
     public bool finishAnimationHook;
-    public bool moveTank;
 
     //PICK UP
-    private LayerMask pickableLayer = LayerMask.GetMask("Pickable");
+    private LayerMask _pickableLayer = LayerMask.GetMask("Pickable");
     public bool hasObject { get; private set; }
 
     private Transform _objSelected;
@@ -26,7 +25,8 @@ public class ModelPlayer
     private float _objRotation = 10f;
     private float _objSpeed = 5f;
 
-    public Action sizeModify;
+    public Action SizeModify;
+    public Func<Transform, GameObject> CreateBandage;
 
     public ModelPlayer(Player p)
     {
@@ -36,29 +36,27 @@ public class ModelPlayer
         springJoint = _player._springJoint;
         detectionBeetle = _player._detectionBeetle;
     }
-
-    public void MoveTank(float rotationInput, float moveInput)
+    
+    public void CountBandage(int sum)
     {
-        _player.SpeedRotation = 100;
-        
-        Quaternion _rotation = Quaternion.Euler(0f, rotationInput * _player.SpeedRotation * Time.deltaTime, 0f);
-        _rb.rotation = (_rb.rotation * _rotation);
-
-        Vector3 movemente = _player.transform.forward * (moveInput * _player.Speed * Time.deltaTime);
-        _rb.MovePosition(_rb.position + movemente);
+        _player.CurrentBandageStock += sum;
+        SizeHandler();
+    }
+    
+    public void SpawnBandage(Transform trans = null)
+    {
+        CreateBandage(trans ?? _player.dropTarget);
     }
 
-    public void Move(float movimientoHorizontal, float movimientoVertical)
+    public void Move(float moveHorizontal, float moveVertical)
     {
-        _player.SpeedRotation = 6;
-        
         Vector3 forward =
             new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
 
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
 
-        Vector3 righMovement = right * (_player.Speed * Time.deltaTime * movimientoHorizontal);
-        Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * movimientoVertical);
+        Vector3 righMovement = right * (_player.Speed * Time.deltaTime * moveHorizontal);
+        Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * moveVertical);
 
         Vector3 heading = (righMovement + upMovement).normalized;
 
@@ -85,14 +83,14 @@ public class ModelPlayer
         _rb.velocity = velocity;
     }
 
-    public void MoveHooked(float movimientoHorizontal, float movimientoVertical)
+    public void MoveHooked(float moveHorizontal, float moveVertical)
     {
         Debug.Log("MOVE HOOKED");
         Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z)
             .normalized;
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
-        Vector3 rightMovement = right * (movimientoHorizontal * _player.Speed);
-        Vector3 forwardMovement = forward * (movimientoVertical * _player.Speed);
+        Vector3 rightMovement = right * (moveHorizontal * _player.Speed);
+        Vector3 forwardMovement = forward * (moveVertical * _player.Speed);
 
         Vector3 movement = rightMovement + forwardMovement;
         if (movement.sqrMagnitude > 0.01f)
@@ -108,20 +106,19 @@ public class ModelPlayer
         if (_player.CurrentBandageStock > _player.MinBandageStock)
         {
             BulletFactory.Instance.GetObjectFromPool();
-            _player.CurrentBandageStock--;
-            SizeHandler();
+            CountBandage(-1);
         }
     }
 
     public void RotatePreShoot()
     {
-        var hitPoint = ButtonPosition();
+        var hitPoint = ButtonHit()?.transform.position;
 
         if (hitPoint != null)
             _player.StartCoroutine(SmoothRotation(hitPoint.Value));
     }
-    
-    public IEnumerator SmoothRotation(Vector3 buttonPosition)
+
+    private IEnumerator SmoothRotation(Vector3 buttonPosition)
     {
         Quaternion startRotation = _player.transform.rotation;
         Vector3 directionToButton = (buttonPosition - _player.transform.position).normalized;
@@ -140,30 +137,36 @@ public class ModelPlayer
         _player.transform.rotation = targetRotation;
     }
 
-    public Vector3? ButtonPosition()
+    private RaycastHit? ButtonHit()
     {
-        Vector3[] origins = {
-            _player.shootTarget.transform.position,
-            _player.shootTarget.transform.position + _player.transform.right * 0.25f,
-            _player.shootTarget.transform.position + _player.transform.right * 0.50f,
-            _player.shootTarget.transform.position - _player.transform.right * 0.25f,
-            _player.shootTarget.transform.position - _player.transform.right * 0.50f
+        Vector3[] origins =
+        {
+            _player.shootTarget.transform.position + _player.transform.right * 0.75f,
+            _player.shootTarget.transform.position - _player.transform.right * 0.75f,
         };
 
         foreach (var origin in origins)
         {
             RaycastHit hit;
 
-            if (Physics.Raycast(origin, _player.transform.forward, out hit, 100f))
+            if (Physics.Raycast(origin, _player.transform.forward, out hit, 12f))
             {
-                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
-                {
-                    return hit.transform.position;
-                }
+                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button")) return hit;
             }
         }
-        
+
         return null;
+    }
+
+    public void ActivateParticleButtonInView()
+    {
+        //Check si hay boton chocando con raycast de disparo
+        if (ButtonHit().HasValue)
+        {
+            var activateObjects = ButtonHit()?.collider.gameObject.GetComponent<ActivateObjectsBullet>();
+            if (activateObjects != null)
+                activateObjects.ActivateParticles();
+        }
     }
 
     //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'
@@ -171,17 +174,16 @@ public class ModelPlayer
     public void Hook()
     {
         if (isHooking) return;
+        isHooking = true;
 
         springJoint = _player.gameObject.AddComponent<SpringJoint>();
         springJoint.autoConfigureConnectedAnchor = false;
-        hookBeetle = detectionBeetle.currentHook;
-        isHooking = true;
 
-        switch (detectionBeetle.currentHook.gameObject.tag)
+        switch (hookBeetle.gameObject.tag)
         {
             case "Hook":
                 springJoint.anchor = Vector3.zero;
-                springJoint.connectedBody = detectionBeetle.currentHook;
+                springJoint.connectedBody = hookBeetle;
                 springJoint.maxDistance = 5f;
                 springJoint.minDistance = 4f;
                 springJoint.spring = 75;
@@ -190,7 +192,7 @@ public class ModelPlayer
 
             case "HookJump":
                 springJoint.anchor = Vector3.zero;
-                springJoint.connectedBody = detectionBeetle.currentHook;
+                springJoint.connectedBody = hookBeetle;
                 springJoint.maxDistance = 1.5f;
                 springJoint.minDistance = 2f;
                 springJoint.spring = 100;
@@ -201,11 +203,10 @@ public class ModelPlayer
         finishAnimationHook = true;
     }
 
-    //TODO:Al cambiar el tamaño del pj: cambiar mesh del body_low ... cambiar el tamaño del capsule collider
-    public void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
+    private void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         _player._viewPlayer.PLAY_PUFF();
-        sizeModify?.Invoke();
+        SizeModify?.Invoke();
         //TODO: cambiar el tamaño del capsule collider dependiendo el tamaño
         switch (_player.CurrentBandageStock)
         {
@@ -242,9 +243,7 @@ public class ModelPlayer
         _player._viewPlayer.AdjustColliderSize();
     }
 
-    //TODO: ver que hacer con "Tomar objetos"
-
-    public void LimitVelocityRB()
+    public void LimitVelocityRb()
     {
         if (_rb.velocity.magnitude > _player.Speed)
             _rb.velocity = _rb.velocity.normalized * _player.Speed;
@@ -257,7 +256,7 @@ public class ModelPlayer
         Debug.DrawRay(_player.transform.position, _player.transform.forward * 30, Color.green, 0.5f);
         RaycastHit hit;
         if (Physics.Raycast(_player.transform.position, _player.transform.forward, out hit, Mathf.Infinity,
-                pickableLayer))
+                _pickableLayer))
         {
             Debug.Log("Objeto recogido: " + hit.collider.gameObject.name);
             hasObject = true;

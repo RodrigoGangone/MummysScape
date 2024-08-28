@@ -31,7 +31,7 @@ public class Quicksand : MonoBehaviour
         endPosition = new Vector3(startPosition.x, startPosition.y + yOffset, startPosition.z);
         
         // Subscribe to player size modification event
-        player._modelPlayer.sizeModify += UpdateMovementSpeedForPlayerSize;
+        player._modelPlayer.SizeModify += UpdateMovementSpeedForPlayerSize;
         
         // Set initial movement speed based on player's current size
         UpdateMovementSpeedForPlayerSize();

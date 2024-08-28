@@ -4,14 +4,13 @@ public class Bullet : MonoBehaviour
 {
     [SerializeField] Rigidbody _rb;
     [SerializeField] float _speed;
-    [SerializeField] private GameObject _prefabBandage;
+    [SerializeField] GameObject _fxBullet;
+    [SerializeField] Player _player;
     private GameObject _target;
-    [SerializeField] private GameObject _fxBullet;
-
     void OnEnable()
     {
         _target = GameObject.Find("Target");
-        
+        _player = FindObjectOfType<Player>();
         _rb.rotation = _target.transform.rotation;
         _rb.velocity = _target.transform.forward * _speed;
     }
@@ -34,13 +33,13 @@ public class Bullet : MonoBehaviour
 
     private void OnCollisionEnter()
     {
-        BulletFactory.Instance.ReturnObjectToPool(this);
-        SpawnBandage();
+        SpawnMummyBandage();
     }
 
-    private void SpawnBandage()
+    private void SpawnMummyBandage()
     {
-        Instantiate(_prefabBandage, transform.position, Quaternion.identity);
+        BulletFactory.Instance.ReturnObjectToPool(this);
+        _player._modelPlayer.SpawnBandage(transform);
         Instantiate(_fxBullet, transform.position, transform.rotation);
     }
 }
