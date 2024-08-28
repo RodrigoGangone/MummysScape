@@ -1,21 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Animations;
 using UnityEngine;
 
 public class ActivateObjectsBullet : MonoBehaviour
 {
     [SerializeField] private List<GameObject> _platformsAll;
     [SerializeField] private ParticleSystem _shiningParticles;
+    private Animator _animator;
     Material material;
 
     private void Start()
     {
+        _animator = GetComponent<Animator>();
         material = gameObject.GetComponent<Renderer>().material;
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag("Bullet")) return;
+
+        _animator.SetBool("IsActive", !_animator.GetBool("IsActive"));
 
         StartCoroutine(SineIntensity());
 
