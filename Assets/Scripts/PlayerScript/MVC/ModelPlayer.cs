@@ -100,6 +100,22 @@ public class ModelPlayer
             _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
         }
     }
+    
+    public bool IsTouchingWall()
+    {
+        RaycastHit hit;
+        // Realiza un raycast hacia adelante desde la posición del objeto "Target"
+        if (Physics.Raycast(_player.ShootTargetTransform.position, _player.ShootTargetTransform.forward, out hit, _player.RayShootDistance))
+        {
+            // Verifica si el objeto con el que colisiona está en la capa "Wall"
+            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Wall"))
+            {
+                Debug.Log("Raycast IsTouchingWall: true");
+                return true;
+            }
+        }
+        return false;
+    }
 
     public void Shoot()
     {
@@ -141,8 +157,8 @@ public class ModelPlayer
     {
         Vector3[] origins =
         {
-            _player.shootTarget.transform.position + _player.transform.right * 0.75f,
-            _player.shootTarget.transform.position - _player.transform.right * 0.75f,
+            _player.ShootTargetTransform.position + _player.transform.right * 0.75f,
+            _player.ShootTargetTransform.position - _player.transform.right * 0.75f,
         };
 
         foreach (var origin in origins)

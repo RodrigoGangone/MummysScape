@@ -40,8 +40,6 @@ public class MovePlatform : MonoBehaviour
         {
             MoveTowardsWaypoint();
         }
-        
-        Debug.Log("currentWaypointIndex :" + currentWaypointIndex);
     }
     
     private void MoveToFirstWaypoint()
