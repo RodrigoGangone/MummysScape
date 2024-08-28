@@ -4943,6 +4943,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bodySM: {fileID: 6427478986200628243}
   headSM: {fileID: 3210168946705543996}
+  fireMR: {fileID: 366434946133571110}
   _detectionBeetle: {fileID: 0}
   levelManager: {fileID: 0}
   _stateMachinePlayer: {fileID: 0}
@@ -5445,7 +5446,7 @@ Transform:
   m_GameObject: {fileID: 5919062846150955367}
   serializedVersion: 2
   m_LocalRotation: {x: -0.69690204, y: -0.119697675, z: 0.69690204, w: -0.119697675}
-  m_LocalPosition: {x: 0.2019999, y: 0.07099977, z: 0}
+  m_LocalPosition: {x: -0.147, y: -0.053, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6029,7 +6030,7 @@ ParticleSystem:
     gravityModifier:
       serializedVersion: 2
       minMaxState: 0
-      scalar: -1
+      scalar: -1.5
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -6086,7 +6087,7 @@ ParticleSystem:
     angle: 25
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
-    radiusThickness: 0.13
+    radiusThickness: 0.5
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0.13}
     m_Rotation: {x: 0, y: 0, z: 0}
@@ -6169,7 +6170,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 1
+      value: 0.76
       mode: 0
       spread: 0
       speed:
@@ -15389,6 +15390,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ccd2387dce0504d4e899de30a0ada3b3, type: 3}
+--- !u!23 &366434946133571110 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: ccd2387dce0504d4e899de30a0ada3b3, type: 3}
+  m_PrefabInstance: {fileID: 1356783078901951138}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1539943519962746185 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: ccd2387dce0504d4e899de30a0ada3b3, type: 3}
