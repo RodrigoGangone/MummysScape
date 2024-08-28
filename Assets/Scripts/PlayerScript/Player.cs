@@ -49,7 +49,8 @@ public class Player : MonoBehaviour
     [SerializeField] public TwoBoneIKConstraint rightHand;
     [SerializeField] public RigBuilder rigBuilder;
 
-    private float _rayShotDistance = 0.9f;
+    //Var para Ray que hace check de disparo frente a una Wall
+    private const float _rayCheckShootDistance = 1.5f;
 
     //TODO: Mejorar esto a futuro
 
@@ -57,7 +58,7 @@ public class Player : MonoBehaviour
 
     public Transform ShootTargetTransform => _shootTarget.transform;
 
-    public float RayShootDistance => _rayShotDistance;
+    public float RayCheckShootDistance => _rayCheckShootDistance;
 
     public float Life
     {
@@ -239,10 +240,23 @@ public class Player : MonoBehaviour
             }
         #endregion     
         
-        #region Evitar disparar de cerca a Wall
+        #region Evitar disparar/drop cerca de Wall
+        if (_modelPlayer != null)
             Gizmos.color = _modelPlayer.IsTouchingWall() ? Color.red : Color.green;
-            Gizmos.DrawRay(_shootTarget.transform.position, _shootTarget.transform.forward * _rayShotDistance);
-            Gizmos.DrawSphere(_shootTarget.transform.position + _shootTarget.transform.forward * _rayShotDistance, 0.1f);
+        else
+            Gizmos.color = Color.black;
+        
+        var _rayCheckShootPos = new Vector3(transform.position.x,
+            _shootTarget.transform.position.y,
+            transform.position.z);
+        
+        
+        // Solo detectar la capa "Wall"
+        int wallLayer = LayerMask.NameToLayer("Wall");
+        int layerMaskWall = 1 << wallLayer;
+        
+        Gizmos.DrawRay(_rayCheckShootPos, transform.forward * _rayCheckShootDistance);
+        Gizmos.DrawSphere(_rayCheckShootPos + transform.forward * _rayCheckShootDistance, 0.1f);
         #endregion
     }
 }

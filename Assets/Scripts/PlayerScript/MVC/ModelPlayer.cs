@@ -103,16 +103,20 @@ public class ModelPlayer
     
     public bool IsTouchingWall()
     {
+        // Pos del player pero a la altura del "Target"
+        var _rayCheckShootPos = new Vector3(_player.transform.position.x,
+            _player.ShootTargetTransform.position.y,
+            _player.transform.position.z);
+        
+        // Solo detectar la capa "Wall"
+        int wallLayer = LayerMask.NameToLayer("Wall");
+        int layerMaskWall = 1 << wallLayer;
+        
         RaycastHit hit;
-        // Realiza un raycast hacia adelante desde la posición del objeto "Target"
-        if (Physics.Raycast(_player.ShootTargetTransform.position, _player.ShootTargetTransform.forward, out hit, _player.RayShootDistance))
+        if (Physics.Raycast(_rayCheckShootPos, _player.transform.forward, out hit, _player.RayCheckShootDistance, layerMaskWall))
         {
-            // Verifica si el objeto con el que colisiona está en la capa "Wall"
-            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Wall"))
-            {
-                Debug.Log("Raycast IsTouchingWall: true");
-                return true;
-            }
+            Debug.Log("Raycast IsTouchingWall: true");
+            return true;
         }
         return false;
     }
