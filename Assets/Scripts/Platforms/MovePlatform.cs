@@ -8,7 +8,7 @@ public class MovePlatform : MonoBehaviour
     
     [Header("SPEED")]
     public float speed = 1;
-    public float stopTime = 0.25f;
+    public float stopTime = 0.5f;
 
     [Header("WAYPOINTS")] 
     [SerializeField] private Transform[] waypoints; // Lista puntos a los que se mueve la platform
@@ -23,7 +23,7 @@ public class MovePlatform : MonoBehaviour
         if (waypoints.Length > 0 && isMoving)
         {
             // Si la plataforma no está en la posicion del primer waypoint
-            if (Vector3.Distance(transform.position, waypoints[0].position) > 0.1f)
+            if (Vector3.Distance(transform.position, waypoints[0].position) == 0)
                 isMovingToFirstWaypoint = true;
             else
                 transform.position = waypoints[0].position;
@@ -41,7 +41,6 @@ public class MovePlatform : MonoBehaviour
             MoveTowardsWaypoint();
         }
         
-        Debug.Log("currentWaypointIndex :" + currentWaypointIndex);
     }
     
     private void MoveToFirstWaypoint()
@@ -53,7 +52,7 @@ public class MovePlatform : MonoBehaviour
         transform.position = Vector3.MoveTowards(transform.position, firstWaypoint.position, step);
 
         // Si la plataforma ha alcanzado el primer waypoint
-        if (Vector3.Distance(transform.position, firstWaypoint.position) < 0.1f)
+        if (Vector3.Distance(transform.position, firstWaypoint.position) == 0)
         {
             isMovingToFirstWaypoint = false;
             currentWaypointIndex = 1; // Empieza a moverse hacia el segundo waypoint
@@ -71,7 +70,7 @@ public class MovePlatform : MonoBehaviour
         transform.position = Vector3.MoveTowards(transform.position, targetWaypoint.position, step);
 
         // Pausa al llegar a un punto
-        if (Vector3.Distance(transform.position, targetWaypoint.position) < 0.1f)
+        if (Vector3.Distance(transform.position, targetWaypoint.position) == 0)
         {
             StartCoroutine(PauseAtWaypoint());
         }

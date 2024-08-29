@@ -38,7 +38,7 @@ public class Player : MonoBehaviour
     [SerializeField] private int _minBandageStock = 0;
     [SerializeField] private int _currBandageStock = 2;
     [SerializeField] public Transform handTarget;
-    [SerializeField] public Transform shootTarget;
+    [SerializeField] private Transform _shootTarget;
     [SerializeField] public Transform dropTarget;
 
     [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
@@ -49,26 +49,26 @@ public class Player : MonoBehaviour
     [SerializeField] public TwoBoneIKConstraint rightHand;
     [SerializeField] public RigBuilder rigBuilder;
 
+    //Var para Ray que hace check de disparo frente a una Wall
+    private const float _rayCheckShootDistance = 1.5f;
+
     //TODO: Mejorar esto a futuro
 
     #region Getters & Setters
+
+    public Transform ShootTargetTransform => _shootTarget.transform;
+
+    public float RayCheckShootDistance => _rayCheckShootDistance;
 
     public float Life
     {
         get => _life;
         set => _life = value;
     }
+    
+    public float Speed => CurrentSpeed();
 
-
-    public float Speed
-    {
-        get => CurrentSpeed();
-    }
-
-    public float SpeedRotation
-    {
-        get => CurrentRotation();
-    }
+    public float SpeedRotation => CurrentRotation();
 
     public int MaxBandageStock => _maxBandageStock;
     public int MinBandageStock => _minBandageStock;
@@ -220,23 +220,44 @@ public class Player : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Vector3[] origins =
-        {
-            shootTarget.transform.position + transform.right * 0.75f,
-            shootTarget.transform.position - transform.right * 0.75f,
-        };
-
-        foreach (var origin in origins)
-        {
-            RaycastHit hit;
-
-            if (Physics.Raycast(origin, transform.forward, out hit, 12))
+        #region Auto Apunte Boton
+            Vector3[] origins =
             {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(origin, hit.point);
-                Gizmos.DrawSphere(hit.point, 0.1f);
+                _shootTarget.transform.position + transform.right * 0.75f,
+                _shootTarget.transform.position - transform.right * 0.75f,
+            };
+
+            foreach (var origin in origins)
+            {
+                RaycastHit hit;
+
+                if (Physics.Raycast(origin, transform.forward, out hit, 12))
+                {
+                    Gizmos.color = Color.magenta;
+                    Gizmos.DrawLine(origin, hit.point);
+                    Gizmos.DrawSphere(hit.point, 0.1f);
+                }
             }
-        }
+        #endregion     
+        
+        #region Evitar disparar/drop cerca de Wall
+        if (_modelPlayer != null)
+            Gizmos.color = _modelPlayer.IsTouchingWall() ? Color.red : Color.green;
+        else
+            Gizmos.color = Color.black;
+        
+        var _rayCheckShootPos = new Vector3(transform.position.x,
+            _shootTarget.transform.position.y,
+            transform.position.z);
+        
+        
+        // Solo detectar la capa "Wall"
+        int wallLayer = LayerMask.NameToLayer("Wall");
+        int layerMaskWall = 1 << wallLayer;
+        
+        Gizmos.DrawRay(_rayCheckShootPos, transform.forward * _rayCheckShootDistance);
+        Gizmos.DrawSphere(_rayCheckShootPos + transform.forward * _rayCheckShootDistance, 0.1f);
+        #endregion
     }
 }
 

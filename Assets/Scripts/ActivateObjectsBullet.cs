@@ -13,7 +13,7 @@ public class ActivateObjectsBullet : MonoBehaviour
     private void Start()
     {
         _animator = GetComponent<Animator>();
-        material = gameObject.GetComponent<Renderer>().material;
+        material = gameObject.GetComponentInChildren<Renderer>().material;
     }
 
     private void OnTriggerEnter(Collider other)

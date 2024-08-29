@@ -8,7 +8,7 @@ public class ControllerPlayer
 
     private float _rotationInput;
     private float _moveInput;
-
+    
     //Actions
     public event Func<bool> OnGetCanShoot;
     public event Action<PlayerState> OnStateChange = delegate { };
@@ -37,13 +37,13 @@ public class ControllerPlayer
                 OnStateChange(PlayerState.Hook);
         }
 
-        if (CanShootState() && Input.GetKeyDown(KeyCode.E))
+        if (CanShootState() && !_model.IsTouchingWall() && Input.GetKeyDown(KeyCode.E))
         {
             if (OnGetCanShoot.Invoke())
                 OnStateChange(PlayerState.Shoot);
         }
 
-        if (CanDropState() && Input.GetKeyDown(KeyCode.Q))
+        if (CanDropState() && !_model.IsTouchingWall() && Input.GetKeyDown(KeyCode.Q))
         {
             if (OnGetCanShoot.Invoke()) 
                 OnStateChange(PlayerState.Drop);
