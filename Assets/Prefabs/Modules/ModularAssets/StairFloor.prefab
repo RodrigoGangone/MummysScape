@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7491522012153076671}
   - component: {fileID: 2855500330470247013}
   - component: {fileID: 4270862548113045672}
+  - component: {fileID: 4500719273785654196}
   m_Layer: 0
   m_Name: StairFloor
   m_TagString: Untagged
@@ -97,7 +98,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_PolyMesh:
-    name: PolybrushMesh46804
+    name: PolybrushMesh-67608
     vertices:
     - {x: -0.1017157, y: 2.842171e-16, z: -0.5997798}
     - {x: -0.3051483, y: 2.842171e-16, z: -0.5997798}
@@ -133,22 +134,22 @@ MonoBehaviour:
     - {x: 0, y: 1, z: 0}
     - {x: 0, y: 1, z: 0}
     colors:
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
-    - {r: 0, g: 0, b: 0, a: 1}
+    - {r: 0.5079995, g: 0.5079995, b: 0.5079995, a: 1}
+    - {r: 0.48805484, g: 0.48805484, b: 0.48805484, a: 1}
+    - {r: 0.48811916, g: 0.48811916, b: 0.48811916, a: 1}
+    - {r: 0.47382447, g: 0.47382447, b: 0.47382447, a: 1}
+    - {r: 0.6925744, g: 0.6925744, b: 0.6925744, a: 1}
+    - {r: 0.48737988, g: 0.48737988, b: 0.48737988, a: 1}
+    - {r: 0.5260402, g: 0.5260402, b: 0.5260402, a: 1}
+    - {r: 0.7574584, g: 0.7574584, b: 0.7574584, a: 1}
+    - {r: 0.5903346, g: 0.5903346, b: 0.5903346, a: 1}
+    - {r: 0.5442255, g: 0.5442255, b: 0.5442255, a: 1}
+    - {r: 0.5938419, g: 0.5938419, b: 0.5938419, a: 1}
+    - {r: 0.5732153, g: 0.5732153, b: 0.5732153, a: 1}
+    - {r: 0.5525964, g: 0.5525964, b: 0.5525964, a: 1}
+    - {r: 0.5230426, g: 0.5230426, b: 0.5230426, a: 1}
+    - {r: 0.571196, g: 0.571196, b: 0.571196, a: 1}
+    - {r: 0.5886831, g: 0.5886831, b: 0.5886831, a: 1}
     tangents:
     - {x: 0, y: 0, z: 1, w: -1}
     - {x: 0, y: 0, z: 1, w: -1}
@@ -193,4 +194,25 @@ MonoBehaviour:
     m_Mesh: {fileID: 0}
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 4164511204261677510, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
-  m_Mode: 1
+  m_Mode: 0
+--- !u!65 &4500719273785654196
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3099707872295823943}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.6102967, y: 0, z: 1.1995598}
+  m_Center: {x: 0, y: 2.842171e-16, z: 0}
