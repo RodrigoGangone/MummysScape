@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5302268149758511686}
   - component: {fileID: 2739048271056875589}
   - component: {fileID: 1193205344919887581}
+  - component: {fileID: 4558136064140978551}
   m_Layer: 0
   m_Name: SandMound
   m_TagString: Untagged
@@ -83,3 +84,25 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &4558136064140978551
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3789221767737684198}
+  m_Material: {fileID: 13400000, guid: 35b32eaded03fda43b116755a3936934, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 1431182149569455518, guid: 409d5e00e985f1c4ab14dac89e4d994f, type: 3}
