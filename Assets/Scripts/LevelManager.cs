@@ -6,13 +6,15 @@ public class LevelManager : MonoBehaviour
     private Player _player;
     private UIManager _uiManager;
 
-    [SerializeField] private ParticleSystem _fxPortal;
     [SerializeField] private float _currentTimeDeath;
     [SerializeField] private float _maxTimeDeath = 30f;
 
     private List<Collectible> _collectibles;
 
     private LevelState _currentLevelState = LevelState.Playing;
+
+    [SerializeField] private GameObject _portalFxOff;
+    [SerializeField] private GameObject _portalFxOn;
 
     public Action OnPlayerWin;
     public Action OnPlayerDeath;
@@ -37,7 +39,7 @@ public class LevelManager : MonoBehaviour
         if (_currentTimeDeath >= _maxTimeDeath && _player.CurrentPlayerSize != PlayerSize.Head) return;
 
         SetTimerDeath(_player.CurrentPlayerSize);
-        
+
         _uiManager.UISetTimerDeath(_currentTimeDeath, _maxTimeDeath);
 
         if (_currentTimeDeath <= 0)
@@ -51,7 +53,7 @@ public class LevelManager : MonoBehaviour
             _currentTimeDeath -= Time.deltaTime;
             _uiManager.SetMaterialUI(_currentTimeDeath <= _maxTimeDeath / 2 ? _currentTimeDeath : 0);
         }
-        else 
+        else
             _currentTimeDeath += Time.deltaTime * 30f;
     }
 
@@ -65,6 +67,8 @@ public class LevelManager : MonoBehaviour
     {
         if (!other.gameObject.CompareTag("PlayerFather")) return;
         ChangeState(LevelState.Won);
+        _portalFxOff.SetActive(false);
+        _portalFxOn.SetActive(true);
     }
 
     private void ChangeState(LevelState newState)
@@ -84,10 +88,9 @@ public class LevelManager : MonoBehaviour
                 break;
         }
     }
-    
+
     private void Win()
     {
-        _fxPortal.Play();
         Debug.Log("Ganaste!");
     }
 
