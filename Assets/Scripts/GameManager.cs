@@ -26,14 +26,14 @@ public class GameManager : MonoBehaviour
     {
         switch (SceneManager.GetActiveScene().name)
         {
-            case "Level1":
-                SceneManager.LoadScene("Level2");
+            case "Modular1":
+                SceneManager.LoadScene("Modular2");
                 break;
-            case "Level2":
-                SceneManager.LoadScene("Level3");
+            case "Modular2":
+                SceneManager.LoadScene("Modular3");
                 break;
-            case "Level3":
-                SceneManager.LoadScene("Level1"); //TODO: Seguir agregando niveles
+            case "Modular3":
+                SceneManager.LoadScene("Modular1"); //TODO: Seguir agregando niveles
                 break;
         }
     }
