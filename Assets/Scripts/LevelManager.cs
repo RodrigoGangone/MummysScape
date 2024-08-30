@@ -66,7 +66,9 @@ public class LevelManager : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag("PlayerFather")) return;
+        
         ChangeState(LevelState.Won);
+        
         _portalFxOff.SetActive(false);
         _portalFxOn.SetActive(true);
     }
