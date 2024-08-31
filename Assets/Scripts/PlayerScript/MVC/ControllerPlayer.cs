@@ -11,8 +11,10 @@ public class ControllerPlayer
     
     //Actions
     public event Func<bool> OnGetCanShoot;
+    public event Func<bool> IsCollisionGrabObj; 
     public event Action<PlayerState> OnStateChange = delegate { };
     public event Func<string> OnGetState = () => "ERROR OnGetState (Controller Player)";
+    public event Func<PlayerSize> OnGetPlayerSize;
 
     public ControllerPlayer(Player player)
     {
@@ -31,10 +33,21 @@ public class ControllerPlayer
             OnStateChange(PlayerState.Idle);
         }
 
-        if (CanHookState() && Input.GetKey(KeyCode.Space))
+        if (Input.GetKey(KeyCode.Space))
         {
-            if (OnGetCanShoot.Invoke())
+            Debug.Log("CanGrabState() =" + CanGrabState());
+            Debug.Log("CanHookState() =" + CanHookState());
+            
+            if (PlayerSize.Normal.Equals(OnGetPlayerSize.Invoke()) && CanGrabState())
+            {
+                Debug.Log("ENTRANDO AL GRAB");
+                OnStateChange(PlayerState.Grab);
+            }
+            else if (PlayerSize.Small.Equals(OnGetPlayerSize.Invoke()) && CanHookState())
+            {
+                Debug.Log("ENTRANDO AL HOOK");
                 OnStateChange(PlayerState.Hook);
+            }
         }
 
         if (CanShootState() && !_model.IsTouchingWall() && Input.GetKeyDown(KeyCode.E))
@@ -73,7 +86,7 @@ public class ControllerPlayer
             "SM_Walk" => true,
             "SM_Hook" => false,
             "SM_Fall" => true, // Averiguar cuando toca el suelo para pasarlo a idle
-            "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
+            "SM_Grab" => true,
             "SM_Damage" => true,
             "SM_Win" => false,
             "SM_Dead" => false,
@@ -90,7 +103,7 @@ public class ControllerPlayer
             "SM_Walk" => false, // se puede borrar porque no se pisa//
             "SM_Hook" => false,
             "SM_Fall" => false, //Averiguar cuando toca el suelo para cambiar a idle o walk
-            "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
+            "SM_Grab" => true,
             "SM_Damage" => false,
             "SM_Win" => false,
             "SM_Dead" => false,
@@ -123,7 +136,7 @@ public class ControllerPlayer
             "SM_Walk" => true,
             "SM_Hook" => false,
             "SM_Fall" => true,
-            "SM_Grab" => false, //Ver que hacer con el grab ya que la animacion seria otra
+            "SM_Grab" => false,
             "SM_Damage" => false,
             "SM_Win" => false,
             "SM_Dead" => false,
@@ -145,5 +158,21 @@ public class ControllerPlayer
             "SM_Win" => false,
             "SM_Dead" => false,
         };
+    }
+    
+    private bool CanGrabState()
+    {
+        return IsCollisionGrabObj() && OnGetState?.Invoke() switch
+        {
+            "SM_Idle" => true,
+            "SM_Shoot" => false,
+            "SM_Walk" => true,
+            "SM_Hook" => false,
+            "SM_Fall" => false,
+            "SM_Grab" => false,
+            "SM_Damage" => false,
+            "SM_Win" => false,
+            "SM_Dead" => false,
+        }; 
     }
 }

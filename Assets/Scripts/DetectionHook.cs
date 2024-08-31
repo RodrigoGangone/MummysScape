@@ -15,18 +15,14 @@ public class DetectionHook : MonoBehaviour
         _player = FindObjectOfType<Player>();
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.layer == LayerMask.NameToLayer("Hook"))
-        {
-            _hooks.Add(other);
-        }
-    }
-
     private void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.layer != LayerMask.NameToLayer("Hook") || _hooks.Count == 0) return;
+        //TODO: FUNCIONA PERO CORREGIR TODAS ESTAS VALIDACIONES
+        if (other.gameObject.layer != LayerMask.NameToLayer("Hook") ||
+            !_player.CurrentPlayerSize.Equals(PlayerSize.Small)) return;
         if (!isPosibleHook(other)) return;
+        if (!_hooks.Contains(other)) _hooks.Add(other);
+        if (_hooks.Count == 0) return;
 
         var hookParticleSystem = other.transform.GetChild(0).GetComponent<ParticleSystem>();
 
@@ -65,7 +61,8 @@ public class DetectionHook : MonoBehaviour
     {
         Vector3 direction = other.transform.position - transform.position;
 
-        if (Physics.Raycast(transform.position, direction, out RaycastHit hit, direction.magnitude, LayerMask.GetMask("Wall")))
+        if (Physics.Raycast(transform.position, direction, out RaycastHit hit, direction.magnitude,
+                LayerMask.GetMask("Wall")))
         {
             return false;
         }
@@ -76,7 +73,7 @@ public class DetectionHook : MonoBehaviour
     private void OnTriggerExit(Collider other) // Eliminar el Beetle que agregue
     {
         if (other.gameObject.layer != LayerMask.NameToLayer("Hook")) return;
-        
+
         //Apagar particula del beetle que ya no veria
         var hookParticleSystem = other.transform.GetChild(0).GetComponent<ParticleSystem>();
         if (hookParticleSystem.isPlaying) hookParticleSystem.Stop();
