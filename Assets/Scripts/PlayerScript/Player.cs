@@ -41,8 +41,12 @@ public class Player : MonoBehaviour
     [SerializeField] private Transform _shootTarget;
     [SerializeField] public Transform dropTarget;
 
-    [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
+    [Header("SIZES")] 
+    [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
     [SerializeField] public Mesh[] _Meshes;
+    
+    [Header("GRAB")]
+    [SerializeField] private bool _isCollisionGrabObj;
 
     [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
@@ -84,7 +88,13 @@ public class Player : MonoBehaviour
         get => _currentPlayerSize;
         set => _currentPlayerSize = value;
     }
-
+    
+    public bool IsCollisionGrabObj
+    {
+        get => _isCollisionGrabObj;
+        set => _isCollisionGrabObj = value;
+    }
+    
     #endregion
 
     private void Awake()
@@ -105,7 +115,9 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnGetCanShoot += CanShoot;
         _controllerPlayer.OnStateChange += ChangeState;
         _controllerPlayer.OnGetState += CurrentState;
-        
+        _controllerPlayer.OnGetPlayerSize += () => CurrentPlayerSize;
+        _controllerPlayer.IsCollisionGrabObj += () => IsCollisionGrabObj;
+
         _modelPlayer.CreateBandage += CreateBandage;
 
         levelManager.OnPlayerWin += Win;
