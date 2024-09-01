@@ -11,7 +11,7 @@ public class ControllerPlayer
     
     //Actions
     public event Func<bool> OnGetCanShoot;
-    public event Func<bool> IsCollisionGrabObj; 
+    public event Func<bool> HasGrabObj; 
     public event Action<PlayerState> OnStateChange = delegate { };
     public event Func<string> OnGetState = () => "ERROR OnGetState (Controller Player)";
     public event Func<PlayerSize> OnGetPlayerSize;
@@ -38,14 +38,12 @@ public class ControllerPlayer
             Debug.Log("CanGrabState() =" + CanGrabState());
             Debug.Log("CanHookState() =" + CanHookState());
             
-            if (PlayerSize.Normal.Equals(OnGetPlayerSize.Invoke()) && CanGrabState())
+            if (CanGrabState())
             {
-                Debug.Log("ENTRANDO AL GRAB");
                 OnStateChange(PlayerState.Grab);
             }
-            else if (PlayerSize.Small.Equals(OnGetPlayerSize.Invoke()) && CanHookState())
+            else if (CanHookState())
             {
-                Debug.Log("ENTRANDO AL HOOK");
                 OnStateChange(PlayerState.Hook);
             }
         }
@@ -129,7 +127,9 @@ public class ControllerPlayer
 
     private bool CanHookState()
     {
-        return _model.detectionBeetle.currentHook != null && OnGetState?.Invoke() switch
+        return PlayerSize.Small.Equals(OnGetPlayerSize.Invoke()) && 
+               _model.detectionBeetle.currentHook != null &&
+               OnGetState?.Invoke() switch
         {
             "SM_Idle" => true,
             "SM_Shoot" => true,
@@ -162,7 +162,9 @@ public class ControllerPlayer
     
     private bool CanGrabState()
     {
-        return IsCollisionGrabObj() && OnGetState?.Invoke() switch
+        return HasGrabObj() &&
+               PlayerSize.Normal.Equals(OnGetPlayerSize.Invoke()) &&
+               OnGetState?.Invoke() switch
         {
             "SM_Idle" => true,
             "SM_Shoot" => false,
