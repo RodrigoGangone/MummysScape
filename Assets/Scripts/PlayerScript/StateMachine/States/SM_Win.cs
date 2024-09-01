@@ -28,7 +28,6 @@ public class SM_Win : State
 
     public override void OnExit()
     {
-        // Restaurar cualquier cambio necesario al salir del estado Win
     }
 
     public override void OnUpdate()
@@ -37,7 +36,7 @@ public class SM_Win : State
         if (!_materialChanged)
         {
             float t = Mathf.Clamp01((Time.timeSinceLevelLoad - _startTime) / _materialTransitionDuration);
-            float value = Mathf.Lerp(1f, 0f, t);
+            float value = Mathf.Lerp(0, 1, t);
             _player._viewPlayer.SetValueMaterial(value);
 
             if (t >= 1f)
