@@ -15,7 +15,6 @@ public class SM_Drop : State
 
     public override void OnEnter()
     {
-        Debug.Log("OnEnter - SM_Drop");
         _model.CountBandage(-1);
         _model.SpawnBandage();
     }
@@ -30,6 +29,5 @@ public class SM_Drop : State
 
     public override void OnExit()
     {
-        Debug.Log("OnExit - SM_Drop");
     }
 }
