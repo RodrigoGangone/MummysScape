@@ -276,24 +276,25 @@ public class Player : MonoBehaviour
         #region Check Push Box
         if (GizmoPush)
         {
-            
-            if (_modelPlayer != null)
-                Gizmos.color = _modelPlayer.CanPushBox() ? Color.red : Color.cyan;
-            else
-                Gizmos.color = Color.black;
-            
             var _rayCheckPushPos = new Vector3(transform.position.x,
                 _shootTarget.transform.position.y,
                 transform.position.z);
-            
+
             Vector3[] pushOrigins =
             {
-                _shootTarget.transform.position + transform.right * 0.75f,
-                _shootTarget.transform.position - transform.right * 0.75f,
+                _rayCheckPushPos + transform.right * 0.25f,
+                _rayCheckPushPos - transform.right * 0.25f,
             };
-            
-            Gizmos.DrawRay(_rayCheckPushPos, transform.forward * _rayCheckPushDistance);
-            Gizmos.DrawSphere(_rayCheckPushPos + transform.forward * _rayCheckPushDistance, 0.1f);
+
+            foreach (var origin in pushOrigins)
+            {
+                if (_modelPlayer != null)
+                    Gizmos.color = _modelPlayer.CanPushBox() ? Color.green : Color.red;
+                else
+                    Gizmos.color = Color.black;
+                Gizmos.DrawRay(origin, transform.forward * _rayCheckPushDistance);
+                Gizmos.DrawSphere(origin + transform.forward * _rayCheckPushDistance, 0.1f);
+            }
         }
         #endregion
     }

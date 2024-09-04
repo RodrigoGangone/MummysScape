@@ -258,28 +258,40 @@ public class ModelPlayer
     
     public bool CanPushBox()
     {
-        // Calcula la posición del raycast directamente
         var rayOrigin = new Vector3(
             _player.transform.position.x,
             _player.ShootTargetTransform.position.y,
             _player.transform.position.z
         );
+        
+        Vector3[] pushOrigins =
+        {
+            rayOrigin + _player.transform.right * 0.25f,
+            rayOrigin - _player.transform.right * 0.25f
+        };
 
         int movableBoxLayer = LayerMask.NameToLayer("MovableBox");
         int layerMaskBox = 1 << movableBoxLayer;
 
-        if (Physics.Raycast(rayOrigin, _player.transform.forward, out var hit, _player.RayCheckPushDistance, layerMaskBox))
+        int hitCount = 0;
+
+        foreach (var origin in pushOrigins)
         {
-            _currentBox = hit.transform;
-            _currentBoxRB = _currentBox.GetComponent<Rigidbody>();
-            Debug.Log(" ESTOY HITEANDO CON " + _currentBox.name);
-            return true;
+            if (Physics.Raycast(origin, _player.transform.forward, out var hit, _player.RayCheckPushDistance, layerMaskBox))
+            {
+                hitCount++;
+
+                // Si encontramos el primer objeto que puede ser empujado, guardamos su información
+                if (_currentBox == null)
+                {
+                    _currentBox = hit.transform;
+                    _currentBoxRB = _currentBox.GetComponent<Rigidbody>();
+                }
+            }
         }
 
-        UnfreezePositionAxes();
-        _currentBox = null;
-        _currentBoxRB = null;
-        return false;
+        // Retorna verdadero solo si ambos raycasts colisionan con una caja movible
+        return hitCount == pushOrigins.Length;
     }
 
 
