@@ -15,16 +15,15 @@ public class ModelPlayer
 
     public bool isHooking;
     public bool finishAnimationHook;
-    
+
     //PUSH OBJECT
     private Transform _currentBox;
-    private Rigidbody _currentBoxRB;
-    
+
     public Transform CurrentBox => _currentBox;
 
     //PICK UP
     private LayerMask _pickableLayer = LayerMask.GetMask("Pickable");
-    
+
     public bool hasObject { get; private set; }
 
     private Transform _objSelected;
@@ -43,13 +42,13 @@ public class ModelPlayer
         springJoint = _player._springJoint;
         detectionBeetle = _player._detectionBeetle;
     }
-    
+
     public void CountBandage(int sum)
     {
         _player.CurrentBandageStock += sum;
         SizeHandler();
     }
-    
+
     public void SpawnBandage(Transform trans = null)
     {
         CreateBandage(trans ?? _player.dropTarget);
@@ -83,74 +82,18 @@ public class ModelPlayer
 
     public void MovePush(float moveHorizontal, float moveVertical)
     {
-        // Determina la dirección hacia adelante basada en la cámara (igual que en el método Move)
-        Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z).normalized;
-        Vector3 right = Quaternion.Euler(0, 90, 0) * forward;
 
-        // Selecciona el eje principal de movimiento basado en la dirección de la cámara
-        bool moveOnXAxis = Mathf.Abs(forward.x) > Mathf.Abs(forward.z);
-
-        // Movimiento basado en el eje seleccionado
-        Vector3 movement;
-        if (moveOnXAxis)
-        {
-            // Congela X, permite movimiento en Z
-            _rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezeRotation;
-            _currentBoxRB.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezeRotation;
-
-            // Movimiento en Z (vertical)
-            movement = forward * (_player.Speed * Time.deltaTime * moveVertical);
-        }
-        else
-        {
-            // Congela Z, permite movimiento en X
-            _rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotation;
-            _currentBoxRB.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotation;
-
-            // Movimiento en X (horizontal)
-            movement = right * (_player.Speed * Time.deltaTime * moveHorizontal);
-        }
-
-        // Aplica el movimiento al jugador
-        _rb.velocity += movement;
-
-        // Aplica el movimiento a la caja
-        _currentBoxRB.velocity += movement;
-
-        // Rotación del jugador hacia la dirección del movimiento (opcional, igual que en el método Move)
-        Vector3 heading = movement.normalized;
-        if (heading != Vector3.zero)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
-            _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
-        }
-
-        // Clamping de la velocidad para evitar que exceda la velocidad máxima permitida
-        if (Mathf.Abs(_rb.velocity.x) > _player.Speed || Mathf.Abs(_rb.velocity.z) > _player.Speed)
-        {
-            var velocity = Vector3.ClampMagnitude(_rb.velocity, _player.Speed);
-            velocity.y = _rb.velocity.y;
-            _rb.velocity = velocity;
-        }
-
-        if (Mathf.Abs(_currentBoxRB.velocity.x) > _player.Speed || Mathf.Abs(_currentBoxRB.velocity.z) > _player.Speed)
-        {
-            var boxVelocity = Vector3.ClampMagnitude(_currentBoxRB.velocity, _player.Speed);
-            boxVelocity.y = _currentBoxRB.velocity.y;
-            _currentBoxRB.velocity = boxVelocity;
-        }
     }
-    
+
     public void UnfreezePositionAxes()
     {
         // Restablece solo las restricciones de posición en los ejes X y Z
-        if (_currentBox !=null)
+        if (_currentBox != null)
         {
             _rb.constraints = RigidbodyConstraints.FreezeRotation;
-            _currentBoxRB.constraints = RigidbodyConstraints.FreezeRotation;   
+            //_currentBoxRB.constraints = RigidbodyConstraints.FreezeRotation;
         }
     }
-
 
     public void ClampMovement()
     {
@@ -178,24 +121,26 @@ public class ModelPlayer
             _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
         }
     }
-    
+
     public bool IsTouchingWall()
     {
         // Pos del player pero a la altura del "Target"
         var _rayCheckShootPos = new Vector3(_player.transform.position.x,
             _player.ShootTargetTransform.position.y,
             _player.transform.position.z);
-        
+
         // Solo detectar la capa "Wall"
         int wallLayer = LayerMask.NameToLayer("Wall");
         int layerMaskWall = 1 << wallLayer;
-        
+
         RaycastHit hit;
-        if (Physics.Raycast(_rayCheckShootPos, _player.transform.forward, out hit, _player.RayCheckShootDistance, layerMaskWall))
+        if (Physics.Raycast(_rayCheckShootPos, _player.transform.forward, out hit, _player.RayCheckShootDistance,
+                layerMaskWall))
         {
             Debug.Log("Raycast IsTouchingWall: true");
             return true;
         }
+
         return false;
     }
 
@@ -255,7 +200,7 @@ public class ModelPlayer
 
         return null;
     }
-    
+
     public bool CanPushBox()
     {
         var rayOrigin = new Vector3(
@@ -263,35 +208,21 @@ public class ModelPlayer
             _player.ShootTargetTransform.position.y,
             _player.transform.position.z
         );
-        
-        Vector3[] pushOrigins =
+
+        var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
+        var layerMaskBox = 1 << movableBoxLayer;
+
+        if (Physics.Raycast(rayOrigin, _player.transform.forward, out var hit,
+                _player.RayCheckPushDistance, layerMaskBox))
         {
-            rayOrigin + _player.transform.right * 0.25f,
-            rayOrigin - _player.transform.right * 0.25f
-        };
-
-        int movableBoxLayer = LayerMask.NameToLayer("MovableBox");
-        int layerMaskBox = 1 << movableBoxLayer;
-
-        int hitCount = 0;
-
-        foreach (var origin in pushOrigins)
-        {
-            if (Physics.Raycast(origin, _player.transform.forward, out var hit, _player.RayCheckPushDistance, layerMaskBox))
-            {
-                hitCount++;
-
-                // Si encontramos el primer objeto que puede ser empujado, guardamos su información
-                if (_currentBox == null)
-                {
-                    _currentBox = hit.transform;
-                    _currentBoxRB = _currentBox.GetComponent<Rigidbody>();
-                }
-            }
+            _currentBox = hit.transform;
+            Debug.Log("ESTOY HITEANDO CON " + _currentBox.name);
+            return true;
         }
 
-        // Retorna verdadero solo si ambos raycasts colisionan con una caja movible
-        return hitCount == pushOrigins.Length;
+        //UnfreezePositionAxes();
+        _currentBox = null;
+        return false;
     }
 
 
