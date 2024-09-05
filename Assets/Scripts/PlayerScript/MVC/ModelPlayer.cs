@@ -303,16 +303,22 @@ public class ModelPlayer
         {
             _currentBox = hit.collider.transform.parent;
 
-            _dirToPull = hit.collider.gameObject.name switch
+            //TODO: mejorar esto o morir en el intento
+            if (_currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast() != null &&
+                _currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast()
+                .Equals(hit.collider.gameObject.name))
             {
-                "Forward" => Vector3.forward,
-                "Backward" => Vector3.back,
-                "Left" => Vector3.left,
-                "Right" => Vector3.right,
-                _ => _dirToPull
-            };
+                _dirToPull = hit.collider.gameObject.name switch
+                {
+                    "Forward" => Vector3.forward,
+                    "Backward" => Vector3.back,
+                    "Left" => Vector3.left,
+                    "Right" => Vector3.right,
+                    _ => _dirToPull
+                };
 
-            return true;
+                return true;
+            }
         }
 
         _currentBox = null;
