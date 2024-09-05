@@ -35,9 +35,7 @@ public class SM_Push : State
 
     public override void OnFixedUpdate()
     {
-        //_model.Move
-        _model.MovePush(Input.GetAxisRaw("Horizontal"),
-         Input.GetAxisRaw("Vertical"));
+        _model.MovePush(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
     }
     
     private bool IsPushing()

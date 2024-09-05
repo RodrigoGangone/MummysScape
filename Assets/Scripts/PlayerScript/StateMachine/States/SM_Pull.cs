@@ -1,10 +1,10 @@
-
+using UnityEngine;
 
 public class SM_Pull : State
 {
     private ModelPlayer _model;
     private ViewPlayer _view;
-    
+
     public SM_Pull(ModelPlayer model, ViewPlayer view)
     {
         _model = model;
@@ -14,8 +14,9 @@ public class SM_Pull : State
     public override void OnEnter()
     {
         //TODO: Agregar animacion de pull
+        Debug.Log("Pull");
     }
-    
+
     public override void OnExit()
     {
     }
@@ -26,5 +27,9 @@ public class SM_Pull : State
 
     public override void OnFixedUpdate()
     {
+        if (!_model.IsBoxCloseToPlayer())
+            _model.MovePull();
+        
+        OnExit();
     }
 }

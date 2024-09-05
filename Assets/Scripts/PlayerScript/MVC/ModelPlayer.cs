@@ -19,6 +19,7 @@ public class ModelPlayer
     //PUSH OBJECT
     private Transform _currentBox;
     private Vector3 _dirToPush;
+    private Vector3 _dirToPull;
 
     public Transform CurrentBox => _currentBox;
 
@@ -103,9 +104,47 @@ public class ModelPlayer
 
         if (_currentBox != null)
         {
-            _currentBox.transform.position += _dirToPush * _player.SpeedPush * Time.deltaTime;
+            _currentBox.transform.position += _dirToPush * (_player.SpeedPush * Time.deltaTime);
         }
     }
+    
+    public void MovePull()
+    {
+        // Obtiene la dirección hacia el jugador (desde la caja)
+        Vector3 playerPosition = _player.transform.position;
+        Vector3 boxPosition = _currentBox.transform.position;
+    
+        // Direccion desde el jugador hacia la caja
+        Vector3 directionToBox = (boxPosition - playerPosition).normalized;
+
+        // Ignora la rotación en los ejes X y Z (solo rota en el eje Y)
+        directionToBox.y = 0;
+
+        // Rota al jugador mirando hacia la caja lentamente, solo en el eje Y
+        if (directionToBox != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(directionToBox, Vector3.up);
+            _player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation,
+                Time.deltaTime * _player.SpeedRotation);
+        }
+    
+        // Direccion de la caja hacia el jugador
+        Vector3 directionToPlayer = (playerPosition - boxPosition).normalized;
+    
+        // Mover la caja hacia el jugador
+        _currentBox.transform.position += directionToPlayer * (_player.SpeedPull * Time.deltaTime);
+    }
+    
+    public bool IsBoxCloseToPlayer(float maxDistance = 2f)
+    {
+        Vector3 playerPosition = _player.transform.position;
+        Vector3 boxPosition = _currentBox.transform.position;
+
+        float distance = Vector3.Distance(playerPosition, boxPosition);
+
+        return distance <= maxDistance;
+    }
+
 
     public void ClampMovement()
     {
@@ -245,6 +284,39 @@ public class ModelPlayer
 
         _currentBox = null;
         _dirToPush = Vector3.zero;
+        return false;
+    }
+    
+    public bool CanPullBox()
+    {
+        var rayOrigin = new Vector3(
+            _player.transform.position.x,
+            _player.ShootTargetTransform.position.y,
+            _player.transform.position.z
+        );
+
+        var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
+        var layerMaskBox = 1 << movableBoxLayer;
+
+        if (Physics.Raycast(rayOrigin, _player.transform.forward, out var hit,
+                _player.RayCheckPullDistance, layerMaskBox))
+        {
+            _currentBox = hit.collider.transform.parent;
+
+            _dirToPull = hit.collider.gameObject.name switch
+            {
+                "Forward" => Vector3.forward,
+                "Backward" => Vector3.back,
+                "Left" => Vector3.left,
+                "Right" => Vector3.right,
+                _ => _dirToPull
+            };
+
+            return true;
+        }
+
+        _currentBox = null;
+        _dirToPull = Vector3.zero;
         return false;
     }
 

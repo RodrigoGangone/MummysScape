@@ -33,6 +33,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speed;
     [SerializeField] private float _speedRotation;
     [SerializeField] private float _speedPush;
+    [SerializeField] private float _speedPull;
 
     [Header("BANDAGE")] [SerializeField] public GameObject _prefabBandage;
     [SerializeField] private int _maxBandageStock = 2;
@@ -55,10 +56,12 @@ public class Player : MonoBehaviour
     [SerializeField] public bool GizmoAutoShoot = true;
     [SerializeField] public bool GizmoWallShoot = true;
     [SerializeField] public bool GizmoPush = true;
+    [SerializeField] public bool GizmoPull = true;
     
     //Rays
     private const float _rayCheckShootDistance = 1.5f;
     private const float _rayCheckPushDistance = 0.75f;
+    private const float _rayCheckPullDistance = 7f;
 
     //TODO: Mejorar esto a futuro
 
@@ -68,6 +71,7 @@ public class Player : MonoBehaviour
 
     public float RayCheckShootDistance => _rayCheckShootDistance;
     public float RayCheckPushDistance => _rayCheckPushDistance;
+    public float RayCheckPullDistance => _rayCheckPullDistance;
 
     public float Life
     {
@@ -78,6 +82,7 @@ public class Player : MonoBehaviour
     public float Speed => CurrentSpeed();
 
     public float SpeedPush => _speedPush;
+    public float SpeedPull => _speedPull;
     
     public float SpeedRotation => CurrentRotation();
 
@@ -290,6 +295,32 @@ public class Player : MonoBehaviour
             
             Gizmos.DrawRay(_rayCheckPushPos, transform.forward * _rayCheckPushDistance);
             Gizmos.DrawSphere(_rayCheckPushPos + transform.forward * _rayCheckPushDistance, 0.1f);
+        }
+        #endregion
+        
+        #region Check Pull Box
+        if (GizmoPull)
+        {
+            var _rayCheckPullPos = new Vector3(transform.position.x,
+                _shootTarget.transform.position.y,
+                transform.position.z);
+            
+            RaycastHit hit;
+
+            if (Physics.Raycast(_rayCheckPullPos, transform.forward, out hit, _rayCheckPullDistance))
+            {
+                if (_modelPlayer != null)
+                    Gizmos.color = _modelPlayer.CanPullBox() ? Color.yellow : Color.blue;
+                
+                Gizmos.DrawLine(_rayCheckPullPos, hit.point);
+                Gizmos.DrawSphere(hit.point, 0.1f);
+            }
+            else
+            {
+                Gizmos.color = Color.black;
+                Gizmos.DrawRay(_rayCheckPullPos, transform.forward * _rayCheckPullDistance);
+                Gizmos.DrawSphere(_rayCheckPullPos + transform.forward * _rayCheckPullDistance, 0.1f);
+            }
         }
         #endregion
     }

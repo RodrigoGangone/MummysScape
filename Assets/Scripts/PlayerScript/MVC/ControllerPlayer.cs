@@ -135,6 +135,25 @@ public class ControllerPlayer
                    "SM_Dead" => false,
                };
     }
+    
+    private bool CanPullState()
+    {
+        return PlayerSize.Normal.Equals(OnGetPlayerSize.Invoke()) &&
+               _model.CanPullBox() &&
+               OnGetState?.Invoke() switch
+               {
+                   "SM_Idle" => true,
+                   "SM_Shoot" => false,
+                   "SM_Walk" => true,
+                   "SM_Hook" => false,
+                   "SM_Fall" => false,
+                   "SM_Push" => false,
+                   "SM_Pull" => false,
+                   "SM_Damage" => false,
+                   "SM_Win" => false,
+                   "SM_Dead" => false,
+               };
+    }
 
     private bool CanShootState()
     {
@@ -189,23 +208,5 @@ public class ControllerPlayer
             "SM_Win" => false,
             "SM_Dead" => false,
         };
-    }
-
-    private bool CanPullState()
-    {
-        return PlayerSize.Normal.Equals(OnGetPlayerSize.Invoke()) &&
-               OnGetState?.Invoke() switch
-               {
-                   "SM_Idle" => true,
-                   "SM_Shoot" => false,
-                   "SM_Walk" => true,
-                   "SM_Hook" => false,
-                   "SM_Fall" => false,
-                   "SM_Push" => false,
-                   "SM_Pull" => false,
-                   "SM_Damage" => false,
-                   "SM_Win" => false,
-                   "SM_Dead" => false,
-               };
     }
 }
