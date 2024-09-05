@@ -17,7 +17,7 @@ public class SM_Push : State
 
     public override void OnEnter()
     {
-        //TODO: Agregar animacion de empujar
+        //TODO: Agregar animacion de manos
         //_view.PLAY_ANIM("PrepareToPush", true);
         Debug.Log("PrepareToPush");
     }
@@ -31,11 +31,12 @@ public class SM_Push : State
     public override void OnUpdate()
     {
         //_view.PLAY_ANIM("Push", IsPushing());
+        
     }
 
     public override void OnFixedUpdate()
     {
-        _model.Move(Input.GetAxisRaw("Horizontal"),
+        _model.MovePush(Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical"));
     }
 

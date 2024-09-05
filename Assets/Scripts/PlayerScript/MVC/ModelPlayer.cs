@@ -18,6 +18,7 @@ public class ModelPlayer
 
     //PUSH OBJECT
     private Transform _currentBox;
+    private Vector3 _dirToPush;
 
     public Transform CurrentBox => _currentBox;
 
@@ -82,7 +83,7 @@ public class ModelPlayer
 
     public void MovePush(float moveHorizontal, float moveVertical)
     {
-
+        
     }
 
     public void UnfreezePositionAxes()
@@ -215,13 +216,25 @@ public class ModelPlayer
         if (Physics.Raycast(rayOrigin, _player.transform.forward, out var hit,
                 _player.RayCheckPushDistance, layerMaskBox))
         {
-            _currentBox = hit.transform;
+            // Obtengo a la caja entera
+            _currentBox = hit.transform.parent;
+
+            // Mueve al jugador y la caja en la direcc opuesta
+            _dirToPush = hit.collider.gameObject.name switch
+            {
+                "Forward" => Vector3.back,
+                "Backward" => Vector3.forward,
+                "Left" => Vector3.right,
+                "Right" => Vector3.left,
+                _ => _dirToPush
+            };
+
             Debug.Log("ESTOY HITEANDO CON " + _currentBox.name);
             return true;
         }
 
-        //UnfreezePositionAxes();
         _currentBox = null;
+        _dirToPush = Vector3.zero;
         return false;
     }
 
