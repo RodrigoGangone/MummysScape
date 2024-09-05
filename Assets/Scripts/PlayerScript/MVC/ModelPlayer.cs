@@ -83,16 +83,27 @@ public class ModelPlayer
 
     public void MovePush(float moveHorizontal, float moveVertical)
     {
-        
-    }
+        Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z)
+            .normalized;
+        Vector3 right = Quaternion.Euler(0, 90, 0) * forward;
 
-    public void UnfreezePositionAxes()
-    {
-        // Restablece solo las restricciones de posición en los ejes X y Z
+        Vector3 rightMovement = right * (_player.SpeedPush * Time.deltaTime * moveHorizontal);
+        Vector3 forwardMovement = forward * (_player.SpeedPush * Time.deltaTime * moveVertical);
+
+        Vector3 movement = rightMovement + forwardMovement;
+
+        if (movement != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(movement, Vector3.up);
+            _player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation,
+                Time.deltaTime * _player.SpeedRotation);
+        }
+
+        _player.transform.position += movement;
+
         if (_currentBox != null)
         {
-            _rb.constraints = RigidbodyConstraints.FreezeRotation;
-            //_currentBoxRB.constraints = RigidbodyConstraints.FreezeRotation;
+            _currentBox.transform.position += _dirToPush * _player.SpeedPush * Time.deltaTime;
         }
     }
 
@@ -217,7 +228,7 @@ public class ModelPlayer
                 _player.RayCheckPushDistance, layerMaskBox))
         {
             // Obtengo a la caja entera
-            _currentBox = hit.transform.parent;
+            _currentBox = hit.collider.transform.parent;
 
             // Mueve al jugador y la caja en la direcc opuesta
             _dirToPush = hit.collider.gameObject.name switch
@@ -229,7 +240,6 @@ public class ModelPlayer
                 _ => _dirToPush
             };
 
-            Debug.Log("ESTOY HITEANDO CON " + _currentBox.name);
             return true;
         }
 
@@ -237,7 +247,6 @@ public class ModelPlayer
         _dirToPush = Vector3.zero;
         return false;
     }
-
 
     public void ActivateParticleButtonInView()
     {

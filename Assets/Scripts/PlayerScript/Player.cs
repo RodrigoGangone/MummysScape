@@ -32,6 +32,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speedRotationOriginal;
     [SerializeField] private float _speed;
     [SerializeField] private float _speedRotation;
+    [SerializeField] private float _speedPush;
 
     [Header("BANDAGE")] [SerializeField] public GameObject _prefabBandage;
     [SerializeField] private int _maxBandageStock = 2;
@@ -76,6 +77,8 @@ public class Player : MonoBehaviour
     
     public float Speed => CurrentSpeed();
 
+    public float SpeedPush => _speedPush;
+    
     public float SpeedRotation => CurrentRotation();
 
     public int MaxBandageStock => _maxBandageStock;

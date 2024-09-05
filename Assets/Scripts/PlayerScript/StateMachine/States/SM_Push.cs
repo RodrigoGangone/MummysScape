@@ -25,7 +25,6 @@ public class SM_Push : State
     public override void OnExit()
     {
         //_view.PLAY_ANIM("PrepareToPush", false);
-        Debug.Log("NO Push");
     }
 
     public override void OnUpdate()
@@ -36,10 +35,11 @@ public class SM_Push : State
 
     public override void OnFixedUpdate()
     {
+        //_model.Move
         _model.MovePush(Input.GetAxisRaw("Horizontal"),
-            Input.GetAxisRaw("Vertical"));
+         Input.GetAxisRaw("Vertical"));
     }
-
+    
     private bool IsPushing()
     {
         return Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0;
