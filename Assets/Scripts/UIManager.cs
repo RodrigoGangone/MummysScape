@@ -11,10 +11,12 @@ public class UIManager : MonoBehaviour
     [SerializeField] Slider _shootSlider;
     [SerializeField] Image _beetleCount;
     
-    [SerializeField] private Material _UIMaterialFill;
-    [SerializeField] private Material _UIMaterialHandler;
+    [SerializeField] private Material _HourgalssBandage01;
+    [SerializeField] private Material _HourgalssBandage02;
+
+    Coroutine _currentCoroutine;
     
-    int previousVandage = 0;
+    int previousBandage = 0;
 
     void Start()
     {
@@ -35,12 +37,16 @@ public class UIManager : MonoBehaviour
 
     public void UISetShootSlider()
     {
-        StartCoroutine(SetValue(1, _player.CurrentBandageStock));
+        if (_currentCoroutine != null)
+        {
+            StopAllCoroutines();
+        }
+        _currentCoroutine = StartCoroutine(SetValue(1, _player.CurrentBandageStock));
     }
 
     IEnumerator SetValue(float time, int currentVandage)
     {
-        int starlerp = previousVandage;
+        int starlerp = previousBandage;
         int endlerp = currentVandage;
 
         float tick = 0f;
@@ -50,22 +56,23 @@ public class UIManager : MonoBehaviour
         {
             value = Mathf.Lerp(starlerp, endlerp, tick);
 
-            _shootSlider.value = Mathf.Clamp01(value / 2);
+            _HourgalssBandage01.SetFloat("_Offset", value);
+            _HourgalssBandage02.SetFloat("_Offset", value);
             tick += Time.deltaTime / time;
             yield return null;
         }
 
-        if (endlerp != 0)
-            SetMaterialUI(0);
+        //if (endlerp != 0)
+        //    SetMaterialUI(0);
 
-        previousVandage = endlerp;
+        previousBandage = endlerp;
     }
 
-    public void SetMaterialUI(float vel)
-    {
-        _UIMaterialFill.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
-        _UIMaterialHandler.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
-    }
+    //public void SetMaterialUI(float vel)
+    //{
+    //    _UIMaterialFill.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
+    //    _UIMaterialHandler.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
+    //}
 
     public void UISetCollectibleCount(int count)
     {

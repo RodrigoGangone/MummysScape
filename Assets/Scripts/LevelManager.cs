@@ -51,7 +51,7 @@ public class LevelManager : MonoBehaviour
         if (playerSize == PlayerSize.Head)
         {
             _currentTimeDeath -= Time.deltaTime;
-            _uiManager.SetMaterialUI(_currentTimeDeath <= _maxTimeDeath / 2 ? _currentTimeDeath : 0);
+            //_uiManager.SetMaterialUI(_currentTimeDeath <= _maxTimeDeath / 2 ? _currentTimeDeath : 0);
         }
         else
             _currentTimeDeath += Time.deltaTime * 30f;
