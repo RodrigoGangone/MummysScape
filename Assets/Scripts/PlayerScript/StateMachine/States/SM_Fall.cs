@@ -17,7 +17,6 @@ public class SM_Fall : State
     {
         Debug.Log("ON ENTER FALL");
         _view.PLAY_ANIM("Fall", true);
-        //TODO: AGREGAR ANIMACION DE CAIDA, ESTE ESTADO SOLO SE USA PARA FEEDBACKS Y DE "PUENTE" DESDE HOOK A TODOS LOS ESTADOS
     }
 
     public override void OnExit()

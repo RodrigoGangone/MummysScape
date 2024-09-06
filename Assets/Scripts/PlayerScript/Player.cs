@@ -32,6 +32,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speedRotationOriginal;
     [SerializeField] private float _speed;
     [SerializeField] private float _speedRotation;
+    [SerializeField] private float _speedPush = 0.5f;
+    [SerializeField] private float _speedPull = 0.5f;
 
     [Header("BANDAGE")] [SerializeField] public GameObject _prefabBandage;
     [SerializeField] private int _maxBandageStock = 2;
@@ -44,17 +46,22 @@ public class Player : MonoBehaviour
     [Header("SIZES")] 
     [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
     [SerializeField] public Mesh[] _Meshes;
-    
-    [Header("GRAB")]
-    [SerializeField] private bool _isCollisionGrabObj;
 
     [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
     [SerializeField] public TwoBoneIKConstraint rightHand;
     [SerializeField] public RigBuilder rigBuilder;
 
-    //Var para Ray que hace check de disparo frente a una Wall
+    [Header("GIZMOS")] 
+    [SerializeField] public bool GizmoAutoShoot = true;
+    [SerializeField] public bool GizmoWallShoot = true;
+    [SerializeField] public bool GizmoPush = true;
+    [SerializeField] public bool GizmoPull = true;
+    
+    //Rays
     private const float _rayCheckShootDistance = 1.5f;
+    private const float _rayCheckPushDistance = 0.75f;
+    private const float _rayCheckPullDistance = 7f;
 
     //TODO: Mejorar esto a futuro
 
@@ -63,6 +70,8 @@ public class Player : MonoBehaviour
     public Transform ShootTargetTransform => _shootTarget.transform;
 
     public float RayCheckShootDistance => _rayCheckShootDistance;
+    public float RayCheckPushDistance => _rayCheckPushDistance;
+    public float RayCheckPullDistance => _rayCheckPullDistance;
 
     public float Life
     {
@@ -72,6 +81,9 @@ public class Player : MonoBehaviour
     
     public float Speed => CurrentSpeed();
 
+    public float SpeedPush => _speedPush;
+    public float SpeedPull => _speedPull;
+    
     public float SpeedRotation => CurrentRotation();
 
     public int MaxBandageStock => _maxBandageStock;
@@ -87,12 +99,6 @@ public class Player : MonoBehaviour
     {
         get => _currentPlayerSize;
         set => _currentPlayerSize = value;
-    }
-    
-    public bool IsCollisionGrabObj
-    {
-        get => _isCollisionGrabObj;
-        set => _isCollisionGrabObj = value;
     }
     
     #endregion
@@ -116,7 +122,7 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnStateChange += ChangeState;
         _controllerPlayer.OnGetState += CurrentState;
         _controllerPlayer.OnGetPlayerSize += () => CurrentPlayerSize;
-        _controllerPlayer.IsCollisionGrabObj += () => IsCollisionGrabObj;
+        /*_controllerPlayer.IsPushingObj += () => IsPushingObj;*/
 
         _modelPlayer.CreateBandage += CreateBandage;
 
@@ -136,7 +142,8 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Fall, new SM_Fall(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Drop, new SM_Drop(_modelPlayer, _viewPlayer));
-        _stateMachinePlayer.AddState(PlayerState.Grab, new SM_Grab());
+        _stateMachinePlayer.AddState(PlayerState.Push, new SM_Push(this));
+        _stateMachinePlayer.AddState(PlayerState.Pull, new SM_Pull(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage());
         _stateMachinePlayer.AddState(PlayerState.Win, new SM_Win(this));
         _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead());
@@ -224,15 +231,14 @@ public class Player : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("KillPlane"))
-        {
-            Debug.Log("Player murio por killPlane");
             levelManager.OnPlayerDeath?.Invoke();
-        }
     }
 
     void OnDrawGizmos()
     {
         #region Auto Apunte Boton
+        if (GizmoAutoShoot)
+        {
             Vector3[] origins =
             {
                 _shootTarget.transform.position + transform.right * 0.75f,
@@ -250,25 +256,72 @@ public class Player : MonoBehaviour
                     Gizmos.DrawSphere(hit.point, 0.1f);
                 }
             }
+        }
         #endregion     
         
         #region Evitar disparar/drop cerca de Wall
-        if (_modelPlayer != null)
-            Gizmos.color = _modelPlayer.IsTouchingWall() ? Color.red : Color.green;
-        else
-            Gizmos.color = Color.black;
+        if (GizmoWallShoot)
+        {
+            if (_modelPlayer != null)
+                Gizmos.color = _modelPlayer.IsTouchingWall() ? Color.red : Color.green;
+            else
+                Gizmos.color = Color.black;
+            
+            var _rayCheckShootPos = new Vector3(transform.position.x,
+                _shootTarget.transform.position.y,
+                transform.position.z);
+            
+            
+            // Solo detectar la capa "Wall"
+            int wallLayer = LayerMask.NameToLayer("Wall");
+            int layerMaskWall = 1 << wallLayer;
+            
+            Gizmos.DrawRay(_rayCheckShootPos, transform.forward * _rayCheckShootDistance);
+            Gizmos.DrawSphere(_rayCheckShootPos + transform.forward * _rayCheckShootDistance, 0.1f);
+        }
+        #endregion
         
-        var _rayCheckShootPos = new Vector3(transform.position.x,
-            _shootTarget.transform.position.y,
-            transform.position.z);
+        #region Check Push Box
+        if (GizmoPush)
+        {
+            if (_modelPlayer != null)
+                Gizmos.color = _modelPlayer.CanPushBox() ? Color.red : Color.cyan;
+            else
+                Gizmos.color = Color.black;
+            
+            var _rayCheckPushPos = new Vector3(transform.position.x,
+                _shootTarget.transform.position.y,
+                transform.position.z);
+            
+            Gizmos.DrawRay(_rayCheckPushPos, transform.forward * _rayCheckPushDistance);
+            Gizmos.DrawSphere(_rayCheckPushPos + transform.forward * _rayCheckPushDistance, 0.1f);
+        }
+        #endregion
         
-        
-        // Solo detectar la capa "Wall"
-        int wallLayer = LayerMask.NameToLayer("Wall");
-        int layerMaskWall = 1 << wallLayer;
-        
-        Gizmos.DrawRay(_rayCheckShootPos, transform.forward * _rayCheckShootDistance);
-        Gizmos.DrawSphere(_rayCheckShootPos + transform.forward * _rayCheckShootDistance, 0.1f);
+        #region Check Pull Box
+        if (GizmoPull)
+        {
+            var _rayCheckPullPos = new Vector3(transform.position.x,
+                _shootTarget.transform.position.y,
+                transform.position.z);
+            
+            RaycastHit hit;
+
+            if (Physics.Raycast(_rayCheckPullPos, transform.forward, out hit, _rayCheckPullDistance))
+            {
+                if (_modelPlayer != null)
+                    Gizmos.color = _modelPlayer.CanPullBox() ? Color.yellow : Color.blue;
+                
+                Gizmos.DrawLine(_rayCheckPullPos, hit.point);
+                Gizmos.DrawSphere(hit.point, 0.1f);
+            }
+            else
+            {
+                Gizmos.color = Color.black;
+                Gizmos.DrawRay(_rayCheckPullPos, transform.forward * _rayCheckPullDistance);
+                Gizmos.DrawSphere(_rayCheckPullPos + transform.forward * _rayCheckPullDistance, 0.1f);
+            }
+        }
         #endregion
     }
 }
@@ -288,7 +341,8 @@ public enum PlayerState
     Head,
     Hook,
     Fall,
-    Grab,
+    Push,
+    Pull,
     Drop,
     Damage,
     Win,

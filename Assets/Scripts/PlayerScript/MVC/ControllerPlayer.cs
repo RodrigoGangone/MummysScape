@@ -8,10 +8,10 @@ public class ControllerPlayer
 
     private float _rotationInput;
     private float _moveInput;
-    
+
     //Actions
     public event Func<bool> OnGetCanShoot;
-    public event Func<bool> IsCollisionGrabObj; 
+    /*public event Func<bool> IsPushingObj;*/
     public event Action<PlayerState> OnStateChange = delegate { };
     public event Func<string> OnGetState = () => "ERROR OnGetState (Controller Player)";
     public event Func<PlayerSize> OnGetPlayerSize;
@@ -23,29 +23,31 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
-        if (CanWalkState() && IsWalking())
+        Debug.Log("STATE: " + OnGetState.Invoke());
+        
+        if (CanWalkState())
         {
             OnStateChange(PlayerState.Walk);
         }
 
-        if (CanIdleState() && !IsWalking())
+        if (CanPushState())
+        {
+            OnStateChange(PlayerState.Push);
+        }
+
+        if (CanIdleState())
         {
             OnStateChange(PlayerState.Idle);
         }
 
         if (Input.GetKey(KeyCode.Space))
         {
-            Debug.Log("CanGrabState() =" + CanGrabState());
-            Debug.Log("CanHookState() =" + CanHookState());
-            
-            if (PlayerSize.Normal.Equals(OnGetPlayerSize.Invoke()) && CanGrabState())
+            if (CanPullState())
             {
-                Debug.Log("ENTRANDO AL GRAB");
-                OnStateChange(PlayerState.Grab);
+                OnStateChange(PlayerState.Pull);
             }
-            else if (PlayerSize.Small.Equals(OnGetPlayerSize.Invoke()) && CanHookState())
+            else if (CanHookState())
             {
-                Debug.Log("ENTRANDO AL HOOK");
                 OnStateChange(PlayerState.Hook);
             }
         }
@@ -58,7 +60,7 @@ public class ControllerPlayer
 
         if (CanDropState() && !_model.IsTouchingWall() && Input.GetKeyDown(KeyCode.Q))
         {
-            if (OnGetCanShoot.Invoke()) 
+            if (OnGetCanShoot.Invoke())
                 OnStateChange(PlayerState.Drop);
         }
 
@@ -79,35 +81,78 @@ public class ControllerPlayer
 
     private bool CanIdleState()
     {
-        return OnGetState?.Invoke() switch
-        {
-            "SM_Idle" => false, // se puede borrar porque no se pisa//
-            "SM_Shoot" => true,
-            "SM_Walk" => true,
-            "SM_Hook" => false,
-            "SM_Fall" => true, // Averiguar cuando toca el suelo para pasarlo a idle
-            "SM_Grab" => true,
-            "SM_Damage" => true,
-            "SM_Win" => false,
-            "SM_Dead" => false,
-            "No hay estado" => true,
-        };
+        return !IsWalking() &&
+               !_model.CanPushBox() &&
+               OnGetState?.Invoke() switch
+               {
+                   "SM_Idle" => false, // se puede borrar porque no se pisa//
+                   "SM_Shoot" => true,
+                   "SM_Walk" => true,
+                   "SM_Hook" => false,
+                   "SM_Fall" => true, // Averiguar cuando toca el suelo para pasarlo a idle
+                   "SM_Push" => true,
+                   "SM_Pull" => true,
+                   "SM_Damage" => true,
+                   "SM_Win" => false,
+                   "SM_Dead" => false,
+                   "No hay estado" => true,
+               };
     }
 
     private bool CanWalkState()
     {
-        return OnGetState?.Invoke() switch
-        {
-            "SM_Idle" => true,
-            "SM_Shoot" => false,
-            "SM_Walk" => false, // se puede borrar porque no se pisa//
-            "SM_Hook" => false,
-            "SM_Fall" => false, //Averiguar cuando toca el suelo para cambiar a idle o walk
-            "SM_Grab" => true,
-            "SM_Damage" => false,
-            "SM_Win" => false,
-            "SM_Dead" => false,
-        };
+        return IsWalking() &&
+               !_model.CanPushBox() &&
+               OnGetState?.Invoke() switch
+               {
+                   "SM_Idle" => true,
+                   "SM_Shoot" => false,
+                   "SM_Walk" => false, // se puede borrar porque no se pisa//
+                   "SM_Hook" => false,
+                   "SM_Fall" => false, //Averiguar cuando toca el suelo para cambiar a idle o walk
+                   "SM_Push" => true,
+                   "SM_Pull" => true,
+                   "SM_Damage" => false,
+                   "SM_Win" => false,
+                   "SM_Dead" => false,
+               };
+    }
+
+    private bool CanPushState()
+    {
+        return _model.CanPushBox() &&
+               OnGetState?.Invoke() switch
+               {
+                   "SM_Idle" => true,
+                   "SM_Shoot" => false,
+                   "SM_Walk" => true,
+                   "SM_Hook" => false,
+                   "SM_Fall" => false,
+                   "SM_Push" => false,
+                   "SM_Pull" => false,
+                   "SM_Damage" => false,
+                   "SM_Win" => false,
+                   "SM_Dead" => false,
+               };
+    }
+    
+    private bool CanPullState()
+    {
+        return PlayerSize.Normal.Equals(OnGetPlayerSize.Invoke()) &&
+               _model.CanPullBox() &&
+               OnGetState?.Invoke() switch
+               {
+                   "SM_Idle" => true,
+                   "SM_Shoot" => false,
+                   "SM_Walk" => true,
+                   "SM_Hook" => false,
+                   "SM_Fall" => false,
+                   "SM_Push" => false,
+                   "SM_Pull" => false,
+                   "SM_Damage" => false,
+                   "SM_Win" => false,
+                   "SM_Dead" => false,
+               };
     }
 
     private bool CanShootState()
@@ -119,7 +164,8 @@ public class ControllerPlayer
             "SM_Walk" => true,
             "SM_Hook" => true,
             "SM_Fall" => true,
-            "SM_Grab" => false,
+            "SM_Push" => false,
+            "SM_Pull" => false,
             "SM_Damage" => false,
             "SM_Win" => false,
             "SM_Dead" => false,
@@ -129,18 +175,21 @@ public class ControllerPlayer
 
     private bool CanHookState()
     {
-        return _model.detectionBeetle.currentHook != null && OnGetState?.Invoke() switch
-        {
-            "SM_Idle" => true,
-            "SM_Shoot" => true,
-            "SM_Walk" => true,
-            "SM_Hook" => false,
-            "SM_Fall" => true,
-            "SM_Grab" => false,
-            "SM_Damage" => false,
-            "SM_Win" => false,
-            "SM_Dead" => false,
-        };
+        return PlayerSize.Small.Equals(OnGetPlayerSize.Invoke()) &&
+               _model.detectionBeetle.currentHook != null &&
+               OnGetState?.Invoke() switch
+               {
+                   "SM_Idle" => true,
+                   "SM_Shoot" => true,
+                   "SM_Walk" => true,
+                   "SM_Hook" => false,
+                   "SM_Fall" => true,
+                   "SM_Push" => false,
+                   "SM_Pull" => false,
+                   "SM_Damage" => false,
+                   "SM_Win" => false,
+                   "SM_Dead" => false,
+               };
     }
 
     private bool CanDropState()
@@ -152,27 +201,12 @@ public class ControllerPlayer
             "SM_Walk" => false,
             "SM_Hook" => false,
             "SM_Fall" => false,
-            "SM_Grab" => true, //Ver que hacer con el grab ya que la animacion seria otra
+            "SM_Push" => false,
+            "SM_Pull" => true,
             "SM_Drop" => false,
             "SM_Damage" => false,
             "SM_Win" => false,
             "SM_Dead" => false,
         };
-    }
-    
-    private bool CanGrabState()
-    {
-        return IsCollisionGrabObj() && OnGetState?.Invoke() switch
-        {
-            "SM_Idle" => true,
-            "SM_Shoot" => false,
-            "SM_Walk" => true,
-            "SM_Hook" => false,
-            "SM_Fall" => false,
-            "SM_Grab" => false,
-            "SM_Damage" => false,
-            "SM_Win" => false,
-            "SM_Dead" => false,
-        }; 
     }
 }
