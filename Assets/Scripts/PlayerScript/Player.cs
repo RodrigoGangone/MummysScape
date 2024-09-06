@@ -32,8 +32,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speedRotationOriginal;
     [SerializeField] private float _speed;
     [SerializeField] private float _speedRotation;
-    [SerializeField] private float _speedPush;
-    [SerializeField] private float _speedPull;
+    [SerializeField] private float _speedPush = 0.5f;
+    [SerializeField] private float _speedPull = 0.5f;
 
     [Header("BANDAGE")] [SerializeField] public GameObject _prefabBandage;
     [SerializeField] private int _maxBandageStock = 2;
