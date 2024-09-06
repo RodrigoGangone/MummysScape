@@ -42,8 +42,8 @@ public class ViewPlayer
     }
     public void SetValueMaterial(float value)
     {
-        _bodyMat.SetFloat("_CutoffLight", value);
-        _headMat.SetFloat("_CutoffLight", value);
+        _bodyMat.SetFloat("_Value", value);
+        _headMat.SetFloat("_Value", value);
         _fireMat.SetFloat("_Dissolve_Distortion", value);
     }
 
