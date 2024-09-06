@@ -75,6 +75,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1631081254295895602}
   - component: {fileID: 3191671548854698303}
+  - component: {fileID: 3381694566011205790}
   - component: {fileID: 3250867667693339950}
   - component: {fileID: 1131965902966872380}
   m_Layer: 0
@@ -142,6 +143,18 @@ MonoBehaviour:
   waypoints:
   - {fileID: 1348086747530271076}
   - {fileID: 5471147903896879434}
+--- !u!114 &3381694566011205790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4517651014775981341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25a159c6e0c776d418fcc3847fa51334, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!65 &3250867667693339950
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -161,8 +174,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.5880885, y: 5.7123737, z: 3.5902221}
-  m_Center: {x: 0.0012373924, y: -2.8609924, z: 0.03912723}
+  m_Size: {x: 3.5880885, y: 0.2, z: 3.5902221}
+  m_Center: {x: 0.0012373924, y: -0.1, z: 0.03912723}
 --- !u!65 &1131965902966872380
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -182,8 +195,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.5887, y: 0.06593996, z: 3.5902443}
-  m_Center: {x: 0.00041759014, y: 0.02959314, z: 0.03955269}
+  m_Size: {x: 3.5887, y: 0.15338233, z: 3.5902443}
+  m_Center: {x: 0.00041759014, y: -0.20169117, z: 0.03955269}
 --- !u!1 &6870700698081691737
 GameObject:
   m_ObjectHideFlags: 0
