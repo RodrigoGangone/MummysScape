@@ -29,15 +29,14 @@ public class SM_Push : State
 
     public override void OnUpdate()
     {
-        //_view.PLAY_ANIM("Push", IsPushing());
-        
+
     }
 
     public override void OnFixedUpdate()
     {
         _model.MovePush(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
     }
-    
+
     private bool IsPushing()
     {
         return Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0;

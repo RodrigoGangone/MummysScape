@@ -40,6 +40,7 @@ public class ViewPlayer
         _bodyMat = bodySkinnedMesh.material;
         _headMat = headSkinnedMesh.material;
     }
+
     public void SetValueMaterial(float value)
     {
         _bodyMat.SetFloat("_Value", value);
@@ -89,6 +90,12 @@ public class ViewPlayer
     {
         bandageHook.SetPosition(0, _player.handTarget.transform.position);
         bandageHook.SetPosition(1, _player._modelPlayer.hookBeetle.transform.position);
+    }
+
+    public void DrawBandagePull()
+    {
+        bandageHook.SetPosition(0, _player.handTarget.transform.position);
+        bandageHook.SetPosition(1, _player._modelPlayer.CurrentBox.position);
     }
 
     public void StateRigBuilder(bool act)
