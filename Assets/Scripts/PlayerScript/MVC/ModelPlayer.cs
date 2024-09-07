@@ -84,6 +84,8 @@ public class ModelPlayer
 
     public void MovePush(float moveHorizontal, float moveVertical)
     {
+        if (_currentBox == null) return;
+
         Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z)
             .normalized;
         Vector3 right = Quaternion.Euler(0, 90, 0) * forward;
@@ -102,18 +104,16 @@ public class ModelPlayer
 
         _player.transform.position += movement;
 
-        if (_currentBox != null)
-        {
-            _currentBox.transform.position += _dirToPush * (_player.SpeedPush * Time.deltaTime);
-        }
+        if (!_currentBox.GetComponent<PushPullObject>().BoxInFloor()) return;
+        _currentBox.transform.position += _dirToPush * (_player.SpeedPush * Time.deltaTime);
     }
-    
+
     public void MovePull()
     {
         // Obtiene la dirección hacia el jugador (desde la caja)
         Vector3 playerPosition = _player.transform.position;
         Vector3 boxPosition = _currentBox.transform.position;
-    
+
         // Direccion desde el jugador hacia la caja
         Vector3 directionToBox = (boxPosition - playerPosition).normalized;
 
@@ -127,14 +127,14 @@ public class ModelPlayer
             _player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation,
                 Time.deltaTime * _player.SpeedRotation);
         }
-    
+
         // Direccion de la caja hacia el jugador
         Vector3 directionToPlayer = (playerPosition - boxPosition).normalized;
-    
+
         // Mover la caja hacia el jugador
         _currentBox.transform.position += directionToPlayer * (_player.SpeedPull * Time.deltaTime);
     }
-    
+
     public bool IsBoxCloseToPlayer(float maxDistance = 2f)
     {
         Vector3 playerPosition = _player.transform.position;
@@ -286,7 +286,7 @@ public class ModelPlayer
         _dirToPush = Vector3.zero;
         return false;
     }
-    
+
     public bool CanPullBox()
     {
         var rayOrigin = new Vector3(
@@ -306,7 +306,7 @@ public class ModelPlayer
             //TODO: mejorar esto o morir en el intento
             if (_currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast() != null &&
                 _currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast()
-                .Equals(hit.collider.gameObject.name))
+                    .Equals(hit.collider.gameObject.name))
             {
                 _dirToPull = hit.collider.gameObject.name switch
                 {

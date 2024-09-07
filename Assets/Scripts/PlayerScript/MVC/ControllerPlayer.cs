@@ -120,7 +120,8 @@ public class ControllerPlayer
 
     private bool CanPushState()
     {
-        return _model.CanPushBox() &&
+        return PlayerSize.Normal.Equals(OnGetPlayerSize.Invoke()) &&
+               _model.CanPushBox() &&
                OnGetState?.Invoke() switch
                {
                    "SM_Idle" => true,
