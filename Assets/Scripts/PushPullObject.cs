@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
+using static Utils;
 
 public class PushPullObject : MonoBehaviour
 {
@@ -46,7 +46,7 @@ public class PushPullObject : MonoBehaviour
         bool hitResult3 = Physics.Raycast(corner3, Vector3.down, out hit3, raycastLength, floorLayerMask);
         bool hitResult4 = Physics.Raycast(corner4, Vector3.down, out hit4, raycastLength, floorLayerMask);
 
-        // Imprimir el nombre del objeto con el que hitea cada raycast, si hay colisión
+        /*// Imprimir el nombre del objeto con el que hitea cada raycast, si hay colisión
         if (hitResult1)
         {
             Debug.Log($"Corner 1 hit: {hit1.collider.gameObject.name}");
@@ -65,7 +65,7 @@ public class PushPullObject : MonoBehaviour
         if (hitResult4)
         {
             Debug.Log($"Corner 4 hit: {hit4.collider.gameObject.name}");
-        }
+        }*/
 
         // Retornar true solo si todos los raycasts hitean con algo
         return hitResult1 || hitResult2 || hitResult3 || hitResult4;
@@ -84,7 +84,7 @@ public class PushPullObject : MonoBehaviour
         };
 
         // Nombres de las direcciones correspondientes
-        string[] directionNames = { "Forward", "Backward", "Right", "Left" };
+        string[] directionNames = { BOX_SIDE_FORWARD, BOX_SIDE_BACKWARD, BOX_SIDE_RIGHT, BOX_SIDE_LEFT };
 
         // Lanza un raycast desde cada dirección y verifica la colisión
         for (int i = 0; i < rayDirections.Length; i++)
@@ -109,7 +109,6 @@ public class PushPullObject : MonoBehaviour
         #region Check Pull
         Gizmos.color = Color.red;
 
-        // Visualización de raycasts en todas las direcciones
         Gizmos.DrawRay(transform.position, transform.forward * rayDistanceToPull); // Forward
         Gizmos.DrawRay(transform.position, -transform.forward * rayDistanceToPull); // Backward
         Gizmos.DrawRay(transform.position, transform.right * rayDistanceToPull); // Right

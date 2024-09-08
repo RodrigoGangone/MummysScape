@@ -35,9 +35,12 @@ public class SM_Push : State
 
     public override void OnUpdate()
     {
+        if (_model.CurrentBox == null || !_model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor()) 
+            StateMachine.ChangeState(PlayerState.Idle);
+        
         // Mov de la box en update xq es por transform
-        if (!_model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor()) return;
-        _model.CurrentBox.transform.position += _model.DirToPush * (_player.SpeedPush * Time.deltaTime);
+        if (_model.CurrentBox != null)
+            _model.CurrentBox.transform.position += _model.DirToPush * (_player.SpeedPush * Time.deltaTime);
     }
 
     public override void OnFixedUpdate()

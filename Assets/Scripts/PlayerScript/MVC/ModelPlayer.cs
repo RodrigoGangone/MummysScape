@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using static Utils;
 
 public class ModelPlayer
 {
@@ -21,16 +22,7 @@ public class ModelPlayer
 
     public Transform CurrentBox => _currentBox;
     public Vector3 DirToPush => _dirToPush;
-
-    //PICK UP
-    private LayerMask _pickableLayer = LayerMask.GetMask("Pickable");
-
-    public bool hasObject { get; private set; }
-
-    private Transform _objSelected;
-
-    private float _objRotation = 10f;
-    private float _objSpeed = 5f;
+    
 
     public Action SizeModify;
     public Func<Transform, GameObject> CreateBandage;
@@ -242,13 +234,13 @@ public class ModelPlayer
             // Obtengo a la caja entera
             _currentBox = hit.collider.transform.parent;
 
-            // Mueve al jugador y la caja en la direcc opuesta
+            // Dir opuesta para mov de caja
             _dirToPush = hit.collider.gameObject.name switch
             {
-                "Forward" => Vector3.back,
-                "Backward" => Vector3.forward,
-                "Left" => Vector3.right,
-                "Right" => Vector3.left,
+                BOX_SIDE_FORWARD => Vector3.back,
+                BOX_SIDE_BACKWARD => Vector3.forward,
+                BOX_SIDE_LEFT => Vector3.right,
+                BOX_SIDE_RIGHT => Vector3.left,
                 _ => _dirToPush
             };
 
@@ -283,10 +275,10 @@ public class ModelPlayer
             {
                 _dirToPull = hit.collider.gameObject.name switch
                 {
-                    "Forward" => Vector3.forward,
-                    "Backward" => Vector3.back,
-                    "Left" => Vector3.left,
-                    "Right" => Vector3.right,
+                    BOX_SIDE_FORWARD => Vector3.forward,
+                    BOX_SIDE_BACKWARD => Vector3.back,
+                    BOX_SIDE_LEFT => Vector3.left,
+                    BOX_SIDE_RIGHT => Vector3.right,
                     _ => _dirToPull
                 };
 
@@ -390,8 +382,8 @@ public class ModelPlayer
     
     public bool CheckGround()
     {
-        Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.05f);
+        Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.1f);
 
-        return Physics.Raycast(_player.transform.position, Vector3.down, out _, 0.05f);
+        return Physics.Raycast(_player.transform.position, Vector3.down, out _, 0.1f);
     }
 }
