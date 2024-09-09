@@ -20,11 +20,6 @@ public class PushPullObject : MonoBehaviour
         floorLayerMask = LayerMask.GetMask("Floor");
     }
 
-    private void Update()
-    {
-        //BoxInFloor();
-    }
-
     public bool BoxInFloor()
     {
         // Obtener las esquinas superiores de la caja
@@ -52,7 +47,6 @@ public class PushPullObject : MonoBehaviour
         // Retornar true solo si todos los raycasts hitean con algo
         return hitResult1 || hitResult2 || hitResult3 || hitResult4;
     }
-
 
     public String CheckPlayerRaycast()
     {
