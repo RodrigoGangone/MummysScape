@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static Utils;
 
 public class ControllerPlayer
 {
@@ -11,7 +12,6 @@ public class ControllerPlayer
 
     //Actions
     public event Func<bool> OnGetCanShoot;
-    /*public event Func<bool> IsPushingObj;*/
     public event Action<PlayerState> OnStateChange = delegate { };
     public event Func<string> OnGetState = () => "ERROR OnGetState (Controller Player)";
     public event Func<PlayerSize> OnGetPlayerSize;
@@ -23,8 +23,13 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
-        Debug.Log("STATE: " + OnGetState.Invoke());
-        
+        if (OnGetState.Invoke().Equals(STATE_PUSH))
+        {
+            Debug.Log($"STATE: {OnGetState.Invoke()} \n" +
+                      $"Estoy colisionando con:" );
+            
+        }
+
         if (CanWalkState())
         {
             OnStateChange(PlayerState.Walk);
@@ -52,13 +57,13 @@ public class ControllerPlayer
             }
         }
 
-        if (CanShootState() && !_model.IsTouchingWall() && Input.GetKeyDown(KeyCode.E))
+        if (CanShootState() && Input.GetKeyDown(KeyCode.E))
         {
             if (OnGetCanShoot.Invoke())
                 OnStateChange(PlayerState.Shoot);
         }
 
-        if (CanDropState() && !_model.IsTouchingWall() && Input.GetKeyDown(KeyCode.Q))
+        if (CanDropState() && Input.GetKeyDown(KeyCode.Q))
         {
             if (OnGetCanShoot.Invoke())
                 OnStateChange(PlayerState.Drop);
@@ -70,9 +75,7 @@ public class ControllerPlayer
         }
     }
 
-    public void ControllerFixedUpdate()
-    {
-    }
+    public void ControllerFixedUpdate() {}
 
     private bool IsWalking()
     {
@@ -85,17 +88,14 @@ public class ControllerPlayer
                !_model.CanPushBox() &&
                OnGetState?.Invoke() switch
                {
-                   "SM_Idle" => false, // se puede borrar porque no se pisa//
-                   "SM_Shoot" => true,
-                   "SM_Walk" => true,
-                   "SM_Hook" => false,
-                   "SM_Fall" => true, // Averiguar cuando toca el suelo para pasarlo a idle
-                   "SM_Push" => true,
-                   "SM_Pull" => true,
-                   "SM_Damage" => true,
-                   "SM_Win" => false,
-                   "SM_Dead" => false,
-                   "No hay estado" => true,
+                   STATE_SHOOT => true,
+                   STATE_WALK => true,
+                   STATE_FALL => true, // Averiguar cuando toca el suelo para pasarlo a idle
+                   STATE_PUSH => true,
+                   STATE_PULL => true,
+                   STATE_DAMAGE => true,
+                   NO_STATE => true,
+                   _ => false
                };
     }
 
@@ -105,16 +105,10 @@ public class ControllerPlayer
                !_model.CanPushBox() &&
                OnGetState?.Invoke() switch
                {
-                   "SM_Idle" => true,
-                   "SM_Shoot" => false,
-                   "SM_Walk" => false, // se puede borrar porque no se pisa//
-                   "SM_Hook" => false,
-                   "SM_Fall" => false, //Averiguar cuando toca el suelo para cambiar a idle o walk
-                   "SM_Push" => true,
-                   "SM_Pull" => true,
-                   "SM_Damage" => false,
-                   "SM_Win" => false,
-                   "SM_Dead" => false,
+                   STATE_IDLE => true,
+                   STATE_PUSH => true,
+                   STATE_PULL => true,
+                   _ => false
                };
     }
 
@@ -124,54 +118,36 @@ public class ControllerPlayer
                _model.CanPushBox() &&
                OnGetState?.Invoke() switch
                {
-                   "SM_Idle" => true,
-                   "SM_Shoot" => false,
-                   "SM_Walk" => true,
-                   "SM_Hook" => false,
-                   "SM_Fall" => false,
-                   "SM_Push" => false,
-                   "SM_Pull" => false,
-                   "SM_Damage" => false,
-                   "SM_Win" => false,
-                   "SM_Dead" => false,
+                   STATE_IDLE => true,
+                   STATE_WALK => true,
+                   _ => false
                };
     }
-    
+
     private bool CanPullState()
     {
         return PlayerSize.Normal.Equals(OnGetPlayerSize.Invoke()) &&
                _model.CanPullBox() &&
                OnGetState?.Invoke() switch
                {
-                   "SM_Idle" => true,
-                   "SM_Shoot" => false,
-                   "SM_Walk" => true,
-                   "SM_Hook" => false,
-                   "SM_Fall" => false,
-                   "SM_Push" => false,
-                   "SM_Pull" => false,
-                   "SM_Damage" => false,
-                   "SM_Win" => false,
-                   "SM_Dead" => false,
+                   STATE_IDLE => true,
+                   STATE_WALK => true,
+                   _ => false
                };
     }
 
     private bool CanShootState()
     {
-        return OnGetState?.Invoke() switch
-        {
-            "SM_Idle" => true,
-            "SM_Shoot" => false, // se puede borrar porque no se pisa//
-            "SM_Walk" => true,
-            "SM_Hook" => true,
-            "SM_Fall" => true,
-            "SM_Push" => false,
-            "SM_Pull" => false,
-            "SM_Damage" => false,
-            "SM_Win" => false,
-            "SM_Dead" => false,
-            "No hay estado" => true,
-        };
+        return !_model.IsTouchingWall() &&
+               OnGetState?.Invoke() switch
+               {
+                   STATE_IDLE => true,
+                   STATE_WALK => true,
+                   STATE_HOOK => true,
+                   STATE_FALL => true,
+                   NO_STATE => true,
+                   _ => false
+               };
     }
 
     private bool CanHookState()
@@ -180,34 +156,22 @@ public class ControllerPlayer
                _model.detectionBeetle.currentHook != null &&
                OnGetState?.Invoke() switch
                {
-                   "SM_Idle" => true,
-                   "SM_Shoot" => true,
-                   "SM_Walk" => true,
-                   "SM_Hook" => false,
-                   "SM_Fall" => true,
-                   "SM_Push" => false,
-                   "SM_Pull" => false,
-                   "SM_Damage" => false,
-                   "SM_Win" => false,
-                   "SM_Dead" => false,
+                   STATE_IDLE => true,
+                   STATE_SHOOT => true,
+                   STATE_WALK => true,
+                   STATE_FALL => true,
+                   _ => false
                };
     }
 
     private bool CanDropState()
     {
-        return OnGetState?.Invoke() switch
-        {
-            "SM_Idle" => true,
-            "SM_Shoot" => false,
-            "SM_Walk" => false,
-            "SM_Hook" => false,
-            "SM_Fall" => false,
-            "SM_Push" => false,
-            "SM_Pull" => true,
-            "SM_Drop" => false,
-            "SM_Damage" => false,
-            "SM_Win" => false,
-            "SM_Dead" => false,
-        };
+        return !_model.IsTouchingWall() &&
+               OnGetState?.Invoke() switch
+               {
+                   STATE_IDLE => true,
+                   STATE_PULL => true,
+                   _ => false
+               };
     }
 }
