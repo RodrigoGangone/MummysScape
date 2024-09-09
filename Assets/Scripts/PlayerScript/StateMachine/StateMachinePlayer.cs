@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using static Utils;
 
 public class StateMachinePlayer : MonoBehaviour
 {
@@ -33,7 +34,7 @@ public class StateMachinePlayer : MonoBehaviour
 
     public String getCurrentState()
     {
-        return (_currentState != null) ? _currentState.ToString() : "No hay estado";
+        return (_currentState != null) ? _currentState.ToString() : NO_STATE;
     }
 
     public void ChangeState(Enum name)

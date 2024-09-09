@@ -4,25 +4,31 @@ using UnityEngine;
 
 public class SM_Fall : State
 {
+    private Player _player;
     private ModelPlayer _model;
     private ViewPlayer _view;
+    
+    private float _speed;
+    private float _speedRotation;
 
-    public SM_Fall(ModelPlayer model, ViewPlayer view)
+    public SM_Fall(Player player)
     {
-        _model = model;
-        _view = view;
+        _player = player;
+        _model = _player._modelPlayer;
+        _view = _player._viewPlayer;
+        
+        _speed = _player.Speed;
+        _speedRotation = _player.SpeedRotation;
     }
 
     public override void OnEnter()
     {
-        Debug.Log("ON ENTER FALL");
         _view.PLAY_ANIM("Fall", true);
     }
 
     public override void OnExit()
     {
         _view.PLAY_ANIM("Fall", false);
-        Debug.Log("ONEXIT STATE: FALL");
     }
 
     public override void OnUpdate()
@@ -34,6 +40,8 @@ public class SM_Fall : State
     public override void OnFixedUpdate()
     {
         _model.Move(Input.GetAxisRaw("Horizontal"),
-            Input.GetAxisRaw("Vertical"));
+            Input.GetAxisRaw("Vertical"),
+            _speed,
+            _speedRotation);
     }
 }
