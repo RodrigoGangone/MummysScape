@@ -39,7 +39,7 @@ public class SM_Push : State
             StateMachine.ChangeState(PlayerState.Idle);
         
         // Mov de la box en update xq es por transform
-        if (_model.CurrentBox != null)
+        if (_model.CurrentBox != null && _model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor())
             _model.CurrentBox.transform.position += _model.DirToPush * (_player.SpeedPush * Time.deltaTime);
     }
 

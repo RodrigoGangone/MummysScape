@@ -241,7 +241,7 @@ public class ModelPlayer
                 BOX_SIDE_BACKWARD => Vector3.forward,
                 BOX_SIDE_LEFT => Vector3.right,
                 BOX_SIDE_RIGHT => Vector3.left,
-                _ => _dirToPush
+                _ => Vector3.zero
             };
 
             return true;
@@ -279,7 +279,7 @@ public class ModelPlayer
                     BOX_SIDE_BACKWARD => Vector3.back,
                     BOX_SIDE_LEFT => Vector3.left,
                     BOX_SIDE_RIGHT => Vector3.right,
-                    _ => _dirToPull
+                    _ => Vector3.zero
                 };
 
                 return true;
