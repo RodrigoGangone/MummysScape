@@ -338,7 +338,7 @@ public class ModelPlayer
     {
         _player._viewPlayer.PLAY_PUFF();
         SizeModify?.Invoke();
-        //TODO: cambiar el tamaño del capsule collider dependiendo el tamaño
+        
         switch (_player.CurrentBandageStock)
         {
             case 2:
