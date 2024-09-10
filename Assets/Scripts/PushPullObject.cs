@@ -1,48 +1,52 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
+using static Utils;
 
 public class PushPullObject : MonoBehaviour
 {
     private string playerTag = "PlayerFather"; // Tag para el jugador
+    
     public float rayDistanceToPull = 7f; // Distancia de los raycasts
-    public float rayDistanceToPush = 0.1f; // Distancia de los raycasts
-
+    public float raycastLength = 1.75f; // Longitud del raycast
+    
     private BoxCollider _boxCollider;
 
-    public LayerMask playerLayerMask; // Máscara de capa para el jugador
-    [FormerlySerializedAs("groundLayer")] public LayerMask floorLayer;
+    public LayerMask playerLayerMask;
+    private LayerMask floorLayerMask;
 
     private void Start()
     {
         _boxCollider = GetComponent<BoxCollider>();
+        floorLayerMask = LayerMask.GetMask("Floor");
     }
 
     public bool BoxInFloor()
     {
+        // Obtener las esquinas superiores de la caja
         Vector3 extents = _boxCollider.bounds.extents;
+        Vector3 center = _boxCollider.bounds.center;
 
-        Vector3 corner1 =
-            transform.position + new Vector3(extents.x, -extents.y, extents.z); // Esquina delantera derecha
-        Vector3 corner2 =
-            transform.position + new Vector3(-extents.x, -extents.y, extents.z); // Esquina delantera izquierda
-        Vector3 corner3 =
-            transform.position + new Vector3(extents.x, -extents.y, -extents.z); // Esquina trasera derecha
-        Vector3 corner4 =
-            transform.position + new Vector3(-extents.x, -extents.y, -extents.z); // Esquina trasera izquierda
+        // Esquinas superiores
+        Vector3 corner1 = center + new Vector3(extents.x, extents.y, extents.z);
+        Vector3 corner2 = center + new Vector3(-extents.x, extents.y, extents.z);
+        Vector3 corner3 = center + new Vector3(extents.x, extents.y, -extents.z);
+        Vector3 corner4 = center + new Vector3(-extents.x, extents.y, -extents.z);
+        
+        // Realizar raycasts desde las esquinas superiores hacia abajo
+        var hitResult1 = Physics.Raycast(corner1, Vector3.down, out _, raycastLength, floorLayerMask);
+        var hitResult2 = Physics.Raycast(corner2, Vector3.down, out _, raycastLength, floorLayerMask);
+        var hitResult3 = Physics.Raycast(corner3, Vector3.down, out _, raycastLength, floorLayerMask);
+        var hitResult4 = Physics.Raycast(corner4, Vector3.down, out _, raycastLength, floorLayerMask);
+        
+        // Debug para ver los raycasts en la escena
+        Debug.DrawRay(corner1, Vector3.down * raycastLength, hitResult1 ? Color.green : Color.red);
+        Debug.DrawRay(corner2, Vector3.down * raycastLength, hitResult2 ? Color.green : Color.red);
+        Debug.DrawRay(corner3, Vector3.down * raycastLength, hitResult3 ? Color.green : Color.red);
+        Debug.DrawRay(corner4, Vector3.down * raycastLength, hitResult4 ? Color.green : Color.red);
 
-
-        if (Physics.Raycast(corner1, Vector3.down, rayDistanceToPush, floorLayer) &&
-            Physics.Raycast(corner2, Vector3.down, rayDistanceToPush, floorLayer) &&
-            Physics.Raycast(corner3, Vector3.down, rayDistanceToPush, floorLayer) &&
-            Physics.Raycast(corner4, Vector3.down, rayDistanceToPush, floorLayer))
-        {
-            return true;
-        }
-
-        return false;
+        // Retornar true solo si todos los raycasts hitean con algo
+        return hitResult1 || hitResult2 || hitResult3 || hitResult4;
     }
-
 
     public String CheckPlayerRaycast()
     {
@@ -56,7 +60,7 @@ public class PushPullObject : MonoBehaviour
         };
 
         // Nombres de las direcciones correspondientes
-        string[] directionNames = { "Forward", "Backward", "Right", "Left" };
+        string[] directionNames = { BOX_SIDE_FORWARD, BOX_SIDE_BACKWARD, BOX_SIDE_RIGHT, BOX_SIDE_LEFT };
 
         // Lanza un raycast desde cada dirección y verifica la colisión
         for (int i = 0; i < rayDirections.Length; i++)
@@ -78,35 +82,13 @@ public class PushPullObject : MonoBehaviour
     // Método para visualizar los raycasts en la escena (opcional)
     private void OnDrawGizmos()
     {
+        #region Check Pull
         Gizmos.color = Color.red;
 
-        // Visualización de raycasts en todas las direcciones
         Gizmos.DrawRay(transform.position, transform.forward * rayDistanceToPull); // Forward
         Gizmos.DrawRay(transform.position, -transform.forward * rayDistanceToPull); // Backward
         Gizmos.DrawRay(transform.position, transform.right * rayDistanceToPull); // Right
         Gizmos.DrawRay(transform.position, -transform.right * rayDistanceToPull); // Left
-
-        if (_boxCollider == null)
-            _boxCollider = GetComponent<BoxCollider>();
-
-        // Obtén las dimensiones del collider
-        Vector3 extents = _boxCollider.bounds.extents;
-
-        // Calcula las posiciones de las 4 esquinas
-        Vector3 corner1 =
-            transform.position + new Vector3(extents.x, -extents.y, extents.z); // Esquina delantera derecha
-        Vector3 corner2 =
-            transform.position + new Vector3(-extents.x, -extents.y, extents.z); // Esquina delantera izquierda
-        Vector3 corner3 =
-            transform.position + new Vector3(extents.x, -extents.y, -extents.z); // Esquina trasera derecha
-        Vector3 corner4 =
-            transform.position + new Vector3(-extents.x, -extents.y, -extents.z); // Esquina trasera izquierda
-
-        // Dibuja los rayos como líneas en la escena
-        Gizmos.color = Color.blue;
-        Gizmos.DrawLine(corner1, corner1 + Vector3.down * rayDistanceToPush); // Rayo desde la esquina 1
-        Gizmos.DrawLine(corner2, corner2 + Vector3.down * rayDistanceToPush); // Rayo desde la esquina 2
-        Gizmos.DrawLine(corner3, corner3 + Vector3.down * rayDistanceToPush); // Rayo desde la esquina 3
-        Gizmos.DrawLine(corner4, corner4 + Vector3.down * rayDistanceToPush); // Rayo desde la esquina 4
+        #endregion
     }
 }

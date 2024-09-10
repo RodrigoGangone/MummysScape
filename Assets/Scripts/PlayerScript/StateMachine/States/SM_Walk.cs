@@ -2,13 +2,15 @@ using UnityEngine;
 
 public class SM_Walk : State
 {
+    private Player _player;
     private ModelPlayer _model;
     private ViewPlayer _view;
 
-    public SM_Walk(ModelPlayer model, ViewPlayer view)
+    public SM_Walk(Player player)
     {
-        _model = model;
-        _view = view;
+        _player = player;
+        _model = _player._modelPlayer;
+        _view = _player._viewPlayer;
     }
 
     public override void OnEnter()
@@ -32,7 +34,9 @@ public class SM_Walk : State
     {
 
         _model.Move(Input.GetAxisRaw("Horizontal"),
-            Input.GetAxisRaw("Vertical"));
+            Input.GetAxisRaw("Vertical"),
+            _player.Speed,
+            _player.SpeedRotation);
         
         _model.ActivateParticleButtonInView();
     }

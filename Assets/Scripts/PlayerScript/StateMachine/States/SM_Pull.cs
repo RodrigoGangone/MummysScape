@@ -44,9 +44,9 @@ public class SM_Pull : State
 
     public override void OnFixedUpdate()
     {
-        if (!_model.IsBoxCloseToPlayer())
+        if (!_model.IsBoxCloseToPlayer() && _model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor())
             _model.MovePull();
 
-        OnExit();
+        StateMachine.ChangeState(PlayerState.Idle);
     }
 }
