@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using static Utils;
 
 public class ModelPlayer
 {
@@ -12,9 +13,7 @@ public class ModelPlayer
     public DetectionHook detectionBeetle;
     public SpringJoint springJoint;
     public Rigidbody hookBeetle;
-
     public bool isHooking;
-    public bool finishAnimationHook;
 
     //PUSH OBJECT
     private Transform _currentBox;
@@ -22,16 +21,8 @@ public class ModelPlayer
     private Vector3 _dirToPull;
 
     public Transform CurrentBox => _currentBox;
-
-    //PICK UP
-    private LayerMask _pickableLayer = LayerMask.GetMask("Pickable");
-
-    public bool hasObject { get; private set; }
-
-    private Transform _objSelected;
-
-    private float _objRotation = 10f;
-    private float _objSpeed = 5f;
+    public Vector3 DirToPush => _dirToPush;
+    
 
     public Action SizeModify;
     public Func<Transform, GameObject> CreateBandage;
@@ -56,56 +47,30 @@ public class ModelPlayer
         CreateBandage(trans ?? _player.dropTarget);
     }
 
-    public void Move(float moveHorizontal, float moveVertical)
+    public void Move(float moveHorizontal, float moveVertical, float speed, float rotation)
     {
         Vector3 forward =
             new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.transform.forward.z).normalized;
 
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
 
-        Vector3 righMovement = right * (_player.Speed * Time.deltaTime * moveHorizontal);
-        Vector3 upMovement = forward * (_player.Speed * Time.deltaTime * moveVertical);
+        Vector3 righMovement = right * (speed * Time.deltaTime * moveHorizontal);
+        Vector3 upMovement = forward * (speed * Time.deltaTime * moveVertical);
 
         Vector3 heading = (righMovement + upMovement).normalized;
 
         Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
 
-        _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * _player.SpeedRotation));
+        _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * rotation));
 
         _rb.velocity += heading;
 
-        if (Math.Abs(_rb.velocity.x) > _player.Speed || Math.Abs(_rb.velocity.z) > _player.Speed)
+        if (Math.Abs(_rb.velocity.x) > speed || Math.Abs(_rb.velocity.z) > speed)
         {
-            var velocity = Vector3.ClampMagnitude(_rb.velocity, _player.Speed);
+            var velocity = Vector3.ClampMagnitude(_rb.velocity, speed);
             velocity.y = _rb.velocity.y;
             _rb.velocity = velocity;
         }
-    }
-
-    public void MovePush(float moveHorizontal, float moveVertical)
-    {
-        if (_currentBox == null) return;
-
-        Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z)
-            .normalized;
-        Vector3 right = Quaternion.Euler(0, 90, 0) * forward;
-
-        Vector3 rightMovement = right * (_player.SpeedPush * Time.deltaTime * moveHorizontal);
-        Vector3 forwardMovement = forward * (_player.SpeedPush * Time.deltaTime * moveVertical);
-
-        Vector3 movement = rightMovement + forwardMovement;
-
-        if (movement != Vector3.zero)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(movement, Vector3.up);
-            _player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation,
-                Time.deltaTime * _player.SpeedRotation);
-        }
-
-        _player.transform.position += movement;
-
-        if (!_currentBox.GetComponent<PushPullObject>().BoxInFloor()) return;
-        _currentBox.transform.position += _dirToPush * (_player.SpeedPush * Time.deltaTime);
     }
 
     public void MovePull()
@@ -269,14 +234,14 @@ public class ModelPlayer
             // Obtengo a la caja entera
             _currentBox = hit.collider.transform.parent;
 
-            // Mueve al jugador y la caja en la direcc opuesta
+            // Dir opuesta para mov de caja
             _dirToPush = hit.collider.gameObject.name switch
             {
-                "Forward" => Vector3.back,
-                "Backward" => Vector3.forward,
-                "Left" => Vector3.right,
-                "Right" => Vector3.left,
-                _ => _dirToPush
+                BOX_SIDE_FORWARD => Vector3.back,
+                BOX_SIDE_BACKWARD => Vector3.forward,
+                BOX_SIDE_LEFT => Vector3.right,
+                BOX_SIDE_RIGHT => Vector3.left,
+                _ => Vector3.zero
             };
 
             return true;
@@ -310,11 +275,11 @@ public class ModelPlayer
             {
                 _dirToPull = hit.collider.gameObject.name switch
                 {
-                    "Forward" => Vector3.forward,
-                    "Backward" => Vector3.back,
-                    "Left" => Vector3.left,
-                    "Right" => Vector3.right,
-                    _ => _dirToPull
+                    BOX_SIDE_FORWARD => Vector3.forward,
+                    BOX_SIDE_BACKWARD => Vector3.back,
+                    BOX_SIDE_LEFT => Vector3.left,
+                    BOX_SIDE_RIGHT => Vector3.right,
+                    _ => Vector3.zero
                 };
 
                 return true;
@@ -367,15 +332,13 @@ public class ModelPlayer
                 springJoint.damper = 12;
                 break;
         }
-
-        finishAnimationHook = true;
     }
 
     private void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         _player._viewPlayer.PLAY_PUFF();
         SizeModify?.Invoke();
-        //TODO: cambiar el tamaño del capsule collider dependiendo el tamaño
+        
         switch (_player.CurrentBandageStock)
         {
             case 2:
@@ -416,68 +379,11 @@ public class ModelPlayer
         if (_rb.velocity.magnitude > _player.Speed)
             _rb.velocity = _rb.velocity.normalized * _player.Speed;
     }
-
-    #region PickUpItems
-
-    public void PickObject()
-    {
-        Debug.DrawRay(_player.transform.position, _player.transform.forward * 30, Color.green, 0.5f);
-        RaycastHit hit;
-        if (Physics.Raycast(_player.transform.position, _player.transform.forward, out hit, Mathf.Infinity,
-                _pickableLayer))
-        {
-            Debug.Log("Objeto recogido: " + hit.collider.gameObject.name);
-            hasObject = true;
-            _objSelected = hit.transform;
-        }
-    }
-
-    public void MoveObject(float movimientoHorizontal, float movimientoVertical)
-    {
-        Debug.DrawRay(_objSelected.transform.position, _player.transform.position - _objSelected.transform.position,
-            Color.red, 0.5f);
-        RaycastHit hit;
-
-        if (Physics.Raycast(_objSelected.transform.position,
-                _player.transform.position - _objSelected.transform.position, out hit))
-        {
-            if (hit.collider.gameObject.tag != "PlayerFather")
-                DropObject();
-            else
-            {
-                Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0,
-                    _player._cameraTransform.transform.forward.z).normalized;
-
-                Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
-
-                Vector3 righMovement = right * (_objSpeed * Time.deltaTime * movimientoHorizontal);
-                Vector3 upMovement = forward * (_objSpeed * Time.deltaTime * movimientoVertical);
-
-                Vector3 heading = (righMovement + upMovement).normalized;
-
-                Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
-
-                var _rbObj = _objSelected.GetComponent<Rigidbody>();
-                _rbObj.MoveRotation(Quaternion.Lerp(_rbObj.rotation, targetRotation,
-                    Time.deltaTime * _objRotation));
-                _rbObj.MovePosition(_objSelected.transform.position + heading * (_objSpeed * Time.deltaTime));
-            }
-        }
-    }
-
-    public void DropObject()
-    {
-        Debug.Log("Objeto soltado: " + _objSelected.name);
-        hasObject = false;
-        _objSelected = null;
-    }
-
+    
     public bool CheckGround()
     {
-        Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.05f);
+        Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.1f);
 
-        return Physics.Raycast(_player.transform.position, Vector3.down, out _, 0.05f);
+        return Physics.Raycast(_player.transform.position, Vector3.down, out _, 0.1f);
     }
-
-    #endregion
 }
