@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,10 +12,10 @@ public class UIManager : MonoBehaviour
     
     [SerializeField] private Material _HourgalssBandage01;
     [SerializeField] private Material _HourgalssBandage02;
-
-    Coroutine _currentCoroutine;
     
-    int previousBandage = 0;
+    private float targetOffset1;
+    private float targetOffset2;
+    private float fillSpeed = 1f;
 
     void Start()
     {
@@ -26,8 +25,13 @@ public class UIManager : MonoBehaviour
         levelManager = FindObjectOfType<LevelManager>();
         levelManager.OnPlayerWin += Win;
         levelManager.OnPlayerDeath += Lose;
+        
+        UpdateTargetOffsets(); // Inicializar valores correctos
+    }
 
-        StartCoroutine(SetValue(1, _player.CurrentBandageStock));
+    private void Update()
+    {
+        UpdateMaterialOffsets();
     }
 
     public void UISetTimerDeath(float currentTimer, float maxtime)
@@ -37,43 +41,23 @@ public class UIManager : MonoBehaviour
 
     public void UISetShootSlider()
     {
-        if (_currentCoroutine != null)
-        {
-            StopAllCoroutines();
-        }
-        _currentCoroutine = StartCoroutine(SetValue(1, _player.CurrentBandageStock));
+        UpdateTargetOffsets(); // Actualizar valores de offset según las vendas actuales
     }
 
-    IEnumerator SetValue(float time, int currentVandage)
+    private void UpdateTargetOffsets()
     {
-        int starlerp = previousBandage;
-        int endlerp = currentVandage;
+        int currentBandage = _player.CurrentBandageStock;
 
-        float tick = 0f;
-        float value = starlerp;
-
-        while (value != endlerp)
-        {
-            value = Mathf.Lerp(starlerp, endlerp, tick);
-
-            _HourgalssBandage01.SetFloat("_Offset", value);
-            _HourgalssBandage02.SetFloat("_Offset", value);
-            tick += Time.deltaTime / time;
-            yield return null;
-        }
-
-        //if (endlerp != 0)
-        //    SetMaterialUI(0);
-
-        previousBandage = endlerp;
+        targetOffset1 = currentBandage;
+        targetOffset2 = currentBandage;
     }
 
-    //public void SetMaterialUI(float vel)
-    //{
-    //    _UIMaterialFill.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
-    //    _UIMaterialHandler.SetFloat("_Velocity", _player.CurrentBandageStock == 0 ? Mathf.Lerp(0, 50, vel * 0.05f) : 0);
-    //}
-
+    private void UpdateMaterialOffsets()
+    {
+        _HourgalssBandage01.SetFloat("_Offset", Mathf.MoveTowards(_HourgalssBandage01.GetFloat("_Offset"), targetOffset1, fillSpeed * Time.deltaTime));
+        _HourgalssBandage02.SetFloat("_Offset", Mathf.MoveTowards(_HourgalssBandage02.GetFloat("_Offset"), targetOffset2, fillSpeed * Time.deltaTime));
+    }
+    
     public void UISetCollectibleCount(int count)
     {
         switch (count)
