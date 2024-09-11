@@ -51,6 +51,7 @@ public class Player : MonoBehaviour
     [Header("GIZMOS")] 
     [SerializeField] public bool GizmoAutoShoot = true;
     [SerializeField] public bool GizmoWallShoot = true;
+    [SerializeField] public bool GizmoWallDrop = true;
     [SerializeField] public bool GizmoPush = true;
     [SerializeField] public bool GizmoPull = true;
     
@@ -229,6 +230,10 @@ public class Player : MonoBehaviour
         if (other.CompareTag("KillPlane"))
             levelManager.OnPlayerDeath?.Invoke();
     }
+    
+    public Vector3 boxHalfExtents = new Vector3(0.5f, 0.75f, 0.75f); // Tamaño de la caja (medio tamaño)
+    public float maxDistance = 1.25f; // Distancia del BoxCast
+    public LayerMask wallLayerMask; // Máscara de capa para la detección de paredes
 
     void OnDrawGizmos()
     {
@@ -255,7 +260,7 @@ public class Player : MonoBehaviour
         }
         #endregion     
         
-        #region Evitar disparar/drop cerca de Wall
+        #region Evitar Shoot cerca de Wall
         if (GizmoWallShoot)
         {
             if (_modelPlayer != null)
@@ -274,6 +279,59 @@ public class Player : MonoBehaviour
             
             Gizmos.DrawRay(_rayCheckShootPos, transform.forward * _rayCheckShootDistance);
             Gizmos.DrawSphere(_rayCheckShootPos + transform.forward * _rayCheckShootDistance, 0.1f);
+        }
+        #endregion
+        
+        #region Evitar Drop cerca de Wall
+        if (GizmoWallDrop)
+        {
+
+            var origin = new Vector3(0, 0.75f,0);
+            
+            // Definir las direcciones para los 4 BoxCasts
+            Vector3[] directions = new Vector3[]
+            {
+                origin + transform.forward,    // Hacia adelante
+                origin +(-transform.forward),   // Hacia atrás
+                origin+transform.right,      // Hacia la derecha
+                origin+(-transform.right)      // Hacia la izquierda
+            };
+
+            // Recorrer cada dirección y realizar el BoxCast
+            foreach (Vector3 direction in directions)
+            {
+                PerformBoxCast(direction);
+            }
+            
+            /*if (_modelPlayer != null)
+                Gizmos.color = _modelPlayer.IsTouchingWall() ? Color.red : Color.green;
+            else
+                Gizmos.color = Color.black;
+            
+            var _rayCheckDropPos = transform.position;
+            
+            Vector3[] sides =
+            {
+                _rayCheckDropPos + transform.forward * 1f,
+                _rayCheckDropPos - transform.forward * 1f,
+                _rayCheckDropPos + transform.right * 1f,
+                _rayCheckDropPos - transform.right * 1f,
+            };
+            
+            Vector3[] sidesUp =
+            {
+                _rayCheckDropPos + transform.forward * 1f,
+                _rayCheckDropPos - transform.forward * 1f,
+                _rayCheckDropPos + transform.right * 1f,
+                _rayCheckDropPos - transform.right * 1f,
+            };
+            
+            // Solo detectar la capa "Wall"
+            int wallLayer = LayerMask.NameToLayer("Wall");
+            int layerMaskWall = 1 << wallLayer;
+            
+            Gizmos.DrawRay(_rayCheckDropPos, transform.forward * _rayCheckShootDistance);
+            Gizmos.DrawSphere(_rayCheckDropPos + transform.forward * _rayCheckShootDistance, 0.1f);*/
         }
         #endregion
         
@@ -319,6 +377,31 @@ public class Player : MonoBehaviour
             }
         }
         #endregion
+    }
+    
+    void PerformBoxCast(Vector3 direction)
+    {
+        Vector3 origin = transform.position; // Posición inicial del BoxCast
+        Quaternion orientation = transform.rotation; // Orientación del BoxCast
+
+        // Realizar el BoxCast y verificar si colisiona con algo en la capa "Wall"
+        bool isTouchingWall = Physics.BoxCast(origin, boxHalfExtents, direction, out RaycastHit hit, orientation, maxDistance, wallLayerMask);
+
+        // Asignar color según si está tocando una pared o no
+        Gizmos.color = isTouchingWall ? Color.red : Color.green;
+
+        // Si el BoxCast colisiona con algo, se dibuja una línea y un cubo en la posición de impacto
+        if (isTouchingWall)
+        {
+            Gizmos.DrawLine(origin, hit.point);
+            Gizmos.DrawWireCube(hit.point, boxHalfExtents * 2);
+        }
+        else
+        {
+            // Si no hay colisión, se dibuja un cubo extendido en la dirección del BoxCast
+            Gizmos.DrawRay(origin, direction * maxDistance);
+            Gizmos.DrawWireCube(origin + direction * maxDistance, boxHalfExtents * 2);
+        }
     }
 }
 

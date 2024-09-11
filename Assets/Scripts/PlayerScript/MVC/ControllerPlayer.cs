@@ -23,13 +23,6 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
-        if (OnGetState.Invoke().Equals(STATE_PUSH))
-        {
-            Debug.Log($"STATE: {OnGetState.Invoke()} \n" +
-                      $"Estoy colisionando con:" );
-            
-        }
-
         if (CanWalkState())
         {
             OnStateChange(PlayerState.Walk);
