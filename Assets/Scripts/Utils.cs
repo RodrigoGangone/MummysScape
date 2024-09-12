@@ -14,6 +14,7 @@ public static class Utils
     public const string STATE_WIN = "SM_Win";
     public const string STATE_DEAD = "SM_Dead";
     public const string STATE_DAMAGE = "SM_Damage";
+    public const string STATE_DROP = "SM_Drop";
     public const string NO_STATE = "No hay estado";
 
     public const string BOX_SIDE_FORWARD = "Forward";

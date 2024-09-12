@@ -43,11 +43,17 @@ public class Player : MonoBehaviour
     [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
     [SerializeField] public Mesh[] _Meshes;
 
-    [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
+    [Header("FXS")]
+    [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
     [SerializeField] public TwoBoneIKConstraint rightHand;
     [SerializeField] public RigBuilder rigBuilder;
 
+    [Header("BC DROP")]
+    [SerializeField] private Vector3 boxHalfExtents = new(0.5f, 0.9f, 0.5f);
+    [SerializeField] private float maxDistance = 1.25f;
+    [SerializeField] private LayerMask wallLayerMask;
+    
     [Header("GIZMOS")] 
     [SerializeField] public bool GizmoAutoShoot = true;
     [SerializeField] public bool GizmoWallShoot = true;
@@ -75,6 +81,9 @@ public class Player : MonoBehaviour
         get => _life;
         set => _life = value;
     }
+
+    public Vector3 BoxHalfExt => boxHalfExtents;
+    public float MaxDistance => maxDistance;
     
     public float Speed => CurrentSpeed();
 
@@ -119,9 +128,6 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnStateChange += ChangeState;
         _controllerPlayer.OnGetState += CurrentState;
         _controllerPlayer.OnGetPlayerSize += () => CurrentPlayerSize;
-        /*_controllerPlayer.IsPushingObj += () => IsPushingObj;*/
-
-        _modelPlayer.CreateBandage += CreateBandage;
 
         levelManager.OnPlayerWin += Win;
         levelManager.OnPlayerDeath += Death;
@@ -160,10 +166,6 @@ public class Player : MonoBehaviour
         _controllerPlayer.ControllerFixedUpdate();
     }
     
-    GameObject CreateBandage(Transform trans)
-    {
-        return Instantiate(_prefabBandage, trans.position, trans.rotation);
-    }
     void ChangeState(PlayerState playerState)
     {
         _stateMachinePlayer.ChangeState(playerState);
@@ -230,10 +232,6 @@ public class Player : MonoBehaviour
         if (other.CompareTag("KillPlane"))
             levelManager.OnPlayerDeath?.Invoke();
     }
-    
-    public Vector3 boxHalfExtents = new Vector3(0.5f, 0.75f, 0.75f); // Tamaño de la caja (medio tamaño)
-    public float maxDistance = 1.25f; // Distancia del BoxCast
-    public LayerMask wallLayerMask; // Máscara de capa para la detección de paredes
 
     void OnDrawGizmos()
     {
@@ -288,50 +286,17 @@ public class Player : MonoBehaviour
 
             var origin = new Vector3(0, 0.75f,0);
             
-            // Definir las direcciones para los 4 BoxCasts
-            Vector3[] directions = new Vector3[]
-            {
-                origin + transform.forward,    // Hacia adelante
-                origin +(-transform.forward),   // Hacia atrás
-                origin+transform.right,      // Hacia la derecha
-                origin+(-transform.right)      // Hacia la izquierda
+            Vector3[] directions = {
+                origin + transform.forward, 
+                origin +-transform.forward, 
+                origin+transform.right,     
+                origin+-transform.right     
             };
 
-            // Recorrer cada dirección y realizar el BoxCast
             foreach (Vector3 direction in directions)
             {
                 PerformBoxCast(direction);
             }
-            
-            /*if (_modelPlayer != null)
-                Gizmos.color = _modelPlayer.IsTouchingWall() ? Color.red : Color.green;
-            else
-                Gizmos.color = Color.black;
-            
-            var _rayCheckDropPos = transform.position;
-            
-            Vector3[] sides =
-            {
-                _rayCheckDropPos + transform.forward * 1f,
-                _rayCheckDropPos - transform.forward * 1f,
-                _rayCheckDropPos + transform.right * 1f,
-                _rayCheckDropPos - transform.right * 1f,
-            };
-            
-            Vector3[] sidesUp =
-            {
-                _rayCheckDropPos + transform.forward * 1f,
-                _rayCheckDropPos - transform.forward * 1f,
-                _rayCheckDropPos + transform.right * 1f,
-                _rayCheckDropPos - transform.right * 1f,
-            };
-            
-            // Solo detectar la capa "Wall"
-            int wallLayer = LayerMask.NameToLayer("Wall");
-            int layerMaskWall = 1 << wallLayer;
-            
-            Gizmos.DrawRay(_rayCheckDropPos, transform.forward * _rayCheckShootDistance);
-            Gizmos.DrawSphere(_rayCheckDropPos + transform.forward * _rayCheckShootDistance, 0.1f);*/
         }
         #endregion
         
@@ -381,16 +346,14 @@ public class Player : MonoBehaviour
     
     void PerformBoxCast(Vector3 direction)
     {
-        Vector3 origin = transform.position; // Posición inicial del BoxCast
-        Quaternion orientation = transform.rotation; // Orientación del BoxCast
+        Vector3 origin = transform.position; // Pos inicial BoxCast
+        Quaternion orientation = transform.rotation; // Orientation BoxCast
 
-        // Realizar el BoxCast y verificar si colisiona con algo en la capa "Wall"
+        // verif si colisiona con "Wall"
         bool isTouchingWall = Physics.BoxCast(origin, boxHalfExtents, direction, out RaycastHit hit, orientation, maxDistance, wallLayerMask);
 
-        // Asignar color según si está tocando una pared o no
         Gizmos.color = isTouchingWall ? Color.red : Color.green;
 
-        // Si el BoxCast colisiona con algo, se dibuja una línea y un cubo en la posición de impacto
         if (isTouchingWall)
         {
             Gizmos.DrawLine(origin, hit.point);

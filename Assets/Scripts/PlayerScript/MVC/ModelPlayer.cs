@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using static Utils;
+using Object = UnityEngine.Object;
 
 public class ModelPlayer
 {
@@ -23,9 +24,7 @@ public class ModelPlayer
     public Transform CurrentBox => _currentBox;
     public Vector3 DirToPush => _dirToPush;
     
-
     public Action SizeModify;
-    public Func<Transform, GameObject> CreateBandage;
 
     public ModelPlayer(Player p)
     {
@@ -41,10 +40,39 @@ public class ModelPlayer
         _player.CurrentBandageStock += sum;
         SizeHandler();
     }
-
-    public void SpawnBandage(Transform trans = null)
+    
+    
+    public void CreateBandageAtPosition(Vector3 position)
     {
-        CreateBandage(trans ?? _player.dropTarget);
+        // Instancia la venda en la posición especificada
+        Object.Instantiate(_player._prefabBandage, position, Quaternion.identity);
+    }
+    
+    public bool CanDropBandage()
+    {
+        LayerMask wallLayerMask = LayerMask.GetMask("Wall");
+
+        Vector3[] directions = {
+            _player.transform.forward,  
+            -_player.transform.forward, 
+            _player.transform.right,    
+            -_player.transform.right    
+        };
+        
+        foreach (Vector3 direction in directions)
+        {
+            bool isCollidingWithWall = Physics.BoxCast(_player.transform.position, _player.BoxHalfExt, direction,
+                out _, _player.transform.rotation, _player.MaxDistance, wallLayerMask);
+
+            if (!isCollidingWithWall)
+            {
+                Vector3 dropPosition = _player.transform.position + direction * _player.MaxDistance;
+                CountBandage(-1);
+                CreateBandageAtPosition(dropPosition);
+                return true;
+            }
+        }
+        return false;
     }
 
     public void Move(float moveHorizontal, float moveVertical, float speed, float rotation)

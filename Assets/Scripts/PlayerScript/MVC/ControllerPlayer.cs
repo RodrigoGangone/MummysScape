@@ -23,6 +23,8 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
+        Debug.Log($"CURRENT STATE: {OnGetState.Invoke()}");
+        
         if (CanWalkState())
         {
             OnStateChange(PlayerState.Walk);
@@ -87,6 +89,7 @@ public class ControllerPlayer
                    STATE_PUSH => true,
                    STATE_PULL => true,
                    STATE_DAMAGE => true,
+                   STATE_DROP => true,
                    NO_STATE => true,
                    _ => false
                };
@@ -157,9 +160,9 @@ public class ControllerPlayer
                };
     }
 
-    private bool CanDropState()
+    private bool CanDropState() //TODO: Modificar estoy por CanDropBandage
     {
-        return !_model.IsTouchingWall() &&
+        return /*!_model.IsTouchingWall() &&*/
                OnGetState?.Invoke() switch
                {
                    STATE_IDLE => true,

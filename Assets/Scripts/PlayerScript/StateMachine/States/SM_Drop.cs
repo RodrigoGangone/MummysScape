@@ -15,8 +15,9 @@ public class SM_Drop : State
 
     public override void OnEnter()
     {
-        _model.CountBandage(-1);
-        _model.SpawnBandage();
+        /*_model.CountBandage(-1);
+        _model.SpawnBandage();*/
+        _model.CanDropBandage();
     }
 
     public override void OnUpdate()
