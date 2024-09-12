@@ -16,6 +16,7 @@ public class SM_Pull : State
     public override void OnEnter()
     {
         _view.bandageHook.enabled = true;
+        _view.PLAY_ANIM("Pull", true);
 
         //TODO: Agregar animacion de pull
         Debug.Log("Pull");
@@ -23,6 +24,7 @@ public class SM_Pull : State
 
     public override void OnExit()
     {
+        _view.PLAY_ANIM("Pull", false);
         isPullDestiny = false;
         _view.bandageHook.enabled = false;
     }
@@ -46,6 +48,8 @@ public class SM_Pull : State
     {
         if (!_model.IsBoxCloseToPlayer() && _model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor())
             _model.MovePull();
+        else
+            OnExit();
 
         StateMachine.ChangeState(PlayerState.Idle);
     }
