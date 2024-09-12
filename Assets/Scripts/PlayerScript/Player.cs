@@ -37,7 +37,6 @@ public class Player : MonoBehaviour
     [SerializeField] private int _currBandageStock = 2;
     [SerializeField] public Transform handTarget;
     [SerializeField] private Transform _shootTarget;
-    [SerializeField] public Transform dropTarget;
 
     [Header("SIZES")] 
     [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
@@ -51,7 +50,7 @@ public class Player : MonoBehaviour
 
     [Header("BC DROP")]
     [SerializeField] private Vector3 boxHalfExtents = new(0.5f, 0.9f, 0.5f);
-    [SerializeField] private float maxDistance = 1.25f;
+    [SerializeField] private float maxDistance = 1f;
     [SerializeField] private LayerMask wallLayerMask;
     
     [Header("GIZMOS")] 
@@ -283,8 +282,24 @@ public class Player : MonoBehaviour
         #region Evitar Drop cerca de Wall
         if (GizmoWallDrop)
         {
+            // Definir el desplazamiento en el eje Y
+            Vector3 origin = new Vector3(0, 0.75f, 0);
 
-            var origin = new Vector3(0, 0.75f,0);
+            // Definir las direcciones en las que se harán los BoxCasts
+            Vector3[] directions = {
+                transform.forward,    // Frente
+                -transform.forward,   // Atrás
+                transform.right,      // Derecha
+                -transform.right      // Izquierda
+            };
+
+            // Realizar los BoxCasts en las direcciones definidas
+            foreach (Vector3 direction in directions)
+            {
+                PerformBoxCast(direction);
+            }
+
+            /*var origin = new Vector3(0, 0.75f,0);
             
             Vector3[] directions = {
                 origin + transform.forward, 
@@ -296,7 +311,7 @@ public class Player : MonoBehaviour
             foreach (Vector3 direction in directions)
             {
                 PerformBoxCast(direction);
-            }
+            }*/
         }
         #endregion
         
@@ -346,7 +361,41 @@ public class Player : MonoBehaviour
     
     void PerformBoxCast(Vector3 direction)
     {
-        Vector3 origin = transform.position; // Pos inicial BoxCast
+        // Definir la máscara de la capa "Wall"
+        LayerMask wallLayerMask = LayerMask.GetMask("Wall");
+
+        // Ajustar el origen (desplazado en Y para que el BoxCast esté ligeramente elevado)
+        Vector3 origin = transform.position + new Vector3(0, 0.75f, 0); // Ajustar la altura del origen
+        Quaternion orientation = transform.rotation; // Rotación de la caja
+
+        // Verificar si el BoxCast colisiona con un objeto en la capa "Wall"
+        bool isTouchingWall = Physics.BoxCast(
+            origin,               // Origen del BoxCast
+            boxHalfExtents,       // Tamaño de la caja
+            direction,            // Dirección del BoxCast
+            out RaycastHit hit,   // Información de la colisión
+            orientation,          // Rotación de la caja
+            maxDistance,          // Distancia máxima del BoxCast
+            wallLayerMask         // Capa a verificar ("Wall")
+        );
+
+        // Configurar el color de Gizmos según la colisión con la pared
+        Gizmos.color = isTouchingWall ? Color.red : Color.green;
+
+        if (isTouchingWall)
+        {
+            // Si colisiona con una pared, dibujar la línea y el cubo en el punto de impacto
+            Gizmos.DrawLine(origin, hit.point);
+            Gizmos.DrawWireCube(hit.point, boxHalfExtents * 2);
+        }
+        else
+        {
+            // Si no colisiona, dibujar el cubo extendido en la dirección del BoxCast
+            Gizmos.DrawRay(origin, direction * maxDistance);
+            Gizmos.DrawWireCube(origin + direction * maxDistance, boxHalfExtents * 2);
+        }
+        
+        /*Vector3 origin = transform.position; // Pos inicial BoxCast
         Quaternion orientation = transform.rotation; // Orientation BoxCast
 
         // verif si colisiona con "Wall"
@@ -364,7 +413,7 @@ public class Player : MonoBehaviour
             // Si no hay colisión, se dibuja un cubo extendido en la dirección del BoxCast
             Gizmos.DrawRay(origin, direction * maxDistance);
             Gizmos.DrawWireCube(origin + direction * maxDistance, boxHalfExtents * 2);
-        }
+        }*/
     }
 }
 

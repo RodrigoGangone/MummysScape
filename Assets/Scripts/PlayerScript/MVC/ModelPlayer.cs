@@ -9,6 +9,9 @@ public class ModelPlayer
     Player _player;
     ControllerPlayer _controller;
     Rigidbody _rb;
+    
+    //DROP
+    public Vector3 dropPosition;
 
     //HOOK
     public DetectionHook detectionBeetle;
@@ -41,11 +44,15 @@ public class ModelPlayer
         SizeHandler();
     }
     
-    
     public void CreateBandageAtPosition(Vector3 position)
     {
-        // Instancia la venda en la posición especificada
         Object.Instantiate(_player._prefabBandage, position, Quaternion.identity);
+    }
+    
+    public void DropBandage()
+    {
+        CountBandage(-1);
+        Object.Instantiate(_player._prefabBandage, dropPosition, Quaternion.identity);
     }
     
     public bool CanDropBandage()
@@ -66,12 +73,12 @@ public class ModelPlayer
 
             if (!isCollidingWithWall)
             {
-                Vector3 dropPosition = _player.transform.position + direction * _player.MaxDistance;
-                CountBandage(-1);
-                CreateBandageAtPosition(dropPosition);
+                dropPosition = _player.transform.position + direction * _player.MaxDistance;
                 return true;
             }
         }
+
+        dropPosition = Vector3.zero;
         return false;
     }
 

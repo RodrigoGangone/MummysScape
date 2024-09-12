@@ -162,11 +162,12 @@ public class ControllerPlayer
 
     private bool CanDropState() //TODO: Modificar estoy por CanDropBandage
     {
-        return /*!_model.IsTouchingWall() &&*/
+        return !PlayerSize.Head.Equals(OnGetPlayerSize.Invoke()) &&
+               _model.CanDropBandage() &&
                OnGetState?.Invoke() switch
                {
                    STATE_IDLE => true,
-                   STATE_PULL => true,
+                   STATE_WALK => true,
                    _ => false
                };
     }
