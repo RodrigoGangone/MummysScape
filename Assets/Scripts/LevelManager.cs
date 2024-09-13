@@ -6,8 +6,8 @@ public class LevelManager : MonoBehaviour
     private Player _player;
     private UIManager _uiManager;
 
-    [SerializeField] private float _currentTimeDeath;
-    [SerializeField] private float _maxTimeDeath = 30f;
+    [SerializeField] public float _currentTimeDeath;
+    [SerializeField] public float _maxTimeDeath = 30f;
 
     private List<Collectible> _collectibles;
 
