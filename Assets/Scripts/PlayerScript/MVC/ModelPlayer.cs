@@ -57,83 +57,62 @@ public class ModelPlayer
         CountBandage(-1);
         Object.Instantiate(_player._prefabBandage, dropPosition, Quaternion.identity);
     }
-    
-    /*public bool CanDropBandage()
+    public bool CanDropBandage()
     {
         LayerMask wallLayerMask = LayerMask.GetMask("Wall");
+        bool isTouchingWall;
 
-        Vector3[] directions = {
-            _player.transform.forward,  
-            -_player.transform.forward, 
-            _player.transform.right,    
-            -_player.transform.right    
-        };
-        
-        foreach (Vector3 direction in directions)
+        Vector3[] directions =
         {
-            bool isCollidingWithWall = Physics.BoxCast(_player.transform.position, _player.BoxHalfExt, direction,
-                out _, _player.transform.rotation, _player.MaxDistance, wallLayerMask);
+            _player.transform.forward,
+            -_player.transform.forward,
+            _player.transform.right,
+            -_player.transform.right
+        };
 
-            if (!isCollidingWithWall)
+        Vector3[] localOffsets =
+        {
+            _player.transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
+            -_player.transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
+            _player.transform.right * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
+            -_player.transform.right * 0.65f + new Vector3(0, 1f, 0) // NO TOCAR ESTOS VALORES
+        };
+
+        for (int i = 0; i < directions.Length; i++)
+        {
+            Vector3 origin = _player.transform.position + localOffsets[i];
+            Quaternion orientation = _player.transform.rotation;
+
+            RaycastHit[] hits = Physics.BoxCastAll(
+                origin,
+                _player.BoxHalfExt,
+                directions[i],
+                orientation,
+                _player.MaxDistance,
+                wallLayerMask
+            );
+        
+            isTouchingWall = false; // Reinicia el estado 
+
+            foreach (var hit in hits)
             {
-                dropPosition = _player.transform.position + direction * _player.MaxDistance;
+                if (((1 << hit.collider.gameObject.layer) & wallLayerMask) != 0) // Verif si es "Wall"
+                {
+                    isTouchingWall = true;
+                    break;
+                }
+            }
+
+            if (!isTouchingWall)
+            {
+                dropPosition = origin + directions[i] * _player.MaxDistance;
                 return true;
             }
         }
 
         dropPosition = Vector3.zero;
         return false;
-    }*/
-    
-    public bool CanDropBandage()
-    {
-        LayerMask wallLayerMask = LayerMask.GetMask("Wall");
-
-        // Definir las direcciones en las que se verificará
-        Vector3[] directions = {
-            _player.transform.forward,   // Frente
-            -_player.transform.forward,  // Atrás
-            _player.transform.right,     // Derecha
-            -_player.transform.right     // Izquierda
-        };
-
-        // Recorre las direcciones
-        foreach (Vector3 direction in directions)
-        {
-            // Realiza el BoxCastAll y obtiene todas las colisiones
-            RaycastHit[] hits = Physics.BoxCastAll(
-                _player.transform.position,     // Origen del BoxCast
-                _player.BoxHalfExt,             // Tamaño de la caja (half extents)
-                direction,                      // Dirección del BoxCast
-                _player.transform.rotation,     // Rotación de la caja
-                _player.MaxDistance,            // Distancia máxima
-                wallLayerMask                   // Verificar colisiones solo con la capa "Wall"
-            );
-
-            // Verifica si alguna colisión es con la capa "Wall"
-            bool isCollidingWithWall = false;
-            foreach (var hit in hits)
-            {
-                if (((1 << hit.collider.gameObject.layer) & wallLayerMask) != 0)
-                {
-                    isCollidingWithWall = true;
-                    break; // Si colisiona con una pared, salimos del bucle
-                }
-            }
-
-            // Si no colisiona con una pared, esa es una dirección válida para dropear la venda
-            if (!isCollidingWithWall)
-            {
-                dropPosition = _player.transform.position + direction * _player.MaxDistance;
-                return true; // Posición válida encontrada
-            }
-        }
-
-        // Si todas las direcciones colisionan con "Wall", no se puede dropear la venda
-        dropPosition = Vector3.zero;
-        return false;
     }
-
     public void Move(float moveHorizontal, float moveVertical, float speed, float rotation)
     {
         Vector3 forward =

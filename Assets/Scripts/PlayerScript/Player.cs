@@ -49,8 +49,8 @@ public class Player : MonoBehaviour
     [SerializeField] public RigBuilder rigBuilder;
 
     [Header("BC DROP")]
-    [SerializeField] private Vector3 boxHalfExtents = new(0.5f, 0.9f, 0.5f);
-    [SerializeField] private float maxDistance = 1f;
+    [SerializeField] private Vector3 boxHalfExtents = new(0.45f, 0.9f, 0.45f);
+    [SerializeField] private float maxDistance = 0.5f;
     [SerializeField] private LayerMask wallLayerMask;
     
     [Header("GIZMOS")] 
@@ -283,15 +283,23 @@ public class Player : MonoBehaviour
         if (GizmoWallDrop)
         {
             Vector3[] directions = {
-                transform.forward,    // Frente
-                -transform.forward,   // Atrás
-                transform.right,      // Derecha
-                -transform.right      // Izquierda
+                transform.forward,
+                -transform.forward, 
+                transform.right,
+                -transform.right
+            };
+            // Desfazes en base al jugador
+            Vector3[] localOffsets = {
+                transform.forward * 0.65f + new Vector3(0, 1f, 0),  // NO TOCAR ESTOS VALORES
+                -transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
+                transform.right * 0.65f + new Vector3(0, 1f, 0),    // NO TOCAR ESTOS VALORES
+                -transform.right * 0.65f + new Vector3(0, 1f, 0)    // NO TOCAR ESTOS VALORES
             };
 
-            foreach (Vector3 direction in directions)
+            // Recorremos ambas listas de dirección y desplazamiento de origen
+            for (int i = 0; i < directions.Length; i++)
             {
-                PerformBoxCast(direction);
+                PerformBoxCast(directions[i], localOffsets[i]);
             }
         }
         #endregion
@@ -340,66 +348,41 @@ public class Player : MonoBehaviour
         #endregion
     }
     
-    void PerformBoxCast(Vector3 direction)
+    void PerformBoxCast(Vector3 direction, Vector3 localOffsets)
     {
-        Vector3 origin = transform.position + new Vector3(0, 1.5f, 0); // Ajustar la altura del origen
-        Quaternion orientation = transform.rotation; // Rotación de la caja
+        Vector3 origin = transform.position + localOffsets;
+        Quaternion orientation = transform.rotation;
 
-        // Realizar el BoxCast y obtener todas las colisiones
         RaycastHit[] hits = Physics.BoxCastAll(
-            origin,              // Origen del BoxCast
-            boxHalfExtents,      // Tamaño de la caja
-            direction,           // Dirección del BoxCast
-            orientation,         // Rotación de la caja
-            maxDistance,         // Distancia máxima del BoxCast
-            wallLayerMask        // Capa a verificar ("Wall")
+            origin,
+            boxHalfExtents,
+            direction,
+            orientation,
+            maxDistance,
+            wallLayerMask
         );
 
-        // Verificar si alguno de los hits es con la capa "Wall"
         bool isTouchingWall = false;
         foreach (var hit in hits)
         {
-            if (((1 << hit.collider.gameObject.layer) & wallLayerMask) != 0) // Verifica si es "Wall"
+            if (((1 << hit.collider.gameObject.layer) & wallLayerMask) != 0) // Verif si es "Wall"
             {
                 isTouchingWall = true;
                 break;
             }
         }
 
-        // Configurar el color de Gizmos según la colisión con la pared
         Gizmos.color = isTouchingWall ? Color.red : Color.green;
 
         if (isTouchingWall)
         {
-            // Si colisiona con una pared, dibujar la línea y el cubo en el punto de impacto
             Gizmos.DrawWireCube(origin + direction * maxDistance, boxHalfExtents * 2);
         }
         else
         {
-            // Si no colisiona, dibujar el cubo extendido en la dirección del BoxCast
             Gizmos.DrawRay(origin, direction * maxDistance);
             Gizmos.DrawWireCube(origin + direction * maxDistance, boxHalfExtents * 2);
         }
-        
-        /*Vector3 origin = transform.position; // Pos inicial BoxCast
-        Quaternion orientation = transform.rotation; // Orientation BoxCast
-
-        // verif si colisiona con "Wall"
-        bool isTouchingWall = Physics.BoxCast(origin, boxHalfExtents, direction, out RaycastHit hit, orientation, maxDistance, wallLayerMask);
-
-        Gizmos.color = isTouchingWall ? Color.red : Color.green;
-
-        if (isTouchingWall)
-        {
-            Gizmos.DrawLine(origin, hit.point);
-            Gizmos.DrawWireCube(hit.point, boxHalfExtents * 2);
-        }
-        else
-        {
-            // Si no hay colisión, se dibuja un cubo extendido en la dirección del BoxCast
-            Gizmos.DrawRay(origin, direction * maxDistance);
-            Gizmos.DrawWireCube(origin + direction * maxDistance, boxHalfExtents * 2);
-        }*/
     }
 }
 
