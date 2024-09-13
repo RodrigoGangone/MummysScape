@@ -237,17 +237,22 @@ public class Player : MonoBehaviour
         #region Auto Apunte Boton
         if (GizmoAutoShoot)
         {
-            Vector3[] origins =
-            {
-                _shootTarget.transform.position + transform.right * 0.75f,
-                _shootTarget.transform.position - transform.right * 0.75f,
-            };
+            Vector3 origin = _shootTarget.transform.position;
+            
+            Quaternion leftRotation = Quaternion.Euler(0, -10, 0); 
+            Quaternion rightRotation = Quaternion.Euler(0, 10, 0); 
 
-            foreach (var origin in origins)
+            Vector3 leftDirection = leftRotation * transform.forward;
+            Vector3 rightDirection = rightRotation * transform.forward;
+            Vector3 centerDirection = transform.forward;  // Rayo que va hacia adelante
+
+            Vector3[] directions = { leftDirection, rightDirection, centerDirection };
+
+            foreach (var direction in directions)
             {
                 RaycastHit hit;
 
-                if (Physics.Raycast(origin, transform.forward, out hit, 12))
+                if (Physics.Raycast(origin, direction, out hit, 12))
                 {
                     Gizmos.color = Color.magenta;
                     Gizmos.DrawLine(origin, hit.point);
