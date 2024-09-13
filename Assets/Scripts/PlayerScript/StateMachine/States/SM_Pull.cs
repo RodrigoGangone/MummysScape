@@ -40,6 +40,9 @@ public class SM_Pull : State
 
     public override void OnUpdate()
     {
+        if (!Input.GetKey(KeyCode.Space) || _model.CurrentBox == null)
+            StateMachine.ChangeState(PlayerState.Idle);
+
         if (!_view.drawPull) return;
 
         if (!isPullDestiny)
@@ -51,18 +54,17 @@ public class SM_Pull : State
             if (_view.hookMaterial.GetFloat("_rightThreshold") == -1.5f)
                 isPullDestiny = true;
         }
-
-        if (!Input.GetKey(KeyCode.Space))
-            StateMachine.ChangeState(PlayerState.Idle);
-        else
-            _view.DrawBandage(_model.CurrentBox.position);
     }
 
     public override void OnFixedUpdate()
     {
+        if (_model.CurrentBox == null) return;
+
         if (!_model.IsBoxCloseToPlayer() &&
             _model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor() &&
             _model.isPulling)
             _model.MovePull();
+
+        _view.DrawBandage(_model.CurrentBox.position);
     }
 }

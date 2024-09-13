@@ -49,36 +49,35 @@ public class PushPullObject : MonoBehaviour
         return hitResult1 || hitResult2 || hitResult3 || hitResult4;
     }
 
-    public String CheckPlayerRaycast()
+    public string CheckPlayerRaycast()
     {
-        // Direcciones desde las cuales lanzar los raycasts
-        Vector3[] rayDirections =
-        {
-            transform.forward,
-            -transform.forward,
-            transform.right,
-            -transform.right
-        };
-
-        // Nombres de las direcciones correspondientes
+        Vector3[] rayDirections = { transform.forward, -transform.forward, transform.right, -transform.right };
         string[] directionNames = { BOX_SIDE_FORWARD, BOX_SIDE_BACKWARD, BOX_SIDE_RIGHT, BOX_SIDE_LEFT };
+        float rayOffset = 0.5f;
 
-        // Lanza un raycast desde cada dirección y verifica la colisión
+        // Itera sobre cada dirección
         for (int i = 0; i < rayDirections.Length; i++)
         {
-            Ray ray = new Ray(transform.position, rayDirections[i]);
-            if (Physics.Raycast(ray, out RaycastHit hit, rayDistanceToPull, playerLayerMask))
+            // Calcula los offsets para los rayos (centro, izquierda, derecha)
+            Vector3[] origins = {
+                transform.position,                                // Centro
+                transform.position - transform.right * rayOffset,  // Izquierda
+                transform.position + transform.right * rayOffset   // Derecha
+            };
+
+            // Verifica si algún rayo en la dirección actual colisiona con el jugador
+            foreach (var origin in origins)
             {
-                // Verifica si el objeto colisionado tiene el tag correcto
-                if (hit.collider.CompareTag(playerTag))
+                if (Physics.Raycast(origin, rayDirections[i], out RaycastHit hit, rayDistanceToPull, playerLayerMask) && hit.collider.CompareTag(playerTag))
                 {
-                    return directionNames[i]; // Colisionó con el jugador
+                    return directionNames[i]; // Retorna la dirección si colisionó
                 }
             }
         }
 
-        return null; // No colisionó con el jugador
+        return null; // No colisionó
     }
+
 
     // Método para visualizar los raycasts en la escena (opcional)
     private void OnDrawGizmos()
@@ -86,10 +85,28 @@ public class PushPullObject : MonoBehaviour
         #region Check Pull
         Gizmos.color = Color.red;
 
-        Gizmos.DrawRay(transform.position, transform.forward * rayDistanceToPull); // Forward
-        Gizmos.DrawRay(transform.position, -transform.forward * rayDistanceToPull); // Backward
-        Gizmos.DrawRay(transform.position, transform.right * rayDistanceToPull); // Right
-        Gizmos.DrawRay(transform.position, -transform.right * rayDistanceToPull); // Left
+        float rayOffset = 0.5f;
+
+        // Dibuja los rayos para cada dirección: adelante, atrás, derecha e izquierda
+        // Forward
+        Gizmos.DrawRay(transform.position, transform.forward * rayDistanceToPull); // Forward Center
+        Gizmos.DrawRay(transform.position - transform.right * rayOffset, transform.forward * rayDistanceToPull); // Forward Left
+        Gizmos.DrawRay(transform.position + transform.right * rayOffset, transform.forward * rayDistanceToPull); // Forward Right
+
+        // Backward
+        Gizmos.DrawRay(transform.position, -transform.forward * rayDistanceToPull); // Backward Center
+        Gizmos.DrawRay(transform.position - transform.right * rayOffset, -transform.forward * rayDistanceToPull); // Backward Left
+        Gizmos.DrawRay(transform.position + transform.right * rayOffset, -transform.forward * rayDistanceToPull); // Backward Right
+
+        // Right
+        Gizmos.DrawRay(transform.position, transform.right * rayDistanceToPull); // Right Center
+        Gizmos.DrawRay(transform.position - transform.forward * rayOffset, transform.right * rayDistanceToPull); // Right Left
+        Gizmos.DrawRay(transform.position + transform.forward * rayOffset, transform.right * rayDistanceToPull); // Right Right
+
+        // Left
+        Gizmos.DrawRay(transform.position, -transform.right * rayDistanceToPull); // Left Center
+        Gizmos.DrawRay(transform.position - transform.forward * rayOffset, -transform.right * rayDistanceToPull); // Left Left
+        Gizmos.DrawRay(transform.position + transform.forward * rayOffset, -transform.right * rayDistanceToPull); // Left Right
         #endregion
     }
 }

@@ -10,7 +10,7 @@ public class ModelPlayer
     Player _player;
     ControllerPlayer _controller;
     Rigidbody _rb;
-    
+
     //DROP
     public Vector3 dropPosition;
 
@@ -18,7 +18,7 @@ public class ModelPlayer
     public DetectionHook detectionBeetle;
     public SpringJoint springJoint;
     public Rigidbody hookBeetle;
-    
+
     public bool isHooking;
 
     //PUSH OBJECT
@@ -29,7 +29,7 @@ public class ModelPlayer
 
     public Transform CurrentBox => _currentBox;
     public Vector3 DirToPush => _dirToPush;
-    
+
     public Action SizeModify;
 
     public ModelPlayer(Player p)
@@ -46,17 +46,18 @@ public class ModelPlayer
         _player.CurrentBandageStock += sum;
         SizeHandler();
     }
-    
+
     public void CreateBandageAtPosition(Vector3 position)
     {
         Object.Instantiate(_player._prefabBandage, position, Quaternion.identity);
     }
-    
+
     public void DropBandage()
     {
         CountBandage(-1);
         Object.Instantiate(_player._prefabBandage, dropPosition, Quaternion.identity);
     }
+
     public bool CanDropBandage()
     {
         LayerMask wallLayerMask = LayerMask.GetMask("Wall");
@@ -91,7 +92,7 @@ public class ModelPlayer
                 _player.MaxDistance,
                 wallLayerMask
             );
-        
+
             isTouchingWall = false; // Reinicia el estado 
 
             foreach (var hit in hits)
@@ -113,6 +114,7 @@ public class ModelPlayer
         dropPosition = Vector3.zero;
         return false;
     }
+
     public void Move(float moveHorizontal, float moveVertical, float speed, float rotation)
     {
         Vector3 forward =
@@ -169,7 +171,7 @@ public class ModelPlayer
 
         return distance <= maxDistance;
     }
-    
+
     public void ClampMovement()
     {
         var velocity = _rb.velocity;
@@ -401,7 +403,7 @@ public class ModelPlayer
     {
         _player._viewPlayer.PLAY_PUFF();
         SizeModify?.Invoke();
-        
+
         switch (_player.CurrentBandageStock)
         {
             case 2:
@@ -442,7 +444,7 @@ public class ModelPlayer
         if (_rb.velocity.magnitude > _player.Speed)
             _rb.velocity = _rb.velocity.normalized * _player.Speed;
     }
-    
+
     public bool CheckGround()
     {
         Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.1f);
