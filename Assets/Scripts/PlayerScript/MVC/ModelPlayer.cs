@@ -3,12 +3,16 @@ using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using static Utils;
+using Object = UnityEngine.Object;
 
 public class ModelPlayer
 {
     Player _player;
     ControllerPlayer _controller;
     Rigidbody _rb;
+    
+    //DROP
+    public Vector3 dropPosition;
 
     //HOOK
     public DetectionHook detectionBeetle;
@@ -27,7 +31,6 @@ public class ModelPlayer
     public Vector3 DirToPush => _dirToPush;
     
     public Action SizeModify;
-    public Func<Transform, GameObject> CreateBandage;
 
     public ModelPlayer(Player p)
     {
@@ -43,10 +46,92 @@ public class ModelPlayer
         _player.CurrentBandageStock += sum;
         SizeHandler();
     }
-
-    public void SpawnBandage(Transform trans = null)
+    
+    public void CreateBandageAtPosition(Vector3 position)
     {
-        CreateBandage(trans ?? _player.dropTarget);
+        Object.Instantiate(_player._prefabBandage, position, Quaternion.identity);
+    }
+    
+    public void DropBandage()
+    {
+        CountBandage(-1);
+        Object.Instantiate(_player._prefabBandage, dropPosition, Quaternion.identity);
+    }
+    
+    /*public bool CanDropBandage()
+    {
+        LayerMask wallLayerMask = LayerMask.GetMask("Wall");
+
+        Vector3[] directions = {
+            _player.transform.forward,  
+            -_player.transform.forward, 
+            _player.transform.right,    
+            -_player.transform.right    
+        };
+        
+        foreach (Vector3 direction in directions)
+        {
+            bool isCollidingWithWall = Physics.BoxCast(_player.transform.position, _player.BoxHalfExt, direction,
+                out _, _player.transform.rotation, _player.MaxDistance, wallLayerMask);
+
+            if (!isCollidingWithWall)
+            {
+                dropPosition = _player.transform.position + direction * _player.MaxDistance;
+                return true;
+            }
+        }
+
+        dropPosition = Vector3.zero;
+        return false;
+    }*/
+    
+    public bool CanDropBandage()
+    {
+        LayerMask wallLayerMask = LayerMask.GetMask("Wall");
+
+        // Definir las direcciones en las que se verificará
+        Vector3[] directions = {
+            _player.transform.forward,   // Frente
+            -_player.transform.forward,  // Atrás
+            _player.transform.right,     // Derecha
+            -_player.transform.right     // Izquierda
+        };
+
+        // Recorre las direcciones
+        foreach (Vector3 direction in directions)
+        {
+            // Realiza el BoxCastAll y obtiene todas las colisiones
+            RaycastHit[] hits = Physics.BoxCastAll(
+                _player.transform.position,     // Origen del BoxCast
+                _player.BoxHalfExt,             // Tamaño de la caja (half extents)
+                direction,                      // Dirección del BoxCast
+                _player.transform.rotation,     // Rotación de la caja
+                _player.MaxDistance,            // Distancia máxima
+                wallLayerMask                   // Verificar colisiones solo con la capa "Wall"
+            );
+
+            // Verifica si alguna colisión es con la capa "Wall"
+            bool isCollidingWithWall = false;
+            foreach (var hit in hits)
+            {
+                if (((1 << hit.collider.gameObject.layer) & wallLayerMask) != 0)
+                {
+                    isCollidingWithWall = true;
+                    break; // Si colisiona con una pared, salimos del bucle
+                }
+            }
+
+            // Si no colisiona con una pared, esa es una dirección válida para dropear la venda
+            if (!isCollidingWithWall)
+            {
+                dropPosition = _player.transform.position + direction * _player.MaxDistance;
+                return true; // Posición válida encontrada
+            }
+        }
+
+        // Si todas las direcciones colisionan con "Wall", no se puede dropear la venda
+        dropPosition = Vector3.zero;
+        return false;
     }
 
     public void Move(float moveHorizontal, float moveVertical, float speed, float rotation)

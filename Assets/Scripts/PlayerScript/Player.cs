@@ -37,20 +37,26 @@ public class Player : MonoBehaviour
     [SerializeField] private int _currBandageStock = 2;
     [SerializeField] public Transform handTarget;
     [SerializeField] private Transform _shootTarget;
-    [SerializeField] public Transform dropTarget;
 
     [Header("SIZES")] 
     [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
     [SerializeField] public Mesh[] _Meshes;
 
-    [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
+    [Header("FXS")]
+    [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
     [SerializeField] public TwoBoneIKConstraint rightHand;
     [SerializeField] public RigBuilder rigBuilder;
 
+    [Header("BC DROP")]
+    [SerializeField] private Vector3 boxHalfExtents = new(0.5f, 0.9f, 0.5f);
+    [SerializeField] private float maxDistance = 1f;
+    [SerializeField] private LayerMask wallLayerMask;
+    
     [Header("GIZMOS")] 
     [SerializeField] public bool GizmoAutoShoot = true;
     [SerializeField] public bool GizmoWallShoot = true;
+    [SerializeField] public bool GizmoWallDrop = true;
     [SerializeField] public bool GizmoPush = true;
     [SerializeField] public bool GizmoPull = true;
     
@@ -74,6 +80,9 @@ public class Player : MonoBehaviour
         get => _life;
         set => _life = value;
     }
+
+    public Vector3 BoxHalfExt => boxHalfExtents;
+    public float MaxDistance => maxDistance;
     
     public float Speed => CurrentSpeed();
 
@@ -118,9 +127,6 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnStateChange += ChangeState;
         _controllerPlayer.OnGetState += CurrentState;
         _controllerPlayer.OnGetPlayerSize += () => CurrentPlayerSize;
-        /*_controllerPlayer.IsPushingObj += () => IsPushingObj;*/
-
-        _modelPlayer.CreateBandage += CreateBandage;
 
         levelManager.OnPlayerWin += Win;
         levelManager.OnPlayerDeath += Death;
@@ -159,10 +165,6 @@ public class Player : MonoBehaviour
         _controllerPlayer.ControllerFixedUpdate();
     }
     
-    GameObject CreateBandage(Transform trans)
-    {
-        return Instantiate(_prefabBandage, trans.position, trans.rotation);
-    }
     void ChangeState(PlayerState playerState)
     {
         _stateMachinePlayer.ChangeState(playerState);
@@ -255,7 +257,7 @@ public class Player : MonoBehaviour
         }
         #endregion     
         
-        #region Evitar disparar/drop cerca de Wall
+        #region Evitar Shoot cerca de Wall
         if (GizmoWallShoot)
         {
             if (_modelPlayer != null)
@@ -274,6 +276,23 @@ public class Player : MonoBehaviour
             
             Gizmos.DrawRay(_rayCheckShootPos, transform.forward * _rayCheckShootDistance);
             Gizmos.DrawSphere(_rayCheckShootPos + transform.forward * _rayCheckShootDistance, 0.1f);
+        }
+        #endregion
+        
+        #region Evitar Drop cerca de Wall
+        if (GizmoWallDrop)
+        {
+            Vector3[] directions = {
+                transform.forward,    // Frente
+                -transform.forward,   // Atrás
+                transform.right,      // Derecha
+                -transform.right      // Izquierda
+            };
+
+            foreach (Vector3 direction in directions)
+            {
+                PerformBoxCast(direction);
+            }
         }
         #endregion
         
@@ -319,6 +338,68 @@ public class Player : MonoBehaviour
             }
         }
         #endregion
+    }
+    
+    void PerformBoxCast(Vector3 direction)
+    {
+        Vector3 origin = transform.position + new Vector3(0, 1.5f, 0); // Ajustar la altura del origen
+        Quaternion orientation = transform.rotation; // Rotación de la caja
+
+        // Realizar el BoxCast y obtener todas las colisiones
+        RaycastHit[] hits = Physics.BoxCastAll(
+            origin,              // Origen del BoxCast
+            boxHalfExtents,      // Tamaño de la caja
+            direction,           // Dirección del BoxCast
+            orientation,         // Rotación de la caja
+            maxDistance,         // Distancia máxima del BoxCast
+            wallLayerMask        // Capa a verificar ("Wall")
+        );
+
+        // Verificar si alguno de los hits es con la capa "Wall"
+        bool isTouchingWall = false;
+        foreach (var hit in hits)
+        {
+            if (((1 << hit.collider.gameObject.layer) & wallLayerMask) != 0) // Verifica si es "Wall"
+            {
+                isTouchingWall = true;
+                break;
+            }
+        }
+
+        // Configurar el color de Gizmos según la colisión con la pared
+        Gizmos.color = isTouchingWall ? Color.red : Color.green;
+
+        if (isTouchingWall)
+        {
+            // Si colisiona con una pared, dibujar la línea y el cubo en el punto de impacto
+            Gizmos.DrawWireCube(origin + direction * maxDistance, boxHalfExtents * 2);
+        }
+        else
+        {
+            // Si no colisiona, dibujar el cubo extendido en la dirección del BoxCast
+            Gizmos.DrawRay(origin, direction * maxDistance);
+            Gizmos.DrawWireCube(origin + direction * maxDistance, boxHalfExtents * 2);
+        }
+        
+        /*Vector3 origin = transform.position; // Pos inicial BoxCast
+        Quaternion orientation = transform.rotation; // Orientation BoxCast
+
+        // verif si colisiona con "Wall"
+        bool isTouchingWall = Physics.BoxCast(origin, boxHalfExtents, direction, out RaycastHit hit, orientation, maxDistance, wallLayerMask);
+
+        Gizmos.color = isTouchingWall ? Color.red : Color.green;
+
+        if (isTouchingWall)
+        {
+            Gizmos.DrawLine(origin, hit.point);
+            Gizmos.DrawWireCube(hit.point, boxHalfExtents * 2);
+        }
+        else
+        {
+            // Si no hay colisión, se dibuja un cubo extendido en la dirección del BoxCast
+            Gizmos.DrawRay(origin, direction * maxDistance);
+            Gizmos.DrawWireCube(origin + direction * maxDistance, boxHalfExtents * 2);
+        }*/
     }
 }
 
