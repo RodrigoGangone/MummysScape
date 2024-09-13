@@ -257,22 +257,26 @@ public class ModelPlayer
 
     private RaycastHit? ButtonHit()
     {
-        Vector3[] origins =
-        {
-            _player.ShootTargetTransform.position + _player.transform.right * 0.75f,
-            _player.ShootTargetTransform.position - _player.transform.right * 0.75f,
-        };
+        Vector3 origin = _player.ShootTargetTransform.position;
+            
+        Quaternion leftRotation = Quaternion.Euler(0, -10, 0); 
+        Quaternion rightRotation = Quaternion.Euler(0, 10, 0); 
 
-        foreach (var origin in origins)
+        Vector3 leftDirection = leftRotation * _player.transform.forward;
+        Vector3 rightDirection = rightRotation * _player.transform.forward;
+        Vector3 centerDirection = _player.transform.forward; 
+        
+        Vector3[] directions = { leftDirection, rightDirection, centerDirection };
+        
+        foreach (var direction in directions)
         {
             RaycastHit hit;
 
-            if (Physics.Raycast(origin, _player.transform.forward, out hit, 12f))
+            if (Physics.Raycast(origin, direction, out hit, 12f))
             {
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button")) return hit;
             }
         }
-
         return null;
     }
 
