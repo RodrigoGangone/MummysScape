@@ -19,6 +19,8 @@ public class ViewPlayer
     public RigBuilder rigBuilder;
     public TwoBoneIKConstraint rightHand;
 
+    public bool drawPull;
+
     public ViewPlayer(Player p, SkinnedMeshRenderer body, SkinnedMeshRenderer head, MeshRenderer fire)
     {
         _player = p;
@@ -86,16 +88,10 @@ public class ViewPlayer
         _capsuleCollider.center = new Vector3(0, centerY, 0);
     }
 
-    public void DrawBandageHOOK()
+    public void DrawBandage(Vector3 finishPos)
     {
         bandageHook.SetPosition(0, _player.handTarget.transform.position);
-        bandageHook.SetPosition(1, _player._modelPlayer.hookBeetle.transform.position);
-    }
-
-    public void DrawBandagePull()
-    {
-        bandageHook.SetPosition(0, _player.handTarget.transform.position);
-        bandageHook.SetPosition(1, _player._modelPlayer.CurrentBox.position);
+        bandageHook.SetPosition(1, finishPos);
     }
 
     public void StateRigBuilder(bool act)

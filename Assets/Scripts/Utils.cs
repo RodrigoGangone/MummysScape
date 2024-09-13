@@ -1,6 +1,7 @@
 //Clase con variables y constantes que vamos a usar de forma repetida
 
 using System;
+using UnityEngine;
 
 public static class Utils
 {

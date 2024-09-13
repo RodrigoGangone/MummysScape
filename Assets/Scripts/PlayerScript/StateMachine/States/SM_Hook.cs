@@ -50,7 +50,7 @@ public class SM_Hook : State
             StateMachine.ChangeState(PlayerState.Fall);
         else
         {
-            _view.DrawBandageHOOK();
+            _view.DrawBandage(_model.hookBeetle.transform.position);
             IsSwinging();
         }
     }

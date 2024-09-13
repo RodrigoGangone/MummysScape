@@ -24,6 +24,16 @@ public class AnimationEventReceiver : MonoBehaviour
         _player._modelPlayer.Hook();
     }
 
+    public void EVENT_ANIM_PULL()
+    {
+        _player._modelPlayer.isPulling = true;
+    }
+
+    public void EVENT_ANIM_DRAW_PULL()
+    {
+        _player._viewPlayer.drawPull = true;
+    }
+
     public void EVENT_ANIM_NEXT_SCENE()
     {
         GameManager.Instance.ChangeScene();
