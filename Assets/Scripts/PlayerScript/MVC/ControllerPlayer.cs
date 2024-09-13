@@ -23,11 +23,14 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
+        Debug.Log(CanPullState() + " CAN PULL");
+
+        Debug.Log(_model.CanPullBox() + " CAN BOX ");
+
         if (OnGetState.Invoke().Equals(STATE_PUSH))
         {
             Debug.Log($"STATE: {OnGetState.Invoke()} \n" +
-                      $"Estoy colisionando con:" );
-            
+                      $"Estoy colisionando con:");
         }
 
         if (CanWalkState())
@@ -75,7 +78,9 @@ public class ControllerPlayer
         }
     }
 
-    public void ControllerFixedUpdate() {}
+    public void ControllerFixedUpdate()
+    {
+    }
 
     private bool IsWalking()
     {
@@ -85,14 +90,12 @@ public class ControllerPlayer
     private bool CanIdleState()
     {
         return !IsWalking() &&
-               !_model.CanPushBox() &&
                OnGetState?.Invoke() switch
                {
                    STATE_SHOOT => true,
                    STATE_WALK => true,
                    STATE_FALL => true, // Averiguar cuando toca el suelo para pasarlo a idle
                    STATE_PUSH => true,
-                   STATE_PULL => true,
                    STATE_DAMAGE => true,
                    NO_STATE => true,
                    _ => false

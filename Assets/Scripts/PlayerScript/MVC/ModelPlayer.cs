@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using static Utils;
 
@@ -13,17 +14,18 @@ public class ModelPlayer
     public DetectionHook detectionBeetle;
     public SpringJoint springJoint;
     public Rigidbody hookBeetle;
+    
     public bool isHooking;
 
     //PUSH OBJECT
     private Transform _currentBox;
+    public bool isPulling;
     private Vector3 _dirToPush;
     private Vector3 _dirToPull;
 
     public Transform CurrentBox => _currentBox;
     public Vector3 DirToPush => _dirToPush;
     
-
     public Action SizeModify;
     public Func<Transform, GameObject> CreateBandage;
 
@@ -75,17 +77,13 @@ public class ModelPlayer
 
     public void MovePull()
     {
-        // Obtiene la dirección hacia el jugador (desde la caja)
         Vector3 playerPosition = _player.transform.position;
         Vector3 boxPosition = _currentBox.transform.position;
 
-        // Direccion desde el jugador hacia la caja
         Vector3 directionToBox = (boxPosition - playerPosition).normalized;
 
-        // Ignora la rotación en los ejes X y Z (solo rota en el eje Y)
         directionToBox.y = 0;
 
-        // Rota al jugador mirando hacia la caja lentamente, solo en el eje Y
         if (directionToBox != Vector3.zero)
         {
             Quaternion targetRotation = Quaternion.LookRotation(directionToBox, Vector3.up);
@@ -93,10 +91,8 @@ public class ModelPlayer
                 Time.deltaTime * _player.SpeedRotation);
         }
 
-        // Direccion de la caja hacia el jugador
         Vector3 directionToPlayer = (playerPosition - boxPosition).normalized;
 
-        // Mover la caja hacia el jugador
         _currentBox.transform.position += directionToPlayer * (_player.SpeedPull * Time.deltaTime);
     }
 
@@ -109,8 +105,7 @@ public class ModelPlayer
 
         return distance <= maxDistance;
     }
-
-
+    
     public void ClampMovement()
     {
         var velocity = _rb.velocity;
