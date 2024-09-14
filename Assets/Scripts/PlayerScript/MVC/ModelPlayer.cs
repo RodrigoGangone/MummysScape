@@ -328,26 +328,32 @@ public class ModelPlayer
         var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
         var layerMaskBox = 1 << movableBoxLayer;
 
-        if (Physics.Raycast(rayOrigin, _player.transform.forward, out var hit,
-                _player.RayCheckPullDistance, layerMaskBox))
+        Vector3 forwardDirection = _player.transform.forward;
+        Vector3 rightDirection = Quaternion.Euler(0, 5, 0) * _player.transform.forward;
+        Vector3 leftDirection = Quaternion.Euler(0, -5, 0) * _player.transform.forward;
+
+        Vector3[] directions = { forwardDirection, rightDirection, leftDirection };
+
+        foreach (var direction in directions)
         {
-            _currentBox = hit.collider.transform.parent;
-
-            //TODO: mejorar esto o morir en el intento
-            if (_currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast() != null &&
-                _currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast()
-                    .Equals(hit.collider.gameObject.name))
+            if (Physics.Raycast(rayOrigin, direction, out var hit, _player.RayCheckPullDistance, layerMaskBox))
             {
-                _dirToPull = hit.collider.gameObject.name switch
-                {
-                    BOX_SIDE_FORWARD => Vector3.forward,
-                    BOX_SIDE_BACKWARD => Vector3.back,
-                    BOX_SIDE_LEFT => Vector3.left,
-                    BOX_SIDE_RIGHT => Vector3.right,
-                    _ => Vector3.zero
-                };
+                _currentBox = hit.collider.transform.parent;
 
-                return true;
+                if (_currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast() != null &&
+                    _currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast().Equals(hit.collider.gameObject.name))
+                {
+                    _dirToPull = hit.collider.gameObject.name switch
+                    {
+                        BOX_SIDE_FORWARD => Vector3.forward,
+                        BOX_SIDE_BACKWARD => Vector3.back,
+                        BOX_SIDE_LEFT => Vector3.left,
+                        BOX_SIDE_RIGHT => Vector3.right,
+                        _ => Vector3.zero
+                    };
+
+                    return true; 
+                }
             }
         }
 
