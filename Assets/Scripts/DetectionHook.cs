@@ -7,7 +7,6 @@ public class DetectionHook : MonoBehaviour
     public Rigidbody currentHook;
 
     private bool _isWall = false;
-    private ParticleSystem _hookParticleSystem;
     public Player _player;
 
     private void Start()
@@ -76,6 +75,7 @@ public class DetectionHook : MonoBehaviour
 
         //Apagar particula del beetle que ya no veria
         var hookParticleSystem = other.transform.GetChild(0).GetComponent<ParticleSystem>();
+
         if (hookParticleSystem.isPlaying) hookParticleSystem.Stop();
 
         var cur = other.GetComponent<Rigidbody>();
