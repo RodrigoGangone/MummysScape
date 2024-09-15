@@ -5,10 +5,8 @@ using UnityEngine;
 
 public class Collectible : MonoBehaviour
 {
-    private LevelManager _levelManager;
-    [SerializeField] private ParticleSystem _addPlayer;
-    [SerializeField] private GameObject _FXShinning;
-    [SerializeField] private GameObject _view;
+    [SerializeField] private LevelManager _levelManager;
+    [SerializeField] private GameObject _congratsParticles;
 
     private void Start()
     {
@@ -17,14 +15,10 @@ public class Collectible : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.GetComponent<Player>()) return;
+        if (!other.CompareTag("PlayerFather")) return;
 
-        _levelManager.AddCollectible(this);
-
-        _addPlayer.Play();
-
-        _view.SetActive(false);
-        _FXShinning.SetActive(false);
-        Destroy(gameObject, 3f);
+        _levelManager.CollectibleCount(1);
+        Instantiate(_congratsParticles, transform.position, Quaternion.identity);
+        Destroy(gameObject, 0.1f);
     }
 }

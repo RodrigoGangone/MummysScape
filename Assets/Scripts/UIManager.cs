@@ -77,21 +77,22 @@ public class UIManager : MonoBehaviour
 
     public void UISetCollectibleCount(int count)
     {
-        switch (count)
-        {
-            case 0:
-                _beetleCount.fillAmount = 0;
-                break;
-            case 1:
-                _beetleCount.fillAmount = 0.25f;
-                break;
-            case 2:
-                _beetleCount.fillAmount = 0.50f;
-                break;
-            case 3:
-                _beetleCount.fillAmount = 0.75f;
-                break;
-        }
+        Debug.Log("AGARRASTE UN COLECCIONABLE");
+        //switch (count)
+        //{
+        //    case 0:
+        //        _beetleCount.fillAmount = 0;
+        //        break;
+        //    case 1:
+        //        _beetleCount.fillAmount = 0.25f;
+        //        break;
+        //    case 2:
+        //        _beetleCount.fillAmount = 0.50f;
+        //        break;
+        //    case 3:
+        //        _beetleCount.fillAmount = 0.75f;
+        //        break;
+        //}
     }
 
     private void Win()
