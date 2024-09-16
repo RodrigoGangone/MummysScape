@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 824141173160084453}
   - component: {fileID: 1262084812140308205}
   - component: {fileID: 5582576997343999438}
+  - component: {fileID: 2702886260672625470}
   m_Layer: 11
   m_Name: HookStruicture
   m_TagString: Untagged
@@ -1059,6 +1060,26 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.53310144, y: 0.85190153, z: 0.3998535}
   m_Center: {x: 0.6314698, y: -0.20618546, z: 0}
+--- !u!114 &2702886260672625470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 683532093200817827}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d9bca7abcbbe3d41aeca10c9bad3f26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _interactableType: 0
+  _operablesMapping:
+  - _size: 1
+    _operable: 1
+  _functional: {r: 0, g: 1, b: 0, a: 1}
+  _inoperable: {r: 1, g: 0, b: 0, a: 1}
+  _materials: []
+  _timeoutDuration: 2
 --- !u!1001 &8480838232751249818
 PrefabInstance:
   m_ObjectHideFlags: 0

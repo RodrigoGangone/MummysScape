@@ -26,11 +26,16 @@ public class ModelPlayer
     public bool isPulling;
     private Vector3 _dirToPush;
     private Vector3 _dirToPull;
-    
+
     public Transform CurrentBox => _currentBox;
     public Vector3 DirToPush => _dirToPush;
 
     public Action SizeModify;
+    
+    private Action<RaycastHit> _checkInteractiveMat = hit => 
+    {
+        hit.transform.GetComponent<InteractableOutline>()?.UpdateMaterialStatus(1);
+    };
 
     public ModelPlayer(Player p)
     {
@@ -279,6 +284,7 @@ public class ModelPlayer
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
                 {
                     hit.transform.GetComponent<InteractableOutline>().UpdateMaterialStatus(1);
+                    _checkInteractiveMat(hit);
                     return hit;
                 }
             }
@@ -313,9 +319,8 @@ public class ModelPlayer
                 BOX_SIDE_RIGHT => Vector3.left,
                 _ => Vector3.zero
             };
-            
-            hit.transform.GetComponent<InteractableOutline>().UpdateMaterialStatus(1);
 
+            _checkInteractiveMat(hit);
             return true;
         }
 
@@ -354,8 +359,7 @@ public class ModelPlayer
                     _ => Vector3.zero
                 };
 
-                hit.transform.GetComponent<InteractableOutline>().UpdateMaterialStatus(1);
-                
+                _checkInteractiveMat(hit);
                 return true;
             }
         }

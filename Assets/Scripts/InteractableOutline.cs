@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class InteractableOutline : MonoBehaviour
 {
-    public enum InteractableType
+    private enum InteractableType
     {
         Hook,
         Eagle,
@@ -36,10 +36,9 @@ public class InteractableOutline : MonoBehaviour
     private const string _materialNameToFind = "InteractableOutline_Ma";
 
     [SerializeField] private List<Material> _materials = new();
-
-
+    
     private bool _isCalling;
-    private float _timer = 0f;
+    private float _timer;
     [SerializeField] private float _timeoutDuration = 2f; // Tiempo en segundos para el temporizador
 
     private void Start()
