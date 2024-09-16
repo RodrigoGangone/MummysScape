@@ -18,7 +18,9 @@ public class Collectible : MonoBehaviour
         if (!other.CompareTag("PlayerFather")) return;
 
         _levelManager.CollectibleCount(1);
+        
         Instantiate(_congratsParticles, transform.position, Quaternion.identity);
-        Destroy(gameObject, 0.1f);
+        
+        Destroy(gameObject);
     }
 }
