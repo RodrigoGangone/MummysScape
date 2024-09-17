@@ -32,6 +32,11 @@ public class ModelPlayer
     public Vector3 DirToPull => _dirToPull;
 
     public Action SizeModify;
+    
+    private Action<RaycastHit> _checkInteractiveMat = hit => 
+    {
+        hit.transform.GetComponent<InteractableOutline>()?.UpdateMaterialStatus(1);
+    };
 
     public ModelPlayer(Player p)
     {
@@ -240,25 +245,31 @@ public class ModelPlayer
     private RaycastHit? ButtonHit()
     {
         Vector3 origin = _player.ShootTargetTransform.position;
-            
-        Quaternion leftRotation = Quaternion.Euler(0, -10, 0); 
-        Quaternion rightRotation = Quaternion.Euler(0, 10, 0); 
+
+        Quaternion leftRotation = Quaternion.Euler(0, -10, 0);
+        Quaternion rightRotation = Quaternion.Euler(0, 10, 0);
 
         Vector3 leftDirection = leftRotation * _player.transform.forward;
         Vector3 rightDirection = rightRotation * _player.transform.forward;
-        Vector3 centerDirection = _player.transform.forward; 
-        
+        Vector3 centerDirection = _player.transform.forward;
+
         Vector3[] directions = { leftDirection, rightDirection, centerDirection };
-        
+
         foreach (var direction in directions)
         {
             RaycastHit hit;
 
             if (Physics.Raycast(origin, direction, out hit, 12f))
             {
-                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button")) return hit;
+                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
+                {
+                    hit.transform.GetComponent<InteractableOutline>().UpdateMaterialStatus(1);
+                    _checkInteractiveMat(hit);
+                    return hit;
+                }
             }
         }
+
         return null;
     }
 
@@ -288,11 +299,14 @@ public class ModelPlayer
                 BOX_SIDE_RIGHT => Vector3.left,
                 _ => Vector3.zero
             };
-            
+           
             //Check si la caja no colisiona con pared
             if (_dirToPush != Vector3.zero &&
                 !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPush))
-                return true;
+            {
+              _checkInteractiveMat(hit);
+              return true;
+            }
         }
 
         _currentBox = null;
@@ -338,7 +352,10 @@ public class ModelPlayer
                     //Check si la caja no colisiona con pared
                     if (_dirToPull != Vector3.zero &&
                         !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPull))
-                        return true;
+                    {
+                      _checkInteractiveMat(hit);
+                      return true;
+                    }
                 }
             }
         }
@@ -354,6 +371,7 @@ public class ModelPlayer
         if (ButtonHit().HasValue)
         {
             var activateObjects = ButtonHit()?.collider.gameObject.GetComponent<ActivateObjectsBullet>();
+
             if (activateObjects != null)
                 activateObjects.ActivateParticles();
         }
