@@ -32,8 +32,8 @@ public class ModelPlayer
     public Vector3 DirToPull => _dirToPull;
 
     public Action SizeModify;
-    
-    private Action<RaycastHit> _checkInteractiveMat = hit => 
+
+    private Action<RaycastHit> _checkInteractiveMat = hit =>
     {
         hit.transform.GetComponent<InteractableOutline>()?.UpdateMaterialStatus(1);
     };
@@ -275,6 +275,8 @@ public class ModelPlayer
 
     public bool CanPushBox()
     {
+        if (_player.CurrentPlayerSize != PlayerSize.Normal) return false;
+
         var rayOrigin = new Vector3(
             _player.transform.position.x,
             _player.ShootTargetTransform.position.y,
@@ -299,13 +301,13 @@ public class ModelPlayer
                 BOX_SIDE_RIGHT => Vector3.left,
                 _ => Vector3.zero
             };
-           
+
             //Check si la caja no colisiona con pared
             if (_dirToPush != Vector3.zero &&
                 !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPush))
             {
-              _checkInteractiveMat(hit);
-              return true;
+                _checkInteractiveMat(hit);
+                return true;
             }
         }
 
@@ -338,7 +340,8 @@ public class ModelPlayer
                 _currentBox = hit.collider.transform.parent;
 
                 if (_currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast() != null &&
-                    _currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast().Equals(hit.collider.gameObject.name))
+                    _currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast()
+                        .Equals(hit.collider.gameObject.name))
                 {
                     _dirToPull = hit.collider.gameObject.name switch
                     {
@@ -348,13 +351,13 @@ public class ModelPlayer
                         BOX_SIDE_RIGHT => Vector3.right,
                         _ => Vector3.zero
                     };
-                    
+
                     //Check si la caja no colisiona con pared
                     if (_dirToPull != Vector3.zero &&
                         !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPull))
                     {
-                      _checkInteractiveMat(hit);
-                      return true;
+                        _checkInteractiveMat(hit);
+                        return true;
                     }
                 }
             }
