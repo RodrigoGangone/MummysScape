@@ -333,21 +333,30 @@ public class Player : MonoBehaviour
                 _shootTarget.transform.position.y,
                 transform.position.z);
             
-            RaycastHit hit;
+            Vector3 forwardDirection = transform.forward;
+            Vector3 rightDirection = Quaternion.Euler(0, 5, 0) * transform.forward;
+            Vector3 leftDirection = Quaternion.Euler(0, -5, 0) * transform.forward;
 
-            if (Physics.Raycast(_rayCheckPullPos, transform.forward, out hit, _rayCheckPullDistance))
+            Vector3[] directions = { forwardDirection, rightDirection, leftDirection };
+            
+            foreach (var direction in directions)
             {
-                if (_modelPlayer != null)
-                    Gizmos.color = _modelPlayer.CanPullBox() ? Color.yellow : Color.blue;
-                
-                Gizmos.DrawLine(_rayCheckPullPos, hit.point);
-                Gizmos.DrawSphere(hit.point, 0.1f);
-            }
-            else
-            {
-                Gizmos.color = Color.black;
-                Gizmos.DrawRay(_rayCheckPullPos, transform.forward * _rayCheckPullDistance);
-                Gizmos.DrawSphere(_rayCheckPullPos + transform.forward * _rayCheckPullDistance, 0.1f);
+                RaycastHit hit;
+
+                if (Physics.Raycast(_rayCheckPullPos, direction, out hit, _rayCheckPullDistance))
+                {
+                    if (_modelPlayer != null)
+                        Gizmos.color = _modelPlayer.CanPullBox() ? Color.yellow : Color.blue;
+            
+                    Gizmos.DrawLine(_rayCheckPullPos, hit.point);
+                    Gizmos.DrawSphere(hit.point, 0.1f);
+                }
+                else
+                {
+                    Gizmos.color = Color.black;
+                    Gizmos.DrawRay(_rayCheckPullPos, direction * _rayCheckPullDistance);
+                    Gizmos.DrawSphere(_rayCheckPullPos + direction * _rayCheckPullDistance, 0.1f);
+                }
             }
         }
         #endregion
