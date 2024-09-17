@@ -23,16 +23,11 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
-        Debug.Log(CanPullState() + " CAN PULL");
-
-        Debug.Log(_model.CanPullBox() + " CAN BOX ");
-
         if (OnGetState.Invoke().Equals(STATE_PUSH))
         {
             Debug.Log($"STATE: {OnGetState.Invoke()} \n" +
                       $"Estoy colisionando con:");
         }
-
         if (CanWalkState())
         {
             OnStateChange(PlayerState.Walk);
@@ -97,6 +92,7 @@ public class ControllerPlayer
                    STATE_FALL => true, // Averiguar cuando toca el suelo para pasarlo a idle
                    STATE_PUSH => true,
                    STATE_DAMAGE => true,
+                   STATE_DROP => true,
                    NO_STATE => true,
                    _ => false
                };
@@ -167,13 +163,14 @@ public class ControllerPlayer
                };
     }
 
-    private bool CanDropState()
+    private bool CanDropState() //TODO: Modificar estoy por CanDropBandage
     {
-        return !_model.IsTouchingWall() &&
+        return !PlayerSize.Head.Equals(OnGetPlayerSize.Invoke()) &&
+               _model.CanDropBandage() &&
                OnGetState?.Invoke() switch
                {
                    STATE_IDLE => true,
-                   STATE_PULL => true,
+                   STATE_WALK => true,
                    _ => false
                };
     }

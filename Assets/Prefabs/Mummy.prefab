@@ -4922,7 +4922,6 @@ Transform:
   - {fileID: 3077534031476151425}
   - {fileID: 1647350253907939382}
   - {fileID: 2401735160476489113}
-  - {fileID: 506413050941481986}
   - {fileID: 9111962799348349680}
   - {fileID: 5454077410002923607}
   m_Father: {fileID: 0}
@@ -4952,13 +4951,12 @@ MonoBehaviour:
   _speedRotation: 3
   _speedPush: 0.5
   _speedPull: 0.5
-  _prefabBandage: {fileID: 7171543198981580505, guid: c6edb05bbd245e544ad103d518b07abf, type: 3}
+  _prefabBandage: {fileID: 8770937534992900383, guid: 50d9a2c62f037bd4ca013d6d21130d22, type: 3}
   _maxBandageStock: 2
   _minBandageStock: 0
   _currBandageStock: 2
   handTarget: {fileID: 6993017442284616887}
   _shootTarget: {fileID: 2401735160476489113}
-  dropTarget: {fileID: 506413050941481986}
   _currentPlayerSize: 0
   _Meshes:
   - {fileID: 6434008096517374666, guid: 48394b49411553a4db7264eecb432275, type: 3}
@@ -4968,10 +4966,16 @@ MonoBehaviour:
   _walkFX: {fileID: 833570744582829568}
   rightHand: {fileID: 8959279123585388697}
   rigBuilder: {fileID: 7271772858043175343}
+  boxHalfExtents: {x: 0.45, y: 0.9, z: 0.45}
+  maxDistance: 0.5
+  wallLayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
   GizmoAutoShoot: 0
   GizmoWallShoot: 0
-  GizmoPush: 1
-  GizmoPull: 1
+  GizmoWallDrop: 1
+  GizmoPush: 0
+  GizmoPull: 0
 --- !u!136 &2633432684626094177
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -5161,37 +5165,6 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.7, z: 0.6}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 3690119713168576098}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &3574199095616131694
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 506413050941481986}
-  m_Layer: 8
-  m_Name: Drop
-  m_TagString: Untagged
-  m_Icon: {fileID: 5721338939258241955, guid: 0000000000000000d000000000000000, type: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &506413050941481986
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3574199095616131694}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.7, z: 1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -24243,7 +24216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_PolyMesh:
-    name: PolybrushMesh-8904
+    name: PolybrushMesh-262766
     vertices:
     - {x: 0.29102936, y: -0.002028829, z: -0.038217586}
     - {x: 0.32334584, y: -0.037882086, z: 0.035888627}

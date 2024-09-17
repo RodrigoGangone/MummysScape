@@ -39,7 +39,8 @@ public class Bullet : MonoBehaviour
     private void SpawnMummyBandage()
     {
         BulletFactory.Instance.ReturnObjectToPool(this);
-        _player._modelPlayer.SpawnBandage(transform);
+        //_player._modelPlayer.SpawnBandage(transform);
+        _player._modelPlayer.CreateBandageAtPosition(transform.position);
         Instantiate(_fxBullet, transform.position, transform.rotation);
     }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using static Utils;
+using Object = UnityEngine.Object;
 
 public class ModelPlayer
 {
@@ -10,11 +11,14 @@ public class ModelPlayer
     ControllerPlayer _controller;
     Rigidbody _rb;
 
+    //DROP
+    public Vector3 dropPosition;
+
     //HOOK
     public DetectionHook detectionBeetle;
     public SpringJoint springJoint;
     public Rigidbody hookBeetle;
-    
+
     public bool isHooking;
 
     //PUSH OBJECT
@@ -25,9 +29,8 @@ public class ModelPlayer
 
     public Transform CurrentBox => _currentBox;
     public Vector3 DirToPush => _dirToPush;
-    
+
     public Action SizeModify;
-    public Func<Transform, GameObject> CreateBandage;
 
     public ModelPlayer(Player p)
     {
@@ -44,9 +47,72 @@ public class ModelPlayer
         SizeHandler();
     }
 
-    public void SpawnBandage(Transform trans = null)
+    public void CreateBandageAtPosition(Vector3 position)
     {
-        CreateBandage(trans ?? _player.dropTarget);
+        Object.Instantiate(_player._prefabBandage, position, Quaternion.identity);
+    }
+
+    public void DropBandage()
+    {
+        CountBandage(-1);
+        Object.Instantiate(_player._prefabBandage, dropPosition, Quaternion.identity);
+    }
+
+    public bool CanDropBandage()
+    {
+        LayerMask wallLayerMask = LayerMask.GetMask("Wall");
+        bool isTouchingWall;
+
+        Vector3[] directions =
+        {
+            _player.transform.forward,
+            -_player.transform.forward,
+            _player.transform.right,
+            -_player.transform.right
+        };
+
+        Vector3[] localOffsets =
+        {
+            _player.transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
+            -_player.transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
+            _player.transform.right * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
+            -_player.transform.right * 0.65f + new Vector3(0, 1f, 0) // NO TOCAR ESTOS VALORES
+        };
+
+        for (int i = 0; i < directions.Length; i++)
+        {
+            Vector3 origin = _player.transform.position + localOffsets[i];
+            Quaternion orientation = _player.transform.rotation;
+
+            RaycastHit[] hits = Physics.BoxCastAll(
+                origin,
+                _player.BoxHalfExt,
+                directions[i],
+                orientation,
+                _player.MaxDistance,
+                wallLayerMask
+            );
+
+            isTouchingWall = false; // Reinicia el estado 
+
+            foreach (var hit in hits)
+            {
+                if (((1 << hit.collider.gameObject.layer) & wallLayerMask) != 0) // Verif si es "Wall"
+                {
+                    isTouchingWall = true;
+                    break;
+                }
+            }
+
+            if (!isTouchingWall)
+            {
+                dropPosition = origin + directions[i] * _player.MaxDistance;
+                return true;
+            }
+        }
+
+        dropPosition = Vector3.zero;
+        return false;
     }
 
     public void Move(float moveHorizontal, float moveVertical, float speed, float rotation)
@@ -105,7 +171,7 @@ public class ModelPlayer
 
         return distance <= maxDistance;
     }
-    
+
     public void ClampMovement()
     {
         var velocity = _rb.velocity;
@@ -193,22 +259,26 @@ public class ModelPlayer
 
     private RaycastHit? ButtonHit()
     {
-        Vector3[] origins =
-        {
-            _player.ShootTargetTransform.position + _player.transform.right * 0.75f,
-            _player.ShootTargetTransform.position - _player.transform.right * 0.75f,
-        };
+        Vector3 origin = _player.ShootTargetTransform.position;
+            
+        Quaternion leftRotation = Quaternion.Euler(0, -10, 0); 
+        Quaternion rightRotation = Quaternion.Euler(0, 10, 0); 
 
-        foreach (var origin in origins)
+        Vector3 leftDirection = leftRotation * _player.transform.forward;
+        Vector3 rightDirection = rightRotation * _player.transform.forward;
+        Vector3 centerDirection = _player.transform.forward; 
+        
+        Vector3[] directions = { leftDirection, rightDirection, centerDirection };
+        
+        foreach (var direction in directions)
         {
             RaycastHit hit;
 
-            if (Physics.Raycast(origin, _player.transform.forward, out hit, 12f))
+            if (Physics.Raycast(origin, direction, out hit, 12f))
             {
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button")) return hit;
             }
         }
-
         return null;
     }
 
@@ -333,7 +403,7 @@ public class ModelPlayer
     {
         _player._viewPlayer.PLAY_PUFF();
         SizeModify?.Invoke();
-        
+
         switch (_player.CurrentBandageStock)
         {
             case 2:
@@ -374,7 +444,7 @@ public class ModelPlayer
         if (_rb.velocity.magnitude > _player.Speed)
             _rb.velocity = _rb.velocity.normalized * _player.Speed;
     }
-    
+
     public bool CheckGround()
     {
         Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.1f);
