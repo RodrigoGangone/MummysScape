@@ -63,7 +63,7 @@ public class SM_Pull : State
         if (!_model.IsBoxCloseToPlayer() &&
             _model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor() &&
             _model.isPulling)
-            _model.MovePull();
+            _model.CurrentBox.transform.position += _model.DirToPull *  Time.deltaTime;
 
         _view.DrawBandage(_model.CurrentBox.position);
     }

@@ -29,6 +29,7 @@ public class ModelPlayer
 
     public Transform CurrentBox => _currentBox;
     public Vector3 DirToPush => _dirToPush;
+    public Vector3 DirToPull => _dirToPull;
 
     public Action SizeModify;
 
@@ -139,27 +140,6 @@ public class ModelPlayer
             velocity.y = _rb.velocity.y;
             _rb.velocity = velocity;
         }
-    }
-
-    public void MovePull()
-    {
-        Vector3 playerPosition = _player.transform.position;
-        Vector3 boxPosition = _currentBox.transform.position;
-
-        Vector3 directionToBox = (boxPosition - playerPosition).normalized;
-
-        directionToBox.y = 0;
-
-        if (directionToBox != Vector3.zero)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(directionToBox, Vector3.up);
-            _player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation,
-                Time.deltaTime * _player.SpeedRotation);
-        }
-
-        Vector3 directionToPlayer = (playerPosition - boxPosition).normalized;
-
-        _currentBox.transform.position += directionToPlayer * (_player.SpeedPull * Time.deltaTime);
     }
 
     public bool IsBoxCloseToPlayer(float maxDistance = 2f)
@@ -308,8 +288,11 @@ public class ModelPlayer
                 BOX_SIDE_RIGHT => Vector3.left,
                 _ => Vector3.zero
             };
-
-            return true;
+            
+            //Check si la caja no colisiona con pared
+            if (_dirToPush != Vector3.zero &&
+                !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPush))
+                return true;
         }
 
         _currentBox = null;
@@ -351,8 +334,11 @@ public class ModelPlayer
                         BOX_SIDE_RIGHT => Vector3.right,
                         _ => Vector3.zero
                     };
-
-                    return true; 
+                    
+                    //Check si la caja no colisiona con pared
+                    if (_dirToPull != Vector3.zero &&
+                        !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPull))
+                        return true;
                 }
             }
         }
