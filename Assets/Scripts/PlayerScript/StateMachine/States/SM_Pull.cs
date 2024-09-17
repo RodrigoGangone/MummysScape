@@ -2,15 +2,18 @@ using UnityEngine;
 
 public class SM_Pull : State
 {
+    private Player _player;
     private ModelPlayer _model;
     private ViewPlayer _view;
     private float _time;
     bool isPullDestiny;
 
-    public SM_Pull(ModelPlayer model, ViewPlayer view)
+    public SM_Pull(Player player)
     {
-        _model = model;
-        _view = view;
+        _player = player;
+
+        _model = _player._modelPlayer;
+        _view = _player._viewPlayer;
     }
 
     public override void OnEnter()
@@ -36,6 +39,7 @@ public class SM_Pull : State
         _time = 0;
         _model.isPulling = false;
         _view.drawPull = false;
+        _pullTime = 0;
     }
 
     public override void OnUpdate()
@@ -56,6 +60,8 @@ public class SM_Pull : State
         }
     }
 
+    private float _pullTime;
+
     public override void OnFixedUpdate()
     {
         if (_model.CurrentBox == null) return;
@@ -63,7 +69,11 @@ public class SM_Pull : State
         if (!_model.IsBoxCloseToPlayer() &&
             _model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor() &&
             _model.isPulling)
-            _model.CurrentBox.transform.position += _model.DirToPull *  Time.deltaTime;
+        {
+            _pullTime += Time.fixedDeltaTime;
+            float speed = _player.SpeedPull.Evaluate(_pullTime);
+            _model.CurrentBox.transform.position += _model.DirToPull * speed * Time.fixedDeltaTime;
+        }
 
         _view.DrawBandage(_model.CurrentBox.position);
     }
