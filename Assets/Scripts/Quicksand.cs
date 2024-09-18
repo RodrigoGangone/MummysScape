@@ -1,121 +1,59 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Quicksand : MonoBehaviour
 {
-    [Header("Platform Settings")]
-    private BoxCollider invisiblePlatform; // Reference to the BoxCollider
-    private Vector3 startPosition; // Starting position of the invisible platform's center
-    private Vector3 endPosition; // Ending position of the invisible platform's center
+    private Player _player;
+    private LevelManager _levelManager;
 
-    [Header("Movement Settings")]
-    [Range(0.05f, 0.5f)] public float moveSpeedDownNormal = 0.2f; // Speed at which the platform moves down for Normal size
-    [Range(0.05f, 0.5f)] public float moveSpeedDownSmall = 0.1f; // Speed at which the platform moves down for Small size
-    [Range(0f, 0f)] public float moveSpeedDownHead = 0f; // Speed at which the platform moves down for Head size
-    [Range(0.05f, 1f)] public float moveSpeedUp = 0.5f; // Speed at which the platform moves up (twice as fast)
-    public float yOffset = -3f; // The amount to offset the end position in the Y axis
+    [SerializeField] private float _timeDeathNormal;
+    [SerializeField] private float _timeDeathSmall;
 
-    private bool isMoving; // Flag to check if the platform is moving
-    private Vector3 targetPosition; // Current target position
-    private float currentMoveSpeed; // Current movement speed
+    [SerializeField] private GameObject _sinkFX;
 
-    private Player player;
-    private bool isPlayerOnPlatform; // Flag to track if player is currently on the platform
+    private bool _inQuicksand;
+    private float _timeToDeath;
 
-    void Start()
+
+    private void Start()
     {
-        player = FindObjectOfType<Player>();
-        
-        // Initialize platform position
-        invisiblePlatform = GetComponent<BoxCollider>();
-        startPosition = invisiblePlatform.center;
-        endPosition = new Vector3(startPosition.x, startPosition.y + yOffset, startPosition.z);
-        
-        // Subscribe to player size modification event
-        player._modelPlayer.SizeModify += UpdateMovementSpeedForPlayerSize;
-        
-        // Set initial movement speed based on player's current size
-        UpdateMovementSpeedForPlayerSize();
+        _player = FindObjectOfType<Player>();
+        _levelManager = FindObjectOfType<LevelManager>();
+
+        _levelManager.OnPlayerDeath += SinkPlayer;
     }
 
-    void Update()
+    private void Update()
     {
-        if (isMoving)
-        {
-            MovePlatform();
-        }
+        if (!_inQuicksand) return;
+
+        _timeToDeath += Time.deltaTime;
+
+        if (_timeToDeath > _timeDeathNormal)
+            _levelManager.OnPlayerDeath?.Invoke();
     }
 
-    private void MovePlatform()
+    private void OnCollisionStay(Collision other)
     {
-        Vector3 currentPosition = invisiblePlatform.center;
-        Vector3 newPosition = Vector3.MoveTowards(currentPosition, targetPosition, currentMoveSpeed * Time.deltaTime);
-        invisiblePlatform.center = new Vector3(currentPosition.x, newPosition.y, currentPosition.z);
+        if (!other.gameObject.CompareTag(Utils.PLAYER_TAG)) return;
 
-        if (invisiblePlatform.center == targetPosition)
-        {
-            isMoving = false;
-        }
-    }
-    
-    private void UpdateMovementSpeedForPlayerSize()
-    {
-        switch (player.CurrentPlayerSize)
-        {
-            case PlayerSize.Small:
-                currentMoveSpeed = moveSpeedDownSmall;
-                break;
-            case PlayerSize.Head:
-                if (isPlayerOnPlatform)
-                {
-                    currentMoveSpeed = moveSpeedUp;
-                    SetTargetPosition(startPosition, currentMoveSpeed);
-                }
-                else
-                {
-                    currentMoveSpeed = moveSpeedDownHead;
-                }
-                break;
-            case PlayerSize.Normal:
-            default:
-                currentMoveSpeed = moveSpeedDownNormal;
-                break;
-        }
-    }
-    
-    void OnCollisionStay(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("PlayerFather"))
-        {
-            Player player = collision.gameObject.GetComponent<Player>();
-            if (player != null)
-            {
-                isPlayerOnPlatform = true;
-                UpdateMovementSpeedForPlayerSize();
-                if (player.CurrentPlayerSize == PlayerSize.Head)
-                {
-                    SetTargetPosition(startPosition, currentMoveSpeed);
-                }
-                else
-                {
-                    SetTargetPosition(endPosition, currentMoveSpeed);
-                }
-            }
-        }
+        if (_player.CurrentPlayerSize != PlayerSize.Head)
+            _inQuicksand = true;
     }
 
-    void OnCollisionExit(Collision collision)
+    private void OnCollisionExit(Collision other)
     {
-        if (collision.gameObject.CompareTag("PlayerFather"))
-        {
-            isPlayerOnPlatform = false;
-            SetTargetPosition(startPosition, moveSpeedUp);
-        }
+        if (!other.gameObject.CompareTag(Utils.PLAYER_TAG)) return;
+
+        _inQuicksand = false;
+        _timeToDeath = 0;
     }
 
-    private void SetTargetPosition(Vector3 newTargetPosition, float speed)
+    private void SinkPlayer()
     {
-        targetPosition = newTargetPosition;
-        currentMoveSpeed = speed;
-        isMoving = true;
+        Instantiate(_sinkFX, _player.transform.position, _player.transform.rotation);
+        enabled = false;
     }
 }
