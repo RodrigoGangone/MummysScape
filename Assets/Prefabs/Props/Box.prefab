@@ -160,9 +160,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rayDistanceToPull: 7
   raycastLengthToFloor: 1.75
+  raycastLengthToWall: 0.1
   playerLayerMask:
     serializedVersion: 2
     m_Bits: 256
+  GizmoPull: 0
+  GizmoWall: 0
 --- !u!65 &7958275620218304697
 BoxCollider:
   m_ObjectHideFlags: 0
