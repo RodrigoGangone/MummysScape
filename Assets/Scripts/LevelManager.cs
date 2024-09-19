@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+
 public class LevelManager : MonoBehaviour
 {
     private Player _player;
@@ -9,7 +10,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] public float _currentTimeDeath;
     [SerializeField] public float _maxTimeDeath = 30f;
 
-    private List<Collectible> _collectibles;
+    [SerializeField] private int _collectibleCount;
 
     private LevelState _currentLevelState = LevelState.Playing;
 
@@ -57,18 +58,19 @@ public class LevelManager : MonoBehaviour
             _currentTimeDeath += Time.deltaTime * 30f;
     }
 
-    public void AddCollectible(Collectible beetle)
+    public void CollectibleCount(int sum)
     {
-        _collectibles.Add(beetle);
-        _uiManager.UISetCollectibleCount(_collectibles.Count);
+        _collectibleCount += sum;
+        
+        _uiManager.UISetCollectibleCount(_collectibleCount);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag("PlayerFather")) return;
-        
+
         ChangeState(LevelState.Won);
-        
+
         _portalFxOff.SetActive(false);
         _portalFxOn.SetActive(true);
     }

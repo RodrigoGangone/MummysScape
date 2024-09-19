@@ -4950,7 +4950,39 @@ MonoBehaviour:
   _speed: 3
   _speedRotation: 3
   _speedPush: 0.5
-  _speedPull: 0.5
+  _speedPull:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: -0.20026237
+      outSlope: -0.20026237
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.996482
+    - serializedVersion: 3
+      time: 0.6979145
+      value: 0.9973491
+      inSlope: 0.0055318093
+      outSlope: 0.0055318093
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.34523776
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0.0058388887
+      outSlope: 0.0058388887
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.24376202
+    m_PreInfinity: 2
+    m_PostInfinity: 1
+    m_RotationOrder: 4
   _prefabBandage: {fileID: 8770937534992900383, guid: 50d9a2c62f037bd4ca013d6d21130d22, type: 3}
   _maxBandageStock: 2
   _minBandageStock: 0
@@ -4971,8 +5003,8 @@ MonoBehaviour:
   wallLayerMask:
     serializedVersion: 2
     m_Bits: 2048
-  GizmoAutoShoot: 0
-  GizmoWallShoot: 0
+  GizmoAutoShoot: 1
+  GizmoWallShoot: 1
   GizmoWallDrop: 1
   GizmoPush: 0
   GizmoPull: 0
@@ -5285,7 +5317,7 @@ GameObject:
   - component: {fileID: 1701742793807495871}
   m_Layer: 0
   m_Name: Detected
-  m_TagString: Untagged
+  m_TagString: Detected
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

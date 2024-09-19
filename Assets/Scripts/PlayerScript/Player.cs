@@ -29,7 +29,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speed;
     [SerializeField] private float _speedRotation;
     [SerializeField] private float _speedPush = 0.5f;
-    [SerializeField] private float _speedPull = 0.5f;
+    [SerializeField] private AnimationCurve _speedPull;
 
     [Header("BANDAGE")] [SerializeField] public GameObject _prefabBandage;
     [SerializeField] private int _maxBandageStock = 2;
@@ -38,28 +38,24 @@ public class Player : MonoBehaviour
     [SerializeField] public Transform handTarget;
     [SerializeField] private Transform _shootTarget;
 
-    [Header("SIZES")] 
-    [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
+    [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
     [SerializeField] public Mesh[] _Meshes;
 
-    [Header("FXS")]
-    [SerializeField] public ParticleSystem _puffFX;
+    [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
     [SerializeField] public TwoBoneIKConstraint rightHand;
     [SerializeField] public RigBuilder rigBuilder;
 
-    [Header("BC DROP")]
-    [SerializeField] private Vector3 boxHalfExtents = new(0.45f, 0.9f, 0.45f);
+    [Header("BC DROP")] [SerializeField] private Vector3 boxHalfExtents = new(0.45f, 0.9f, 0.45f);
     [SerializeField] private float maxDistance = 0.5f;
     [SerializeField] private LayerMask wallLayerMask;
-    
-    [Header("GIZMOS")] 
-    [SerializeField] public bool GizmoAutoShoot = true;
+
+    [Header("GIZMOS")] [SerializeField] public bool GizmoAutoShoot = true;
     [SerializeField] public bool GizmoWallShoot = true;
     [SerializeField] public bool GizmoWallDrop = true;
     [SerializeField] public bool GizmoPush = true;
     [SerializeField] public bool GizmoPull = true;
-    
+
     //Rays
     private const float _rayCheckShootDistance = 1.5f;
     private const float _rayCheckPushDistance = 0.75f;
@@ -83,12 +79,12 @@ public class Player : MonoBehaviour
 
     public Vector3 BoxHalfExt => boxHalfExtents;
     public float MaxDistance => maxDistance;
-    
+
     public float Speed => CurrentSpeed();
 
     public float SpeedPush => _speedPush;
-    public float SpeedPull => _speedPull;
-    
+    public AnimationCurve SpeedPull => _speedPull;
+
     public float SpeedRotation => CurrentRotation();
 
     public int MaxBandageStock => _maxBandageStock;
@@ -105,7 +101,7 @@ public class Player : MonoBehaviour
         get => _currentPlayerSize;
         set => _currentPlayerSize = value;
     }
-    
+
     #endregion
 
     private void Awake()
@@ -145,7 +141,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Fall, new SM_Fall(this));
         _stateMachinePlayer.AddState(PlayerState.Drop, new SM_Drop(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Push, new SM_Push(this));
-        _stateMachinePlayer.AddState(PlayerState.Pull, new SM_Pull(_modelPlayer, _viewPlayer));
+        _stateMachinePlayer.AddState(PlayerState.Pull, new SM_Pull(this));
         //_stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage());
         _stateMachinePlayer.AddState(PlayerState.Win, new SM_Win(this));
         //_stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead());
@@ -164,7 +160,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer?.FixedUpdate();
         _controllerPlayer.ControllerFixedUpdate();
     }
-    
+
     void ChangeState(PlayerState playerState)
     {
         _stateMachinePlayer.ChangeState(playerState);
@@ -235,16 +231,17 @@ public class Player : MonoBehaviour
     void OnDrawGizmos()
     {
         #region Auto Apunte Boton
+
         if (GizmoAutoShoot)
         {
             Vector3 origin = _shootTarget.transform.position;
-            
-            Quaternion leftRotation = Quaternion.Euler(0, -10, 0); 
-            Quaternion rightRotation = Quaternion.Euler(0, 10, 0); 
+
+            Quaternion leftRotation = Quaternion.Euler(0, -10, 0);
+            Quaternion rightRotation = Quaternion.Euler(0, 10, 0);
 
             Vector3 leftDirection = leftRotation * transform.forward;
             Vector3 rightDirection = rightRotation * transform.forward;
-            Vector3 centerDirection = transform.forward;  // Rayo que va hacia adelante
+            Vector3 centerDirection = transform.forward; // Rayo que va hacia adelante
 
             Vector3[] directions = { leftDirection, rightDirection, centerDirection };
 
@@ -260,45 +257,51 @@ public class Player : MonoBehaviour
                 }
             }
         }
-        #endregion     
-        
+
+        #endregion
+
         #region Evitar Shoot cerca de Wall
+
         if (GizmoWallShoot)
         {
             if (_modelPlayer != null)
                 Gizmos.color = _modelPlayer.IsTouchingWall() ? Color.red : Color.green;
             else
                 Gizmos.color = Color.black;
-            
+
             var _rayCheckShootPos = new Vector3(transform.position.x,
                 _shootTarget.transform.position.y,
                 transform.position.z);
-            
-            
+
+
             // Solo detectar la capa "Wall"
             int wallLayer = LayerMask.NameToLayer("Wall");
             int layerMaskWall = 1 << wallLayer;
-            
+
             Gizmos.DrawRay(_rayCheckShootPos, transform.forward * _rayCheckShootDistance);
             Gizmos.DrawSphere(_rayCheckShootPos + transform.forward * _rayCheckShootDistance, 0.1f);
         }
+
         #endregion
-        
+
         #region Evitar Drop cerca de Wall
+
         if (GizmoWallDrop)
         {
-            Vector3[] directions = {
+            Vector3[] directions =
+            {
                 transform.forward,
-                -transform.forward, 
+                -transform.forward,
                 transform.right,
                 -transform.right
             };
             // Desfazes en base al jugador
-            Vector3[] localOffsets = {
-                transform.forward * 0.65f + new Vector3(0, 1f, 0),  // NO TOCAR ESTOS VALORES
+            Vector3[] localOffsets =
+            {
+                transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
                 -transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
-                transform.right * 0.65f + new Vector3(0, 1f, 0),    // NO TOCAR ESTOS VALORES
-                -transform.right * 0.65f + new Vector3(0, 1f, 0)    // NO TOCAR ESTOS VALORES
+                transform.right * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
+                -transform.right * 0.65f + new Vector3(0, 1f, 0) // NO TOCAR ESTOS VALORES
             };
 
             // Recorremos ambas listas de dirección y desplazamiento de origen
@@ -307,52 +310,66 @@ public class Player : MonoBehaviour
                 PerformBoxCast(directions[i], localOffsets[i]);
             }
         }
+
         #endregion
-        
+
         #region Check Push Box
+
         if (GizmoPush)
         {
             if (_modelPlayer != null)
                 Gizmos.color = _modelPlayer.CanPushBox() ? Color.red : Color.cyan;
             else
                 Gizmos.color = Color.black;
-            
+
             var _rayCheckPushPos = new Vector3(transform.position.x,
                 _shootTarget.transform.position.y,
                 transform.position.z);
-            
+
             Gizmos.DrawRay(_rayCheckPushPos, transform.forward * _rayCheckPushDistance);
             Gizmos.DrawSphere(_rayCheckPushPos + transform.forward * _rayCheckPushDistance, 0.1f);
         }
+
         #endregion
-        
+
         #region Check Pull Box
+
         if (GizmoPull)
         {
             var _rayCheckPullPos = new Vector3(transform.position.x,
                 _shootTarget.transform.position.y,
                 transform.position.z);
-            
-            RaycastHit hit;
 
-            if (Physics.Raycast(_rayCheckPullPos, transform.forward, out hit, _rayCheckPullDistance))
+            Vector3 forwardDirection = transform.forward;
+            Vector3 rightDirection = Quaternion.Euler(0, 5, 0) * transform.forward;
+            Vector3 leftDirection = Quaternion.Euler(0, -5, 0) * transform.forward;
+
+            Vector3[] directions = { forwardDirection, rightDirection, leftDirection };
+
+            foreach (var direction in directions)
             {
-                if (_modelPlayer != null)
-                    Gizmos.color = _modelPlayer.CanPullBox() ? Color.yellow : Color.blue;
-                
-                Gizmos.DrawLine(_rayCheckPullPos, hit.point);
-                Gizmos.DrawSphere(hit.point, 0.1f);
-            }
-            else
-            {
-                Gizmos.color = Color.black;
-                Gizmos.DrawRay(_rayCheckPullPos, transform.forward * _rayCheckPullDistance);
-                Gizmos.DrawSphere(_rayCheckPullPos + transform.forward * _rayCheckPullDistance, 0.1f);
+                RaycastHit hit;
+
+                if (Physics.Raycast(_rayCheckPullPos, direction, out hit, _rayCheckPullDistance))
+                {
+                    if (_modelPlayer != null)
+                        Gizmos.color = _modelPlayer.CanPullBox() ? Color.yellow : Color.blue;
+
+                    Gizmos.DrawLine(_rayCheckPullPos, hit.point);
+                    Gizmos.DrawSphere(hit.point, 0.1f);
+                }
+                else
+                {
+                    Gizmos.color = Color.black;
+                    Gizmos.DrawRay(_rayCheckPullPos, direction * _rayCheckPullDistance);
+                    Gizmos.DrawSphere(_rayCheckPullPos + direction * _rayCheckPullDistance, 0.1f);
+                }
             }
         }
+
         #endregion
     }
-    
+
     void PerformBoxCast(Vector3 direction, Vector3 localOffsets)
     {
         Vector3 origin = transform.position + localOffsets;
