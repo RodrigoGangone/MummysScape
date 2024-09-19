@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class AnimationEventReceiver : MonoBehaviour
 {
@@ -37,5 +38,10 @@ public class AnimationEventReceiver : MonoBehaviour
     public void EVENT_ANIM_NEXT_SCENE()
     {
         GameManager.Instance.ChangeScene();
+    }
+
+    public void EVENT_ANIM_DEATH()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
