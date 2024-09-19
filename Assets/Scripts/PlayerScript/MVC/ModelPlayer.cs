@@ -29,8 +29,14 @@ public class ModelPlayer
 
     public Transform CurrentBox => _currentBox;
     public Vector3 DirToPush => _dirToPush;
+    public Vector3 DirToPull => _dirToPull;
 
     public Action SizeModify;
+
+    private Action<RaycastHit> _checkInteractiveMat = hit =>
+    {
+        hit.transform.GetComponent<InteractableOutline>()?.UpdateMaterialStatus(1);
+    };
 
     public ModelPlayer(Player p)
     {
@@ -141,27 +147,6 @@ public class ModelPlayer
         }
     }
 
-    public void MovePull()
-    {
-        Vector3 playerPosition = _player.transform.position;
-        Vector3 boxPosition = _currentBox.transform.position;
-
-        Vector3 directionToBox = (boxPosition - playerPosition).normalized;
-
-        directionToBox.y = 0;
-
-        if (directionToBox != Vector3.zero)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(directionToBox, Vector3.up);
-            _player.transform.rotation = Quaternion.Lerp(_player.transform.rotation, targetRotation,
-                Time.deltaTime * _player.SpeedRotation);
-        }
-
-        Vector3 directionToPlayer = (playerPosition - boxPosition).normalized;
-
-        _currentBox.transform.position += directionToPlayer * (_player.SpeedPull * Time.deltaTime);
-    }
-
     public bool IsBoxCloseToPlayer(float maxDistance = 2f)
     {
         Vector3 playerPosition = _player.transform.position;
@@ -260,30 +245,38 @@ public class ModelPlayer
     private RaycastHit? ButtonHit()
     {
         Vector3 origin = _player.ShootTargetTransform.position;
-            
-        Quaternion leftRotation = Quaternion.Euler(0, -10, 0); 
-        Quaternion rightRotation = Quaternion.Euler(0, 10, 0); 
+
+        Quaternion leftRotation = Quaternion.Euler(0, -10, 0);
+        Quaternion rightRotation = Quaternion.Euler(0, 10, 0);
 
         Vector3 leftDirection = leftRotation * _player.transform.forward;
         Vector3 rightDirection = rightRotation * _player.transform.forward;
-        Vector3 centerDirection = _player.transform.forward; 
-        
+        Vector3 centerDirection = _player.transform.forward;
+
         Vector3[] directions = { leftDirection, rightDirection, centerDirection };
-        
+
         foreach (var direction in directions)
         {
             RaycastHit hit;
 
             if (Physics.Raycast(origin, direction, out hit, 12f))
             {
-                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button")) return hit;
+                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
+                {
+                    hit.transform.GetComponent<InteractableOutline>().UpdateMaterialStatus(1);
+                    _checkInteractiveMat(hit);
+                    return hit;
+                }
             }
         }
+
         return null;
     }
 
     public bool CanPushBox()
     {
+        if (_player.CurrentPlayerSize != PlayerSize.Normal) return false;
+
         var rayOrigin = new Vector3(
             _player.transform.position.x,
             _player.ShootTargetTransform.position.y,
@@ -309,7 +302,13 @@ public class ModelPlayer
                 _ => Vector3.zero
             };
 
-            return true;
+            //Check si la caja no colisiona con pared
+            if (_dirToPush != Vector3.zero &&
+                !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPush))
+            {
+                _checkInteractiveMat(hit);
+                return true;
+            }
         }
 
         _currentBox = null;
@@ -328,26 +327,39 @@ public class ModelPlayer
         var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
         var layerMaskBox = 1 << movableBoxLayer;
 
-        if (Physics.Raycast(rayOrigin, _player.transform.forward, out var hit,
-                _player.RayCheckPullDistance, layerMaskBox))
+        Vector3 forwardDirection = _player.transform.forward;
+        Vector3 rightDirection = Quaternion.Euler(0, 5, 0) * _player.transform.forward;
+        Vector3 leftDirection = Quaternion.Euler(0, -5, 0) * _player.transform.forward;
+
+        Vector3[] directions = { forwardDirection, rightDirection, leftDirection };
+
+        foreach (var direction in directions)
         {
-            _currentBox = hit.collider.transform.parent;
-
-            //TODO: mejorar esto o morir en el intento
-            if (_currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast() != null &&
-                _currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast()
-                    .Equals(hit.collider.gameObject.name))
+            if (Physics.Raycast(rayOrigin, direction, out var hit, _player.RayCheckPullDistance, layerMaskBox))
             {
-                _dirToPull = hit.collider.gameObject.name switch
-                {
-                    BOX_SIDE_FORWARD => Vector3.forward,
-                    BOX_SIDE_BACKWARD => Vector3.back,
-                    BOX_SIDE_LEFT => Vector3.left,
-                    BOX_SIDE_RIGHT => Vector3.right,
-                    _ => Vector3.zero
-                };
+                _currentBox = hit.collider.transform.parent;
 
-                return true;
+                if (_currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast() != null &&
+                    _currentBox.GetComponent<PushPullObject>().CheckPlayerRaycast()
+                        .Equals(hit.collider.gameObject.name))
+                {
+                    _dirToPull = hit.collider.gameObject.name switch
+                    {
+                        BOX_SIDE_FORWARD => Vector3.forward,
+                        BOX_SIDE_BACKWARD => Vector3.back,
+                        BOX_SIDE_LEFT => Vector3.left,
+                        BOX_SIDE_RIGHT => Vector3.right,
+                        _ => Vector3.zero
+                    };
+
+                    //Check si la caja no colisiona con pared
+                    if (_dirToPull != Vector3.zero &&
+                        !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPull))
+                    {
+                        _checkInteractiveMat(hit);
+                        return true;
+                    }
+                }
             }
         }
 
@@ -362,6 +374,7 @@ public class ModelPlayer
         if (ButtonHit().HasValue)
         {
             var activateObjects = ButtonHit()?.collider.gameObject.GetComponent<ActivateObjectsBullet>();
+
             if (activateObjects != null)
                 activateObjects.ActivateParticles();
         }

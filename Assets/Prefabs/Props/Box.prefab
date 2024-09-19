@@ -68,6 +68,7 @@ GameObject:
   - component: {fileID: 7958275620218304697}
   - component: {fileID: 1896288142621762950}
   - component: {fileID: 1864219845351746950}
+  - component: {fileID: 3370593064914304617}
   m_Layer: 0
   m_Name: Box
   m_TagString: Untagged
@@ -123,6 +124,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: e75b552989abf2c4cbf93d5c7c4f921f, type: 2}
+  - {fileID: 2100000, guid: 3872fa47348ee18439e546586b3ac6cf, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -156,13 +158,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1903574a69fe5a84b9585a06a84898e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rayDistance: 7
+  rayDistanceToPull: 7
+  raycastLengthToFloor: 1.75
   playerLayerMask:
     serializedVersion: 2
     m_Bits: 256
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 32768
 --- !u!65 &7958275620218304697
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1817,6 +1817,26 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: -3262789968867269347, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
+--- !u!114 &3370593064914304617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4068002535667431534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d9bca7abcbbe3d41aeca10c9bad3f26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _interactableType: 2
+  _operablesMapping:
+  - _size: 0
+    _operable: 1
+  _functional: {r: 0, g: 1, b: 0, a: 1}
+  _inoperable: {r: 1, g: 0, b: 0, a: 1}
+  _materials: []
+  _timeoutDuration: 2
 --- !u!1 &5387047496773342210
 GameObject:
   m_ObjectHideFlags: 0
