@@ -1,29 +1,37 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
+    //Esentials
     private Player _player;
     private LevelManager levelManager;
+    
+    [FormerlySerializedAs("fadeImage")]
+    [Header("UI WIN-LOSE")]
+    [SerializeField] private GameObject _WinPanel;
+    [SerializeField] private GameObject _LosePanel;
 
+    [Header("FADE")]
     [SerializeField] private Image fadeImage;
     
+    [Header("BEETLE")]
     [SerializeField] Image _beetleCount;
 
+    [Header("HOUR GLASS")]
     [SerializeField] private Material _HourgalssBandage01;
     [SerializeField] private Material _HourgalssBandage02;
-
-
     [SerializeField] private Material _sandTimer01;
     [SerializeField] private Material _sandTimer02;
 
-    private float targetOffset1;
-    private float targetOffset2;
-
-    private float targetOffset3;
-
-    private float fillSpeed = 1f;
+    
+    private float _targetOffset1;
+    private float _targetOffset2;
+    private float _targetOffset3;
+    private float _fillSpeed = 1f;
 
     void Start()
     {
@@ -45,7 +53,7 @@ public class UIManager : MonoBehaviour
 
     public void UISetTimerDeath(float currentTimer, float maxtime)
     {
-        targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
+        _targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
     }
 
     public void UISetShootSlider()
@@ -57,21 +65,21 @@ public class UIManager : MonoBehaviour
     {
         int currentBandage = _player.CurrentBandageStock;
 
-        targetOffset1 = currentBandage;
-        targetOffset2 = currentBandage;
+        _targetOffset1 = currentBandage;
+        _targetOffset2 = currentBandage;
     }
 
     private void UpdateMaterialOffsets()
     {
         _HourgalssBandage01.SetFloat("_Offset",
-            Mathf.MoveTowards(_HourgalssBandage01.GetFloat("_Offset"), targetOffset1, fillSpeed * Time.deltaTime));
+            Mathf.MoveTowards(_HourgalssBandage01.GetFloat("_Offset"), _targetOffset1, _fillSpeed * Time.deltaTime));
         _HourgalssBandage02.SetFloat("_Offset",
-            Mathf.MoveTowards(_HourgalssBandage02.GetFloat("_Offset"), targetOffset2, fillSpeed * Time.deltaTime));
+            Mathf.MoveTowards(_HourgalssBandage02.GetFloat("_Offset"), _targetOffset2, _fillSpeed * Time.deltaTime));
 
         _sandTimer01.SetFloat("_Fill",
-            Mathf.MoveTowards(_sandTimer01.GetFloat("_Fill"), targetOffset3, fillSpeed * Time.deltaTime));
+            Mathf.MoveTowards(_sandTimer01.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
         _sandTimer02.SetFloat("_Fill",
-            Mathf.MoveTowards(_sandTimer02.GetFloat("_Fill"), targetOffset3, fillSpeed * Time.deltaTime));
+            Mathf.MoveTowards(_sandTimer02.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
     }
 
     public void UISetCollectibleCount(int count)
