@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 906301810664536286}
   - component: {fileID: 1573932130987514232}
   - component: {fileID: 4024851373448196446}
+  - component: {fileID: 8600676836644125652}
   m_Layer: 6
   m_Name: Hook
   m_TagString: HookJump
@@ -28,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.7219799, y: 0.7219799, z: 0.7219799}
+  m_LocalScale: {x: 0.72197974, y: 0.7219799, z: 0.72197974}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8887433648459646308}
@@ -84,6 +85,26 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.45657054, y: 0.5468265, z: 0.12139788}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8600676836644125652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5065371688813412978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d9bca7abcbbe3d41aeca10c9bad3f26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _interactableType: 0
+  _operablesMapping:
+  - _size: 1
+    _operable: 1
+  _functional: {r: 0, g: 1, b: 0, a: 1}
+  _inoperable: {r: 1, g: 0, b: 0, a: 1}
+  _materials: []
+  _timeoutDuration: 2
 --- !u!1 &7691957979266727239
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,6 +5,8 @@ using UnityEngine;
 
 public static class Utils
 {
+    public const string PLAYER_TAG = "PlayerFather";
+    
     public const string STATE_WALK = "SM_Walk";
     public const string STATE_IDLE = "SM_Idle";
     public const string STATE_SHOOT = "SM_Shoot";
