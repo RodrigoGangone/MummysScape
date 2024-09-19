@@ -290,16 +290,16 @@ public class Player : MonoBehaviour
         {
             Vector3[] directions =
             {
-                transform.forward,
                 -transform.forward,
+                transform.forward,
                 transform.right,
                 -transform.right
             };
             // Desfazes en base al jugador
             Vector3[] localOffsets =
             {
-                transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
                 -transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
+                transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
                 transform.right * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
                 -transform.right * 0.65f + new Vector3(0, 1f, 0) // NO TOCAR ESTOS VALORES
             };
