@@ -3,7 +3,7 @@ using UnityEngine;
 public class SM_Win : State
 {
     private Player _player;
-    private float _materialTransitionDuration = 6f; // Duración en segundos para cambiar el material
+    private float _materialTransitionDuration = 3f; // Duración en segundos para cambiar el material
     private float _rotationSpeed = 90f; // Velocidad de rotación en grados por segundo
     private float _timerToChangeLvl = 0f; // Timer para cambiar de nivel
 
@@ -32,16 +32,23 @@ public class SM_Win : State
 
     public override void OnUpdate()
     {
-        // Cambiar progresivamente la variable del material
         if (!_materialChanged)
         {
-            float t = Mathf.Clamp01((Time.timeSinceLevelLoad - _startTime) / _materialTransitionDuration);
-            float value = Mathf.Lerp(0, 1, t);
-            _player._viewPlayer.SetValueMaterial(value);
+            float elapsedTime = Time.timeSinceLevelLoad - _startTime;
+            float t1 = Mathf.Clamp01(elapsedTime / _materialTransitionDuration);
+            float body = Mathf.Lerp(1, 0, t1);
 
-            if (t >= 1f)
+            _player._viewPlayer.SetValueMaterial(body, 1);
+
+            if (body == 0)
             {
-                _materialChanged = true;
+                float t2 = Mathf.Clamp01((elapsedTime - _materialTransitionDuration) / _materialTransitionDuration);
+                _player._viewPlayer.SetValueMaterial(0, Mathf.Lerp(1, 0, t2));
+
+                if (t2 >= 1f)
+                {
+                    _materialChanged = true;
+                }
             }
         }
 
@@ -50,7 +57,7 @@ public class SM_Win : State
         {
             RotateTowardsCamera();
         }
-        
+
         // Aquí podrías agregar lógica adicional después de que se complete la transición y rotación
         if (_materialChanged && _rotationStarted)
         {
@@ -73,7 +80,8 @@ public class SM_Win : State
         Quaternion targetRotation = Quaternion.LookRotation(direction);
 
         // Interpolar la rotación de manera suave
-        _player.transform.rotation = Quaternion.RotateTowards(_player.transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+        _player.transform.rotation =
+            Quaternion.RotateTowards(_player.transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
 
         // Verificar si hemos alcanzado la rotación deseada
         if (Quaternion.Angle(_player.transform.rotation, targetRotation) < 0.1f)

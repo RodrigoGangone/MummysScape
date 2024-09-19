@@ -43,11 +43,11 @@ public class ViewPlayer
         _headMat = headSkinnedMesh.material;
     }
 
-    public void SetValueMaterial(float value)
+    public void SetValueMaterial(float valueBody, float valueHead )
     {
-        _bodyMat.SetFloat("_Value", value);
-        _headMat.SetFloat("_Value", value);
-        _fireMat.SetFloat("_Dissolve_Distortion", value);
+        _bodyMat.SetFloat("_CutoffHeight", valueBody);
+        _headMat.SetFloat("_CutoffHeight", valueHead);
+        _fireMat.SetFloat("_Dissolve_Distortion", valueHead);
     }
 
     public void ChangeMesh(Mesh mesh)
