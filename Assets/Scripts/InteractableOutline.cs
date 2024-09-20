@@ -23,7 +23,7 @@ public class InteractableOutline : MonoBehaviour
 
     [SerializeField] private InteractableType _interactableType;
 
-    private Player _player;
+    public Player _player;
 
     [SerializeField] private List<OperablesMapping> _operablesMapping = new();
 
@@ -36,7 +36,7 @@ public class InteractableOutline : MonoBehaviour
     private const string _materialNameToFind = "InteractableOutline_Ma";
 
     [SerializeField] private List<Material> _materials = new();
-    
+
     private bool _isCalling;
     private float _timer;
     [SerializeField] private float _timeoutDuration = 2f; // Tiempo en segundos para el temporizador
@@ -61,6 +61,9 @@ public class InteractableOutline : MonoBehaviour
 
     private void Update()
     {
+        _player._modelPlayer.CanPullBox();
+        _player._modelPlayer.CanPushBox();
+
         if (!_isCalling)
         {
             _timer += Time.deltaTime;
@@ -74,13 +77,12 @@ public class InteractableOutline : MonoBehaviour
             _timer = 0f;
     }
 
-    public void UpdateMaterialStatus(int status = 0)
+    public void UpdateMaterialStatus(bool status = false)
     {
         _isCalling = true;
-
         foreach (var material in _materials)
         {
-            material.SetFloat(_inRange, status);
+            material.SetFloat(_inRange, status ? 1 : 0);
         }
 
         Color colorToSet = _inoperable; // Default color
@@ -98,7 +100,6 @@ public class InteractableOutline : MonoBehaviour
         colorToSet = isOperable ? _functional : _inoperable;
 
         SetMaterialColor(colorToSet);
-
         _isCalling = false;
     }
 
@@ -121,7 +122,7 @@ public class InteractableOutline : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         if (!other.CompareTag(_detected) || _interactableType != InteractableType.Hook) return;
-        UpdateMaterialStatus(1);
+        UpdateMaterialStatus(true);
     }
 
     private void OnTriggerExit(Collider other)
