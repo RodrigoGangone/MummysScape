@@ -8,15 +8,18 @@ public class UIManager : MonoBehaviour
     private LevelManager levelManager;
 
     [SerializeField] private Image fadeImage;
-    
+
     [SerializeField] Image _beetleCount;
 
     [SerializeField] private Material _HourgalssBandage01;
     [SerializeField] private Material _HourgalssBandage02;
 
-
     [SerializeField] private Material _sandTimer01;
     [SerializeField] private Material _sandTimer02;
+
+    [SerializeField] private Material _gemMaterial01;
+    [SerializeField] private Material _gemMaterial02;
+    [SerializeField] private Material _gemMaterial03;
 
     private float targetOffset1;
     private float targetOffset2;
@@ -34,6 +37,7 @@ public class UIManager : MonoBehaviour
         levelManager.OnPlayerWin += Win;
         levelManager.OnPlayerDeath += Lose;
 
+        ResetGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
     }
 
@@ -74,9 +78,20 @@ public class UIManager : MonoBehaviour
             Mathf.MoveTowards(_sandTimer02.GetFloat("_Fill"), targetOffset3, fillSpeed * Time.deltaTime));
     }
 
-    public void UISetCollectibleCount(int count)
+    public void UISetCollectibleCount(CollectibleNumber num)
     {
-        Debug.Log("AGARRASTE UN COLECCIONABLE");
+        switch (num)
+        {
+            case CollectibleNumber.One:
+                _gemMaterial01.SetFloat("_IsPicked", 1);
+                break;
+            case CollectibleNumber.Two:
+                _gemMaterial02.SetFloat("_IsPicked", 1);
+                break;
+            case CollectibleNumber.Three:
+                _gemMaterial03.SetFloat("_IsPicked", 1);
+                break;
+        }
     }
 
     private void Win()
@@ -90,7 +105,14 @@ public class UIManager : MonoBehaviour
         Debug.Log("Perdiste el nivel - UIManager");
         StartCoroutine(FadeIn());
     }
-    
+
+    private void ResetGems()
+    {
+        _gemMaterial01.SetFloat("_IsPicked", 0);
+        _gemMaterial02.SetFloat("_IsPicked", 0);
+        _gemMaterial03.SetFloat("_IsPicked", 0);
+    }
+
     private IEnumerator FadeIn()
     {
         Color color = fadeImage.color;
