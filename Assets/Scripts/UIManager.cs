@@ -1,18 +1,46 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
+    //Esentials
     private Player _player;
     private LevelManager levelManager;
+
+
+    [Header("UI WIN")]
+    [SerializeField] private GameObject _WinPanel;
+    [SerializeField] private Button _btnRetryW;
+    [SerializeField] private Button _btnMainMenuW;
+    [SerializeField] private Button _btnNextLvlW;
+
+    [Header("UI LOSE")]
+    [SerializeField] private GameObject _LosePanel;
+    [SerializeField] private Button _btnRetryL;
+    [SerializeField] private Button _btnMainMenuL;
+    
+    [Header("UI NEXT LVL")] // Panel con animacion de momia y carga asincronica de nivel
+    [SerializeField] private GameObject _NextLvlPanel;
+    [SerializeField] private float _fakeTimer = 3f;
+
+    [Header("FADE")]
+    [SerializeField] private Image fadeImage;
+
+    [Header("BEETLE")]
 
     [SerializeField] private Image fadeImage;
 
     [SerializeField] Image _beetleCount;
 
+    [Header("HOUR GLASS")] 
     [SerializeField] private Material _HourgalssBandage01;
     [SerializeField] private Material _HourgalssBandage02;
+
+    [SerializeField] private Material _sandTimer01;
+    [SerializeField] private Material _sandTimer02;
 
     [SerializeField] private Material _sandTimer01;
     [SerializeField] private Material _sandTimer02;
@@ -26,7 +54,10 @@ public class UIManager : MonoBehaviour
 
     private float targetOffset3;
 
-    private float fillSpeed = 1f;
+    private float _targetOffset1;
+    private float _targetOffset2;
+    private float _targetOffset3;
+    private float _fillSpeed = 1f;
 
     void Start()
     {
@@ -34,8 +65,11 @@ public class UIManager : MonoBehaviour
         _player._modelPlayer.SizeModify += UISetShootSlider;
 
         levelManager = FindObjectOfType<LevelManager>();
-        levelManager.OnPlayerWin += Win;
-        levelManager.OnPlayerDeath += Lose;
+        
+        //Buttons OnClick
+        _btnNextLvlW.onClick.AddListener(ShowNextLvlPanel);
+        _btnRetryW.onClick.AddListener(RetryLevel);
+        _btnRetryL.onClick.AddListener(RetryLevel);
 
         ResetGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
@@ -49,7 +83,7 @@ public class UIManager : MonoBehaviour
 
     public void UISetTimerDeath(float currentTimer, float maxtime)
     {
-        targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
+        _targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
     }
 
     public void UISetShootSlider()
@@ -61,21 +95,21 @@ public class UIManager : MonoBehaviour
     {
         int currentBandage = _player.CurrentBandageStock;
 
-        targetOffset1 = currentBandage;
-        targetOffset2 = currentBandage;
+        _targetOffset1 = currentBandage;
+        _targetOffset2 = currentBandage;
     }
 
     private void UpdateMaterialOffsets()
     {
         _HourgalssBandage01.SetFloat("_Offset",
-            Mathf.MoveTowards(_HourgalssBandage01.GetFloat("_Offset"), targetOffset1, fillSpeed * Time.deltaTime));
+            Mathf.MoveTowards(_HourgalssBandage01.GetFloat("_Offset"), _targetOffset1, _fillSpeed * Time.deltaTime));
         _HourgalssBandage02.SetFloat("_Offset",
-            Mathf.MoveTowards(_HourgalssBandage02.GetFloat("_Offset"), targetOffset2, fillSpeed * Time.deltaTime));
+            Mathf.MoveTowards(_HourgalssBandage02.GetFloat("_Offset"), _targetOffset2, _fillSpeed * Time.deltaTime));
 
         _sandTimer01.SetFloat("_Fill",
-            Mathf.MoveTowards(_sandTimer01.GetFloat("_Fill"), targetOffset3, fillSpeed * Time.deltaTime));
+            Mathf.MoveTowards(_sandTimer01.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
         _sandTimer02.SetFloat("_Fill",
-            Mathf.MoveTowards(_sandTimer02.GetFloat("_Fill"), targetOffset3, fillSpeed * Time.deltaTime));
+            Mathf.MoveTowards(_sandTimer02.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
     }
 
     public void UISetCollectibleCount(CollectibleNumber num)
@@ -94,16 +128,40 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void Win()
+    private void ShowNextLvlPanel()
     {
-        Debug.Log("Ganaste el nivel - UIManager");
-        StartCoroutine(FadeIn());
+        _WinPanel.SetActive(false); // Oculto panel Win
+        _NextLvlPanel.SetActive(true); // Muestro panel Nextlvl 
+        
+        //TODO: Activar animacion de momia
+        //AnimationMummy.play();
+        
+        //Carga asincrona
+        StartCoroutine(LoadNextSceneAsync());
     }
-
-    private void Lose()
+    
+    private IEnumerator LoadNextSceneAsync()
     {
-        Debug.Log("Perdiste el nivel - UIManager");
-        StartCoroutine(FadeIn());
+        int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(nextSceneIndex);
+        asyncLoad.allowSceneActivation = false;
+
+        while (!asyncLoad.isDone)
+        {
+            if (asyncLoad.progress >= 0.9f) // Esperar hasta que la carga haya terminado al 90%
+            {
+                //Carga fake de "X" segundos luego cambiar de escena
+                yield return new WaitForSeconds(_fakeTimer);
+                asyncLoad.allowSceneActivation = true;
+            }
+            yield return null;
+        }
+    }
+    
+    private void RetryLevel()
+    {
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        SceneManager.LoadScene(currentSceneIndex);
     }
 
     private void ResetGems()
@@ -113,7 +171,7 @@ public class UIManager : MonoBehaviour
         _gemMaterial03.SetFloat("_IsPicked", 0);
     }
 
-    private IEnumerator FadeIn()
+    private IEnumerator FadeIn(Action onFadeComplete)
     {
         Color color = fadeImage.color;
         float alpha = 0f;
@@ -128,8 +186,10 @@ public class UIManager : MonoBehaviour
             yield return null;
         }
 
-        // Asegurarse de que el alpha llegue a 1
         fadeImage.color = new Color(color.r, color.g, color.b, 1f);
+
+        //Ejecuto un action al terminar el FadeIn
+        onFadeComplete?.Invoke();
     }
 
     private IEnumerator FadeOut()
@@ -147,8 +207,19 @@ public class UIManager : MonoBehaviour
             yield return null;
         }
 
-        // Asegurarse de que el alpha llegue a 0
         fadeImage.color = new Color(color.r, color.g, color.b, 0f);
+        
+        //TODO: Aca se podria hacer un action que active el script del player para que no se mueva mientras esta el fade
+    }
+    
+    public void Win()
+    {
+        StartCoroutine(FadeIn(() => { _WinPanel.SetActive(true); }));
+    }
+
+    public void Lose()
+    {
+        StartCoroutine(FadeIn(() => { _LosePanel.SetActive(true); }));
     }
 
     private void OnEnable()
