@@ -35,7 +35,7 @@ public class ModelPlayer
 
     private Action<RaycastHit> _checkInteractiveMat = hit =>
     {
-        hit.transform.GetComponent<InteractableOutline>()?.UpdateMaterialStatus(1);
+        hit.transform.GetComponent<InteractableOutline>()?.UpdateMaterialStatus(true);
     };
 
     public ModelPlayer(Player p)
@@ -263,7 +263,6 @@ public class ModelPlayer
             {
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
                 {
-                    hit.transform.GetComponent<InteractableOutline>().UpdateMaterialStatus(1);
                     _checkInteractiveMat(hit);
                     return hit;
                 }

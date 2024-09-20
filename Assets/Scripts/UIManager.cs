@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour
     private Player _player;
     private LevelManager levelManager;
 
+
     [Header("UI WIN")]
     [SerializeField] private GameObject _WinPanel;
     [SerializeField] private Button _btnRetryW;
@@ -29,14 +30,29 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Image fadeImage;
 
     [Header("BEETLE")]
+
+    [SerializeField] private Image fadeImage;
+
     [SerializeField] Image _beetleCount;
 
     [Header("HOUR GLASS")] 
     [SerializeField] private Material _HourgalssBandage01;
     [SerializeField] private Material _HourgalssBandage02;
+
     [SerializeField] private Material _sandTimer01;
     [SerializeField] private Material _sandTimer02;
 
+    [SerializeField] private Material _sandTimer01;
+    [SerializeField] private Material _sandTimer02;
+
+    [SerializeField] private Material _gemMaterial01;
+    [SerializeField] private Material _gemMaterial02;
+    [SerializeField] private Material _gemMaterial03;
+
+    private float targetOffset1;
+    private float targetOffset2;
+
+    private float targetOffset3;
 
     private float _targetOffset1;
     private float _targetOffset2;
@@ -55,6 +71,7 @@ public class UIManager : MonoBehaviour
         _btnRetryW.onClick.AddListener(RetryLevel);
         _btnRetryL.onClick.AddListener(RetryLevel);
 
+        ResetGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
     }
 
@@ -95,9 +112,20 @@ public class UIManager : MonoBehaviour
             Mathf.MoveTowards(_sandTimer02.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
     }
 
-    public void UISetCollectibleCount(int count)
+    public void UISetCollectibleCount(CollectibleNumber num)
     {
-        Debug.Log("AGARRASTE UN COLECCIONABLE");
+        switch (num)
+        {
+            case CollectibleNumber.One:
+                _gemMaterial01.SetFloat("_IsPicked", 1);
+                break;
+            case CollectibleNumber.Two:
+                _gemMaterial02.SetFloat("_IsPicked", 1);
+                break;
+            case CollectibleNumber.Three:
+                _gemMaterial03.SetFloat("_IsPicked", 1);
+                break;
+        }
     }
 
     private void ShowNextLvlPanel()
@@ -134,6 +162,13 @@ public class UIManager : MonoBehaviour
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(currentSceneIndex);
+    }
+
+    private void ResetGems()
+    {
+        _gemMaterial01.SetFloat("_IsPicked", 0);
+        _gemMaterial02.SetFloat("_IsPicked", 0);
+        _gemMaterial03.SetFloat("_IsPicked", 0);
     }
 
     private IEnumerator FadeIn(Action onFadeComplete)
