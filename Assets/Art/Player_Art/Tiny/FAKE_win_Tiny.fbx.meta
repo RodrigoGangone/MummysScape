@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: ebad8f98f95da24459534955aef6f947
+guid: 2bf83af6c13e991468b6cc226167c5c7
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: standardSurface2
-    second: {fileID: 2100000, guid: e27bc9b3ec7fb604aa4ebdbc3d35aa55, type: 2}
+    second: {fileID: 2100000, guid: c72e93a937da3244593ad3dc0a6869ff, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -38,18 +38,18 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Drowned_Tiny
-      takeName: Drowned_Tiny
-      internalID: 930213179546752577
+      name: Idle_Tiny
+      takeName: Idle_Tiny
+      internalID: -4523129827093314481
       firstFrame: 0
-      lastFrame: 145
+      lastFrame: 400
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 0
+      loopTime: 1
       loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0
@@ -63,7 +63,7 @@ ModelImporter:
       curves: []
       events:
       - time: 1
-        functionName: EVENT_ANIM_LOSE
+        functionName: EVENT_ANIM_WIN
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 2d6e7ff75cdb63b45826f094fdda7433, type: 3}
         floatParameter: 0
