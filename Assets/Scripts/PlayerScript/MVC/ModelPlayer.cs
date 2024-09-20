@@ -35,7 +35,7 @@ public class ModelPlayer
 
     private Action<RaycastHit> _checkInteractiveMat = hit =>
     {
-        hit.transform.GetComponent<InteractableOutline>()?.UpdateMaterialStatus(1);
+        hit.transform.GetComponent<InteractableOutline>()?.UpdateMaterialStatus(true);
     };
 
     public ModelPlayer(Player p)
@@ -71,16 +71,16 @@ public class ModelPlayer
 
         Vector3[] directions =
         {
-            _player.transform.forward,
             -_player.transform.forward,
+            _player.transform.forward,
             _player.transform.right,
             -_player.transform.right
         };
 
         Vector3[] localOffsets =
         {
-            _player.transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
             -_player.transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
+            _player.transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
             _player.transform.right * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
             -_player.transform.right * 0.65f + new Vector3(0, 1f, 0) // NO TOCAR ESTOS VALORES
         };
@@ -263,7 +263,6 @@ public class ModelPlayer
             {
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
                 {
-                    hit.transform.GetComponent<InteractableOutline>().UpdateMaterialStatus(1);
                     _checkInteractiveMat(hit);
                     return hit;
                 }

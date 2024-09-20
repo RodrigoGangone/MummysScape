@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,8 +7,8 @@ public class UIManager : MonoBehaviour
     private Player _player;
     private LevelManager levelManager;
 
-    [SerializeField] Slider _lifetime;
-    [SerializeField] Slider _shootSlider;
+    [SerializeField] private Image fadeImage;
+    
     [SerializeField] Image _beetleCount;
 
     [SerializeField] private Material _HourgalssBandage01;
@@ -44,9 +45,7 @@ public class UIManager : MonoBehaviour
 
     public void UISetTimerDeath(float currentTimer, float maxtime)
     {
-        _lifetime.value = Mathf.Clamp01(currentTimer / maxtime);
-
-        targetOffset3 = _lifetime.value;
+        targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
     }
 
     public void UISetShootSlider()
@@ -78,32 +77,60 @@ public class UIManager : MonoBehaviour
     public void UISetCollectibleCount(int count)
     {
         Debug.Log("AGARRASTE UN COLECCIONABLE");
-        //switch (count)
-        //{
-        //    case 0:
-        //        _beetleCount.fillAmount = 0;
-        //        break;
-        //    case 1:
-        //        _beetleCount.fillAmount = 0.25f;
-        //        break;
-        //    case 2:
-        //        _beetleCount.fillAmount = 0.50f;
-        //        break;
-        //    case 3:
-        //        _beetleCount.fillAmount = 0.75f;
-        //        break;
-        //}
     }
 
     private void Win()
     {
         Debug.Log("Ganaste el nivel - UIManager");
-        //TODO: Aca va el visual de la UI
+        StartCoroutine(FadeIn());
     }
 
     private void Lose()
     {
         Debug.Log("Perdiste el nivel - UIManager");
-        //TODO: Aca va el visual de la UI
+        StartCoroutine(FadeIn());
+    }
+    
+    private IEnumerator FadeIn()
+    {
+        Color color = fadeImage.color;
+        float alpha = 0f;
+        float duration = 3f;
+        float time = 0f;
+
+        while (time < duration)
+        {
+            alpha = Mathf.Lerp(0, 1, time / duration);
+            fadeImage.color = new Color(color.r, color.g, color.b, alpha);
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        // Asegurarse de que el alpha llegue a 1
+        fadeImage.color = new Color(color.r, color.g, color.b, 1f);
+    }
+
+    private IEnumerator FadeOut()
+    {
+        Color color = fadeImage.color;
+        float alpha = 1f;
+        float duration = 3f;
+        float time = 0f;
+
+        while (time < duration)
+        {
+            alpha = Mathf.Lerp(1, 0, time / duration);
+            fadeImage.color = new Color(color.r, color.g, color.b, alpha);
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        // Asegurarse de que el alpha llegue a 0
+        fadeImage.color = new Color(color.r, color.g, color.b, 0f);
+    }
+
+    private void OnEnable()
+    {
+        StartCoroutine(FadeOut());
     }
 }

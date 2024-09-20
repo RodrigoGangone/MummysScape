@@ -144,7 +144,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Pull, new SM_Pull(this));
         //_stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage());
         _stateMachinePlayer.AddState(PlayerState.Win, new SM_Win(this));
-        //_stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead());
+        _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead(_modelPlayer, _viewPlayer));
 
         _stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
@@ -219,7 +219,7 @@ public class Player : MonoBehaviour
 
     void Death()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        _stateMachinePlayer.ChangeState(PlayerState.Dead);
     }
 
     void OnTriggerEnter(Collider other)
@@ -290,16 +290,16 @@ public class Player : MonoBehaviour
         {
             Vector3[] directions =
             {
-                transform.forward,
                 -transform.forward,
+                transform.forward,
                 transform.right,
                 -transform.right
             };
             // Desfazes en base al jugador
             Vector3[] localOffsets =
             {
-                transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
                 -transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
+                transform.forward * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
                 transform.right * 0.65f + new Vector3(0, 1f, 0), // NO TOCAR ESTOS VALORES
                 -transform.right * 0.65f + new Vector3(0, 1f, 0) // NO TOCAR ESTOS VALORES
             };
