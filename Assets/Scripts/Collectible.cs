@@ -8,6 +8,8 @@ public class Collectible : MonoBehaviour
     [SerializeField] private LevelManager _levelManager;
     [SerializeField] private GameObject _congratsParticles;
 
+    [SerializeField] private CollectibleNumber _collectibleNumber;
+
     private void Start()
     {
         _levelManager = FindObjectOfType<LevelManager>();
@@ -17,10 +19,17 @@ public class Collectible : MonoBehaviour
     {
         if (!other.CompareTag("PlayerFather")) return;
 
-        _levelManager.CollectibleCount(1);
-        
+        _levelManager.CollectibleCount(1, _collectibleNumber);
+
         Instantiate(_congratsParticles, transform.position, Quaternion.identity);
-        
+
         Destroy(gameObject);
     }
+}
+
+public enum CollectibleNumber
+{
+    One,
+    Two,
+    Three
 }

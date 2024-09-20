@@ -61,8 +61,8 @@ public class InteractableOutline : MonoBehaviour
 
     private void Update()
     {
-        _player._modelPlayer.CanPullBox();
-        _player._modelPlayer.CanPushBox();
+        //_player._modelPlayer.CanPullBox();
+        //_player._modelPlayer.CanPushBox();
 
         if (!_isCalling)
         {

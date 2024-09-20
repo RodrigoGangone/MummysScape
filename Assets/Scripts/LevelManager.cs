@@ -58,11 +58,11 @@ public class LevelManager : MonoBehaviour
             _currentTimeDeath += Time.deltaTime * 30f;
     }
 
-    public void CollectibleCount(int sum)
+    public void CollectibleCount(int sum, CollectibleNumber num)
     {
         _collectibleCount += sum;
-        
-        _uiManager.UISetCollectibleCount(_collectibleCount);
+
+        _uiManager.UISetCollectibleCount(num);
     }
 
     private void OnTriggerEnter(Collider other)
