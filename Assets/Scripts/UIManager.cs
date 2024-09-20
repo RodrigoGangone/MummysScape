@@ -28,23 +28,14 @@ public class UIManager : MonoBehaviour
 
     [Header("FADE")]
     [SerializeField] private Image fadeImage;
-
-    [Header("BEETLE")]
-
-    [SerializeField] private Image fadeImage;
-
-    [SerializeField] Image _beetleCount;
-
+    
     [Header("HOUR GLASS")] 
     [SerializeField] private Material _HourgalssBandage01;
     [SerializeField] private Material _HourgalssBandage02;
 
     [SerializeField] private Material _sandTimer01;
     [SerializeField] private Material _sandTimer02;
-
-    [SerializeField] private Material _sandTimer01;
-    [SerializeField] private Material _sandTimer02;
-
+    
     [SerializeField] private Material _gemMaterial01;
     [SerializeField] private Material _gemMaterial02;
     [SerializeField] private Material _gemMaterial03;
