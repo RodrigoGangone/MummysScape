@@ -35,14 +35,14 @@ public class SM_Win : State
         {
             float elapsedTime = Time.timeSinceLevelLoad - _startTime;
             float t1 = Mathf.Clamp01(elapsedTime / _materialTransitionDuration);
-            float body = Mathf.Lerp(1, 0, t1);
+            float body = Mathf.Lerp(1, -0.5f, t1);
 
             _player._viewPlayer.SetValueMaterial(body, 1);
 
-            if (body == 0)
+            if (body == -0.5f)
             {
                 float t2 = Mathf.Clamp01((elapsedTime - _materialTransitionDuration) / _materialTransitionDuration);
-                _player._viewPlayer.SetValueMaterial(0, Mathf.Lerp(1, 0, t2));
+                _player._viewPlayer.SetValueMaterial(-0.5f, Mathf.Lerp(1, -0.5f, t2));
 
                 if (t2 >= 1f)
                 {
