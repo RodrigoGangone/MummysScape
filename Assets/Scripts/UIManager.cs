@@ -10,6 +10,12 @@ public class UIManager : MonoBehaviour
     private Player _player;
     private LevelManager levelManager;
 
+    [Header("UI PAUSE")]
+    [SerializeField] private GameObject _PausePanel;
+    [SerializeField] private Button _btnResume;
+    [SerializeField] private Button _btnRetry;
+    [SerializeField] private Button _btnExit;
+    private bool _isPaused = false;
 
     [Header("UI WIN")]
     [SerializeField] private GameObject _WinPanel;
@@ -42,7 +48,6 @@ public class UIManager : MonoBehaviour
 
     private float targetOffset1;
     private float targetOffset2;
-
     private float targetOffset3;
 
     private float _targetOffset1;
@@ -58,8 +63,13 @@ public class UIManager : MonoBehaviour
         levelManager = FindObjectOfType<LevelManager>();
         
         //Buttons OnClick
+        _btnResume.onClick.AddListener(ResumeGame);
+        _btnRetry.onClick.AddListener(RetryLevel);
+        _btnExit.onClick.AddListener(Exit);
+        
         _btnNextLvlW.onClick.AddListener(ShowNextLvlPanel);
         _btnRetryW.onClick.AddListener(RetryLevel);
+        
         _btnRetryL.onClick.AddListener(RetryLevel);
 
         ResetGems();
@@ -68,8 +78,49 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            if (_isPaused)
+                ResumeGame();
+            else
+                PauseGame();
+        }
+        
         UISetTimerDeath(levelManager._currentTimeDeath, levelManager._maxTimeDeath);
         UpdateMaterialOffsets();
+    }
+    
+    // Método para pausar el juego y activar el PausePanel
+    private void PauseGame()
+    {
+        _isPaused = true;
+        _PausePanel.SetActive(true);
+
+        _WinPanel.SetActive(false);
+        _LosePanel.SetActive(false);
+        _NextLvlPanel.SetActive(false);
+
+        Time.timeScale = 0;
+    }
+
+    private void ResumeGame()
+    {
+        _isPaused = false;
+        _PausePanel.SetActive(false);
+
+        // Reanudar el tiempo del juego
+        Time.timeScale = 1;
+    }
+    
+    private void Exit()
+    {
+        #if UNITY_EDITOR
+                // Si estás en el editor, detiene la ejecución del juego
+                UnityEditor.EditorApplication.isPlaying = false;
+        #else
+                // En una compilación, cierra la aplicación
+                Application.Quit();
+        #endif
     }
 
     public void UISetTimerDeath(float currentTimer, float maxtime)
@@ -121,8 +172,11 @@ public class UIManager : MonoBehaviour
 
     private void ShowNextLvlPanel()
     {
-        _WinPanel.SetActive(false); // Oculto panel Win
-        _NextLvlPanel.SetActive(true); // Muestro panel Nextlvl 
+        _NextLvlPanel.SetActive(true);
+
+        _WinPanel.SetActive(false);
+        _LosePanel.SetActive(false);
+        _PausePanel.SetActive(false);
         
         //TODO: Activar animacion de momia
         //AnimationMummy.play();
@@ -151,6 +205,7 @@ public class UIManager : MonoBehaviour
     
     private void RetryLevel()
     {
+        Time.timeScale = 1;
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(currentSceneIndex);
     }
