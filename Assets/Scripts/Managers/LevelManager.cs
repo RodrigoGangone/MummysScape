@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ public class LevelManager : MonoBehaviour
 
     [SerializeField] public float _currentTimeDeath;
     [SerializeField] public float _maxTimeDeath = 30f;
+    [SerializeField] private float _speedRecovery;
 
     [SerializeField] private int _collectibleCount;
 
@@ -20,6 +22,11 @@ public class LevelManager : MonoBehaviour
     public Action OnPlayerWin;
     public Action OnPlayerDeath;
 
+    public Action OnPlaying;
+    public Action OnPause;
+
+    private Coroutine _deathTimerCoroutine;
+
     private void Start()
     {
         _player = FindObjectOfType<Player>();
@@ -27,32 +34,76 @@ public class LevelManager : MonoBehaviour
 
         OnPlayerWin += Win;
         OnPlayerDeath += Lose;
+
+        OnPlaying += HandlePlay;
+        OnPlaying += VerifyPause;
+
+        OnPause += HandlePause;
+        OnPause += VerifyPause;
+
+        _currentTimeDeath = _maxTimeDeath;
     }
 
     private void Update()
     {
-        if (_currentLevelState == LevelState.Playing)
-            HandleGameplay();
+        if (Input.GetKeyDown(KeyCode.P)) //ESTO LO DEBERIA MANEJAR EL LEVEL MANAGER
+        {
+            if (_currentLevelState == LevelState.Playing)
+                OnPause?.Invoke();
+            else
+                OnPlaying?.Invoke();
+        }
+
+        if (_player.CurrentPlayerSize == PlayerSize.Head && _deathTimerCoroutine == null)
+        {
+            _deathTimerCoroutine = StartCoroutine(DeathTimerCoroutine());
+        }
+        else if (_player.CurrentPlayerSize != PlayerSize.Head && _deathTimerCoroutine != null)
+        {
+            StopCoroutine(_deathTimerCoroutine);
+            _deathTimerCoroutine = null;
+
+            StartCoroutine(ResetDeathTimer());
+        }
     }
 
-    private void HandleGameplay()
+    private IEnumerator DeathTimerCoroutine()
     {
-        if (_currentTimeDeath >= _maxTimeDeath && _player.CurrentPlayerSize != PlayerSize.Head) return;
-
-        SetTimerDeath(_player.CurrentPlayerSize);
-
-        //_uiManager.UISetTimerDeath(_currentTimeDeath, _maxTimeDeath);
-
-        if (_currentTimeDeath <= 0)
-            ChangeState(LevelState.Lost);
-    }
-
-    private void SetTimerDeath(PlayerSize playerSize)
-    {
-        if (playerSize == PlayerSize.Head)
+        while (_currentTimeDeath > 0)
+        {
             _currentTimeDeath -= Time.deltaTime;
-        else
-            _currentTimeDeath += Time.deltaTime * 30f;
+            yield return null;
+        }
+
+        ChangeState(LevelState.Lost);
+    }
+
+    private IEnumerator ResetDeathTimer()
+    {
+        while (_currentTimeDeath < _maxTimeDeath)
+        {
+            _currentTimeDeath += Time.deltaTime * _speedRecovery;
+            yield return null;
+        }
+
+        _currentTimeDeath = _maxTimeDeath;
+    }
+
+    private void HandlePause()
+    {
+        _player.enabled = false;
+    }
+
+    private void HandlePlay()
+    {
+        _player.enabled = true;
+    }
+
+    private void VerifyPause()
+    {
+        _currentLevelState = _currentLevelState.Equals(LevelState.Pause)
+            ? LevelState.Playing
+            : LevelState.Pause;
     }
 
     public void CollectibleCount(int sum, CollectibleNumber num)
@@ -104,6 +155,7 @@ public class LevelManager : MonoBehaviour
 public enum LevelState
 {
     Playing,
+    Pause,
     Won,
     Lost
 }

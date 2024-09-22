@@ -10,38 +10,36 @@ public class UIManager : MonoBehaviour
     private Player _player;
     private LevelManager levelManager;
 
-    [Header("UI PAUSE")]
-    [SerializeField] private GameObject _PausePanel;
+    [Header("UI PAUSE")] [SerializeField] private GameObject _PausePanel;
     [SerializeField] private Button _btnResume;
     [SerializeField] private Button _btnRetry;
     [SerializeField] private Button _btnExit;
-    private bool _isPaused = false;
 
-    [Header("UI WIN")]
-    [SerializeField] private GameObject _WinPanel;
+    [Header("UI WIN")] [SerializeField] private GameObject _WinPanel;
     [SerializeField] private Button _btnRetryW;
     [SerializeField] private Button _btnMainMenuW;
     [SerializeField] private Button _btnNextLvlW;
 
-    [Header("UI LOSE")]
-    [SerializeField] private GameObject _LosePanel;
+    [Header("UI LOSE")] [SerializeField] private GameObject _LosePanel;
     [SerializeField] private Button _btnRetryL;
     [SerializeField] private Button _btnMainMenuL;
-    
+
     [Header("UI NEXT LVL")] // Panel con animacion de momia y carga asincronica de nivel
-    [SerializeField] private GameObject _NextLvlPanel;
+    [SerializeField]
+    private GameObject _NextLvlPanel;
+
     [SerializeField] private float _fakeTimer = 3f;
 
-    [Header("FADE")]
-    [SerializeField] private Image fadeImage;
-    
-    [Header("HOUR GLASS")] 
-    [SerializeField] private Material _HourgalssBandage01;
+    [Header("FADE")] [SerializeField] private Image fadeImage;
+
+    [Header("HOUR GLASS")] [SerializeField]
+    private Material _HourgalssBandage01;
+
     [SerializeField] private Material _HourgalssBandage02;
 
     [SerializeField] private Material _sandTimer01;
     [SerializeField] private Material _sandTimer02;
-    
+
     [SerializeField] private Material _gemMaterial01;
     [SerializeField] private Material _gemMaterial02;
     [SerializeField] private Material _gemMaterial03;
@@ -59,17 +57,20 @@ public class UIManager : MonoBehaviour
     {
         _player = FindObjectOfType<Player>();
         levelManager = FindObjectOfType<LevelManager>();
-        
+
         _player._modelPlayer.SizeModify += UISetShootSlider;
+
+        levelManager.OnPlaying += ResumeGame;
+        levelManager.OnPause += PauseGame;
         
         //Buttons OnClick
-        _btnResume.onClick.AddListener(ResumeGame);
+        _btnResume.onClick.AddListener(() => { levelManager.OnPlaying.Invoke(); });
         _btnRetry.onClick.AddListener(RetryLevel);
         _btnExit.onClick.AddListener(Exit);
-        
+
         _btnNextLvlW.onClick.AddListener(ShowNextLvlPanel);
         _btnRetryW.onClick.AddListener(RetryLevel);
-        
+
         _btnRetryL.onClick.AddListener(RetryLevel);
 
         ResetGems();
@@ -78,49 +79,37 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            if (_isPaused)
-                ResumeGame();
-            else
-                PauseGame();
-        }
-        
-        UISetTimerDeath(levelManager._currentTimeDeath, levelManager._maxTimeDeath);
-        UpdateMaterialOffsets();
+        UISetTimerDeath(levelManager._currentTimeDeath,
+            levelManager._maxTimeDeath); //TODO: ESTO DEBERIA ESTAR SEPARADO DEL LEVEL MANAGER
+        UpdateMaterialOffsets(); //TODO: ESTO SE DEBERIA DETENER CUANDO LAS VENDAS ESTAN LLENAS
     }
-    
+
     // Método para pausar el juego y activar el PausePanel
     private void PauseGame()
     {
-        _isPaused = true;
+        Debug.Log("PAUSED");
         _PausePanel.SetActive(true);
 
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _NextLvlPanel.SetActive(false);
-
-        Time.timeScale = 0;
     }
 
     private void ResumeGame()
     {
-        _isPaused = false;
+        Debug.Log("PLAYING");
         _PausePanel.SetActive(false);
-
-        // Reanudar el tiempo del juego
-        Time.timeScale = 1;
     }
-    
+
     private void Exit()
     {
-        #if UNITY_EDITOR
-                // Si estás en el editor, detiene la ejecución del juego
-                UnityEditor.EditorApplication.isPlaying = false;
-        #else
-                // En una compilación, cierra la aplicación
-                Application.Quit();
-        #endif
+#if UNITY_EDITOR
+        // Si estás en el editor, detiene la ejecución del juego
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+                        // En una compilación, cierra la aplicación
+                        Application.Quit();
+#endif
     }
 
     public void UISetTimerDeath(float currentTimer, float maxtime)
@@ -177,14 +166,14 @@ public class UIManager : MonoBehaviour
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _PausePanel.SetActive(false);
-        
+
         //TODO: Activar animacion de momia
         //AnimationMummy.play();
-        
+
         //Carga asincrona
         StartCoroutine(LoadNextSceneAsync());
     }
-    
+
     private IEnumerator LoadNextSceneAsync()
     {
         int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
@@ -199,13 +188,13 @@ public class UIManager : MonoBehaviour
                 yield return new WaitForSeconds(_fakeTimer);
                 asyncLoad.allowSceneActivation = true;
             }
+
             yield return null;
         }
     }
-    
+
     private void RetryLevel()
     {
-        Time.timeScale = 1;
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(currentSceneIndex);
     }
@@ -254,10 +243,10 @@ public class UIManager : MonoBehaviour
         }
 
         fadeImage.color = new Color(color.r, color.g, color.b, 0f);
-        
+
         //TODO: Aca se podria hacer un action que active el script del player para que no se mueva mientras esta el fade
     }
-    
+
     public void Win()
     {
         StartCoroutine(FadeIn(() => { _WinPanel.SetActive(true); }));
