@@ -58,9 +58,9 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         _player = FindObjectOfType<Player>();
-        _player._modelPlayer.SizeModify += UISetShootSlider;
-
         levelManager = FindObjectOfType<LevelManager>();
+        
+        _player._modelPlayer.SizeModify += UISetShootSlider;
         
         //Buttons OnClick
         _btnResume.onClick.AddListener(ResumeGame);

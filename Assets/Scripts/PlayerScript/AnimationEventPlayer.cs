@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class AnimationEventReceiver : MonoBehaviour
+public class AnimationEventPlayer : MonoBehaviour
 {
     private Player _player;
     private UIManager _uiManager;
