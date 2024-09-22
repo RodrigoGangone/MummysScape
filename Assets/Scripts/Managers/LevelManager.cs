@@ -16,14 +16,13 @@ public class LevelManager : MonoBehaviour
 
     private LevelState _currentLevelState = LevelState.Playing;
 
-    [SerializeField] private GameObject _portalFxOff;
-    [SerializeField] private GameObject _portalFxOn;
-
     public Action OnPlayerWin;
     public Action OnPlayerDeath;
 
     public Action OnPlaying;
     public Action OnPause;
+
+    public Action<CollectibleNumber> AddCollectible;
 
     private Coroutine _deathTimerCoroutine;
 
@@ -40,6 +39,8 @@ public class LevelManager : MonoBehaviour
 
         OnPause += HandlePause;
         OnPause += VerifyPause;
+
+        AddCollectible += CollectibleCount;
 
         _currentTimeDeath = _maxTimeDeath;
     }
@@ -75,7 +76,7 @@ public class LevelManager : MonoBehaviour
             yield return null;
         }
 
-        ChangeState(LevelState.Lost);
+        OnPlayerDeath?.Invoke();
     }
 
     private IEnumerator ResetDeathTimer()
@@ -106,39 +107,9 @@ public class LevelManager : MonoBehaviour
             : LevelState.Pause;
     }
 
-    public void CollectibleCount(int sum, CollectibleNumber num)
+    private void CollectibleCount(CollectibleNumber num)
     {
-        _collectibleCount += sum;
-
-        _uiManager.UISetCollectibleCount(num);
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!other.gameObject.CompareTag("PlayerFather")) return;
-
-        ChangeState(LevelState.Won);
-
-        _portalFxOff.SetActive(false);
-        _portalFxOn.SetActive(true);
-    }
-
-    private void ChangeState(LevelState newState)
-    {
-        if (_currentLevelState == newState) return;
-
-        _currentLevelState = newState;
-
-        switch (newState)
-        {
-            case LevelState.Won:
-                OnPlayerWin?.Invoke();
-                break;
-
-            case LevelState.Lost:
-                OnPlayerDeath?.Invoke();
-                break;
-        }
+        _collectibleCount++;
     }
 
     private void Win()
@@ -155,7 +126,5 @@ public class LevelManager : MonoBehaviour
 public enum LevelState
 {
     Playing,
-    Pause,
-    Won,
-    Lost
+    Pause
 }

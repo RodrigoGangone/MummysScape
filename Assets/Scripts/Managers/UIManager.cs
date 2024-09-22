@@ -62,7 +62,9 @@ public class UIManager : MonoBehaviour
 
         levelManager.OnPlaying += ResumeGame;
         levelManager.OnPause += PauseGame;
-        
+
+        levelManager.AddCollectible += UISetCollectibleCount;
+
         //Buttons OnClick
         _btnResume.onClick.AddListener(() => { levelManager.OnPlaying.Invoke(); });
         _btnRetry.onClick.AddListener(RetryLevel);

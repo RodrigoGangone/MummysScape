@@ -10,19 +10,26 @@ public class Collectible : MonoBehaviour
 
     [SerializeField] private CollectibleNumber _collectibleNumber;
 
+
     private void Start()
     {
         _levelManager = FindObjectOfType<LevelManager>();
+
+        _levelManager.AddCollectible += AddCollectFX;
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("PlayerFather")) return;
 
-        _levelManager.CollectibleCount(1, _collectibleNumber);
+        _levelManager.AddCollectible.Invoke(_collectibleNumber);
+    }
+
+    private void AddCollectFX(CollectibleNumber number)
+    {
+        if (number != _collectibleNumber) return;
 
         Instantiate(_congratsParticles, transform.position, Quaternion.identity);
-
         Destroy(gameObject);
     }
 }
