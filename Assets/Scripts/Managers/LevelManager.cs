@@ -41,7 +41,7 @@ public class LevelManager : MonoBehaviour
 
         SetTimerDeath(_player.CurrentPlayerSize);
 
-        _uiManager.UISetTimerDeath(_currentTimeDeath, _maxTimeDeath);
+        //_uiManager.UISetTimerDeath(_currentTimeDeath, _maxTimeDeath);
 
         if (_currentTimeDeath <= 0)
             ChangeState(LevelState.Lost);
@@ -50,10 +50,7 @@ public class LevelManager : MonoBehaviour
     private void SetTimerDeath(PlayerSize playerSize)
     {
         if (playerSize == PlayerSize.Head)
-        {
             _currentTimeDeath -= Time.deltaTime;
-            //_uiManager.SetMaterialUI(_currentTimeDeath <= _maxTimeDeath / 2 ? _currentTimeDeath : 0);
-        }
         else
             _currentTimeDeath += Time.deltaTime * 30f;
     }
