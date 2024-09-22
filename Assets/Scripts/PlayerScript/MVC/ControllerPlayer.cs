@@ -103,7 +103,6 @@ public class ControllerPlayer
                {
                    STATE_IDLE => true,
                    STATE_PUSH => true,
-                   STATE_PULL => true,
                    _ => false
                };
     }
