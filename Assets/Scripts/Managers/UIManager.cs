@@ -10,30 +10,33 @@ public class UIManager : MonoBehaviour
     private Player _player;
     private LevelManager levelManager;
 
-    [Header("UI PAUSE")] [SerializeField] private GameObject _PausePanel;
+    [Header("UI PAUSE")]
+    [SerializeField] private GameObject _PausePanel;
     [SerializeField] private Button _btnResume;
     [SerializeField] private Button _btnRetry;
     [SerializeField] private Button _btnExit;
 
-    [Header("UI WIN")] [SerializeField] private GameObject _WinPanel;
+    [Header("UI WIN")]
+    [SerializeField] private GameObject _WinPanel;
     [SerializeField] private Button _btnRetryW;
     [SerializeField] private Button _btnMainMenuW;
     [SerializeField] private Button _btnNextLvlW;
 
-    [Header("UI LOSE")] [SerializeField] private GameObject _LosePanel;
+    [Header("UI LOSE")]
+    [SerializeField] private GameObject _LosePanel;
     [SerializeField] private Button _btnRetryL;
     [SerializeField] private Button _btnMainMenuL;
 
     [Header("UI NEXT LVL")] // Panel con animacion de momia y carga asincronica de nivel
-    [SerializeField]
-    private GameObject _NextLvlPanel;
+    [SerializeField] private GameObject _NextLvlPanel;
 
     [SerializeField] private float _fakeTimer = 3f;
 
-    [Header("FADE")] [SerializeField] private Image fadeImage;
+    [Header("FADE")]
+    [SerializeField] private Image fadeImage;
 
-    [Header("HOUR GLASS")] [SerializeField]
-    private Material _HourgalssBandage01;
+    [Header("HOUR GLASS")] 
+    [SerializeField] private Material _HourgalssBandage01;
 
     [SerializeField] private Material _HourgalssBandage02;
 
@@ -68,12 +71,14 @@ public class UIManager : MonoBehaviour
         //Buttons OnClick
         _btnResume.onClick.AddListener(() => { levelManager.OnPlaying.Invoke(); });
         _btnRetry.onClick.AddListener(RetryLevel);
-        _btnExit.onClick.AddListener(Exit);
-
+        _btnExit.onClick.AddListener(GoToMainMenu);
+        
         _btnNextLvlW.onClick.AddListener(ShowNextLvlPanel);
         _btnRetryW.onClick.AddListener(RetryLevel);
+        _btnMainMenuW.onClick.AddListener(GoToMainMenu);
 
         _btnRetryL.onClick.AddListener(RetryLevel);
+        _btnMainMenuL.onClick.AddListener(GoToMainMenu);
 
         ResetGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
@@ -103,15 +108,9 @@ public class UIManager : MonoBehaviour
         _PausePanel.SetActive(false);
     }
 
-    private void Exit()
+    public void GoToMainMenu()
     {
-#if UNITY_EDITOR
-        // Si estás en el editor, detiene la ejecución del juego
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-                        // En una compilación, cierra la aplicación
-                        Application.Quit();
-#endif
+        SceneManager.LoadScene(0);
     }
 
     public void UISetTimerDeath(float currentTimer, float maxtime)

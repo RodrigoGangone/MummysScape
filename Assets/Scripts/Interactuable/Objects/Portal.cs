@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Portal : MonoBehaviour
@@ -14,11 +12,6 @@ public class Portal : MonoBehaviour
     {
         _levelManager = FindObjectOfType<LevelManager>();
         _levelManager.OnPlayerWin += PassedLevelFX;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
     }
 
     private void OnTriggerEnter(Collider other)

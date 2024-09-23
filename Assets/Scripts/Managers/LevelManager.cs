@@ -1,24 +1,25 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using static Utils;
 
 public class LevelManager : MonoBehaviour
 {
     private Player _player;
-    private UIManager _uiManager;
 
     [SerializeField] public float _currentTimeDeath;
     [SerializeField] public float _maxTimeDeath = 30f;
     [SerializeField] private float _speedRecovery;
-
+    
     [SerializeField] private int _collectibleCount;
+
+    private int nextSceneLoad;
 
     private LevelState _currentLevelState = LevelState.Playing;
 
     public Action OnPlayerWin;
     public Action OnPlayerDeath;
-
     public Action OnPlaying;
     public Action OnPause;
 
@@ -29,7 +30,8 @@ public class LevelManager : MonoBehaviour
     private void Start()
     {
         _player = FindObjectOfType<Player>();
-        _uiManager = FindObjectOfType<UIManager>();
+
+        nextSceneLoad = SceneManager.GetActiveScene().buildIndex + 1; //Siguiente lvl
 
         OnPlayerWin += Win;
         OnPlayerDeath += Lose;
@@ -114,12 +116,14 @@ public class LevelManager : MonoBehaviour
 
     private void Win()
     {
-        Debug.Log("Ganaste!");
+        PlayerPrefs.SetInt(LVL_AT, nextSceneLoad);
+        Debug.Log($"LevelManager -> PlayerPref: LVL_AT {nextSceneLoad}");
+        Debug.Log("LevelManager -> Ganaste!");
     }
 
     private void Lose()
     {
-        Debug.Log("Perdiste!");
+        Debug.Log("LevelManager -> Perdiste!");
     }
 }
 
