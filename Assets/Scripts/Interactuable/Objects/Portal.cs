@@ -12,6 +12,7 @@ public class Portal : MonoBehaviour
 
     void Start()
     {
+        _levelManager = FindObjectOfType<LevelManager>();
         _levelManager.OnPlayerWin += PassedLevelFX;
     }
 
