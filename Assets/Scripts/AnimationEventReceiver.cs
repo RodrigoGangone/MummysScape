@@ -4,10 +4,12 @@ using UnityEngine.SceneManagement;
 public class AnimationEventReceiver : MonoBehaviour
 {
     private Player _player;
+    private UIManager _uiManager;
 
     private void Start()
     {
         _player = GetComponentInParent<Player>();
+        _uiManager = FindObjectOfType<UIManager>();
     }
 
     public void EVENT_ANIM_SHOOT() //Se usa en animacion : Shoot
@@ -34,14 +36,14 @@ public class AnimationEventReceiver : MonoBehaviour
     {
         _player._viewPlayer.drawPull = true;
     }
-
-    public void EVENT_ANIM_NEXT_SCENE()
+    
+    public void EVENT_ANIM_WIN()
     {
-        GameManager.Instance.ChangeScene();
+        _uiManager.Win();
     }
 
-    public void EVENT_ANIM_DEATH()
+    public void EVENT_ANIM_LOSE()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        _uiManager.Lose();
     }
 }

@@ -3,9 +3,8 @@ using UnityEngine;
 public class SM_Win : State
 {
     private Player _player;
-    private float _materialTransitionDuration = 3f; // Duración en segundos para cambiar el material
+    private float _materialTransitionDuration = 2f; // Duración en segundos para cambiar el material
     private float _rotationSpeed = 90f; // Velocidad de rotación en grados por segundo
-    private float _timerToChangeLvl = 0f; // Timer para cambiar de nivel
 
     private float _startTime;
     private bool _materialChanged;
@@ -36,14 +35,14 @@ public class SM_Win : State
         {
             float elapsedTime = Time.timeSinceLevelLoad - _startTime;
             float t1 = Mathf.Clamp01(elapsedTime / _materialTransitionDuration);
-            float body = Mathf.Lerp(1, 0, t1);
+            float body = Mathf.Lerp(1, -0.5f, t1);
 
             _player._viewPlayer.SetValueMaterial(body, 1);
 
-            if (body == 0)
+            if (body == -0.5f)
             {
                 float t2 = Mathf.Clamp01((elapsedTime - _materialTransitionDuration) / _materialTransitionDuration);
-                _player._viewPlayer.SetValueMaterial(0, Mathf.Lerp(1, 0, t2));
+                _player._viewPlayer.SetValueMaterial(-0.5f, Mathf.Lerp(1, -0.5f, t2));
 
                 if (t2 >= 1f)
                 {
@@ -56,15 +55,6 @@ public class SM_Win : State
         if (!_rotationStarted)
         {
             RotateTowardsCamera();
-        }
-
-        // Aquí podrías agregar lógica adicional después de que se complete la transición y rotación
-        if (_materialChanged && _rotationStarted)
-        {
-            _timerToChangeLvl += Time.deltaTime;
-
-            if (_timerToChangeLvl >= 2f)
-                GameManager.Instance.ChangeScene();
         }
     }
 
