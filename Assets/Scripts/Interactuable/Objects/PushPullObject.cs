@@ -43,7 +43,6 @@ public class PushPullObject : MonoBehaviour
         }
         currentCoroutine = StartCoroutine(AnimateBandages(0f, 1f));
     }
-
     
     public void StartUnwrap() //iniciar proceso de desenvolverse
     {
@@ -51,7 +50,7 @@ public class PushPullObject : MonoBehaviour
         {
             StopCoroutine(currentCoroutine);
         }
-        currentCoroutine = StartCoroutine(AnimateBandages(1f, 0f));
+        currentCoroutine = StartCoroutine(AnimateBandages(currentOffset, 0f));
     }
     
     public void SetExplode(bool explode)
@@ -103,6 +102,9 @@ public class PushPullObject : MonoBehaviour
         {
             if (Physics.Raycast(corner, dirToMove, raycastLengthToWall, wallLayerMask))
             {
+                //si no esta tocando el suelo Explode = true  y desenvolver
+                SetExplode(true);
+                StartUnwrap();
                 return true;
             }
         }
