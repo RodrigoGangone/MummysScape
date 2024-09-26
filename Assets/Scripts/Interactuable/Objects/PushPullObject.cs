@@ -7,7 +7,7 @@ public class PushPullObject : MonoBehaviour
     [Header("BANDAGE AROUND")]
     [SerializeField] private GameObject[] _bandagesAroundBox;
     private Coroutine currentCoroutine; // Para almacenar la coroutine activa
-    private float wrapSpeed = 1f; // Velocidad de envoltura/desenvoltura
+    private float wrapSpeed = 0.5f; // Velocidad de envoltura/desenvoltura
     private float currentOffset = 0f; // Offset actual del material
 
     [Header("GIZMOS")] 
