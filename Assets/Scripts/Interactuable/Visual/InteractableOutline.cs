@@ -27,8 +27,8 @@ public class InteractableOutline : MonoBehaviour
 
     [SerializeField] private List<OperablesMapping> _operablesMapping = new();
 
-    [SerializeField] private Color _functional = Color.green;
-    [SerializeField] private Color _inoperable = Color.red;
+    [SerializeField][ColorUsage(true, true)] private Color _functional;
+    [SerializeField][ColorUsage(true, true)] private Color _inoperable;
 
     private const string _inRange = "_IsInRange";
     private const string _color = "_Outline_Color";
