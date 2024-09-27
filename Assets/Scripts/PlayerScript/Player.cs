@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.SceneManagement;
@@ -55,6 +56,10 @@ public class Player : MonoBehaviour
     [SerializeField] public bool GizmoWallDrop = true;
     [SerializeField] public bool GizmoPush = true;
     [SerializeField] public bool GizmoPull = true;
+
+    //Actions
+
+    public Action SizeModify;
 
     //Rays
     private const float _rayCheckShootDistance = 1.5f;
@@ -135,7 +140,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer = new StateMachinePlayer();
 
         _stateMachinePlayer.AddState(PlayerState.Idle, new SM_Idle(_modelPlayer, _viewPlayer));
-        _stateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(_modelPlayer, _viewPlayer));
+        _stateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(this));
         _stateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk(this));
         _stateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Fall, new SM_Fall(this));
