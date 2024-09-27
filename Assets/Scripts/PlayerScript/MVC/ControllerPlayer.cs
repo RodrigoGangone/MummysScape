@@ -23,7 +23,7 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
-        Debug.Log($"STATE: {OnGetState.Invoke()} \n");
+        //Debug.Log($"STATE: {OnGetState.Invoke()} \n");
         
         if (CanWalkState())
         {

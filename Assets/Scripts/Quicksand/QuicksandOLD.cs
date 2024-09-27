@@ -32,7 +32,6 @@ public class QuicksandOLD : MonoBehaviour
     void Start()
     {
         _player = FindObjectOfType<Player>();
-
         _levelManager = FindObjectOfType<LevelManager>();
 
         // Initialize platform position
