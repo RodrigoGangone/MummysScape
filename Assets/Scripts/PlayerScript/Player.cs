@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.SceneManagement;
@@ -55,6 +56,11 @@ public class Player : MonoBehaviour
     [SerializeField] public bool GizmoWallDrop = true;
     [SerializeField] public bool GizmoPush = true;
     [SerializeField] public bool GizmoPull = true;
+
+    //Actions
+
+    public Action SizeModify;
+    public bool WalkingSand;
 
     //Rays
     private const float _rayCheckShootDistance = 1.5f;
@@ -123,6 +129,7 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnStateChange += ChangeState;
         _controllerPlayer.OnGetState += CurrentState;
         _controllerPlayer.OnGetPlayerSize += () => CurrentPlayerSize;
+        _controllerPlayer.OnWalkingSand += () => WalkingSand;
 
         levelManager.OnPlayerWin += Win;
         levelManager.OnPlayerDeath += Death;
@@ -135,8 +142,9 @@ public class Player : MonoBehaviour
         _stateMachinePlayer = new StateMachinePlayer();
 
         _stateMachinePlayer.AddState(PlayerState.Idle, new SM_Idle(_modelPlayer, _viewPlayer));
-        _stateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(_modelPlayer, _viewPlayer));
+        _stateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(this));
         _stateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk(this));
+        _stateMachinePlayer.AddState(PlayerState.WalkSand, new SM_WalkSand(this));
         _stateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Fall, new SM_Fall(this));
         _stateMachinePlayer.AddState(PlayerState.Drop, new SM_Drop(_modelPlayer, _viewPlayer));
@@ -420,6 +428,7 @@ public enum PlayerState
     Idle,
     Shoot,
     Walk,
+    WalkSand,
     Hook,
     Fall,
     Push,

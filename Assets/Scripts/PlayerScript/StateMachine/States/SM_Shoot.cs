@@ -2,31 +2,33 @@ using UnityEngine;
 
 public class SM_Shoot : State
 {
-    private ModelPlayer _model;
-    private ViewPlayer _view;
+    private Player _player;
     private Vector3? targetButtonPosition; //Posicion del boton hacia el que apunta
-    
-    public SM_Shoot(ModelPlayer model, ViewPlayer view)
+
+    public SM_Shoot(Player player)
     {
-        _model = model;
-        _view = view;
-        _model.SizeModify += GoIdle;
+        _player = player;
+        _player.SizeModify += GoIdle;
     }
 
     public override void OnEnter()
     {
-        _view.PLAY_ANIM("Shoot", true);
-        _model.RotatePreShoot();
+        _player._viewPlayer.PLAY_ANIM("Shoot", true);
+        _player._modelPlayer.RotatePreShoot();
     }
 
     public override void OnExit()
     {
-        _view.PLAY_ANIM("Shoot", false);
+        _player._viewPlayer.PLAY_ANIM("Shoot", false);
     }
 
-    public override void OnUpdate() {}
+    public override void OnUpdate()
+    {
+    }
 
-    public override void OnFixedUpdate() {}
+    public override void OnFixedUpdate()
+    {
+    }
 
     private void GoIdle()
     {

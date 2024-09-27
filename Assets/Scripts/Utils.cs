@@ -7,6 +7,7 @@ public static class Utils
     #region PlayerStates
 
         public const string STATE_WALK = "SM_Walk";
+        public const string STATE_WALK_SAND = "SM_WalkSand";
         public const string STATE_IDLE = "SM_Idle";
         public const string STATE_SHOOT = "SM_Shoot";
         public const string STATE_PUSH = "SM_Push";
