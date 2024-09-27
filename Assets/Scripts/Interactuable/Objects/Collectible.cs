@@ -1,7 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using static Utils;
 
 public class Collectible : MonoBehaviour
 {
@@ -20,7 +18,7 @@ public class Collectible : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
+        if (!other.CompareTag(PLAYER_TAG)) return;
 
         _levelManager.AddCollectible.Invoke(_collectibleNumber);
     }

@@ -1,32 +1,95 @@
-using System;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 using static Utils;
 
 public class PushPullObject : MonoBehaviour
 {
-    private string playerTag = "PlayerFather"; // Tag para el jugador
-
-    public float rayDistanceToPull = 7f; // Distancia de los raycasts
-    public float raycastLengthToFloor = 1.75f; // Longitud del raycast
-    public float raycastLengthToWall = 0.1f; // Longitud del raycast hacia las paredes
-
-    private BoxCollider _boxCollider;
-
-    public LayerMask playerLayerMask;
-    private LayerMask floorLayerMask;
-    private LayerMask wallLayerMask;
+    [Header("BANDAGE AROUND")]
+    [SerializeField] private GameObject[] _bandagesAroundBox;
+    private Coroutine currentCoroutine; // Para almacenar la coroutine activa
+    private float wrapSpeed = 0.5f; // Velocidad de envoltura/desenvoltura
+    private float currentOffset = 0f; // Offset actual del material
 
     [Header("GIZMOS")] 
     [SerializeField] public bool GizmoPull;
     [SerializeField] public bool GizmoWall;
+    
+    
+    private BoxCollider _boxCollider;
+    
+    public float rayDistanceToPull = 7f; // Distancia de los raycasts
+    public float raycastLengthToFloor = 1.75f; // Longitud del raycast
+    public float raycastLengthToWall = 0.1f; // Longitud del raycast hacia las paredes
+    
+    public LayerMask playerLayerMask;
+    private LayerMask floorLayerMask;
+    private LayerMask wallLayerMask;
 
     private void Start()
     {
         _boxCollider = GetComponent<BoxCollider>();
         floorLayerMask = LayerMask.GetMask("Floor");
         wallLayerMask = LayerMask.GetMask("Wall");
+        
+        SetBandageOffset(0f);
     }
+
+    #region Handler Bandage Material
+    public void StartWrap() //iniciar proceso de envolverse
+    {
+        if (currentCoroutine != null)
+        {
+            StopCoroutine(currentCoroutine);
+        }
+        currentCoroutine = StartCoroutine(AnimateBandages(0f, 1f));
+    }
+    
+    public void StartUnwrap() //iniciar proceso de desenvolverse
+    {
+        if (currentCoroutine != null)
+        {
+            StopCoroutine(currentCoroutine);
+        }
+        currentCoroutine = StartCoroutine(AnimateBandages(currentOffset, 0f));
+    }
+    
+    public void SetExplode(bool explode)
+    {
+        foreach (GameObject bandage in _bandagesAroundBox)
+        {
+            Material mat = bandage.GetComponent<Renderer>().material;
+            mat.SetFloat("_Explode", explode ? 1f : 0f);
+        }
+    }
+    
+    private IEnumerator AnimateBandages(float startOffset, float endOffset)
+    {
+        float elapsedTime = 0f;
+        currentOffset = startOffset;
+
+        while (Mathf.Abs(currentOffset - endOffset) > 0.01f)
+        {
+            currentOffset = Mathf.Lerp(startOffset, endOffset, elapsedTime / wrapSpeed);
+            SetBandageOffset(currentOffset);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        SetBandageOffset(endOffset);
+    }
+    
+    private void SetBandageOffset(float offset)
+    {
+        foreach (GameObject bandage in _bandagesAroundBox)
+        {
+            Material mat = bandage.GetComponent<Renderer>().material;
+            mat.SetFloat("_Offset", offset);
+        }
+    }
+
+    #endregion
+
+    #region Check Collisions With Wall/Floor
 
     public bool IsBoxCollisionWall(Vector3 dirToMove)
     {
@@ -39,6 +102,9 @@ public class PushPullObject : MonoBehaviour
         {
             if (Physics.Raycast(corner, dirToMove, raycastLengthToWall, wallLayerMask))
             {
+                //si no esta tocando el suelo Explode = true  y desenvolver
+                SetExplode(true);
+                StartUnwrap();
                 return true;
             }
         }
@@ -122,8 +188,19 @@ public class PushPullObject : MonoBehaviour
         Debug.DrawRay(corner4, Vector3.down * raycastLengthToFloor, hitResult4 ? Color.green : Color.red);
 
         // Retornar true solo si todos los raycasts hitean con algo
-        return hitResult1 || hitResult2 || hitResult3 || hitResult4;
+        var inFloor = hitResult1 || hitResult2 || hitResult3 || hitResult4;
+        
+        //si no esta tocando el suelo Explode = true  y desenvolver
+        if (!inFloor)
+        {
+            SetExplode(!inFloor);
+            StartUnwrap();
+        } 
+        
+        return inFloor;
     }
+    
+    #endregion
 
     public string CheckPlayerRaycast()
     {
@@ -146,7 +223,7 @@ public class PushPullObject : MonoBehaviour
             foreach (var origin in origins)
             {
                 if (Physics.Raycast(origin, rayDirections[i], out RaycastHit hit, rayDistanceToPull, playerLayerMask) &&
-                    hit.collider.CompareTag(playerTag))
+                    hit.collider.CompareTag(PLAYER_TAG))
                 {
                     return directionNames[i]; // Retorna la dirección si colisionó
                 }

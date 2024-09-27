@@ -33,8 +33,18 @@ public class SM_Pull : State
         isPullDestiny = false;
 
         _view.bandageHook.enabled = false;
-
         _view.hookMaterial.SetFloat("_rightThreshold", 1.5f);
+        
+        // Desenvuelvo la caja
+        if (_model.CurrentBox != null)
+        {
+            var boxScript = _model.CurrentBox.GetComponent<PushPullObject>();
+            if (boxScript != null)
+            {
+                //boxScript.SetExplode(!boxScript.BoxInFloor());
+                boxScript.StartUnwrap();
+            }
+        }
 
         _time = 0;
         _model.isPulling = false;
@@ -56,7 +66,13 @@ public class SM_Pull : State
             _view.hookMaterial.SetFloat("_rightThreshold", newValue);
 
             if (_view.hookMaterial.GetFloat("_rightThreshold") == -1.5f)
+            {
                 isPullDestiny = true;
+                
+                // Envolver la caja
+                var boxScript = _model.CurrentBox.GetComponent<PushPullObject>();
+                if (boxScript != null) boxScript.StartWrap();
+            }
         }
     }
 
@@ -66,7 +82,8 @@ public class SM_Pull : State
     {
         if (_model.CurrentBox == null) return;
 
-        if (!_model.IsBoxCloseToPlayer() &&
+        if (isPullDestiny &&
+            !_model.IsBoxCloseToPlayer() &&
             _model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor() &&
             _model.isPulling)
         {
