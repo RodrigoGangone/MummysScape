@@ -15,6 +15,7 @@ public class ControllerPlayer
     public event Action<PlayerState> OnStateChange = delegate { };
     public event Func<string> OnGetState = () => "ERROR OnGetState (Controller Player)";
     public event Func<PlayerSize> OnGetPlayerSize;
+    public event Func<bool> OnWalkingSand;
 
     public ControllerPlayer(Player player)
     {
@@ -24,10 +25,10 @@ public class ControllerPlayer
     public void ControllerUpdate()
     {
         //Debug.Log($"STATE: {OnGetState.Invoke()} \n");
-        
+
         if (CanWalkState())
         {
-            OnStateChange(PlayerState.Walk);
+            OnStateChange(OnWalkingSand!.Invoke() ? PlayerState.WalkSand : PlayerState.Walk);
         }
 
         if (CanPushState())
@@ -86,6 +87,7 @@ public class ControllerPlayer
                {
                    STATE_SHOOT => true,
                    STATE_WALK => true,
+                   STATE_WALK_SAND => true,
                    STATE_FALL => true, // Averiguar cuando toca el suelo para pasarlo a idle
                    STATE_PUSH => true,
                    STATE_DAMAGE => true,
@@ -102,6 +104,8 @@ public class ControllerPlayer
                OnGetState?.Invoke() switch
                {
                    STATE_IDLE => true,
+                   STATE_WALK_SAND => true,
+                   STATE_WALK => true,
                    STATE_PUSH => true,
                    _ => false
                };
@@ -115,6 +119,7 @@ public class ControllerPlayer
                {
                    STATE_IDLE => true,
                    STATE_WALK => true,
+                   STATE_WALK_SAND => true,
                    _ => false
                };
     }
@@ -127,6 +132,8 @@ public class ControllerPlayer
                {
                    STATE_IDLE => true,
                    STATE_WALK => true,
+                   STATE_WALK_SAND => true,
+
                    _ => false
                };
     }
@@ -138,6 +145,7 @@ public class ControllerPlayer
                {
                    STATE_IDLE => true,
                    STATE_WALK => true,
+                   STATE_WALK_SAND => true,
                    STATE_HOOK => true,
                    STATE_FALL => true,
                    NO_STATE => true,
@@ -154,6 +162,7 @@ public class ControllerPlayer
                    STATE_IDLE => true,
                    STATE_SHOOT => true,
                    STATE_WALK => true,
+                   STATE_WALK_SAND => true,
                    STATE_FALL => true,
                    _ => false
                };
@@ -167,6 +176,7 @@ public class ControllerPlayer
                {
                    STATE_IDLE => true,
                    STATE_WALK => true,
+                   STATE_WALK_SAND => true,
                    _ => false
                };
     }

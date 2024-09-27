@@ -24,8 +24,8 @@ public class QuicksandOLD : MonoBehaviour
     private Player _player;
     private LevelManager _levelManager;
 
-    [SerializeField] private float _timeToDeath;
-    [SerializeField] private float _timeDeathNormal;
+    [SerializeField] private float _currentTime;
+    [SerializeField] private float _timeDeath;
     private bool _isPlayerOnPlatform; // Flag to track if player is currently on the platform
     private bool _activeTimeToDeath;
 
@@ -53,10 +53,10 @@ public class QuicksandOLD : MonoBehaviour
 
         if (_activeTimeToDeath)
         {
-            _timeToDeath += Time.deltaTime;
+            _currentTime += Time.deltaTime;
             currentMoveSpeed = moveSpeedDown;
 
-            if (_timeToDeath >= _timeDeathNormal)
+            if (_currentTime >= _timeDeath)
                 _levelManager.OnPlayerDeath?.Invoke();
         }
     }
@@ -80,7 +80,7 @@ public class QuicksandOLD : MonoBehaviour
             if (_player.CurrentPlayerSize == PlayerSize.Head)
             {
                 _activeTimeToDeath = false;
-                _timeToDeath = 0;
+                _currentTime = 0;
                 currentMoveSpeed = moveSpeedUp;
 
                 SetTargetPosition(startPosition, currentMoveSpeed);
@@ -98,6 +98,8 @@ public class QuicksandOLD : MonoBehaviour
     {
         if (!collision.gameObject.CompareTag("PlayerFather")) return;
 
+        _player.WalkingSand = true;
+
         _isPlayerOnPlatform = true;
         UpdateMovementSpeedForPlayerSize();
     }
@@ -106,9 +108,11 @@ public class QuicksandOLD : MonoBehaviour
     {
         if (!collision.gameObject.CompareTag("PlayerFather")) return;
 
+        _player.WalkingSand = false;
+
         _activeTimeToDeath = false;
         _isPlayerOnPlatform = false;
-        _timeToDeath = 0;
+        _currentTime = 0;
         SetTargetPosition(startPosition, moveSpeedUp);
     }
 
