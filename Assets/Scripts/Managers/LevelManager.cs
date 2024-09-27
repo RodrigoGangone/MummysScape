@@ -116,7 +116,7 @@ public class LevelManager : MonoBehaviour
 
     private void Win()
     {
-        PlayerPrefs.SetInt(LVL_AT, nextSceneLoad);
+        PlayerPrefsHandler.SaveLevelAt(nextSceneLoad);
         Debug.Log($"LevelManager -> PlayerPref: LVL_AT {nextSceneLoad}");
         Debug.Log("LevelManager -> Ganaste!");
     }

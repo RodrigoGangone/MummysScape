@@ -33,9 +33,10 @@ public static class Utils
 
     #region PlayerPrefs
 
-    public const string LVL_AT = "levelAt";
-    public const int LVL_FIRST = 1; //numero del 1er lvl en SceneBuild
-    public const int FAKE_LOADING_TIME_SCENE = 3; //segundos de precarga async del lvl seleccionado
+    public const string LEVEL_AT = "levelAt"; // Hasta que lvl llegue
+    public const int LEVEL_FIRST = 1; // Num del 1er lvl en SceneBuild
+    
+    public const int FAKE_LOADING_TIME_SCENE = 3; //segs fake precarga del lvl seleccionado
 
     #endregion
 

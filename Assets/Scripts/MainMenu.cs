@@ -1,33 +1,46 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using static Utils;
 
 public class MainMenu : MonoBehaviour
 { 
     [Header("PANEL MAIN MENU")]
-    [SerializeField] private GameObject _mainMenu;
-    [SerializeField] private Button _play;
-    [SerializeField] private Button _options;
-    [SerializeField] private Button _exit;
+    [SerializeField] private GameObject _mainMenuPanel;
+    [SerializeField] private Button _btnPlay;
+    [SerializeField] private Button _btnOptions;
+    [SerializeField] private Button _btnExit;
+    
+    [Header("PANEL OPTIONS")]
+    [SerializeField] private GameObject _optionsPanel;
+    [SerializeField] private Button _btnDeletePrefs;
     
     [Header("PANEL LEVEL SELECTOR")]
-    [SerializeField] private GameObject _lvlSelector;
-    [SerializeField] private Button[] _lvlsButtons;
-    [SerializeField] private Button _backToMain;
+    [SerializeField] private GameObject _lvlSelectorPanel;
+    [SerializeField] private Button[] _btnsLvls;
     
     [Header("PANEL CHARGE LEVEL")]
     [SerializeField] private GameObject _chargeLvlSelected;
 
+    [SerializeField] private Button _btnBackToMain;
     
     private void Awake()
     {
-        //Buttons clicks//
-        _play.onClick.AddListener(ShowLvlSelector);
-        //_options.onClick.AddListener();
-        _exit.onClick.AddListener(QuitGame);
-        _backToMain.onClick.AddListener(ShowMain);
+        //Buttons Main//
+        _btnPlay.onClick.AddListener(ShowLvlSelector);
+        _btnOptions.onClick.AddListener(ShowOptions);
+        _btnExit.onClick.AddListener(QuitGame);
+        
+        //Buttons Options//
+        _btnDeletePrefs.onClick.AddListener(()=>
+        {
+            PlayerPrefsHandler.ResetLevelAt();
+            CheckEnabledLevels();
+        });
+        
+        _btnBackToMain.onClick.AddListener(ShowMain);
 
         SetLevelsInButtons();
     }
@@ -39,31 +52,29 @@ public class MainMenu : MonoBehaviour
 
     private void CheckEnabledLevels()
     {
-        int levelAt = PlayerPrefs.GetInt(LVL_AT, 1);
-
-        for (int i = 0; i < _lvlsButtons.Length; i++)
+        for (int i = 0; i < _btnsLvls.Length; i++)
         {
-            if (i + LVL_FIRST > levelAt) //habilito solo el primer lvl
+            if (i + LEVEL_FIRST > PlayerPrefsHandler.GetLevelAt()) //habilito solo el primer lvl
             {
-                _lvlsButtons[i].interactable = false;
+                _btnsLvls[i].interactable = false;
             }
         }
     }
 
     private void SetLevelsInButtons()
     {
-        for (int i = 0; i < _lvlsButtons.Length; i++)
+        for (int i = 0; i < _btnsLvls.Length; i++)
         {
-            int levelIndex = i + LVL_FIRST; // El indice de la escena empieza desde 1 porque 0 es el MainMenu
-            _lvlsButtons[i].onClick.AddListener(() => WhereGoLevelButtons(levelIndex));
+            int levelIndex = i + LEVEL_FIRST; // El indice de la escena empieza desde 1 porque 0 es el MainMenu
+            _btnsLvls[i].onClick.AddListener(() => WhereGoLevelButtons(levelIndex));
         }
     }
 
     private void WhereGoLevelButtons(int levelIndex)
     {
         _chargeLvlSelected.SetActive(true);
-        _mainMenu.SetActive(false);
-        _lvlSelector.SetActive(false);
+        _mainMenuPanel.SetActive(false);
+        _lvlSelectorPanel.SetActive(false);
 
         StartCoroutine(LoadLevelAfterDelay(levelIndex));
     }
@@ -82,14 +93,29 @@ public class MainMenu : MonoBehaviour
 
     private void ShowMain()
     {
-        _mainMenu.SetActive(true);
-        _lvlSelector.SetActive(false);
+        _mainMenuPanel.SetActive(true);
+        _optionsPanel.SetActive(false);
+        _lvlSelectorPanel.SetActive(false);
+
+        _btnBackToMain.gameObject.SetActive(false);
+    }
+
+    private void ShowOptions()
+    {
+        _mainMenuPanel.SetActive(false);
+        _optionsPanel.SetActive(true);
+        _lvlSelectorPanel.SetActive(false);
+        
+        _btnBackToMain.gameObject.SetActive(true);
     }
 
     private void ShowLvlSelector()
     {
-        _mainMenu.SetActive(false);
-        _lvlSelector.SetActive(true);
+        _mainMenuPanel.SetActive(false);
+        _optionsPanel.SetActive(false);
+        _lvlSelectorPanel.SetActive(true);
+        
+        _btnBackToMain.gameObject.SetActive(true);
     }
     
     private void QuitGame()
