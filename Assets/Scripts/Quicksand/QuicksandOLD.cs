@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Utils;
 
 public class QuicksandOLD : MonoBehaviour
 {
@@ -84,7 +85,7 @@ public class QuicksandOLD : MonoBehaviour
     
     void OnCollisionStay(Collision collision)
     {
-        if (collision.gameObject.CompareTag("PlayerFather"))
+        if (collision.gameObject.CompareTag(PLAYER_TAG))
         {
             Player player = collision.gameObject.GetComponent<Player>();
             if (player != null)
@@ -105,7 +106,7 @@ public class QuicksandOLD : MonoBehaviour
 
     void OnCollisionExit(Collision collision)
     {
-        if (collision.gameObject.CompareTag("PlayerFather"))
+        if (collision.gameObject.CompareTag(PLAYER_TAG))
         {
             isPlayerOnPlatform = false;
             SetTargetPosition(startPosition, moveSpeedUp);
