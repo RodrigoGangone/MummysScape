@@ -40,6 +40,7 @@ public class InteractableOutline : MonoBehaviour
 
     [SerializeField] private List<Material> _materials = new();
 
+    private bool _materialOff;
     //TODO: HAY QUE USAR EL CURRENTBOX PARA GUARDAR EL OBJETO Y ENCENDER SU OUTLINE, MODIFICAR EL SCRIPT DEL PULL PARA QUE LO HAGA SIN LA NECESIDAD DE TOCAR EL INPUT
 
     private void Start()
@@ -63,12 +64,15 @@ public class InteractableOutline : MonoBehaviour
     private void Update()
     {
         if (!_player._modelPlayer.GetCurrentHit().HasValue &&
+            _materialOff &&
             _interactableType != InteractableType.Hook)
             OffMaterial();
     }
 
     public void OnMaterial()
     {
+        _materialOff = true;
+
         foreach (var material in _materials)
         {
             material.SetFloat(_inRange, 1);
@@ -100,6 +104,8 @@ public class InteractableOutline : MonoBehaviour
         {
             material.SetFloat(_inRange, 0f);
         }
+
+        _materialOff = false;
     }
 
     private void OnTriggerStay(Collider other)
