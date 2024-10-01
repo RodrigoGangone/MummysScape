@@ -31,13 +31,6 @@ public class ModelPlayer
     public Vector3 DirToPush => _dirToPush;
     public Vector3 DirToPull => _dirToPull;
 
-    //public Action SizeModify;
-
-    private Action<RaycastHit> _checkInteractiveMat = hit =>
-    {
-        hit.transform.GetComponent<InteractableOutline>()?.UpdateMaterialStatus(true);
-    };
-
     public ModelPlayer(Player p)
     {
         _player = p;
@@ -263,7 +256,6 @@ public class ModelPlayer
             {
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
                 {
-                    _checkInteractiveMat(hit);
                     return hit;
                 }
             }
@@ -305,7 +297,6 @@ public class ModelPlayer
             if (_dirToPush != Vector3.zero &&
                 !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPush))
             {
-                _checkInteractiveMat(hit);
                 return true;
             }
         }
@@ -355,7 +346,6 @@ public class ModelPlayer
                     if (_dirToPull != Vector3.zero &&
                         !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPull))
                     {
-                        _checkInteractiveMat(hit);
                         return true;
                     }
                 }
