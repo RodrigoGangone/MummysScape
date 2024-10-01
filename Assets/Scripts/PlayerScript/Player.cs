@@ -64,7 +64,7 @@ public class Player : MonoBehaviour
 
     //Rays
     private const float _rayCheckShootDistance = 1.5f;
-    private const float _rayCheckPushDistance = 0.75f;
+    private const float _rayCheckPushDistance = 0.5f;
     private const float _rayCheckPullDistance = 7f;
 
     //TODO: Mejorar esto a futuro

@@ -23,10 +23,12 @@ public class ModelPlayer
 
     //PUSH/PULL OBJECT
     private Transform _currentBox;
+    private Transform _currentBoxSide;
     public bool isPulling;
     private Vector3 _dirToPush;
     private Vector3 _dirToPull;
 
+    public Transform CurrentBoxSide => _currentBoxSide;
     public Transform CurrentBox => _currentBox;
     public Vector3 DirToPush => _dirToPush;
     public Vector3 DirToPull => _dirToPull;
@@ -298,7 +300,8 @@ public class ModelPlayer
         if (hitBoxRight && hitBoxLeft && 
             hitRight.collider.gameObject.name == hitLeft.collider.gameObject.name)
         {
-            _currentBox = hitRight.collider.transform.parent; 
+            _currentBoxSide = hitRight.collider.transform;
+            _currentBox = hitRight.collider.transform.parent;
 
             _dirToPush = hitRight.collider.gameObject.name switch
             {
@@ -318,6 +321,7 @@ public class ModelPlayer
             }
         }
 
+        _currentBoxSide = null;
         _currentBox = null;
         _dirToPush = Vector3.zero;
         return false;

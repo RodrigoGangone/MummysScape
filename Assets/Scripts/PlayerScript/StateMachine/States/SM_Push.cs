@@ -12,6 +12,9 @@ public class SM_Push : State
     private float _speedRotationOfPlayer;
     
     private float _speedRotateToDirToPush = 50f;
+    
+    private Vector3 velocity = Vector3.zero; // Para SmoothDamp
+
 
     public SM_Push(Player player)
     {
@@ -57,6 +60,24 @@ public class SM_Push : State
                 targetRotation,
                 _speedRotateToDirToPush * Time.fixedDeltaTime
             );
+        }
+        
+        // Muevo MUY suavemente al player al centro del lado que estoy empujando
+        if (_model.CurrentBoxSide != null)
+        {
+            Vector3 centerOfSide = _model.CurrentBoxSide.GetChild(0).position;
+            Vector3 playerPosition = _player.transform.position;
+
+            // muevo solo en XZ
+            Vector3 targetPosition = new Vector3(centerOfSide.x, playerPosition.y, centerOfSide.z);
+
+            // smoothDamp para un movimiento suave para rigibodys
+            _player._rigidbody.MovePosition(Vector3.SmoothDamp(
+                playerPosition,
+                targetPosition,
+                ref velocity,
+                0.25f
+            ));
         }
         
         _model.Move(Input.GetAxisRaw("Horizontal"),
