@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using static Utils;
 
 public class MovePlatform : MonoBehaviour
 {
@@ -102,7 +103,7 @@ public class MovePlatform : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerFather"))
+        if (other.gameObject.CompareTag(PLAYER_TAG))
         {
             other.transform.SetParent(transform);
         }
@@ -110,7 +111,7 @@ public class MovePlatform : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerFather"))
+        if (other.gameObject.CompareTag(PLAYER_TAG))
         {
             other.transform.SetParent(null);
         }

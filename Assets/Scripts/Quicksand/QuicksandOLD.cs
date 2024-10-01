@@ -1,40 +1,47 @@
+using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class QuicksandOLD : MonoBehaviour
 {
-    [Header("Platform Settings")]
-    private BoxCollider invisiblePlatform; // Reference to the BoxCollider
+    [Header("Platform Settings")] private BoxCollider invisiblePlatform; // Reference to the BoxCollider
     private Vector3 startPosition; // Starting position of the invisible platform's center
     private Vector3 endPosition; // Ending position of the invisible platform's center
 
-    [Header("Movement Settings")]
-    [Range(0.05f, 0.5f)] public float moveSpeedDownNormal = 0.2f; // Speed at which the platform moves down for Normal size
-    [Range(0.05f, 0.5f)] public float moveSpeedDownSmall = 0.1f; // Speed at which the platform moves down for Small size
+    [Header("Movement Settings")] [Range(0.05f, 0.5f)]
+    public float moveSpeedDown = 0.1f; // Speed at which the platform moves down for Normal size
+
     [Range(0f, 0f)] public float moveSpeedDownHead = 0f; // Speed at which the platform moves down for Head size
     [Range(0.05f, 1f)] public float moveSpeedUp = 0.5f; // Speed at which the platform moves up (twice as fast)
-    public float yOffset = -3f; // The amount to offset the end position in the Y axis
+    [SerializeField] float yOffset = -3f; // The amount to offset the end position in the Y axis
+
+    [Header("FX")] [SerializeField] private GameObject _sinkFX;
 
     private bool isMoving; // Flag to check if the platform is moving
     private Vector3 targetPosition; // Current target position
     private float currentMoveSpeed; // Current movement speed
 
-    private Player player;
-    private bool isPlayerOnPlatform; // Flag to track if player is currently on the platform
+    private Player _player;
+    private LevelManager _levelManager;
+
+    [SerializeField] private float _currentTime;
+    [SerializeField] private float _timeDeath;
+    private bool _isPlayerOnPlatform; // Flag to track if player is currently on the platform
+    private bool _activeTimeToDeath;
 
     void Start()
     {
-        player = FindObjectOfType<Player>();
-        
+        _player = FindObjectOfType<Player>();
+        _levelManager = FindObjectOfType<LevelManager>();
+
         // Initialize platform position
         invisiblePlatform = GetComponent<BoxCollider>();
         startPosition = invisiblePlatform.center;
         endPosition = new Vector3(startPosition.x, startPosition.y + yOffset, startPosition.z);
-        
+
         // Subscribe to player size modification event
-        player._modelPlayer.SizeModify += UpdateMovementSpeedForPlayerSize;
-        
-        // Set initial movement speed based on player's current size
-        UpdateMovementSpeedForPlayerSize();
+        _player.SizeModify += UpdateMovementSpeedForPlayerSize;
+        _levelManager.OnPlayerDeath += SinkPlayer;
     }
 
     void Update()
@@ -42,6 +49,15 @@ public class QuicksandOLD : MonoBehaviour
         if (isMoving)
         {
             MovePlatform();
+        }
+
+        if (_activeTimeToDeath)
+        {
+            _currentTime += Time.deltaTime;
+            currentMoveSpeed = moveSpeedDown;
+
+            if (_currentTime >= _timeDeath)
+                _levelManager.OnPlayerDeath?.Invoke();
         }
     }
 
@@ -56,60 +72,48 @@ public class QuicksandOLD : MonoBehaviour
             isMoving = false;
         }
     }
-    
+
     private void UpdateMovementSpeedForPlayerSize()
     {
-        switch (player.CurrentPlayerSize)
+        if (_isPlayerOnPlatform)
         {
-            case PlayerSize.Small:
-                currentMoveSpeed = moveSpeedDownSmall;
-                break;
-            case PlayerSize.Head:
-                if (isPlayerOnPlatform)
-                {
-                    currentMoveSpeed = moveSpeedUp;
-                    SetTargetPosition(startPosition, currentMoveSpeed);
-                }
-                else
-                {
-                    currentMoveSpeed = moveSpeedDownHead;
-                }
-                break;
-            case PlayerSize.Normal:
-            default:
-                currentMoveSpeed = moveSpeedDownNormal;
-                break;
-        }
-    }
-    
-    void OnCollisionStay(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("PlayerFather"))
-        {
-            Player player = collision.gameObject.GetComponent<Player>();
-            if (player != null)
+            if (_player.CurrentPlayerSize == PlayerSize.Head)
             {
-                isPlayerOnPlatform = true;
-                UpdateMovementSpeedForPlayerSize();
-                if (player.CurrentPlayerSize == PlayerSize.Head)
-                {
-                    SetTargetPosition(startPosition, currentMoveSpeed);
-                }
-                else
-                {
-                    SetTargetPosition(endPosition, currentMoveSpeed);
-                }
+                _activeTimeToDeath = false;
+                _currentTime = 0;
+                currentMoveSpeed = moveSpeedUp;
+
+                SetTargetPosition(startPosition, currentMoveSpeed);
+            }
+            else
+            {
+                _activeTimeToDeath = true;
+
+                SetTargetPosition(endPosition, currentMoveSpeed);
             }
         }
     }
 
-    void OnCollisionExit(Collision collision)
+    private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("PlayerFather"))
-        {
-            isPlayerOnPlatform = false;
-            SetTargetPosition(startPosition, moveSpeedUp);
-        }
+        if (!collision.gameObject.CompareTag("PlayerFather")) return;
+
+        _player.WalkingSand = true;
+
+        _isPlayerOnPlatform = true;
+        UpdateMovementSpeedForPlayerSize();
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (!collision.gameObject.CompareTag("PlayerFather")) return;
+
+        _player.WalkingSand = false;
+
+        _activeTimeToDeath = false;
+        _isPlayerOnPlatform = false;
+        _currentTime = 0;
+        SetTargetPosition(startPosition, moveSpeedUp);
     }
 
     private void SetTargetPosition(Vector3 newTargetPosition, float speed)
@@ -117,5 +121,12 @@ public class QuicksandOLD : MonoBehaviour
         targetPosition = newTargetPosition;
         currentMoveSpeed = speed;
         isMoving = true;
+    }
+
+    private void SinkPlayer()
+    {
+        _levelManager.OnPlayerDeath -= SinkPlayer;
+
+        Instantiate(_sinkFX, _player.transform.position, _player.transform.rotation);
     }
 }

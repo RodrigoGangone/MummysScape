@@ -1,8 +1,5 @@
 //Clase con variables y constantes que vamos a usar de forma repetida
 
-using System;
-using UnityEngine;
-
 public static class Utils
 {
     public const string PLAYER_TAG = "PlayerFather";
@@ -10,6 +7,7 @@ public static class Utils
     #region PlayerStates
 
         public const string STATE_WALK = "SM_Walk";
+        public const string STATE_WALK_SAND = "SM_WalkSand";
         public const string STATE_IDLE = "SM_Idle";
         public const string STATE_SHOOT = "SM_Shoot";
         public const string STATE_PUSH = "SM_Push";
@@ -35,9 +33,10 @@ public static class Utils
 
     #region PlayerPrefs
 
-    public const string LVL_AT = "levelAt";
-    public const int LVL_FIRST = 1; //numero del 1er lvl en SceneBuild
-    public const int FAKE_LOADING_TIME_SCENE = 3; //segundos de precarga async del lvl seleccionado
+    public const string LEVEL_AT = "levelAt"; // Hasta que lvl llegue
+    public const int LEVEL_FIRST = 1; // Num del 1er lvl en SceneBuild
+    
+    public const int FAKE_LOADING_TIME_SCENE = 3; //segs fake precarga del lvl seleccionado
 
     #endregion
 

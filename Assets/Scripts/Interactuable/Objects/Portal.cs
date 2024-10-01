@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Utils;
 
 public class Portal : MonoBehaviour
 {
@@ -16,7 +17,7 @@ public class Portal : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.gameObject.CompareTag("PlayerFather")) return;
+        if (!other.gameObject.CompareTag(PLAYER_TAG)) return;
 
         _levelManager.OnPlayerWin?.Invoke();
     }

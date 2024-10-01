@@ -31,7 +31,7 @@ public class ModelPlayer
     public Vector3 DirToPush => _dirToPush;
     public Vector3 DirToPull => _dirToPull;
 
-    public Action SizeModify;
+    //public Action SizeModify;
 
     private Action<RaycastHit> _checkInteractiveMat = hit =>
     {
@@ -414,7 +414,6 @@ public class ModelPlayer
     private void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
     {
         _player._viewPlayer.PLAY_PUFF();
-        SizeModify?.Invoke();
 
         switch (_player.CurrentBandageStock)
         {
@@ -448,6 +447,7 @@ public class ModelPlayer
                 break;
         }
 
+        _player.SizeModify?.Invoke();
         _player._viewPlayer.AdjustColliderSize();
     }
 
