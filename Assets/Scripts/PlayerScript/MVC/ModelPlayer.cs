@@ -284,49 +284,23 @@ public class ModelPlayer
 
         var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
         var layerMaskBox = 1 << movableBoxLayer;
-        
-        // Raycast hacia adelante
-        RaycastHit hitForward;
-        bool hitBoxForward = Physics.Raycast(rayOrigin, _player.transform.forward, out hitForward, 
-            _player.RayCheckPushDistance, layerMaskBox);
 
-        // Raycast a 10 grados a la derecha
-        Vector3 directionRight = Quaternion.AngleAxis(10, Vector3.up) * _player.transform.forward;
+        Vector3 rightOffset = rayOrigin + _player.transform.right * 0.25f;
         RaycastHit hitRight;
-        bool hitBoxRight = Physics.Raycast(rayOrigin, directionRight, out hitRight, 
-            _player.RayCheckPushDistance, layerMaskBox);
+        bool hitBoxRight = Physics.Raycast(rightOffset, _player.transform.forward, out hitRight, 
+                                           _player.RayCheckPushDistance, layerMaskBox);
 
-        // Raycast a 10 grados a la izquierda
-        Vector3 directionLeft = Quaternion.AngleAxis(-10, Vector3.up) * _player.transform.forward;
+        Vector3 leftOffset = rayOrigin - _player.transform.right * 0.25f;
         RaycastHit hitLeft;
-        bool hitBoxLeft = Physics.Raycast(rayOrigin, directionLeft, out hitLeft, 
-            _player.RayCheckPushDistance, layerMaskBox);
-        
-        // Verifica si al menos dos rayos impactan la misma caja
-        int hitCount = 0;
-        Transform detectedBox = null;
-        
-        if (hitBoxForward)
-        {
-            detectedBox = hitForward.collider.transform.parent;
-            hitCount++;
-        }
-        if (hitBoxRight && hitRight.collider.transform.parent == detectedBox)
-        {
-            hitCount++;
-        }
-        if (hitBoxLeft && hitLeft.collider.transform.parent == detectedBox)
-        {
-            hitCount++;
-        }
-        
-        // Solo empuja si dos o más rayos impactan la misma caja
-        if (hitCount >= 2)
-        {
-            _currentBox = detectedBox;
+        bool hitBoxLeft = Physics.Raycast(leftOffset, _player.transform.forward, out hitLeft, 
+                                          _player.RayCheckPushDistance, layerMaskBox);
 
-            // Asigna la dirección opuesta de movimiento de la caja basado en el nombre del collider
-            _dirToPush = hitForward.collider.gameObject.name switch
+        if (hitBoxRight && hitBoxLeft && 
+            hitRight.collider.gameObject.name == hitLeft.collider.gameObject.name)
+        {
+            _currentBox = hitRight.collider.transform.parent; 
+
+            _dirToPush = hitRight.collider.gameObject.name switch
             {
                 BOX_SIDE_FORWARD => Vector3.back,
                 BOX_SIDE_BACKWARD => Vector3.forward,
@@ -335,11 +309,11 @@ public class ModelPlayer
                 _ => Vector3.zero
             };
 
-            // Check si la caja no colisiona con una pared
+            // Verifica si la caja no colisiona con una pared
             if (_dirToPush != Vector3.zero && 
                 !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPush))
             {
-                _checkInteractiveMat(hitForward);
+                _checkInteractiveMat(hitRight);
                 return true;
             }
         }
