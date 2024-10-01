@@ -447,6 +447,83 @@ public class ModelPlayer
             _rb.velocity = _rb.velocity.normalized * _player.Speed;
     }
 
+    public RaycastHit? GetCurrentHit()
+    {
+        RaycastHit? currentHit = null;
+
+        // Primero, verificamos si se puede hacer Pull
+        if (CanPullBox())
+        {
+            currentHit = GetHitFromPull();
+        }
+
+        // Si no hay hit de Pull, verificamos Push
+        if (currentHit == null && CanPushBox())
+        {
+            currentHit = GetHitFromPush();
+        }
+
+        // Si no hay hit de Push, verificamos el botón
+        if (currentHit == null)
+        {
+            currentHit = ButtonHit();
+        }
+
+        if (currentHit != null)
+        {
+            currentHit.Value.transform.gameObject.GetComponent<InteractableOutline>().OnMaterial();
+
+            return currentHit;
+        }
+
+        return null;
+    }
+
+    private RaycastHit? GetHitFromPull()
+    {
+        var rayOrigin = new Vector3(
+            _player.transform.position.x,
+            _player.ShootTargetTransform.position.y,
+            _player.transform.position.z
+        );
+
+        var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
+        var layerMaskBox = 1 << movableBoxLayer;
+
+        Vector3 forwardDirection = _player.transform.forward;
+        Vector3[] directions = { forwardDirection };
+
+        foreach (var direction in directions)
+        {
+            if (Physics.Raycast(rayOrigin, direction, out var hit, _player.RayCheckPullDistance, layerMaskBox))
+            {
+                return hit;
+            }
+        }
+
+        return null;
+    }
+
+    private RaycastHit? GetHitFromPush()
+    {
+        var rayOrigin = new Vector3(
+            _player.transform.position.x,
+            _player.ShootTargetTransform.position.y,
+            _player.transform.position.z
+        );
+
+        var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
+        var layerMaskBox = 1 << movableBoxLayer;
+
+        if (Physics.Raycast(rayOrigin, _player.transform.forward, out var hit, _player.RayCheckPushDistance,
+                layerMaskBox))
+        {
+            return hit;
+        }
+
+        return null;
+    }
+    
     public bool CheckGround()
     {
         Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.1f);

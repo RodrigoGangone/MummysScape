@@ -62,6 +62,12 @@ public class InteractableOutline : MonoBehaviour
         _player.SizeModify += OnMaterial;
     }
 
+    private void Update()
+    {
+        if (!_player._modelPlayer.GetCurrentHit().HasValue)
+            OffMaterial();
+    }
+
     public void OnMaterial()
     {
         foreach (var material in _materials)
@@ -88,14 +94,6 @@ public class InteractableOutline : MonoBehaviour
             material.SetColor(_color, colorToSet);
         }
     }
-
-    //private void SetMaterialColor(Color color)
-    //{
-    //    foreach (var material in _materials)
-    //    {
-    //        material.SetColor(_color, color);
-    //    }
-    //}
 
     public void OffMaterial()
     {
