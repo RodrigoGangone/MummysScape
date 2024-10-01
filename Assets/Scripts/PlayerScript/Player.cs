@@ -323,20 +323,62 @@ public class Player : MonoBehaviour
 
         #region Check Push Box
 
-        if (GizmoPush)
+    if (GizmoPush)
+    {
+        // Posición de origen del raycast
+        var _rayCheckPushPos = new Vector3(
+            transform.position.x,
+            _shootTarget.transform.position.y,
+            transform.position.z
+        );
+
+        // Definir la máscara de la capa MovableBox
+        var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
+        var layerMaskBox = 1 << movableBoxLayer;
+
+        // Inicialmente, todos los rayos serán de color rojo
+        Gizmos.color = Color.red;
+
+        // Raycast 0.25 unidades a la derecha
+        Vector3 rightOffset = _rayCheckPushPos + transform.right * 0.25f;
+        RaycastHit hitRight;
+        bool hitBoxRight = Physics.Raycast(rightOffset, transform.forward, out hitRight, 
+                                           _rayCheckPushDistance, layerMaskBox);
+
+        // Raycast 0.25 unidades a la izquierda
+        Vector3 leftOffset = _rayCheckPushPos - transform.right * 0.25f;
+        RaycastHit hitLeft;
+        bool hitBoxLeft = Physics.Raycast(leftOffset, transform.forward, out hitLeft, 
+                                          _rayCheckPushDistance, layerMaskBox);
+
+        // Contar si ambos rayos golpean el mismo objeto
+        int hitCount = 0;
+        string boxName = null;
+
+        if (hitBoxRight)
         {
-            if (_modelPlayer != null)
-                Gizmos.color = _modelPlayer.CanPushBox() ? Color.red : Color.cyan;
-            else
-                Gizmos.color = Color.black;
-
-            var _rayCheckPushPos = new Vector3(transform.position.x,
-                _shootTarget.transform.position.y,
-                transform.position.z);
-
-            Gizmos.DrawRay(_rayCheckPushPos, transform.forward * _rayCheckPushDistance);
-            Gizmos.DrawSphere(_rayCheckPushPos + transform.forward * _rayCheckPushDistance, 0.1f);
+            boxName = hitRight.collider.gameObject.name;
+            hitCount++;
         }
+
+        if (hitBoxLeft && hitLeft.collider.gameObject.name == boxName)
+        {
+            hitCount++;
+        }
+
+        // Si ambos rayos golpean el mismo objeto, cambiar el color a verde
+        if (hitCount == 2)
+        {
+            Gizmos.color = Color.green;
+        }
+
+        // Dibujar los rayos con el color final (rojo o verde)
+        Gizmos.DrawRay(rightOffset, transform.forward * _rayCheckPushDistance);
+        Gizmos.DrawSphere(rightOffset + transform.forward * _rayCheckPushDistance, 0.1f);
+
+        Gizmos.DrawRay(leftOffset, transform.forward * _rayCheckPushDistance);
+        Gizmos.DrawSphere(leftOffset + transform.forward * _rayCheckPushDistance, 0.1f);
+    }
 
         #endregion
 

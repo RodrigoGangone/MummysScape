@@ -18,7 +18,7 @@ public class SM_Push : State
         _view = _player._viewPlayer;
 
         _speed = _player.Speed * 0.5f;
-        _speedRotation = _player.SpeedRotation * 0.5f;
+        _speedRotation = 0f;
     }
 
     public override void OnEnter()
