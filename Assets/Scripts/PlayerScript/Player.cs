@@ -340,13 +340,13 @@ public class Player : MonoBehaviour
         Gizmos.color = Color.red;
 
         // Raycast 0.25 unidades a la derecha
-        Vector3 rightOffset = _rayCheckPushPos + transform.right * 0.25f;
+        Vector3 rightOffset = _rayCheckPushPos + transform.right * 0.15f;
         RaycastHit hitRight;
         bool hitBoxRight = Physics.Raycast(rightOffset, transform.forward, out hitRight, 
                                            _rayCheckPushDistance, layerMaskBox);
 
         // Raycast 0.25 unidades a la izquierda
-        Vector3 leftOffset = _rayCheckPushPos - transform.right * 0.25f;
+        Vector3 leftOffset = _rayCheckPushPos - transform.right * 0.15f;
         RaycastHit hitLeft;
         bool hitBoxLeft = Physics.Raycast(leftOffset, transform.forward, out hitLeft, 
                                           _rayCheckPushDistance, layerMaskBox);

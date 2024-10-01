@@ -287,12 +287,12 @@ public class ModelPlayer
         var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
         var layerMaskBox = 1 << movableBoxLayer;
 
-        Vector3 rightOffset = rayOrigin + _player.transform.right * 0.25f;
+        Vector3 rightOffset = rayOrigin + _player.transform.right * 0.15f;
         RaycastHit hitRight;
         bool hitBoxRight = Physics.Raycast(rightOffset, _player.transform.forward, out hitRight, 
                                            _player.RayCheckPushDistance, layerMaskBox);
 
-        Vector3 leftOffset = rayOrigin - _player.transform.right * 0.25f;
+        Vector3 leftOffset = rayOrigin - _player.transform.right * 0.15f;
         RaycastHit hitLeft;
         bool hitBoxLeft = Physics.Raycast(leftOffset, _player.transform.forward, out hitLeft, 
                                           _player.RayCheckPushDistance, layerMaskBox);
