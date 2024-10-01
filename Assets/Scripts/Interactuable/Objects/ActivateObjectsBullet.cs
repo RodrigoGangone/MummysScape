@@ -58,12 +58,9 @@ public class ActivateObjectsBullet : MonoBehaviour
     public void ActivateParticles()
     {
         if (_shiningParticles != null && !_shiningParticles.isPlaying)
-        {
             _shiningParticles.Play();
-        }
+        
         else
-        {
             _shiningParticles.Stop();
-        }
     }
 }

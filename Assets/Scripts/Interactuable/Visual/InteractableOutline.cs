@@ -58,13 +58,12 @@ public class InteractableOutline : MonoBehaviour
         }
 
         _player = FindObjectOfType<Player>();
-
-        _player.SizeModify += OnMaterial;
     }
 
     private void Update()
     {
-        if (!_player._modelPlayer.GetCurrentHit().HasValue)
+        if (!_player._modelPlayer.GetCurrentHit().HasValue &&
+            _interactableType != InteractableType.Hook)
             OffMaterial();
     }
 
@@ -95,7 +94,7 @@ public class InteractableOutline : MonoBehaviour
         }
     }
 
-    public void OffMaterial()
+    private void OffMaterial()
     {
         foreach (var material in _materials)
         {
@@ -103,7 +102,7 @@ public class InteractableOutline : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         if (!other.CompareTag(_detected) || _interactableType != InteractableType.Hook) return;
         OnMaterial();

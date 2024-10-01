@@ -523,7 +523,7 @@ public class ModelPlayer
 
         return null;
     }
-    
+
     public bool CheckGround()
     {
         Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.1f);
