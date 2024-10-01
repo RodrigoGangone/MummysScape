@@ -9,7 +9,12 @@ public class SM_Push : State
     private ViewPlayer _view;
 
     private float _speed;
-    private float _speedRotation;
+    private float _speedRotationOfPlayer;
+    
+    private float _speedRotateToDirToPush = 50f;
+    
+    private Vector3 velocity = Vector3.zero; // Para SmoothDamp
+
 
     public SM_Push(Player player)
     {
@@ -18,7 +23,7 @@ public class SM_Push : State
         _view = _player._viewPlayer;
 
         _speed = _player.Speed * 0.5f;
-        _speedRotation = _player.SpeedRotation * 0.5f;
+        _speedRotationOfPlayer = 0f;
     }
 
     public override void OnEnter()
@@ -45,9 +50,39 @@ public class SM_Push : State
 
     public override void OnFixedUpdate()
     {
+        if (_model.DirToPush != Vector3.zero)
+        {
+            Quaternion currentRotation = _player.transform.rotation;
+            Vector3 targetDirection = new Vector3(_model.DirToPush.x, 0, _model.DirToPush.z);
+            Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
+            _player.transform.rotation = Quaternion.RotateTowards(
+                currentRotation,
+                targetRotation,
+                _speedRotateToDirToPush * Time.fixedDeltaTime
+            );
+        }
+        
+        // Muevo MUY suavemente al player al centro del lado que estoy empujando
+        if (_model.CurrentBoxSide != null)
+        {
+            Vector3 centerOfSide = _model.CurrentBoxSide.GetChild(0).position;
+            Vector3 playerPosition = _player.transform.position;
+
+            // muevo solo en XZ
+            Vector3 targetPosition = new Vector3(centerOfSide.x, playerPosition.y, centerOfSide.z);
+
+            // smoothDamp para un movimiento suave para rigibodys
+            _player._rigidbody.MovePosition(Vector3.SmoothDamp(
+                playerPosition,
+                targetPosition,
+                ref velocity,
+                0.25f
+            ));
+        }
+        
         _model.Move(Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical"),
             _speed,
-            _speedRotation);
+            _speedRotationOfPlayer);
     }
 }
