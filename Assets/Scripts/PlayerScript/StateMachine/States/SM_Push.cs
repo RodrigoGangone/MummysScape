@@ -10,9 +10,9 @@ public class SM_Push : State
 
     private float _speed;
     private float _speedRotationOfPlayer;
-    
+
     private float _speedRotateToDirToPush = 50f;
-    
+
     private Vector3 velocity = Vector3.zero; // Para SmoothDamp
 
 
@@ -28,21 +28,21 @@ public class SM_Push : State
 
     public override void OnEnter()
     {
-        //_view.PLAY_ANIM("PrepareToPush", true);
+        _view.PLAY_ANIM("Push", true);
         Debug.Log("OnEnter: SM_PUSH");
     }
 
     public override void OnExit()
     {
-        //_view.PLAY_ANIM("PrepareToPush", false);
+        _view.PLAY_ANIM("Push", false);
         Debug.Log("OnExit: SM_PUSH");
     }
 
     public override void OnUpdate()
     {
-        if (_model.CurrentBox == null || !_model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor()) 
+        if (_model.CurrentBox == null || !_model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor())
             StateMachine.ChangeState(PlayerState.Idle);
-        
+
         // Mov de la box en update xq es por transform
         if (_model.CurrentBox != null && _model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor())
             _model.CurrentBox.transform.position += _model.DirToPush * (_player.SpeedPush * Time.deltaTime);
@@ -61,7 +61,7 @@ public class SM_Push : State
                 _speedRotateToDirToPush * Time.fixedDeltaTime
             );
         }
-        
+
         // Muevo MUY suavemente al player al centro del lado que estoy empujando
         if (_model.CurrentBoxSide != null)
         {
@@ -79,7 +79,7 @@ public class SM_Push : State
                 0.25f
             ));
         }
-        
+
         _model.Move(Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical"),
             _speed,
