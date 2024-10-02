@@ -25,10 +25,10 @@ public class Player : MonoBehaviour
     private string _currentState;
 
     [Header("ATRIBUTES")] [SerializeField] private float _life;
-    [SerializeField] private float _speedOriginal;
-    [SerializeField] private float _speedRotationOriginal;
-    [SerializeField] private float _speed;
-    [SerializeField] private float _speedRotation;
+    [SerializeField] private float _speedOriginal = 4;
+    [SerializeField] private float _speedRotationOriginal = 8;
+    [SerializeField] private float _speed = 4;
+    [SerializeField] private float _speedRotation = 8;
     [SerializeField] private float _speedPush = 0.5f;
     [SerializeField] private AnimationCurve _speedPull;
 
@@ -192,10 +192,10 @@ public class Player : MonoBehaviour
                 _speed = _speedOriginal;
                 break;
             case PlayerSize.Small:
-                _speed = _speedOriginal * 1.5f;
+                _speed = _speedOriginal;
                 break;
             case PlayerSize.Head:
-                _speed = _speedOriginal * 1.25f;
+                _speed = _speedOriginal;
                 break;
         }
 
@@ -323,7 +323,7 @@ public class Player : MonoBehaviour
 
         #region Check Push Box
 
-    if (GizmoPush)
+        if (GizmoPush)
     {
         // Posición de origen del raycast
         var _rayCheckPushPos = new Vector3(
