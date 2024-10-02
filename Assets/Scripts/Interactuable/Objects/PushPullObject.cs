@@ -28,7 +28,7 @@ public class PushPullObject : MonoBehaviour
     private void Start()
     {
         _boxCollider = GetComponent<BoxCollider>();
-        floorLayerMask = LayerMask.GetMask("Floor");
+        floorLayerMask = LayerMask.GetMask("Floor", "Box");
         wallLayerMask = LayerMask.GetMask("Wall");
         
         SetBandageOffset(0f);
@@ -194,21 +194,24 @@ public class PushPullObject : MonoBehaviour
         Vector3 corner2 = center + new Vector3(-extents.x, extents.y, extents.z);
         Vector3 corner3 = center + new Vector3(extents.x, extents.y, -extents.z);
         Vector3 corner4 = center + new Vector3(-extents.x, extents.y, -extents.z);
+        Vector3 centerCheck = center + new Vector3(0, extents.y, 0);
 
         // Realizar raycasts desde las esquinas superiores hacia abajo
         var hitResult1 = Physics.Raycast(corner1, Vector3.down, out _, raycastLengthToFloor, floorLayerMask);
         var hitResult2 = Physics.Raycast(corner2, Vector3.down, out _, raycastLengthToFloor, floorLayerMask);
         var hitResult3 = Physics.Raycast(corner3, Vector3.down, out _, raycastLengthToFloor, floorLayerMask);
         var hitResult4 = Physics.Raycast(corner4, Vector3.down, out _, raycastLengthToFloor, floorLayerMask);
+        var hitResult5 = Physics.Raycast(centerCheck, Vector3.down, out _, raycastLengthToFloor, floorLayerMask);
 
         // Debug para ver los raycasts en la escena
         Debug.DrawRay(corner1, Vector3.down * raycastLengthToFloor, hitResult1 ? Color.green : Color.red);
         Debug.DrawRay(corner2, Vector3.down * raycastLengthToFloor, hitResult2 ? Color.green : Color.red);
         Debug.DrawRay(corner3, Vector3.down * raycastLengthToFloor, hitResult3 ? Color.green : Color.red);
         Debug.DrawRay(corner4, Vector3.down * raycastLengthToFloor, hitResult4 ? Color.green : Color.red);
+        Debug.DrawRay(centerCheck, Vector3.down * raycastLengthToFloor, hitResult5 ? Color.green : Color.red);
 
         // Retornar true solo si todos los raycasts hitean con algo
-        var inFloor = hitResult1 || hitResult2 || hitResult3 || hitResult4;
+        var inFloor = hitResult1 || hitResult2 || hitResult3 || hitResult4 || hitResult5;
         
         //si no esta tocando el suelo Explode = true  y desenvolver
         if (!inFloor)
