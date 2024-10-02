@@ -63,10 +63,10 @@ public class InteractableOutline : MonoBehaviour
 
     private void Update()
     {
-        if (!_player._modelPlayer.GetCurrentHit().HasValue &&
+        /*if (!_player._modelPlayer.GetCurrentHit().HasValue &&
             _materialOff &&
             _interactableType != InteractableType.Hook)
-            OffMaterial();
+            OffMaterial();*/
     }
 
     public void OnMaterial()

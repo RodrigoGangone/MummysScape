@@ -28,7 +28,7 @@ public class PushPullObject : MonoBehaviour
     private void Start()
     {
         _boxCollider = GetComponent<BoxCollider>();
-        floorLayerMask = LayerMask.GetMask("Floor");
+        floorLayerMask = LayerMask.GetMask("Floor", "Box");
         wallLayerMask = LayerMask.GetMask("Wall");
         
         SetBandageOffset(0f);
@@ -91,25 +91,45 @@ public class PushPullObject : MonoBehaviour
 
     #region Check Collisions With Wall/Floor
 
-    public bool IsBoxCollisionWall(Vector3 dirToMove)
+    public bool CheckCollisionInDirections(Vector3 direction)
     {
-        Vector3 extents = _boxCollider.bounds.extents;
-        Vector3 center = _boxCollider.bounds.center;
-
-        Vector3[] corners = GetFaceCorners(center, extents, dirToMove);
-        
-        foreach (var corner in corners)
+        if (PerformBoxCast(direction))
         {
-            if (Physics.Raycast(corner, dirToMove, raycastLengthToWall, wallLayerMask))
-            {
-                //si no esta tocando el suelo Explode = true  y desenvolver
-                SetExplode(true);
-                StartUnwrap();
-                return true;
-            }
+            //si no esta tocando el suelo Explode = true  y desenvolver
+            SetExplode(true);
+            StartUnwrap();
+            return true; 
+        }
+        
+        return false;
+    }
+    
+    private bool PerformBoxCast(Vector3 direction)
+    {
+        Vector3 center = _boxCollider.bounds.center;
+        Vector3 localOffset = Vector3.zero;
+        Vector3 halfExtents = Vector3.one;
+
+        if (direction == Vector3.forward || direction == Vector3.back)
+        {
+            halfExtents = new Vector3(_boxCollider.bounds.extents.x, _boxCollider.bounds.extents.y, 0.05f); // Fino en Z
+            localOffset = (direction == Vector3.forward ? transform.forward : -transform.forward) * _boxCollider.bounds.extents.z;
+        }
+        else if (direction == Vector3.right || direction == Vector3.left)
+        {
+            halfExtents = new Vector3(0.05f, _boxCollider.bounds.extents.y, _boxCollider.bounds.extents.z); // Fino en X
+            localOffset = (direction == Vector3.right ? transform.right : -transform.right) * _boxCollider.bounds.extents.x;
         }
 
-        return false;
+        Vector3 origin = center + localOffset;
+
+        int layerMask = LayerMask.GetMask("Wall", "MovableBox");
+
+        float boxCastDistance = 0.05f;
+        RaycastHit hit;
+        bool isHit = Physics.BoxCast(origin, halfExtents, direction, out hit, transform.rotation, boxCastDistance, layerMask);
+
+        return isHit; // Retorna si colisiona con un objeto
     }
 
     private Vector3[] GetFaceCorners(Vector3 center, Vector3 extents, Vector3 direction)
@@ -174,21 +194,24 @@ public class PushPullObject : MonoBehaviour
         Vector3 corner2 = center + new Vector3(-extents.x, extents.y, extents.z);
         Vector3 corner3 = center + new Vector3(extents.x, extents.y, -extents.z);
         Vector3 corner4 = center + new Vector3(-extents.x, extents.y, -extents.z);
+        Vector3 centerCheck = center + new Vector3(0, extents.y, 0);
 
         // Realizar raycasts desde las esquinas superiores hacia abajo
         var hitResult1 = Physics.Raycast(corner1, Vector3.down, out _, raycastLengthToFloor, floorLayerMask);
         var hitResult2 = Physics.Raycast(corner2, Vector3.down, out _, raycastLengthToFloor, floorLayerMask);
         var hitResult3 = Physics.Raycast(corner3, Vector3.down, out _, raycastLengthToFloor, floorLayerMask);
         var hitResult4 = Physics.Raycast(corner4, Vector3.down, out _, raycastLengthToFloor, floorLayerMask);
+        var hitResult5 = Physics.Raycast(centerCheck, Vector3.down, out _, raycastLengthToFloor, floorLayerMask);
 
         // Debug para ver los raycasts en la escena
         Debug.DrawRay(corner1, Vector3.down * raycastLengthToFloor, hitResult1 ? Color.green : Color.red);
         Debug.DrawRay(corner2, Vector3.down * raycastLengthToFloor, hitResult2 ? Color.green : Color.red);
         Debug.DrawRay(corner3, Vector3.down * raycastLengthToFloor, hitResult3 ? Color.green : Color.red);
         Debug.DrawRay(corner4, Vector3.down * raycastLengthToFloor, hitResult4 ? Color.green : Color.red);
+        Debug.DrawRay(centerCheck, Vector3.down * raycastLengthToFloor, hitResult5 ? Color.green : Color.red);
 
         // Retornar true solo si todos los raycasts hitean con algo
-        var inFloor = hitResult1 || hitResult2 || hitResult3 || hitResult4;
+        var inFloor = hitResult1 || hitResult2 || hitResult3 || hitResult4 || hitResult5;
         
         //si no esta tocando el suelo Explode = true  y desenvolver
         if (!inFloor)
@@ -275,27 +298,53 @@ public class PushPullObject : MonoBehaviour
 
         #endregion
 
-        #region CheckWall
+        #region Gizmo Wall Detection
         if (GizmoWall)
         {
-            if (_boxCollider == null) return;
-
-            Vector3 extents = _boxCollider.bounds.extents;
-            Vector3 center = _boxCollider.bounds.center;
-            Vector3[] directions = { transform.forward, -transform.forward, transform.right, -transform.right };
-            
+            // Dibuja los boxcasts en las direcciones de movimiento
+            Vector3[] directions = { Vector3.forward, Vector3.back, Vector3.right, Vector3.left };
             foreach (var direction in directions)
             {
-                Vector3[] corners = GetFaceCorners(center, extents, direction);
-
-                foreach (var corner in corners)
-                {
-                    bool hit = Physics.Raycast(corner, direction, raycastLengthToWall, wallLayerMask);
-                    Gizmos.color = hit ? Color.red : Color.green;
-                    Gizmos.DrawRay(corner, direction * raycastLengthToWall);
-                }
+                PerformBoxCastGizmos(direction);
             }
         }
         #endregion
+    }
+    
+    private void PerformBoxCastGizmos(Vector3 direction)
+    {
+        Vector3 center = _boxCollider.bounds.center;
+        Vector3 localOffset = Vector3.zero;
+        Vector3 halfExtents = Vector3.one; 
+        if (direction == Vector3.forward || direction == Vector3.back)
+        {
+            halfExtents = new Vector3(_boxCollider.bounds.extents.x, _boxCollider.bounds.extents.y, 0.05f); // Fino en Z
+            localOffset = (direction == Vector3.forward ? transform.forward : -transform.forward) * _boxCollider.bounds.extents.z;
+        }
+        else if (direction == Vector3.right || direction == Vector3.left)
+        {
+            halfExtents = new Vector3(0.05f, _boxCollider.bounds.extents.y, _boxCollider.bounds.extents.z); // Fino en X
+            localOffset = (direction == Vector3.right ? transform.right : -transform.right) * _boxCollider.bounds.extents.x;
+        }
+
+        Vector3 origin = center + localOffset;
+
+        int layerMask = LayerMask.GetMask("Wall", "MovableBox");
+
+        RaycastHit hit;
+        float boxCastDistance = 1f; 
+        bool isHit = Physics.BoxCast(origin,
+            halfExtents, direction,
+            out hit, transform.rotation,
+            0.05f, layerMask);
+
+        if (isHit)
+            Gizmos.color = Color.red;
+        else
+            Gizmos.color = Color.green;
+
+        Gizmos.matrix = Matrix4x4.TRS(origin, transform.rotation, Vector3.one);
+        // Dibujo la caja un poco mas pequeña para evitar errores
+        Gizmos.DrawWireCube(Vector3.zero, halfExtents * 1.9f);
     }
 }
