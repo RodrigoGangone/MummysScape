@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class MovePlatfornNoPush : MonoBehaviour
 {
-    private MovePlatform _movePlatform;
+    private MoveHorizontalPlatform _moveHorizontalPlatform;
 
     private void Start()
     {
-        _movePlatform = GetComponentInParent<MovePlatform>();
+        _moveHorizontalPlatform = GetComponentInParent<MoveHorizontalPlatform>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -14,7 +14,7 @@ public class MovePlatfornNoPush : MonoBehaviour
         if (other.CompareTag("PlayerFather"))
         {
             Debug.Log("COLISIONO CON PLAYER");
-            _movePlatform.ReturnToPrevious();
+            _moveHorizontalPlatform.ReturnToPrevious();
         }
     }
 }
