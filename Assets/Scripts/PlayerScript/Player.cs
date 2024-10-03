@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 public class Player : MonoBehaviour
 {
@@ -25,10 +26,10 @@ public class Player : MonoBehaviour
     private string _currentState;
 
     [Header("ATRIBUTES")] [SerializeField] private float _life;
-    [SerializeField] private float _speedOriginal;
-    [SerializeField] private float _speedRotationOriginal;
-    [SerializeField] private float _speed;
-    [SerializeField] private float _speedRotation;
+    [SerializeField] private float _speedOriginal = 4;
+    [SerializeField] private float _speedRotationOriginal = 8;
+    [SerializeField] private float _speed = 4;
+    [SerializeField] private float _speedRotation = 8;
     [SerializeField] private float _speedPush = 0.5f;
     [SerializeField] private AnimationCurve _speedPull;
 
@@ -61,10 +62,11 @@ public class Player : MonoBehaviour
 
     public Action SizeModify;
     public bool WalkingSand;
+    public bool HitFalling;
 
     //Rays
     private const float _rayCheckShootDistance = 1.5f;
-    private const float _rayCheckPushDistance = 0.75f;
+    private const float _rayCheckPushDistance = 0.5f;
     private const float _rayCheckPullDistance = 7f;
 
     //TODO: Mejorar esto a futuro
@@ -130,9 +132,12 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnGetState += CurrentState;
         _controllerPlayer.OnGetPlayerSize += () => CurrentPlayerSize;
         _controllerPlayer.OnWalkingSand += () => WalkingSand;
+        _controllerPlayer.OnHitOnFalling += () => HitFalling;
 
         levelManager.OnPlayerWin += Win;
         levelManager.OnPlayerDeath += Death;
+
+        levelManager.OnPlayerFall += Fall;
     }
 
     private void Start()
@@ -150,7 +155,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Drop, new SM_Drop(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Push, new SM_Push(this));
         _stateMachinePlayer.AddState(PlayerState.Pull, new SM_Pull(this));
-        //_stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage());
+        //_stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Win, new SM_Win(this));
         _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead(_modelPlayer, _viewPlayer));
 
@@ -192,10 +197,10 @@ public class Player : MonoBehaviour
                 _speed = _speedOriginal;
                 break;
             case PlayerSize.Small:
-                _speed = _speedOriginal * 1.5f;
+                _speed = _speedOriginal;
                 break;
             case PlayerSize.Head:
-                _speed = _speedOriginal * 1.25f;
+                _speed = _speedOriginal;
                 break;
         }
 
@@ -228,6 +233,11 @@ public class Player : MonoBehaviour
     void Death()
     {
         _stateMachinePlayer.ChangeState(PlayerState.Dead);
+    }
+
+    void Fall()
+    {
+        _stateMachinePlayer.ChangeState(PlayerState.Fall);
     }
 
     void OnTriggerEnter(Collider other)
@@ -325,17 +335,59 @@ public class Player : MonoBehaviour
 
         if (GizmoPush)
         {
-            if (_modelPlayer != null)
-                Gizmos.color = _modelPlayer.CanPushBox() ? Color.red : Color.cyan;
-            else
-                Gizmos.color = Color.black;
-
-            var _rayCheckPushPos = new Vector3(transform.position.x,
+            // Posición de origen del raycast
+            var _rayCheckPushPos = new Vector3(
+                transform.position.x,
                 _shootTarget.transform.position.y,
-                transform.position.z);
+                transform.position.z
+            );
 
-            Gizmos.DrawRay(_rayCheckPushPos, transform.forward * _rayCheckPushDistance);
-            Gizmos.DrawSphere(_rayCheckPushPos + transform.forward * _rayCheckPushDistance, 0.1f);
+            // Definir la máscara de la capa MovableBox
+            var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
+            var layerMaskBox = 1 << movableBoxLayer;
+
+            // Inicialmente, todos los rayos serán de color rojo
+            Gizmos.color = Color.red;
+
+            // Raycast 0.25 unidades a la derecha
+            Vector3 rightOffset = _rayCheckPushPos + transform.right * 0.15f;
+            RaycastHit hitRight;
+            bool hitBoxRight = Physics.Raycast(rightOffset, transform.forward, out hitRight,
+                _rayCheckPushDistance, layerMaskBox);
+
+            // Raycast 0.25 unidades a la izquierda
+            Vector3 leftOffset = _rayCheckPushPos - transform.right * 0.15f;
+            RaycastHit hitLeft;
+            bool hitBoxLeft = Physics.Raycast(leftOffset, transform.forward, out hitLeft,
+                _rayCheckPushDistance, layerMaskBox);
+
+            // Contar si ambos rayos golpean el mismo objeto
+            int hitCount = 0;
+            string boxName = null;
+
+            if (hitBoxRight)
+            {
+                boxName = hitRight.collider.gameObject.name;
+                hitCount++;
+            }
+
+            if (hitBoxLeft && hitLeft.collider.gameObject.name == boxName)
+            {
+                hitCount++;
+            }
+
+            // Si ambos rayos golpean el mismo objeto, cambiar el color a verde
+            if (hitCount == 2)
+            {
+                Gizmos.color = Color.green;
+            }
+
+            // Dibujar los rayos con el color final (rojo o verde)
+            Gizmos.DrawRay(rightOffset, transform.forward * _rayCheckPushDistance);
+            Gizmos.DrawSphere(rightOffset + transform.forward * _rayCheckPushDistance, 0.1f);
+
+            Gizmos.DrawRay(leftOffset, transform.forward * _rayCheckPushDistance);
+            Gizmos.DrawSphere(leftOffset + transform.forward * _rayCheckPushDistance, 0.1f);
         }
 
         #endregion

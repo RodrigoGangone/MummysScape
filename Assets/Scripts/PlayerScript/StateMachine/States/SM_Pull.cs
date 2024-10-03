@@ -34,7 +34,7 @@ public class SM_Pull : State
 
         _view.bandageHook.enabled = false;
         _view.hookMaterial.SetFloat("_rightThreshold", 1.5f);
-        
+
         // Desenvuelvo la caja
         if (_model.CurrentBox != null)
         {
@@ -54,7 +54,8 @@ public class SM_Pull : State
 
     public override void OnUpdate()
     {
-        if (!Input.GetKey(KeyCode.Space) || _model.CurrentBox == null)
+        if (!Input.GetKey(KeyCode.Space) || _model.CurrentBox == null ||
+            !_model.CurrentBox.GetComponent<PushPullObject>().BoxInFloor())
             StateMachine.ChangeState(PlayerState.Idle);
 
         if (!_view.drawPull) return;
@@ -68,7 +69,7 @@ public class SM_Pull : State
             if (_view.hookMaterial.GetFloat("_rightThreshold") == -1.5f)
             {
                 isPullDestiny = true;
-                
+
                 // Envolver la caja
                 var boxScript = _model.CurrentBox.GetComponent<PushPullObject>();
                 if (boxScript != null) boxScript.StartWrap();

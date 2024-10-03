@@ -8,11 +8,13 @@ public class ActivateObjectsBullet : MonoBehaviour
     [SerializeField] private ParticleSystem _shiningParticles;
     private Animator _animator;
     Material material;
+    private InteractableOutline _interactableOutline;
 
     private void Start()
     {
         _animator = GetComponent<Animator>();
         material = gameObject.GetComponentInChildren<Renderer>().material;
+        _interactableOutline = GetComponent<InteractableOutline>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -52,12 +54,5 @@ public class ActivateObjectsBullet : MonoBehaviour
 
         material.SetFloat("_intensity", endValue);
     }
-
-    public void ActivateParticles()
-    {
-        if (_shiningParticles != null && !_shiningParticles.isPlaying)
-            _shiningParticles.Play();
-        else
-            _shiningParticles.Stop();
-    }
+    
 }

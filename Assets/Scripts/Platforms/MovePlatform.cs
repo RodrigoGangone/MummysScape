@@ -13,7 +13,10 @@ public class MovePlatform : MonoBehaviour
 
     [Header("WAYPOINTS")] 
     [SerializeField] private Transform[] waypoints; // Lista puntos a los que se mueve la platform
-    
+
+    [Header("PARTICLES")]
+    [SerializeField] private ParticleSystem forwardParticle;
+    [SerializeField] private ParticleSystem backwardParticle;
     private bool isPaused;
     private bool isMovingToFirstWaypoint;
     
@@ -49,12 +52,14 @@ public class MovePlatform : MonoBehaviour
         // Mueve la plataforma hacia el primer waypoint
         Transform firstWaypoint = waypoints[0];
         float step = speed * Time.deltaTime;
-
+       
         transform.position = Vector3.MoveTowards(transform.position, firstWaypoint.position, step);
-
+        
         // Si la plataforma ha alcanzado el primer waypoint
         if (Vector3.Distance(transform.position, firstWaypoint.position) == 0)
-        {
+        {        
+            forwardParticle.gameObject.SetActive(false);
+            backwardParticle.gameObject.SetActive(true);
             isMovingToFirstWaypoint = false;
             currentWaypointIndex = 1; // Empieza a moverse hacia el segundo waypoint
         }
@@ -69,10 +74,12 @@ public class MovePlatform : MonoBehaviour
         float step = speed * Time.deltaTime;
 
         transform.position = Vector3.MoveTowards(transform.position, targetWaypoint.position, step);
-
+        
         // Pausa al llegar a un punto
         if (Vector3.Distance(transform.position, targetWaypoint.position) == 0)
-        {
+        { 
+            forwardParticle.gameObject.SetActive(true);
+            backwardParticle.gameObject.SetActive(false);
             StartCoroutine(PauseAtWaypoint());
         }
     }

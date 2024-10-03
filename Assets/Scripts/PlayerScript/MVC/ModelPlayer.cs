@@ -21,22 +21,17 @@ public class ModelPlayer
 
     public bool isHooking;
 
-    //PUSH OBJECT
+    //PUSH/PULL OBJECT
     private Transform _currentBox;
+    private Transform _currentBoxSide;
     public bool isPulling;
     private Vector3 _dirToPush;
     private Vector3 _dirToPull;
 
+    public Transform CurrentBoxSide => _currentBoxSide;
     public Transform CurrentBox => _currentBox;
     public Vector3 DirToPush => _dirToPush;
     public Vector3 DirToPull => _dirToPull;
-
-    //public Action SizeModify;
-
-    private Action<RaycastHit> _checkInteractiveMat = hit =>
-    {
-        hit.transform.GetComponent<InteractableOutline>()?.UpdateMaterialStatus(true);
-    };
 
     public ModelPlayer(Player p)
     {
@@ -242,7 +237,7 @@ public class ModelPlayer
         _player.transform.rotation = targetRotation;
     }
 
-    private RaycastHit? ButtonHit()
+    public RaycastHit? ButtonHit()
     {
         Vector3 origin = _player.ShootTargetTransform.position;
 
@@ -263,7 +258,6 @@ public class ModelPlayer
             {
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
                 {
-                    _checkInteractiveMat(hit);
                     return hit;
                 }
             }
@@ -285,14 +279,23 @@ public class ModelPlayer
         var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
         var layerMaskBox = 1 << movableBoxLayer;
 
-        if (Physics.Raycast(rayOrigin, _player.transform.forward, out var hit,
-                _player.RayCheckPushDistance, layerMaskBox))
-        {
-            // Obtengo a la caja entera
-            _currentBox = hit.collider.transform.parent;
+        Vector3 rightOffset = rayOrigin + _player.transform.right * 0.15f;
+        RaycastHit hitRight;
+        bool hitBoxRight = Physics.Raycast(rightOffset, _player.transform.forward, out hitRight, 
+                                           _player.RayCheckPushDistance, layerMaskBox);
 
-            // Dir opuesta para mov de caja
-            _dirToPush = hit.collider.gameObject.name switch
+        Vector3 leftOffset = rayOrigin - _player.transform.right * 0.15f;
+        RaycastHit hitLeft;
+        bool hitBoxLeft = Physics.Raycast(leftOffset, _player.transform.forward, out hitLeft, 
+                                          _player.RayCheckPushDistance, layerMaskBox);
+
+        if (hitBoxRight && hitBoxLeft && 
+            hitRight.collider.gameObject.name == hitLeft.collider.gameObject.name)
+        {
+            _currentBoxSide = hitRight.collider.transform;
+            _currentBox = hitRight.collider.transform.parent;
+
+            _dirToPush = hitRight.collider.gameObject.name switch
             {
                 BOX_SIDE_FORWARD => Vector3.back,
                 BOX_SIDE_BACKWARD => Vector3.forward,
@@ -301,15 +304,15 @@ public class ModelPlayer
                 _ => Vector3.zero
             };
 
-            //Check si la caja no colisiona con pared
-            if (_dirToPush != Vector3.zero &&
-                !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPush))
+            // Verifica si la caja no colisiona con una pared
+            if (_dirToPush != Vector3.zero && 
+                !_currentBox.GetComponent<PushPullObject>().CheckCollisionInDirections(_dirToPush))
             {
-                _checkInteractiveMat(hit);
                 return true;
             }
         }
 
+        _currentBoxSide = null;
         _currentBox = null;
         _dirToPush = Vector3.zero;
         return false;
@@ -353,9 +356,8 @@ public class ModelPlayer
 
                     //Check si la caja no colisiona con pared
                     if (_dirToPull != Vector3.zero &&
-                        !_currentBox.GetComponent<PushPullObject>().IsBoxCollisionWall(_dirToPull))
+                        !_currentBox.GetComponent<PushPullObject>().CheckCollisionInDirections(_dirToPull))
                     {
-                        _checkInteractiveMat(hit);
                         return true;
                     }
                 }
@@ -366,18 +368,7 @@ public class ModelPlayer
         _dirToPull = Vector3.zero;
         return false;
     }
-
-    public void ActivateParticleButtonInView()
-    {
-        //Check si hay boton chocando con raycast de disparo
-        if (ButtonHit().HasValue)
-        {
-            var activateObjects = ButtonHit()?.collider.gameObject.GetComponent<ActivateObjectsBullet>();
-
-            if (activateObjects != null)
-                activateObjects.ActivateParticles();
-        }
-    }
+    
 
     //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'
     //TODO: sirve para limitar los movimientos en X/Y/Z, verificar eso
@@ -456,7 +447,7 @@ public class ModelPlayer
         if (_rb.velocity.magnitude > _player.Speed)
             _rb.velocity = _rb.velocity.normalized * _player.Speed;
     }
-
+    
     public bool CheckGround()
     {
         Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.1f);

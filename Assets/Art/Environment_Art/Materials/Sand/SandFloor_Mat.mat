@@ -36,7 +36,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TrailMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 8400000, guid: c61ca4aa49fb75149b491660892c07fa, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -71,7 +71,8 @@ Material:
     - _Speed: 0.04
     - _StepThreshold: 0.005
     - _Strength: 0.15
-    - _Tiling: 0.5
+    - _Tiling: 0.37
+    - _TrailBlending: 1
     - _TrailRadius: 0
     - _WavesAmount: 0.57
     - _WavesHight: 7.87
@@ -82,6 +83,7 @@ Material:
     - _EdgesSmoothStep: {r: 0.009, g: 0.01, b: 0, a: 0}
     - _FoamColor: {r: 0.8773585, g: 0.55591714, b: 0.3517711, a: 1}
     - _Tiling2: {r: 1, g: 1, b: 0, a: 0}
+    - _TrailColor: {r: 1, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &6840919938758356064
 MonoBehaviour:

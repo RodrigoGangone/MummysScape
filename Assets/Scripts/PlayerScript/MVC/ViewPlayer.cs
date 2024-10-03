@@ -43,7 +43,7 @@ public class ViewPlayer
         _headMat = headSkinnedMesh.material;
     }
 
-    public void SetValueMaterial(float valueBody, float valueHead )
+    public void SetValueMaterial(float valueBody, float valueHead)
     {
         _bodyMat.SetFloat("_CutoffHeight", valueBody);
         _headMat.SetFloat("_CutoffHeight", valueHead);
@@ -118,5 +118,52 @@ public class ViewPlayer
     public void PLAY_ANIM_TRIGGER(string anim)
     {
         _player._anim.SetTrigger(anim);
+    }
+
+    public RaycastHit? GetHitFromPull()
+    {
+        var rayOrigin = new Vector3(
+            _player.transform.position.x,
+            _player.ShootTargetTransform.position.y,
+            _player.transform.position.z
+        );
+
+        var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
+        var layerMaskBox = 1 << movableBoxLayer;
+
+        Vector3 forwardDirection = _player.transform.forward;
+        Vector3 rightDirection = Quaternion.Euler(0, 5, 0) * _player.transform.forward;
+        Vector3 leftDirection = Quaternion.Euler(0, -5, 0) * _player.transform.forward;
+
+        Vector3[] directions = { forwardDirection, rightDirection, leftDirection };
+        foreach (var direction in directions)
+        {
+            if (Physics.Raycast(rayOrigin, direction, out var hit, _player.RayCheckPullDistance, layerMaskBox))
+            {
+                return hit;
+            }
+        }
+
+        return null;
+    }
+
+    public RaycastHit? GetHitFromPush()
+    {
+        var rayOrigin = new Vector3(
+            _player.transform.position.x,
+            _player.ShootTargetTransform.position.y,
+            _player.transform.position.z
+        );
+
+        var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
+        var layerMaskBox = 1 << movableBoxLayer;
+
+        if (Physics.Raycast(rayOrigin, _player.transform.forward, out var hit, _player.RayCheckPushDistance,
+                layerMaskBox))
+        {
+            return hit;
+        }
+
+        return null;
     }
 }
