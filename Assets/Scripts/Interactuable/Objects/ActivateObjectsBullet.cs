@@ -28,9 +28,13 @@ public class ActivateObjectsBullet : MonoBehaviour
         foreach (GameObject platform in _platformsAll)
         {
             MoveHorizontalPlatform moveHorizontalPlatform = platform.GetComponent<MoveHorizontalPlatform>();
-
+            MoveVerticalPlatform moveVerticalPlatform = platform.GetComponent<MoveVerticalPlatform>();
+            
             if (moveHorizontalPlatform != null)
                 moveHorizontalPlatform.StartAction();
+            
+            if(moveVerticalPlatform != null)  
+                moveVerticalPlatform.StartAction();
         }
     }
 

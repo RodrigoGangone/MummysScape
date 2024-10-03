@@ -158,8 +158,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
             moundEmergenceSpeed * Time.deltaTime);
         sandMoundBackward.position = Vector3.MoveTowards(sandMoundBackward.position, targetWaypointBackward.position,
             moundEmergenceSpeed * Time.deltaTime);
-
-        Debug.Log(_currentWaypointIndex + "CURRENT INDEX");
+        
         //Cuando avanza, se activan las partículas de adelante.
         if (_currentWaypointIndex == 1)
         {

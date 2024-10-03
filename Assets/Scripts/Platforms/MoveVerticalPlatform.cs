@@ -68,12 +68,12 @@ public class MoveVerticalPlatform : MonoBehaviour
     {
         if (isPaused)
         {
-            DeactivateParticles();
+            sandMoundsParticle.Stop();
         }
 
         else
         {
-            sandMoundsParticle.gameObject.SetActive(true);
+            if(!sandMoundsParticle.isPlaying)sandMoundsParticle.Play();
             
             // Calcula la direcc y mueve la plataform hacia el waypoint actual
             Transform targetWaypoint = waypoints[_currentWaypointIndex];
@@ -128,11 +128,5 @@ public class MoveVerticalPlatform : MonoBehaviour
         {
             other.transform.SetParent(null);
         }
-    }
-    
-    private IEnumerator DeactivateParticles()
-    {
-        yield return new WaitForSeconds(1f);
-        sandMoundsParticle.gameObject.SetActive(false);
     }
 }
