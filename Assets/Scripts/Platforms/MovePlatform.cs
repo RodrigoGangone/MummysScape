@@ -19,15 +19,17 @@ public class MovePlatform : MonoBehaviour
     [FormerlySerializedAs("sandMound")]
     [Header("EFFECTS")] 
     [SerializeField] private Transform sandMoundForward;
+    [SerializeField] private Transform[] sandMoundForwardWaypoints;
     [SerializeField] private Transform sandMoundBackward;
-    [SerializeField] private Transform[] sandMoundsWaypoints;
     [SerializeField] private Transform[] sandMoundBackwardWaypoints;
+    [SerializeField] private ParticleSystem[] sandMoundForwardParticles;
+    [SerializeField] private ParticleSystem[] sandMoundBackwardParticles;
+
 
     private bool isPaused;
     private bool isMovingToFirstWaypoint;
     
     private int currentWaypointIndex = 0;
-    private int currentSandMoundWaypointIndex = 0;
 
     private void Start()
     {
@@ -39,10 +41,9 @@ public class MovePlatform : MonoBehaviour
             else
                 transform.position = waypoints[0].position;
         }
-
-        if (sandMoundsWaypoints.Length <= 0) return;
-        sandMoundForward.position = sandMoundsWaypoints[0].position;
-        sandMoundBackward.position = sandMoundsWaypoints[sandMoundsWaypoints.Length - 1].position;
+        
+        sandMoundForward.position = sandMoundForwardWaypoints[0].position;
+        sandMoundBackward.position = sandMoundBackwardWaypoints[0].position;
     }
 
     private void Update()
@@ -100,6 +101,7 @@ public class MovePlatform : MonoBehaviour
 
         // Avanza al siguiente waypoint
         currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
+        
         isPaused = false;
     }
 
@@ -134,13 +136,25 @@ public class MovePlatform : MonoBehaviour
 
     private void MoveSandMound()
     {
-        if (sandMoundsWaypoints.Length <= 0) return;
-        Transform targetWaypoint = sandMoundsWaypoints[currentWaypointIndex];
-        sandMoundForward.position = Vector3.MoveTowards(sandMoundForward.position, targetWaypoint.position, speed * Time.deltaTime);
+        Transform targetWaypoint = sandMoundForwardWaypoints[currentWaypointIndex];
+        int inverseWaypointIndex = (sandMoundForwardWaypoints.Length - 1) - currentWaypointIndex;
+        Transform targetWaypointBackward = sandMoundBackwardWaypoints[inverseWaypointIndex];
         
-        if (Vector3.Distance(sandMoundForward.position, targetWaypoint.position) == 0)
+        //Cada montículo se mueve en relación al currentWaypointIndex que se fija en los "Target Waypoint"
+        sandMoundForward.position = Vector3.MoveTowards(sandMoundForward.position, targetWaypoint.position, speed * Time.deltaTime);
+        sandMoundBackward.position = Vector3.MoveTowards(sandMoundBackward.position, targetWaypointBackward.position, speed * Time.deltaTime);
+
+        //Cuando avanza, se activan las partículas de adelante.
+        if (currentWaypointIndex == 1 && sandMoundForward.position == targetWaypoint.position)
         {
-            currentSandMoundWaypointIndex = (currentSandMoundWaypointIndex + 1) % sandMoundsWaypoints.Length;
+            foreach (var particle in sandMoundForwardParticles) particle.gameObject.SetActive(true);
+            foreach (var particle in sandMoundBackwardParticles) particle.gameObject.SetActive(false);
+        }
+        //Cuando retrocede, activa las de atras
+        else if (currentWaypointIndex == 0 && sandMoundForward.position == targetWaypoint.position)
+        {
+            foreach (var particle in sandMoundForwardParticles) particle.gameObject.SetActive(false);
+            foreach (var particle in sandMoundBackwardParticles) particle.gameObject.SetActive(true);
         }
     }
 }
