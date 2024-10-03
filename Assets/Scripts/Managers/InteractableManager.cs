@@ -21,8 +21,10 @@ public class InteractableManager : MonoBehaviour
         // Comprueba si hay interacción con Pull
         if (_player._viewPlayer.GetHitFromPull().HasValue)
         {
-            currentInteractable = _player._viewPlayer.GetHitFromPull()?.transform.gameObject
-                .GetComponent<InteractableOutline>();
+            if (_player._viewPlayer.GetHitFromPull()?.transform.gameObject
+                    .GetComponent<PushPullObject>().CheckPlayerRaycast() != null)
+                currentInteractable = _player._viewPlayer.GetHitFromPull()?.transform.gameObject
+                    .GetComponent<InteractableOutline>();
         }
 
         // Solo comprueba Push si Pull no detectó nada
