@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
+using UnityEngine.UIElements.Experimental;
 using static Utils;
 
 public class MovePlatform : MonoBehaviour
@@ -14,13 +16,18 @@ public class MovePlatform : MonoBehaviour
     [Header("WAYPOINTS")] 
     [SerializeField] private Transform[] waypoints; // Lista puntos a los que se mueve la platform
 
-    [Header("PARTICLES")]
-    [SerializeField] private ParticleSystem forwardParticle;
-    [SerializeField] private ParticleSystem backwardParticle;
+    [FormerlySerializedAs("sandMound")]
+    [Header("EFFECTS")] 
+    [SerializeField] private Transform sandMoundForward;
+    [SerializeField] private Transform sandMoundBackward;
+    [SerializeField] private Transform[] sandMoundsWaypoints;
+    [SerializeField] private Transform[] sandMoundBackwardWaypoints;
+
     private bool isPaused;
     private bool isMovingToFirstWaypoint;
     
     private int currentWaypointIndex = 0;
+    private int currentSandMoundWaypointIndex = 0;
 
     private void Start()
     {
@@ -32,6 +39,10 @@ public class MovePlatform : MonoBehaviour
             else
                 transform.position = waypoints[0].position;
         }
+
+        if (sandMoundsWaypoints.Length <= 0) return;
+        sandMoundForward.position = sandMoundsWaypoints[0].position;
+        sandMoundBackward.position = sandMoundsWaypoints[sandMoundsWaypoints.Length - 1].position;
     }
 
     private void Update()
@@ -44,7 +55,6 @@ public class MovePlatform : MonoBehaviour
         {
             MoveTowardsWaypoint();
         }
-        
     }
     
     private void MoveToFirstWaypoint()
@@ -52,14 +62,12 @@ public class MovePlatform : MonoBehaviour
         // Mueve la plataforma hacia el primer waypoint
         Transform firstWaypoint = waypoints[0];
         float step = speed * Time.deltaTime;
-       
+             
         transform.position = Vector3.MoveTowards(transform.position, firstWaypoint.position, step);
         
         // Si la plataforma ha alcanzado el primer waypoint
         if (Vector3.Distance(transform.position, firstWaypoint.position) == 0)
-        {        
-            forwardParticle.gameObject.SetActive(false);
-            backwardParticle.gameObject.SetActive(true);
+        {      
             isMovingToFirstWaypoint = false;
             currentWaypointIndex = 1; // Empieza a moverse hacia el segundo waypoint
         }
@@ -78,10 +86,10 @@ public class MovePlatform : MonoBehaviour
         // Pausa al llegar a un punto
         if (Vector3.Distance(transform.position, targetWaypoint.position) == 0)
         { 
-            forwardParticle.gameObject.SetActive(true);
-            backwardParticle.gameObject.SetActive(false);
             StartCoroutine(PauseAtWaypoint());
         }
+        
+        MoveSandMound();
     }
 
     private IEnumerator PauseAtWaypoint()
@@ -121,6 +129,18 @@ public class MovePlatform : MonoBehaviour
         if (other.gameObject.CompareTag(PLAYER_TAG))
         {
             other.transform.SetParent(null);
+        }
+    }
+
+    private void MoveSandMound()
+    {
+        if (sandMoundsWaypoints.Length <= 0) return;
+        Transform targetWaypoint = sandMoundsWaypoints[currentWaypointIndex];
+        sandMoundForward.position = Vector3.MoveTowards(sandMoundForward.position, targetWaypoint.position, speed * Time.deltaTime);
+        
+        if (Vector3.Distance(sandMoundForward.position, targetWaypoint.position) == 0)
+        {
+            currentSandMoundWaypointIndex = (currentSandMoundWaypointIndex + 1) % sandMoundsWaypoints.Length;
         }
     }
 }
