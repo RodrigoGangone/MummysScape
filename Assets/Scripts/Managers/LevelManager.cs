@@ -11,7 +11,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] public float _currentTimeDeath;
     [SerializeField] public float _maxTimeDeath = 30f;
     [SerializeField] private float _speedRecovery;
-    
+
     [SerializeField] private int _collectibleCount;
 
     private int nextSceneLoad;
@@ -22,6 +22,8 @@ public class LevelManager : MonoBehaviour
     public Action OnPlayerDeath;
     public Action OnPlaying;
     public Action OnPause;
+
+    public Action OnPlayerFall;
 
     public Action<CollectibleNumber> AddCollectible;
 
