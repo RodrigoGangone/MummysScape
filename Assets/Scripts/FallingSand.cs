@@ -73,14 +73,17 @@ public class FallingSand : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (!other.gameObject.CompareTag("PlayerFather") || value > 0.4f)
+        if (other.gameObject.CompareTag("PlayerFather"))
         {
-            _player.HitFalling = false;
-        }
-        else
-        {
-            _levelManager.OnPlayerFall.Invoke();
-            _player.HitFalling = true;
+            if (value < 0.4f)
+            {
+                _levelManager.OnPlayerFall.Invoke();
+                _player.HitFalling = true;
+            }
+            else
+            {
+                _player.HitFalling = false;
+            }
         }
     }
 

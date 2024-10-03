@@ -158,7 +158,7 @@ public class ControllerPlayer
     {
         return PlayerSize.Small.Equals(OnGetPlayerSize.Invoke()) &&
                _model.detectionBeetle.currentHook != null &&
-               !OnHitOnFalling.Invoke() &&
+               !OnHitOnFalling!.Invoke() &&
                OnGetState?.Invoke() switch
                {
                    STATE_IDLE => true,
