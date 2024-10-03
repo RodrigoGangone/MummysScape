@@ -119,4 +119,49 @@ public class ViewPlayer
     {
         _player._anim.SetTrigger(anim);
     }
+    
+    public RaycastHit? GetHitFromPull()
+    {
+        var rayOrigin = new Vector3(
+            _player.transform.position.x,
+            _player.ShootTargetTransform.position.y,
+            _player.transform.position.z
+        );
+
+        var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
+        var layerMaskBox = 1 << movableBoxLayer;
+
+        Vector3 forwardDirection = _player.transform.forward;
+        Vector3[] directions = { forwardDirection };
+
+        foreach (var direction in directions)
+        {
+            if (Physics.Raycast(rayOrigin, direction, out var hit, _player.RayCheckPullDistance, layerMaskBox))
+            {
+                return hit;
+            }
+        }
+
+        return null;
+    }
+
+    public RaycastHit? GetHitFromPush()
+    {
+        var rayOrigin = new Vector3(
+            _player.transform.position.x,
+            _player.ShootTargetTransform.position.y,
+            _player.transform.position.z
+        );
+
+        var movableBoxLayer = LayerMask.NameToLayer("MovableBox");
+        var layerMaskBox = 1 << movableBoxLayer;
+
+        if (Physics.Raycast(rayOrigin, _player.transform.forward, out var hit, _player.RayCheckPushDistance,
+                layerMaskBox))
+        {
+            return hit;
+        }
+
+        return null;
+    }
 }

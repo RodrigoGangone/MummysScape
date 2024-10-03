@@ -40,6 +40,5 @@ public class SM_Walk : State
             _player.Speed,
             _player.SpeedRotation);
         
-        _model.ActivateParticleButtonInView();
     }
 }

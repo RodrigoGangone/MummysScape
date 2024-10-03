@@ -24,6 +24,5 @@ public class SM_Idle : State
 
     public override void OnFixedUpdate()
     {
-        _model.ActivateParticleButtonInView();
     }
 }

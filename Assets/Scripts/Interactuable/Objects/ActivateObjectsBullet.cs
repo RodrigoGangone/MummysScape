@@ -54,13 +54,5 @@ public class ActivateObjectsBullet : MonoBehaviour
 
         material.SetFloat("_intensity", endValue);
     }
-
-    public void ActivateParticles()
-    {
-        if (_shiningParticles != null && !_shiningParticles.isPlaying)
-            _shiningParticles.Play();
-        
-        else
-            _shiningParticles.Stop();
-    }
+    
 }

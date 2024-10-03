@@ -37,7 +37,5 @@ public class SM_WalkSand : State
             Input.GetAxisRaw("Vertical"),
             _player.Speed,
             _player.SpeedRotation);
-
-        _model.ActivateParticleButtonInView();
     }
 }
