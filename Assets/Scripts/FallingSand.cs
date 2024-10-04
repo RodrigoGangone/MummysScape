@@ -78,7 +78,7 @@ public class FallingSand : MonoBehaviour
             if (value < 0.4f)
             {
                 _player.HitFalling = true;
-                _levelManager.OnPlayerFall.Invoke();
+                _levelManager.OnPlayerFall?.Invoke();
             }
             else
             {
