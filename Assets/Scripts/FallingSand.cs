@@ -71,24 +71,20 @@ public class FallingSand : MonoBehaviour
         }
     }
 
-    private void OnTriggerStay(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("PlayerFather"))
         {
             if (value < 0.4f)
-            {
                 _player.HitFalling = true;
-                _levelManager.OnPlayerFall?.Invoke();
-            }
             else
-            {
                 _player.HitFalling = false;
-            }
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        _player.HitFalling = false;
+        if (other.gameObject.CompareTag("PlayerFather"))
+            _player.HitFalling = false;
     }
 }
