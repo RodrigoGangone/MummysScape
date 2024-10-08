@@ -18,7 +18,6 @@ public static class LevelManagerJson
         }
     }
 
-
     public static void AddNewLevel(int levelNumber, List<CollectibleNumber> collectibles, float timeToComplete)
     {
         Level newLevel = new Level
