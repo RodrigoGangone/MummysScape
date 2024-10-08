@@ -1,8 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.SceneManagement;
-using static Utils;
 
 public class LevelManager : MonoBehaviour
 {
@@ -12,7 +13,9 @@ public class LevelManager : MonoBehaviour
     [SerializeField] public float _maxTimeDeath = 30f;
     [SerializeField] private float _speedRecovery;
 
-    [SerializeField] private int _collectibleCount;
+    [SerializeField] private List<Collectible> _collectibles = new();
+
+    private List<CollectibleNumber> _collectibleNumbers = new();
 
     private int nextSceneLoad;
 
@@ -22,7 +25,7 @@ public class LevelManager : MonoBehaviour
     public Action OnPlayerDeath;
     public Action OnPlaying;
     public Action OnPause;
-    
+
     public Action<CollectibleNumber> AddCollectible;
 
     private Coroutine _deathTimerCoroutine;
@@ -32,6 +35,8 @@ public class LevelManager : MonoBehaviour
         _player = FindObjectOfType<Player>();
 
         nextSceneLoad = SceneManager.GetActiveScene().buildIndex + 1; //Siguiente lvl
+
+        ValidateCollectibleInScene();
 
         OnPlayerWin += Win;
         OnPlayerDeath += Lose;
@@ -67,6 +72,37 @@ public class LevelManager : MonoBehaviour
             _deathTimerCoroutine = null;
 
             StartCoroutine(ResetDeathTimer());
+        }
+    }
+
+    //TODO: ACA DEBERIAMOS UNIFICAR ESTE METODO CON EL VALIDATEGEMS DEL UI MANAGER, SON DOS METODOS QUE REALIZAN CASI
+    //TODO: LA MISMA ACCION, POR LO TANTO DEBERIAN ESTAR UNIFICADOS [EN UN FUTURO SE PODRIA UTILIZAR PARA MANTENER LAS
+    //TODO: PLATAFORMAS QUE ACTIVE CON ANTERIORIDAD]
+    private void ValidateCollectibleInScene()
+    {
+        _collectibles.AddRange(FindObjectsOfType<Collectible>());
+
+        foreach (var collectible in _collectibles)
+        {
+            Renderer renderer = collectible.GetComponentInChildren<Renderer>();
+            renderer.material.SetFloat("_IsPicked", 1);
+        }
+
+        foreach (var level in LevelManagerJson.Levels)
+        {
+            if (level.level.Equals(SceneManager.GetActiveScene().buildIndex))
+            {
+                foreach (var collectibleNumber in level.collectibleNumbers)
+                {
+                    foreach (var collectible in _collectibles)
+                    {
+                        if (collectible.CollectibleNumber == collectibleNumber)
+                        {
+                            collectible.GetComponentInChildren<Renderer>().material.SetFloat("_IsPicked", 0);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -109,16 +145,18 @@ public class LevelManager : MonoBehaviour
             : LevelState.Pause;
     }
 
-    private void CollectibleCount(CollectibleNumber num)
+    private void CollectibleCount(CollectibleNumber collectible)
     {
-        _collectibleCount++;
+        _collectibleNumbers.Add(collectible);
     }
 
     private void Win()
     {
-        PlayerPrefsHandler.SaveLevelAt(nextSceneLoad);
-        Debug.Log($"LevelManager -> PlayerPref: LVL_AT {nextSceneLoad}");
-        Debug.Log("LevelManager -> Ganaste!");
+        LevelManagerJson.AddNewLevel(SceneManager.GetActiveScene().buildIndex,
+            _collectibleNumbers,
+            0f);
+
+        LevelManagerJson.SHOWPREFLEVELS();
     }
 
     private void Lose()
