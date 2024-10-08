@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
@@ -7,6 +8,7 @@ public class Bullet : MonoBehaviour
     [SerializeField] GameObject _fxBullet;
     [SerializeField] Player _player;
     private GameObject _target;
+
     void OnEnable()
     {
         _target = GameObject.Find("Target");
@@ -36,10 +38,15 @@ public class Bullet : MonoBehaviour
         SpawnMummyBandage();
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.layer == LayerMask.NameToLayer("Button"))
+            SpawnMummyBandage();
+    }
+
     private void SpawnMummyBandage()
     {
         BulletFactory.Instance.ReturnObjectToPool(this);
-        //_player._modelPlayer.SpawnBandage(transform);
         _player._modelPlayer.CreateBandageAtPosition(transform.position);
         Instantiate(_fxBullet, transform.position, transform.rotation);
     }
