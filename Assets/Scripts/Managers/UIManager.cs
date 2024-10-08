@@ -250,7 +250,16 @@ public class UIManager : MonoBehaviour
 
     public void Win()
     {
-        StartCoroutine(FadeIn(() => { _WinPanel.SetActive(true); }));
+        StartCoroutine(FadeIn(() =>
+        {
+            //Si llego a la cantidad de niveles max no muestro boton de sig nivel
+            //TODO: MOSTRAR OTRA PANTALLA QUE NO TENGA LA DE SIGUIENTE NIVEL
+            if (SceneManager.GetActiveScene().buildIndex >= Utils.MAX_LVLS)
+                _btnNextLvlW.enabled = false;    
+            
+            _WinPanel.SetActive(true);
+            
+        }));
     }
 
     public void Lose()

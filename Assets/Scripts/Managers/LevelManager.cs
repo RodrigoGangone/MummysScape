@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static Utils;
@@ -12,7 +13,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] public float _maxTimeDeath = 30f;
     [SerializeField] private float _speedRecovery;
 
-    [SerializeField] private int _collectibleCount;
+    private List<CollectibleNumber>  _collectibleNumbers = new();
 
     private int nextSceneLoad;
 
@@ -109,16 +110,18 @@ public class LevelManager : MonoBehaviour
             : LevelState.Pause;
     }
 
-    private void CollectibleCount(CollectibleNumber num)
+    private void CollectibleCount(CollectibleNumber collectible)
     {
-        _collectibleCount++;
+        _collectibleNumbers.Add(collectible);
     }
 
     private void Win()
     {
-        PlayerPrefsHandler.SaveLevelAt(nextSceneLoad);
-        Debug.Log($"LevelManager -> PlayerPref: LVL_AT {nextSceneLoad}");
-        Debug.Log("LevelManager -> Ganaste!");
+        LevelManagerJson.AddNewLevel(SceneManager.GetActiveScene().buildIndex,
+            _collectibleNumbers,
+            0f);
+
+        LevelManagerJson.SHOWPREFLEVELS();
     }
 
     private void Lose()

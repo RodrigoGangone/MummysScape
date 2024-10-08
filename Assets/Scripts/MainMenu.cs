@@ -36,7 +36,7 @@ public class MainMenu : MonoBehaviour
         //Buttons Options//
         _btnDeletePrefs.onClick.AddListener(()=>
         {
-            PlayerPrefsHandler.ResetLevelAt();
+            LevelManagerJson.DeteleLevels();
             CheckEnabledLevels();
         });
         
@@ -52,11 +52,18 @@ public class MainMenu : MonoBehaviour
 
     private void CheckEnabledLevels()
     {
+        LevelManagerJson.LoadLevels(); //verifico los niveles
+        int levelAt = LevelManagerJson.GetLevelCount(); //obtengo la cantidad de niveles del json
+        
         for (int i = 0; i < _btnsLvls.Length; i++)
         {
-            if (i + LEVEL_FIRST > PlayerPrefsHandler.GetLevelAt()) //habilito solo el primer lvl
+            if (i  <= levelAt) 
             {
-                _btnsLvls[i].interactable = false;
+                _btnsLvls[i].interactable = true;  
+            }
+            else
+            {
+                _btnsLvls[i].interactable = false; 
             }
         }
     }
@@ -76,6 +83,7 @@ public class MainMenu : MonoBehaviour
         _mainMenuPanel.SetActive(false);
         _lvlSelectorPanel.SetActive(false);
 
+        _btnBackToMain.gameObject.SetActive(false);
         StartCoroutine(LoadLevelAfterDelay(levelIndex));
     }
     

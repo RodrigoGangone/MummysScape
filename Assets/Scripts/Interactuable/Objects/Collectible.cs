@@ -28,7 +28,7 @@ public class Collectible : MonoBehaviour
         if (number != _collectibleNumber) return;
 
         Instantiate(_congratsParticles, transform.position, Quaternion.identity);
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 }
 
