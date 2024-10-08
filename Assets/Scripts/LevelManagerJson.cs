@@ -6,6 +6,7 @@ public static class LevelManagerJson
 {
     private const string LEVELS_KEY = "levels";
     private static List<Level> levels = new();
+    public static List<Level> Levels => levels;
     
     public static void LoadLevels() //cargar niveles si lo hay
     {
@@ -16,7 +17,8 @@ public static class LevelManagerJson
             Debug.Log($"LoadLevels\n{json}");
         }
     }
-    
+
+
     public static void AddNewLevel(int levelNumber, List<CollectibleNumber> collectibles, float timeToComplete)
     {
         Level newLevel = new Level
