@@ -136,8 +136,6 @@ public class Player : MonoBehaviour
 
         levelManager.OnPlayerWin += Win;
         levelManager.OnPlayerDeath += Death;
-
-        levelManager.OnPlayerFall += Fall;
     }
 
     private void Start()
@@ -233,11 +231,6 @@ public class Player : MonoBehaviour
     void Death()
     {
         _stateMachinePlayer.ChangeState(PlayerState.Dead);
-    }
-
-    void Fall()
-    {
-        _stateMachinePlayer.ChangeState(PlayerState.Fall);
     }
 
     void OnTriggerEnter(Collider other)

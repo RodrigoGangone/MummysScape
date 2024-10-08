@@ -281,15 +281,15 @@ public class ModelPlayer
 
         Vector3 rightOffset = rayOrigin + _player.transform.right * 0.15f;
         RaycastHit hitRight;
-        bool hitBoxRight = Physics.Raycast(rightOffset, _player.transform.forward, out hitRight, 
-                                           _player.RayCheckPushDistance, layerMaskBox);
+        bool hitBoxRight = Physics.Raycast(rightOffset, _player.transform.forward, out hitRight,
+            _player.RayCheckPushDistance, layerMaskBox);
 
         Vector3 leftOffset = rayOrigin - _player.transform.right * 0.15f;
         RaycastHit hitLeft;
-        bool hitBoxLeft = Physics.Raycast(leftOffset, _player.transform.forward, out hitLeft, 
-                                          _player.RayCheckPushDistance, layerMaskBox);
+        bool hitBoxLeft = Physics.Raycast(leftOffset, _player.transform.forward, out hitLeft,
+            _player.RayCheckPushDistance, layerMaskBox);
 
-        if (hitBoxRight && hitBoxLeft && 
+        if (hitBoxRight && hitBoxLeft &&
             hitRight.collider.gameObject.name == hitLeft.collider.gameObject.name)
         {
             _currentBoxSide = hitRight.collider.transform;
@@ -305,7 +305,7 @@ public class ModelPlayer
             };
 
             // Verifica si la caja no colisiona con una pared
-            if (_dirToPush != Vector3.zero && 
+            if (_dirToPush != Vector3.zero &&
                 !_currentBox.GetComponent<PushPullObject>().CheckCollisionInDirections(_dirToPush))
             {
                 return true;
@@ -368,7 +368,7 @@ public class ModelPlayer
         _dirToPull = Vector3.zero;
         return false;
     }
-    
+
 
     //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'
     //TODO: sirve para limitar los movimientos en X/Y/Z, verificar eso
@@ -447,7 +447,7 @@ public class ModelPlayer
         if (_rb.velocity.magnitude > _player.Speed)
             _rb.velocity = _rb.velocity.normalized * _player.Speed;
     }
-    
+
     public bool CheckGround()
     {
         Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.1f);
