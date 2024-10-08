@@ -8,6 +8,8 @@ public class Collectible : MonoBehaviour
 
     [SerializeField] private CollectibleNumber _collectibleNumber;
 
+    public CollectibleNumber CollectibleNumber => _collectibleNumber;
+
 
     private void Start()
     {
