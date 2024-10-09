@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UIElements.Experimental;
@@ -14,7 +16,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
 
     [Header("WAYPOINTS")] [SerializeField] private Transform[] waypoints; // Lista puntos a los que se mueve la platform
 
-    [FormerlySerializedAs("sandMound")] [Header("EFFECTS")] [SerializeField]
+    [Header("EFFECTS")] [SerializeField]
     private float moundEmergenceSpeed = 1;
 
     [SerializeField] private Transform sandMoundForward;
@@ -26,6 +28,11 @@ public class MoveHorizontalPlatform : MonoBehaviour
     [SerializeField] private ParticleSystem[] sandMoundForwardParticles;
     [SerializeField] private ParticleSystem[] sandMoundBackwardParticles;
 
+    [SerializeField] private ParticleSystem activationParticles;
+    [SerializeField] private float glowDuration = 2f;
+    [SerializeField] private float glowIntensity = 0.4f;
+    private Material[] platformMaterials;
+
     private bool isPaused;
     private bool isMovingToFirstWaypoint;
 
@@ -33,6 +40,8 @@ public class MoveHorizontalPlatform : MonoBehaviour
 
     private void Start()
     {
+        platformMaterials = GetMaterialsFromChildren();
+        
         if (waypoints.Length > 0 && isMoving)
         {
             // Si la plataforma no está en la posicion del primer waypoint
@@ -113,6 +122,8 @@ public class MoveHorizontalPlatform : MonoBehaviour
     public void StartAction()
     {
         isMoving = !isMoving;
+        activationParticles.Play();
+        StartCoroutine((GlowEffect(glowDuration)));
     }
 
     public void ReturnToPrevious()
@@ -182,6 +193,59 @@ public class MoveHorizontalPlatform : MonoBehaviour
 
             sandMoundForwardParticles[1].Stop();
             sandMoundForwardParticles[0].Stop();
+        }
+    }
+    private Material[] GetMaterialsFromChildren()
+    {
+        return GetComponentsInChildren<Renderer>()
+            .SelectMany(renderer => renderer.materials)
+            .ToArray();
+    }
+
+    private IEnumerator GlowEffect(float duration)
+    {
+        StartCoroutine(IncreaseIntensity(duration/2));
+        yield return new WaitForSeconds(duration/2);
+        StartCoroutine(DecreaseIntensity(duration/2));
+    }
+    
+    private IEnumerator IncreaseIntensity(float duration)
+    {
+        float elapsedTime = 0f;
+        
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float currentIntensity = Mathf.Lerp(0f, glowIntensity, elapsedTime / duration);
+
+            foreach (Material mat in platformMaterials)
+            {
+                if (mat.HasProperty("_GlowIntensity"))
+                {
+                    mat.SetFloat("_GlowIntensity", currentIntensity);
+                }
+            }
+            yield return null;
+        }
+    }
+
+    private IEnumerator DecreaseIntensity(float duration)
+    {
+        float elapsedTime = 0f;
+        
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float currentIntensity = Mathf.Lerp(glowIntensity, 0f, elapsedTime / duration);
+
+            foreach (Material mat in platformMaterials)
+            {
+                if (mat.HasProperty("_GlowIntensity"))
+                {
+                    mat.SetFloat("_GlowIntensity", currentIntensity);
+                }
+            }
+            yield return null;
         }
     }
 }
