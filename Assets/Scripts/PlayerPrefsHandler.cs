@@ -3,7 +3,6 @@ using static Utils;
 
 public static class PlayerPrefsHandler
 {
-
     public static void SaveLevelAt(int level)
     {
         PlayerPrefs.SetInt(LEVEL_AT, level);
@@ -19,6 +18,4 @@ public static class PlayerPrefsHandler
     {
         PlayerPrefs.DeleteKey(LEVEL_AT);
     }
-    
-    
 }

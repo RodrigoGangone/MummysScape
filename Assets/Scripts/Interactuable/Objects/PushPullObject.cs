@@ -128,7 +128,7 @@ public class PushPullObject : MonoBehaviour
 
         Vector3 origin = center + localOffset;
 
-        int layerMask = LayerMask.GetMask("Wall", "MovableBox");
+        int layerMask = LayerMask.GetMask("Wall", "MovableBox", "Collectible");
 
         float boxCastDistance = 0.05f;
         RaycastHit hit;
@@ -231,7 +231,7 @@ public class PushPullObject : MonoBehaviour
 
     #endregion
 
-public string CheckPlayerRaycast()
+    public string CheckPlayerRaycast()
 {
     Vector3[] rayDirections = { transform.forward, -transform.forward, transform.right, -transform.right };
     string[] directionNames = { BOX_SIDE_FORWARD, BOX_SIDE_BACKWARD, BOX_SIDE_RIGHT, BOX_SIDE_LEFT };
@@ -364,7 +364,7 @@ public string CheckPlayerRaycast()
 
         Vector3 origin = center + localOffset;
 
-        int layerMask = LayerMask.GetMask("Wall", "MovableBox");
+        int layerMask = LayerMask.GetMask("Wall", "MovableBox", "Collectible");
 
         RaycastHit hit;
         float boxCastDistance = 1f;

@@ -54,7 +54,7 @@ public class LevelManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.P)) //ESTO LO DEBERIA MANEJAR EL LEVEL MANAGER
+        if (Input.GetKeyDown(KeyCode.Escape)) 
         {
             if (_currentLevelState == LevelState.Playing)
                 OnPause?.Invoke();

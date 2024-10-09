@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7046223648165401898}
   - component: {fileID: 8145237407993154169}
   - component: {fileID: 1524288728472943075}
-  m_Layer: 0
+  m_Layer: 21
   m_Name: Collectible
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -50,6 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _levelManager: {fileID: 0}
   _congratsParticles: {fileID: 8677551864620920755, guid: d3ee306fb2e03104a80640d99aca5bb9, type: 3}
+  _collectibleNumber: 0
 --- !u!136 &1524288728472943075
 CapsuleCollider:
   m_ObjectHideFlags: 0
