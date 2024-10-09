@@ -220,8 +220,13 @@ public class ModelPlayer
 
     private IEnumerator SmoothRotation(Vector3 buttonPosition)
     {
-        Quaternion startRotation = _player.transform.rotation;
-        Vector3 directionToButton = (buttonPosition - _player.transform.position).normalized;
+        Quaternion startRotation = (_player.transform.rotation);
+
+           Vector3 directionToButton = (new Vector3(buttonPosition.x, _player.transform.position.y, buttonPosition.z)
+                                        - _player.transform.position).normalized;
+
+        //Vector3 directionToButton = (buttonPosition - _player.transform.position).normalized;
+        
         Quaternion targetRotation = Quaternion.LookRotation(directionToButton);
 
         float duration = 0.5f;
