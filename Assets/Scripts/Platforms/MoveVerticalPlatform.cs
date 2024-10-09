@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 using static Utils;
@@ -20,7 +21,7 @@ public class MoveVerticalPlatform : MonoBehaviour
 
     [SerializeField] private ParticleSystem activationParticles;
     [SerializeField] private float glowDuration = 2f;
-    [SerializeField] private float glowIntensity = 0.1f;
+    [SerializeField] private float glowIntensity = 0.15f;
     private Material[] platformMaterials;
     
     private bool isPaused;
@@ -30,6 +31,8 @@ public class MoveVerticalPlatform : MonoBehaviour
 
     private void Start()
     {
+        platformMaterials = GetMaterialsFromChildren();
+        
         if (waypoints.Length > 0 && isMoving)
         {
             // Si la plataforma no está en la posicion del primer waypoint
@@ -137,13 +140,18 @@ public class MoveVerticalPlatform : MonoBehaviour
         }
     }
     
+    private Material[] GetMaterialsFromChildren()
+    {
+        return GetComponentsInChildren<Renderer>()
+            .SelectMany(renderer => renderer.materials)
+            .ToArray();
+    }
     private IEnumerator GlowEffect(float duration)
     {
         StartCoroutine(IncreaseIntensity(duration/2));
         yield return new WaitForSeconds(duration/2);
         StartCoroutine(DecreaseIntensity(duration/2));
     }
-    
     private IEnumerator IncreaseIntensity(float duration)
     {
         float elapsedTime = 0f;
@@ -163,7 +171,6 @@ public class MoveVerticalPlatform : MonoBehaviour
             yield return null;
         }
     }
-
     private IEnumerator DecreaseIntensity(float duration)
     {
         float elapsedTime = 0f;

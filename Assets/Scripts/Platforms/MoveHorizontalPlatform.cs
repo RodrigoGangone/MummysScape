@@ -30,7 +30,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
 
     [SerializeField] private ParticleSystem activationParticles;
     [SerializeField] private float glowDuration = 2f;
-    [SerializeField] private float glowIntensity = 0.4f;
+    [SerializeField] private float glowIntensity = 0.15f;
     private Material[] platformMaterials;
 
     private bool isPaused;
