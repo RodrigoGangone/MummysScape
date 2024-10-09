@@ -47,6 +47,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Material _gemMaterial02;
     [SerializeField] private Material _gemMaterial03;
 
+    [SerializeField] private Animator _hourglassAnimator;
+    
+
     private float targetOffset1;
     private float targetOffset2;
     private float targetOffset3;
@@ -129,6 +132,15 @@ public class UIManager : MonoBehaviour
 
         _targetOffset1 = currentBandage;
         _targetOffset2 = currentBandage;
+
+        if (currentBandage <= 0)
+        {
+            _hourglassAnimator.SetBool("isSkull", true);
+        }
+        else
+        {
+            _hourglassAnimator.SetBool("isSkull", false);
+        }
     }
 
     private void UpdateMaterialOffsets()
