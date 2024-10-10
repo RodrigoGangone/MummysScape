@@ -40,9 +40,7 @@ public class InteractableOutline : MonoBehaviour
 
     [SerializeField] private List<Material> _materials = new();
     [SerializeField] public ParticleSystem _shiningParticles;
-
-    private bool isOperable;
-
+    
     private bool _materialOff;
     //TODO: HAY QUE USAR EL CURRENTBOX PARA GUARDAR EL OBJETO Y ENCENDER SU OUTLINE, MODIFICAR EL SCRIPT DEL PULL PARA QUE LO HAGA SIN LA NECESIDAD DE TOCAR EL INPUT
 
@@ -79,7 +77,8 @@ public class InteractableOutline : MonoBehaviour
     private void SetColor()
     {
         Color colorToSet = _inoperable;
-        
+        bool isOperable = false;
+
         foreach (var mapping in _operablesMapping)
         {
             if (mapping.Size == _player.CurrentPlayerSize)
@@ -117,17 +116,17 @@ public class InteractableOutline : MonoBehaviour
         OffMaterial();
     }
 
-    
+
     //TODO: ESTE METODO SE CREO PARA MANEJAR LAS PARTICULAS, PERO COMO RECIBE CONSTNATES GOLPES DEL RAYCAST FUNCIONA MAL
     //TODO: EN CASO DE CORREGIRLO, TRABAJARLO DESDE ESTE METODO Y INTERACTABLEMANAGER
-    public void ShinningParticles()
-    {
-        if (isOperable && !_shiningParticles.isPlaying)
-            _shiningParticles.Play();
-        else
-        {
-            _shiningParticles.Stop();
-            _shiningParticles.Clear();
-        }
-    }
+    //public void ShinningParticles()
+    //{
+    //    if (isOperable && !_shiningParticles.isPlaying)
+    //        _shiningParticles.Play();
+    //    else
+    //    {
+    //        _shiningParticles.Stop();
+    //        _shiningParticles.Clear();
+    //    }
+    //}
 }
