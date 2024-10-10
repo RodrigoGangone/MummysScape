@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class BoxFX : MonoBehaviour
 {
     [SerializeField] private ParticleSystem sandMoundParticle;
-    [SerializeField] private GameObject sandMound;
+    //[SerializeField] private GameObject sandMound;
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Sand"))

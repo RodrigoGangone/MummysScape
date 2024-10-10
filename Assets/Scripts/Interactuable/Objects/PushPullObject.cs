@@ -4,26 +4,29 @@ using static Utils;
 
 public class PushPullObject : MonoBehaviour
 {
-    [Header("BANDAGE AROUND")] [SerializeField]
-    private GameObject[] _bandagesAroundBox;
-
     private Coroutine currentCoroutine; // Para almacenar la coroutine activa
     private float wrapSpeed = 0.5f; // Velocidad de envoltura/desenvoltura
     private float currentOffset = 0f; // Offset actual del material
 
-    [Header("GIZMOS")] [SerializeField] public bool GizmoPull;
-    [SerializeField] public bool GizmoWall;
-
-
     private BoxCollider _boxCollider;
-
-    public float rayDistanceToPull = 7f; // Distancia de los raycasts
-    public float raycastLengthToFloor = 1.75f; // Longitud del raycast
-    public float raycastLengthToWall = 0.1f; // Longitud del raycast hacia las paredes
-
+    
     public LayerMask playerLayerMask;
     private LayerMask floorLayerMask;
     private LayerMask wallLayerMask;
+    
+    [Header("FXs")]
+    [SerializeField] private ParticleSystem sandMoundParticle;
+    
+    [Header("BANDAGE AROUND")] 
+    [SerializeField] private GameObject[] _bandagesAroundBox;
+
+    [Header("GIZMOS")]
+    [SerializeField] public bool GizmoPull;
+    [SerializeField] public bool GizmoWall;
+
+    [SerializeField] private float rayDistanceToPull = 7f; // Distancia de los raycasts
+    [SerializeField] private float raycastLengthToFloor = 1.75f; // Longitud del raycast
+    [SerializeField] private float raycastLengthToWall = 0.1f; // Longitud del raycast hacia las paredes
 
     private void Start()
     {
@@ -286,7 +289,6 @@ public class PushPullObject : MonoBehaviour
     return null; // No colisionó
 }
 
-
     private void OnDrawGizmos()
     {
         #region Check Pull
@@ -381,5 +383,14 @@ public class PushPullObject : MonoBehaviour
         Gizmos.matrix = Matrix4x4.TRS(origin, transform.rotation, Vector3.one);
         // Dibujo la caja un poco mas pequeña para evitar errores
         Gizmos.DrawWireCube(Vector3.zero, halfExtents * 1.9f);
+    }
+    
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.layer == LayerMask.NameToLayer("Sand"))
+        {
+            if (!sandMoundParticle.isPlaying)
+                sandMoundParticle.Play();
+        }
     }
 }
