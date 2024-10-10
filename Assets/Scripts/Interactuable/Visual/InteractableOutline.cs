@@ -39,7 +39,9 @@ public class InteractableOutline : MonoBehaviour
     private const string _materialNameToFind = "InteractableOutline_Ma";
 
     [SerializeField] private List<Material> _materials = new();
-    [SerializeField] private ParticleSystem _shiningParticles;
+    [SerializeField] public ParticleSystem _shiningParticles;
+
+    private bool isOperable;
 
     private bool _materialOff;
     //TODO: HAY QUE USAR EL CURRENTBOX PARA GUARDAR EL OBJETO Y ENCENDER SU OUTLINE, MODIFICAR EL SCRIPT DEL PULL PARA QUE LO HAGA SIN LA NECESIDAD DE TOCAR EL INPUT
@@ -66,9 +68,6 @@ public class InteractableOutline : MonoBehaviour
 
     public void OnMaterial()
     {
-        if (_shiningParticles != null && !_shiningParticles.isPlaying)
-            _shiningParticles.Play();
-
         foreach (var material in _materials)
         {
             material.SetFloat(_inRange, 1);
@@ -80,7 +79,7 @@ public class InteractableOutline : MonoBehaviour
     private void SetColor()
     {
         Color colorToSet = _inoperable;
-        bool isOperable = false;
+        isOperable = false;
 
         foreach (var mapping in _operablesMapping)
         {
@@ -92,7 +91,6 @@ public class InteractableOutline : MonoBehaviour
         }
 
         colorToSet = isOperable ? _functional : _inoperable;
-
 
         foreach (var material in _materials)
         {
@@ -106,12 +104,6 @@ public class InteractableOutline : MonoBehaviour
         {
             material.SetFloat(_inRange, 0f);
         }
-
-        if (_shiningParticles != null)
-        {
-            _shiningParticles.Stop();
-            _shiningParticles.Clear();
-        }
     }
 
     private void OnTriggerStay(Collider other)
@@ -124,5 +116,16 @@ public class InteractableOutline : MonoBehaviour
     {
         if (!other.CompareTag(_detected) || _interactableType != InteractableType.Hook) return;
         OffMaterial();
+    }
+
+    public void ShinningParticles()
+    {
+        if (isOperable && !_shiningParticles.isPlaying)
+            _shiningParticles.Play();
+        else
+        {
+            _shiningParticles.Stop();
+            _shiningParticles.Clear();
+        }
     }
 }
