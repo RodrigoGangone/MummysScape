@@ -1,90 +1,96 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering.UI;
-using UnityEngine.UIElements;
 
 public class FallingSand : MonoBehaviour
 {
     private Player _player;
-    private LevelManager _levelManager;
-    [SerializeField] private Material _material;
 
-    private float value;
-    private const string TOP_TRESHOLD = "_TopThreshold";
+    private BoxCollider _viewCollider;
+    [SerializeField] private Transform _view;
+    
+    [SerializeField] private Transform _invisiblePlatform;
 
+    [Header("SPEED")]
+    [SerializeField] private float speedSand = 3;
+    [SerializeField] private float speedInvisiblePlatform = 5;
+    [SerializeField] private float stopTime = 3f;
 
-    [SerializeField] private float speed = 1;
-    [SerializeField] private float timeToIncrease;
-    [SerializeField] private float timeToDecrease;
+    [Header("WAYPOINTS")]
+    [SerializeField] private Transform[] waypoints; 
+    private int _currentWaypointIndex;
+
+    private bool _isPaused;
+    private bool _upInvisiblePlatform;
 
     private void Start()
     {
         _player = FindObjectOfType<Player>();
-        _material = GetComponent<Renderer>().material;
+        _viewCollider = GetComponent<BoxCollider>();
+    }
+    
+    private void Update()
+    {
+        MoveTowardsWaypoint();
 
-        _levelManager = FindObjectOfType<LevelManager>();
-
-        StartCoroutine(HandleValue());
+        if (_upInvisiblePlatform)
+            UpInvisiblePlatform();
     }
 
-    //TODO: CUANDO GOLPEA AL PLAYER, TIENE QUE SACARLO DEL ESTADO DE HOOK
-    //TODO: HAY QUE HACER POR UPDATE //O CORRUTINA// UN SINE PARA QUE LA VARIABLE VAYA DE 0 A 1.
-    //TODO: SI TRIGGEREA AL PLAYER CUANDO ESTA EN 1, TIENE QUE TIRARLO DEL HOOK [CHANGE STATE A FALL]
-
-    IEnumerator HandleValue()
+    private void MoveTowardsWaypoint()
     {
-        while (true)
+        if (_isPaused) return;
+
+        // Calcula la direcc y mueve la plataform hacia el waypoint actual
+        Transform targetWaypoint = waypoints[_currentWaypointIndex];
+        float step = speedSand * Time.deltaTime;
+
+        _view.transform.position = Vector3.MoveTowards(_view.transform.position, targetWaypoint.position, step);
+        _viewCollider.center = new Vector3(0,_view.transform.position.y -3.25f,0);
+
+        // Pausa al llegar a un punto
+        if (Vector3.Distance(_view.transform.position, targetWaypoint.position) == 0)
         {
-            yield return StartCoroutine(IncreaseValue());
-
-            yield return new WaitForSeconds(timeToDecrease);
-
-            yield return StartCoroutine(DecreaseValue());
-
-            yield return new WaitForSeconds(timeToIncrease);
+            StartCoroutine(PauseAtWaypoint());
         }
     }
 
-    IEnumerator IncreaseValue()
+    private IEnumerator PauseAtWaypoint()
     {
-        value = 0;
+        _isPaused = true;
 
-        while (value < 1f)
-        {
-            value += Time.deltaTime * speed;
-            value = Mathf.Clamp01(value);
-            _material.SetFloat(TOP_TRESHOLD, value);
-            yield return null;
-        }
+        yield return new WaitForSeconds(stopTime);
+
+        _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
+
+        _isPaused = false;
     }
 
-    IEnumerator DecreaseValue()
+    private void UpInvisiblePlatform()
     {
-        while (value > 0f)
-        {
-            value -= Time.deltaTime * speed;
-            value = Mathf.Clamp01(value);
-            _material.SetFloat(TOP_TRESHOLD, value);
-            yield return null;
-        }
+        float step = speedInvisiblePlatform * Time.deltaTime;
+
+        _invisiblePlatform.position = Vector3.MoveTowards(_invisiblePlatform.position, _view.position, step);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerFather"))
-        {
-            if (value < 0.4f)
-                _player.HitFalling = true;
-            else
-                _player.HitFalling = false;
-        }
+        if (!other.gameObject.CompareTag("PlayerFather")) return;
+
+        other.transform.SetParent(_invisiblePlatform);
+        _upInvisiblePlatform = true;
+
+        if (_player.CurrentPlayerSize != PlayerSize.Head)
+            _player._modelPlayer.CountBandage(-_player.CurrentBandageStock);
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerFather"))
-            _player.HitFalling = false;
+        if (!other.gameObject.CompareTag("PlayerFather")) return;
+
+        other.transform.SetParent(null);
+        _upInvisiblePlatform = false;
+
+        _invisiblePlatform.position = waypoints[0].position;
+
     }
 }
