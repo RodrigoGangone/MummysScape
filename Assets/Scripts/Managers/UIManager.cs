@@ -2,7 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.Rendering;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
@@ -65,6 +68,9 @@ public class UIManager : MonoBehaviour
     private float _targetOffset3;
     private float _fillSpeed = 1f;
 
+    private DepthOfField _blur;
+    private Volume _postProcess;
+
     void Start()
     {
         _player = FindObjectOfType<Player>();
@@ -90,6 +96,8 @@ public class UIManager : MonoBehaviour
         _btnMainMenuL.onClick.AddListener(GoToMainMenu);
 
         _pauseMaterial.SetFloat("_Fill", 0f); // Asegurar que se complete la transición
+
+        _postProcess = FindObjectOfType<Volume>();
 
         ValidateGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
@@ -125,6 +133,9 @@ public class UIManager : MonoBehaviour
     {
         PauseCharging = true;
 
+        if (_postProcess.profile.TryGet(out _blur))
+            _blur.active = !_blur.active;
+
         float startValue = _pauseMaterial.GetFloat("_Fill"); // Obtener el valor actual del material
         float endValue = (startValue == 1f) ? 0f : 1f; // Determinar si debe ir a 1 o a 0
         float elapsed = 0f;
@@ -132,7 +143,7 @@ public class UIManager : MonoBehaviour
         StartCoroutine(CascadeButtons(_btnsPause));
 
         //TODO: LLEVAR ESTA CORRUTINA ABAJO DEL WHILE DESPUES DE ENTREGAR AL BUILD EL 10/10
-        
+
         while (elapsed < 0.5f)
         {
             elapsed += Time.deltaTime;
@@ -142,9 +153,9 @@ public class UIManager : MonoBehaviour
             _pauseMaterial.SetFloat("_Fill", currentValue); // Ajusta según la propiedad de tu shader
             yield return null;
         }
-        
+
         PauseCharging = false;
-        
+
         _pauseMaterial.SetFloat("_Fill", endValue); // Asegurar que se complete la transición
     }
 
