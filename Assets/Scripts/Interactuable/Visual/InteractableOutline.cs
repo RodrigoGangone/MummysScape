@@ -79,8 +79,7 @@ public class InteractableOutline : MonoBehaviour
     private void SetColor()
     {
         Color colorToSet = _inoperable;
-        isOperable = false;
-
+        
         foreach (var mapping in _operablesMapping)
         {
             if (mapping.Size == _player.CurrentPlayerSize)
@@ -118,6 +117,9 @@ public class InteractableOutline : MonoBehaviour
         OffMaterial();
     }
 
+    
+    //TODO: ESTE METODO SE CREO PARA MANEJAR LAS PARTICULAS, PERO COMO RECIBE CONSTNATES GOLPES DEL RAYCAST FUNCIONA MAL
+    //TODO: EN CASO DE CORREGIRLO, TRABAJARLO DESDE ESTE METODO Y INTERACTABLEMANAGER
     public void ShinningParticles()
     {
         if (isOperable && !_shiningParticles.isPlaying)

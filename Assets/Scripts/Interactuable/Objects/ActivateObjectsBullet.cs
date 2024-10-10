@@ -5,16 +5,13 @@ using UnityEngine;
 public class ActivateObjectsBullet : MonoBehaviour
 {
     [SerializeField] private List<GameObject> _platformsAll;
-    [SerializeField] private ParticleSystem _shiningParticles;
     private Animator _animator;
     Material material;
-    private InteractableOutline _interactableOutline;
 
     private void Start()
     {
         _animator = GetComponent<Animator>();
         material = gameObject.GetComponentInChildren<Renderer>().material;
-        _interactableOutline = GetComponent<InteractableOutline>();
     }
 
     private void OnTriggerEnter(Collider other)
