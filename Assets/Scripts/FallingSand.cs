@@ -8,83 +8,97 @@ using UnityEngine.UIElements;
 public class FallingSand : MonoBehaviour
 {
     private Player _player;
-    private LevelManager _levelManager;
-    [SerializeField] private Material _material;
 
-    private float value;
-    private const string TOP_TRESHOLD = "_TopThreshold";
+    [SerializeField] private Transform _view;
 
+    [SerializeField] private Transform _invisiblePlatform;
+    [SerializeField] private Transform _base;
 
-    [SerializeField] private float speed = 1;
-    [SerializeField] private float timeToIncrease;
-    [SerializeField] private float timeToDecrease;
+    private bool _isPaused;
+
+    [Header("SPEED")] public float speed = 1;
+    public float stopTime = 0.5f;
+
+    [Header("WAYPOINTS")] [SerializeField] private Transform[] waypoints; // Lista puntos a los que se mueve la platform
+    private int _currentWaypointIndex = 0;
+
+    private bool _upInvisiblePlatform;
 
     private void Start()
     {
         _player = FindObjectOfType<Player>();
-        _material = GetComponent<Renderer>().material;
 
-        _levelManager = FindObjectOfType<LevelManager>();
-
-        StartCoroutine(HandleValue());
+        // _invisiblePlatform = transform.GetChild(0);
     }
 
     //TODO: CUANDO GOLPEA AL PLAYER, TIENE QUE SACARLO DEL ESTADO DE HOOK
     //TODO: HAY QUE HACER POR UPDATE //O CORRUTINA// UN SINE PARA QUE LA VARIABLE VAYA DE 0 A 1.
     //TODO: SI TRIGGEREA AL PLAYER CUANDO ESTA EN 1, TIENE QUE TIRARLO DEL HOOK [CHANGE STATE A FALL]
 
-    IEnumerator HandleValue()
+
+    private void Update()
     {
-        while (true)
+        MoveTowardsWaypoint();
+
+        if (_upInvisiblePlatform)
+            UpInvisiblePlatform();
+    }
+
+    private void MoveTowardsWaypoint()
+    {
+        if (_isPaused) return;
+
+        // Calcula la direcc y mueve la plataform hacia el waypoint actual
+        Transform targetWaypoint = waypoints[_currentWaypointIndex];
+        float step = speed * Time.deltaTime;
+
+        _view.transform.position = Vector3.MoveTowards(_view.transform.position, targetWaypoint.position, step);
+
+        // Pausa al llegar a un punto
+        if (Vector3.Distance(_view.transform.position, targetWaypoint.position) == 0)
         {
-            yield return StartCoroutine(IncreaseValue());
-
-            yield return new WaitForSeconds(timeToDecrease);
-
-            yield return StartCoroutine(DecreaseValue());
-
-            yield return new WaitForSeconds(timeToIncrease);
+            StartCoroutine(PauseAtWaypoint());
         }
     }
 
-    IEnumerator IncreaseValue()
+    private IEnumerator PauseAtWaypoint()
     {
-        value = 0;
+        _isPaused = true;
 
-        while (value < 1f)
-        {
-            value += Time.deltaTime * speed;
-            value = Mathf.Clamp01(value);
-            _material.SetFloat(TOP_TRESHOLD, value);
-            yield return null;
-        }
+        yield return new WaitForSeconds(stopTime);
+
+        _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
+
+        _isPaused = false;
     }
 
-    IEnumerator DecreaseValue()
+    private void UpInvisiblePlatform()
     {
-        while (value > 0f)
-        {
-            value -= Time.deltaTime * speed;
-            value = Mathf.Clamp01(value);
-            _material.SetFloat(TOP_TRESHOLD, value);
-            yield return null;
-        }
+        float step = speed * Time.deltaTime;
+
+        _invisiblePlatform.position = Vector3.MoveTowards(_invisiblePlatform.position, _base.position, step);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerFather"))
-        {
-            if (value < 0.4f)
-                _player.HitFalling = true;
-            else
-                _player.HitFalling = false;
-        }
+        if (!other.gameObject.CompareTag("PlayerFather")) return;
+
+        other.transform.SetParent(transform);
+
+        _upInvisiblePlatform = true;
+
+        if (_player.CurrentPlayerSize != PlayerSize.Head)
+            _player._modelPlayer.CountBandage(-_player.CurrentBandageStock);
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerFather"))
-            _player.HitFalling = false;
+        if (!other.gameObject.CompareTag("PlayerFather")) return;
+
+        _upInvisiblePlatform = false;
+
+        _invisiblePlatform.position = waypoints[0].position;
+
+        other.transform.SetParent(null);
     }
 }
