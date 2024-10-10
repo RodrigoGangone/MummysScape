@@ -61,5 +61,8 @@ public class InteractableManager : MonoBehaviour
             _lastInteractableOutline.OffMaterial();
             _lastInteractableOutline = null;
         }
+
+        if (currentInteractable != null)
+            currentInteractable.ShinningParticles();
     }
 }
