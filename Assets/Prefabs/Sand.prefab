@@ -267,7 +267,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1, y: 4.5, z: 1}
-  m_Center: {x: 0, y: -2.0416136, z: 0}
+  m_Center: {x: 0, y: -2, z: 0}
 --- !u!114 &9017399534095682054
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -282,8 +282,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _view: {fileID: 4926694485222757275}
   _invisiblePlatform: {fileID: 5779787352758213885}
-  _base: {fileID: 7574797936254985137}
-  speed: 2
+  speedSand: 3
+  speedInvisiblePlatform: 5
   stopTime: 3
   waypoints:
   - {fileID: 4111426383473897403}

@@ -120,10 +120,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 926c32258b3f7a74b9ab7d756b881500, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _PausePanel: {fileID: 4096891526447954065}
+  _pausePanel: {fileID: 9027560868982066752}
+  _btnsPause:
+  - {fileID: 2172550748608658225}
+  - {fileID: 4687338503110035451}
+  - {fileID: 1124664742247105647}
   _btnResume: {fileID: 3926174276429093974}
   _btnRetry: {fileID: 2356330667333728996}
   _btnExit: {fileID: 1122768949479274611}
+  _pauseMaterial: {fileID: 2100000, guid: 5989c71586c05414da9771fc77a698b7, type: 2}
   _WinPanel: {fileID: 6523940995055123738}
   _btnRetryW: {fileID: 186339208617312996}
   _btnMainMenuW: {fileID: 7557402725651895179}
@@ -281,7 +286,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3769030192315938133
 RectTransform:
   m_ObjectHideFlags: 0
@@ -523,7 +528,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8593614274749470083
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1449,7 +1454,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &6938441576238566483
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1526,7 +1531,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5339324561024603711
 RectTransform:
   m_ObjectHideFlags: 0
