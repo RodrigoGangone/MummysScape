@@ -21,7 +21,7 @@ public class FallingSand : MonoBehaviour
     private bool _isPaused;
     private bool _upInvisiblePlatform;
 
-    [SerializeField] private ParticleSystem _preUp;
+    [SerializeField] private ParticleSystem _preUp1,_preUp2;
 
     private void Start()
     {
@@ -65,13 +65,15 @@ public class FallingSand : MonoBehaviour
         if (_currentWaypointIndex == 0)
         {
             yield return new WaitForSeconds(stopTime / 2);
-            _preUp.Play();
+            _preUp1.Play();
+            _preUp2.Play();
             yield return new WaitForSeconds(stopTime / 2);
         }
         else
         {
             yield return new WaitForSeconds(stopTime);
-            _preUp.Stop();
+            _preUp1.Stop();
+            _preUp2.Stop();
         }
 
         _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
