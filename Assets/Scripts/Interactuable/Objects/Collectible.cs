@@ -8,6 +8,8 @@ public class Collectible : MonoBehaviour
 
     [SerializeField] private CollectibleNumber _collectibleNumber;
 
+    public CollectibleNumber CollectibleNumber => _collectibleNumber;
+
 
     private void Start()
     {
@@ -28,7 +30,7 @@ public class Collectible : MonoBehaviour
         if (number != _collectibleNumber) return;
 
         Instantiate(_congratsParticles, transform.position, Quaternion.identity);
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 }
 

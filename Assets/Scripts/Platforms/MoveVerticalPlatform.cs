@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 using static Utils;
@@ -18,6 +19,11 @@ public class MoveVerticalPlatform : MonoBehaviour
     [Header("EFFECTS")] 
     [SerializeField] private ParticleSystem sandMoundsParticle;
 
+    [SerializeField] private ParticleSystem activationParticles;
+    [SerializeField] private float glowDuration = 2f;
+    [SerializeField] private float glowIntensity = 0.15f;
+    private Material[] platformMaterials;
+    
     private bool isPaused;
     private bool isMovingToFirstWaypoint;
     
@@ -25,6 +31,8 @@ public class MoveVerticalPlatform : MonoBehaviour
 
     private void Start()
     {
+        platformMaterials = GetMaterialsFromChildren();
+        
         if (waypoints.Length > 0 && isMoving)
         {
             // Si la plataforma no está en la posicion del primer waypoint
@@ -104,6 +112,8 @@ public class MoveVerticalPlatform : MonoBehaviour
     public void StartAction()
     {
         isMoving = !isMoving;
+        activationParticles.Play();
+        StartCoroutine((GlowEffect(glowDuration)));
     }
 
     public void ReturnToPrevious()
@@ -127,6 +137,57 @@ public class MoveVerticalPlatform : MonoBehaviour
         if (other.gameObject.CompareTag(PLAYER_TAG))
         {
             other.transform.SetParent(null);
+        }
+    }
+    
+    private Material[] GetMaterialsFromChildren()
+    {
+        return GetComponentsInChildren<Renderer>()
+            .SelectMany(renderer => renderer.materials)
+            .ToArray();
+    }
+    private IEnumerator GlowEffect(float duration)
+    {
+        StartCoroutine(IncreaseIntensity(duration/2));
+        yield return new WaitForSeconds(duration/2);
+        StartCoroutine(DecreaseIntensity(duration/2));
+    }
+    private IEnumerator IncreaseIntensity(float duration)
+    {
+        float elapsedTime = 0f;
+        
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float currentIntensity = Mathf.Lerp(0f, glowIntensity, elapsedTime / duration);
+
+            foreach (Material mat in platformMaterials)
+            {
+                if (mat.HasProperty("_GlowIntensity"))
+                {
+                    mat.SetFloat("_GlowIntensity", currentIntensity);
+                }
+            }
+            yield return null;
+        }
+    }
+    private IEnumerator DecreaseIntensity(float duration)
+    {
+        float elapsedTime = 0f;
+        
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float currentIntensity = Mathf.Lerp(glowIntensity, 0f, elapsedTime / duration);
+
+            foreach (Material mat in platformMaterials)
+            {
+                if (mat.HasProperty("_GlowIntensity"))
+                {
+                    mat.SetFloat("_GlowIntensity", currentIntensity);
+                }
+            }
+            yield return null;
         }
     }
 }

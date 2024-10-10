@@ -165,6 +165,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _Activation: 0
     - _Alpha: 1
     - _BlendingIntensity: 1
     - _BrickBaseTile: 0.3
@@ -179,6 +180,8 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _GlowIntensity: 0
+    - _GlowPower: 0.3
     - _GreenIntensity: 0.68
     - _Intensity: 5.65
     - _MaskLevel: 0.238
@@ -205,6 +208,7 @@ Material:
     - _ColorStucco: {r: 0.90588236, g: 0.84705883, b: 0.80784315, a: 0}
     - _DotsColor: {r: 0.745283, g: 0.5398842, b: 0.4253738, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _GlowColor: {r: 0.7490193, g: 0.71498066, b: 0.28678665, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &6125907681807607502
 MonoBehaviour:

@@ -247,14 +247,31 @@ public class Player : MonoBehaviour
         {
             Vector3 origin = _shootTarget.transform.position;
 
-            Quaternion leftRotation = Quaternion.Euler(0, -10, 0);
-            Quaternion rightRotation = Quaternion.Euler(0, 10, 0);
+            Quaternion leftRotation01 = Quaternion.Euler(0, -10, 0);
+            Quaternion rightRotation01 = Quaternion.Euler(0, 10, 0);
 
-            Vector3 leftDirection = leftRotation * transform.forward;
-            Vector3 rightDirection = rightRotation * transform.forward;
+            Quaternion leftRotation02 = Quaternion.Euler(0, -20, 0);
+            Quaternion rightRotation02 = Quaternion.Euler(0, 20, 0);
+
+            Quaternion leftRotation03 = Quaternion.Euler(0, -30, 0);
+            Quaternion rightRotation03 = Quaternion.Euler(0, 30, 0);
+
+            Vector3 leftDirection01 = leftRotation01 * transform.forward;
+            Vector3 rightDirection01 = rightRotation01 * transform.forward;
+
+            Vector3 leftDirection02 = leftRotation02 * transform.forward;
+            Vector3 rightDirection02 = rightRotation02 * transform.forward;
+
+            Vector3 leftDirection03 = leftRotation03 * transform.forward;
+            Vector3 rightDirection03 = rightRotation03 * transform.forward;
+
             Vector3 centerDirection = transform.forward; // Rayo que va hacia adelante
 
-            Vector3[] directions = { leftDirection, rightDirection, centerDirection };
+            Vector3[] directions =
+            {
+                leftDirection01, rightDirection01, leftDirection02, leftDirection03, rightDirection02, rightDirection03,
+                centerDirection
+            };
 
             foreach (var direction in directions)
             {

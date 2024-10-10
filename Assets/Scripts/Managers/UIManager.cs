@@ -47,6 +47,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Material _gemMaterial02;
     [SerializeField] private Material _gemMaterial03;
 
+    [SerializeField] private Animator _hourglassAnimator;
+    
+
     private float targetOffset1;
     private float targetOffset2;
     private float targetOffset3;
@@ -80,7 +83,7 @@ public class UIManager : MonoBehaviour
         _btnRetryL.onClick.AddListener(RetryLevel);
         _btnMainMenuL.onClick.AddListener(GoToMainMenu);
 
-        ResetGems();
+        ValidateGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
     }
 
@@ -129,6 +132,15 @@ public class UIManager : MonoBehaviour
 
         _targetOffset1 = currentBandage;
         _targetOffset2 = currentBandage;
+
+        if (currentBandage <= 0)
+        {
+            _hourglassAnimator.SetBool("isSkull", true);
+        }
+        else
+        {
+            _hourglassAnimator.SetBool("isSkull", false);
+        }
     }
 
     private void UpdateMaterialOffsets()
@@ -200,11 +212,22 @@ public class UIManager : MonoBehaviour
         SceneManager.LoadScene(currentSceneIndex);
     }
 
-    private void ResetGems()
+    private void ValidateGems()
     {
         _gemMaterial01.SetFloat("_IsPicked", 0);
         _gemMaterial02.SetFloat("_IsPicked", 0);
         _gemMaterial03.SetFloat("_IsPicked", 0);
+        
+        foreach (var level in LevelManagerJson.Levels)
+        {
+            if (level.level.Equals(SceneManager.GetActiveScene().buildIndex))
+            {
+                foreach (var collectible in level.collectibleNumbers)
+                {
+                    UISetCollectibleCount(collectible);
+                }
+            }
+        }
     }
 
     private IEnumerator FadeIn(Action onFadeComplete)
@@ -250,7 +273,16 @@ public class UIManager : MonoBehaviour
 
     public void Win()
     {
-        StartCoroutine(FadeIn(() => { _WinPanel.SetActive(true); }));
+        StartCoroutine(FadeIn(() =>
+        {
+            //Si llego a la cantidad de niveles max no muestro boton de sig nivel
+            //TODO: MOSTRAR OTRA PANTALLA QUE NO TENGA LA DE SIGUIENTE NIVEL
+            if (SceneManager.GetActiveScene().buildIndex >= Utils.MAX_LVLS)
+                _btnNextLvlW.enabled = false;    
+            
+            _WinPanel.SetActive(true);
+            
+        }));
     }
 
     public void Lose()
