@@ -62,7 +62,7 @@ public class Player : MonoBehaviour
 
     public Action SizeModify;
     public bool WalkingSand;
-    public bool HitFalling;
+    public bool IsHooked;
 
     //Rays
     private const float _rayCheckShootDistance = 1.5f;
@@ -132,7 +132,7 @@ public class Player : MonoBehaviour
         _controllerPlayer.OnGetState += CurrentState;
         _controllerPlayer.OnGetPlayerSize += () => CurrentPlayerSize;
         _controllerPlayer.OnWalkingSand += () => WalkingSand;
-        _controllerPlayer.OnHitOnFalling += () => HitFalling;
+        _controllerPlayer.OnHooked += () => IsHooked;
 
         levelManager.OnPlayerWin += Win;
         levelManager.OnPlayerDeath += Death;
@@ -148,7 +148,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Shoot, new SM_Shoot(this));
         _stateMachinePlayer.AddState(PlayerState.Walk, new SM_Walk(this));
         _stateMachinePlayer.AddState(PlayerState.WalkSand, new SM_WalkSand(this));
-        _stateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook(_modelPlayer, _viewPlayer));
+        _stateMachinePlayer.AddState(PlayerState.Hook, new SM_Hook(this));
         _stateMachinePlayer.AddState(PlayerState.Fall, new SM_Fall(this));
         _stateMachinePlayer.AddState(PlayerState.Drop, new SM_Drop(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Push, new SM_Push(this));
