@@ -142,7 +142,7 @@ public class ModelPlayer
         }
     }
 
-    public bool IsBoxCloseToPlayer(float maxDistance = 1f)
+    public bool IsBoxCloseToPlayer(float maxDistance = 1.8f)
     {
         Vector3 playerPosition = _player.transform.position;
         Vector3 boxPosition = _currentBox.transform.position;
