@@ -68,8 +68,6 @@ public class LevelManager : MonoBehaviour
 
         if (!_isWin && !_isLose)
         {
-            Debug.Log("ESTOY ENTRANDO IGUAL A COROUTINES");
-
             if (_player.CurrentPlayerSize == PlayerSize.Head && _deathTimerCoroutine == null)
             {
                 _deathTimerCoroutine = StartCoroutine(DeathTimerCoroutine());
@@ -167,7 +165,6 @@ public class LevelManager : MonoBehaviour
         
         if (_deathTimerCoroutine != null)
         {
-            Debug.Log("GANE Y FRENE COROUTINE");
             StopCoroutine(_deathTimerCoroutine);
             _deathTimerCoroutine = null;
         }
@@ -191,7 +188,6 @@ public class LevelManager : MonoBehaviour
         }
         
         _canPause = false;
-        Debug.Log("LevelManager -> Perdiste!");
     }
 }
 
