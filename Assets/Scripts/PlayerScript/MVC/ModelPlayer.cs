@@ -19,8 +19,6 @@ public class ModelPlayer
     public SpringJoint springJoint;
     public Rigidbody hookBeetle;
 
-    public bool isHooking;
-
     //PUSH/PULL OBJECT
     private Transform _currentBox;
     private Transform _currentBoxSide;
@@ -167,8 +165,8 @@ public class ModelPlayer
         Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z)
             .normalized;
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
-        Vector3 rightMovement = right * (moveHorizontal * _player.Speed);
-        Vector3 forwardMovement = forward * (moveVertical * _player.Speed);
+        Vector3 rightMovement = right * (moveHorizontal * _player.SpeedHook);
+        Vector3 forwardMovement = forward * (moveVertical * _player.SpeedHook);
 
         Vector3 movement = rightMovement + forwardMovement;
         if (movement.sqrMagnitude > 0.01f)
@@ -389,40 +387,17 @@ public class ModelPlayer
         _dirToPull = Vector3.zero;
         return false;
     }
-
-
-    //TODO: Hay un componente de Unity que es 'ConfigurableSpringJoint'
-    //TODO: sirve para limitar los movimientos en X/Y/Z, verificar eso
+    
     public void Hook()
     {
-        if (hookBeetle == null) return;
+        if (!hookBeetle.gameObject.CompareTag("HookJump") || hookBeetle == null) return;
 
-        if (springJoint == null)
-        {
-            _player._modelPlayer.springJoint = _player.gameObject.AddComponent<SpringJoint>();
-            _player._modelPlayer.springJoint.autoConfigureConnectedAnchor = false;
-        }
-
-        switch (hookBeetle.gameObject.tag)
-        {
-            case "Hook":
-                springJoint.anchor = Vector3.zero;
-                springJoint.connectedBody = hookBeetle;
-                springJoint.maxDistance = 5f;
-                springJoint.minDistance = 4f;
-                springJoint.spring = 75;
-                springJoint.damper = 12f;
-                break;
-
-            case "HookJump":
-                springJoint.anchor = Vector3.zero;
-                springJoint.connectedBody = hookBeetle;
-                springJoint.maxDistance = 1.5f;
-                springJoint.minDistance = 2f;
-                springJoint.spring = 100;
-                springJoint.damper = 12;
-                break;
-        }
+        springJoint.anchor = Vector3.zero;
+        springJoint.connectedBody = hookBeetle;
+        springJoint.maxDistance = 1.5f;
+        springJoint.minDistance = 2f;
+        springJoint.spring = 100;
+        springJoint.damper = 12;
     }
 
     private void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
@@ -463,12 +438,6 @@ public class ModelPlayer
 
         _player.SizeModify?.Invoke();
         _player._viewPlayer.AdjustColliderSize();
-    }
-
-    public void LimitVelocityRb()
-    {
-        if (_rb.velocity.magnitude > _player.Speed)
-            _rb.velocity = _rb.velocity.normalized * _player.Speed;
     }
 
     public bool CheckGround()

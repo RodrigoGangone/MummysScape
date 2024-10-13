@@ -1,13 +1,18 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 public class SM_Hook : State
 {
     private Player _player;
 
-    private bool _isHookDestiny;
-    private float _time = 0;
+    private bool _isBandageDraw;
+    private float _time;
+    private const string RIGHT_THRESHOLD = "_rightThreshold";
+
+    private Coroutine _drawBandageCoroutine;
 
     public SM_Hook(Player player)
     {
@@ -24,15 +29,25 @@ public class SM_Hook : State
         _player._viewPlayer.PLAY_ANIM("Hook", true);
         _player._viewPlayer.bandageHook.enabled = true;
 
-        _player.StartCoroutine(Bandage());
+        _drawBandageCoroutine = _player.StartCoroutine(Bandage());
     }
 
     public override void OnExit()
     {
+        _player.StopCoroutine(_drawBandageCoroutine);
+
+        _time = 0;
+
+        _player._viewPlayer.bandageHook.enabled = false;
+        _player._viewPlayer.rightHand.data.target = null;
         _player._viewPlayer.PLAY_ANIM("Hook", false);
         _player._viewPlayer.StateRigBuilder(false);
+        _player._viewPlayer.hookMaterial.SetFloat(RIGHT_THRESHOLD, 1.5f);
 
-        ResetHook();
+        _isBandageDraw = false;
+
+        _player._modelPlayer.hookBeetle = null;
+        Object.Destroy(_player._modelPlayer.springJoint);
 
         _player.IsHooked = false;
     }
@@ -50,29 +65,32 @@ public class SM_Hook : State
 
     private IEnumerator Bandage()
     {
-        _time = 0f; // Reseteamos el tiempo
-
-        // Mientras no se haya llegado al destino del gancho
-        while (!_isHookDestiny)
+        while (!_isBandageDraw)
         {
             _time += Time.deltaTime;
-            var newValue = Mathf.Lerp(1.5f, -1.5f, _time / 1f);
-            _player._viewPlayer.hookMaterial.SetFloat("_rightThreshold", newValue);
+            var newValue = Mathf.Lerp(1.5f, -1.5f, _time / 0.5f);
+            _player._viewPlayer.hookMaterial.SetFloat(RIGHT_THRESHOLD, newValue);
 
-            // Si el valor llega a -1.5f, marcamos que hemos alcanzado el destino
-            if (_player._viewPlayer.hookMaterial.GetFloat("_rightThreshold") <= -1.5f)
+            if (_player._modelPlayer.springJoint == null && newValue <= 0f)
             {
-                _isHookDestiny = true;
+                _player._modelPlayer.springJoint = _player.gameObject.AddComponent<SpringJoint>();
+                _player._modelPlayer.springJoint.autoConfigureConnectedAnchor = false;
+
+                _player._modelPlayer.Hook();
             }
 
-            yield return null; // Esperamos hasta el siguiente frame
+            if (_player._viewPlayer.hookMaterial.GetFloat(RIGHT_THRESHOLD) <= -1.5f)
+            {
+                _isBandageDraw = true;
+            }
+
+            yield return null;
         }
     }
 
-
     public override void OnFixedUpdate()
     {
-        _player._modelPlayer.LimitVelocityRb();
+        ClampVelocity();
 
         if (!IsSwinging()) return;
 
@@ -80,27 +98,14 @@ public class SM_Hook : State
             Input.GetAxisRaw("Vertical"));
     }
 
+    private void ClampVelocity()
+    {
+        if (_player._rigidbody.velocity.magnitude > _player.SpeedHook)
+            _player._rigidbody.velocity = _player._rigidbody.velocity.normalized * _player.SpeedHook;
+    }
+
     private bool IsSwinging()
     {
         return Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0;
-    }
-
-    private void ResetHook()
-    {
-        _time = 0;
-
-        _player._viewPlayer.bandageHook.enabled = false;
-
-        _player._viewPlayer.rightHand.data.target = null;
-
-        _player._viewPlayer.hookMaterial.SetFloat("_rightThreshold", 1.5f);
-
-        _isHookDestiny = false;
-
-        _player._modelPlayer.isHooking = false;
-
-        _player._modelPlayer.hookBeetle = null;
-
-        Object.Destroy(_player._modelPlayer.springJoint);
     }
 }
