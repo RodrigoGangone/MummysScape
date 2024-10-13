@@ -25,7 +25,6 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
-        Debug.Log("HOOK BOOL " + !OnHooked!.Invoke());
         if (CanWalkState())
         {
             OnStateChange(OnWalkingSand!.Invoke() ? PlayerState.WalkSand : PlayerState.Walk);
