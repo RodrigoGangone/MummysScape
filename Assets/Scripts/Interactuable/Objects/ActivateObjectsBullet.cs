@@ -5,22 +5,22 @@ using UnityEngine;
 public class ActivateObjectsBullet : MonoBehaviour
 {
     [SerializeField] private List<GameObject> _platformsAll;
-    [SerializeField] private ParticleSystem _shiningParticles;
     private Animator _animator;
-    Material material;
-    private InteractableOutline _interactableOutline;
+    private Material _material;
+    private BoxCollider _boxCollider;
 
     private void Start()
     {
         _animator = GetComponent<Animator>();
-        material = gameObject.GetComponentInChildren<Renderer>().material;
-        _interactableOutline = GetComponent<InteractableOutline>();
+        _material = gameObject.GetComponentInChildren<Renderer>().material;
+        _boxCollider = GetComponent<BoxCollider>();
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag("Bullet")) return;
 
+        _boxCollider.enabled = false;
         _animator.SetBool("IsActive", !_animator.GetBool("IsActive"));
 
         StartCoroutine(SineIntensity());
@@ -29,11 +29,11 @@ public class ActivateObjectsBullet : MonoBehaviour
         {
             MoveHorizontalPlatform moveHorizontalPlatform = platform.GetComponent<MoveHorizontalPlatform>();
             MoveVerticalPlatform moveVerticalPlatform = platform.GetComponent<MoveVerticalPlatform>();
-            
+
             if (moveHorizontalPlatform != null)
                 moveHorizontalPlatform.StartAction();
-            
-            if(moveVerticalPlatform != null)  
+
+            if (moveVerticalPlatform != null)
                 moveVerticalPlatform.StartAction();
         }
     }
@@ -52,11 +52,10 @@ public class ActivateObjectsBullet : MonoBehaviour
         {
             elapsedTime += Time.deltaTime;
             float intensity = Mathf.Lerp(startValue, endValue, elapsedTime / duration);
-            material.SetFloat("_intensity", intensity);
+            _material.SetFloat("_intensity", intensity);
             yield return null;
         }
 
-        material.SetFloat("_intensity", endValue);
+        _material.SetFloat("_intensity", endValue);
     }
-    
 }

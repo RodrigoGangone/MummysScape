@@ -1,8 +1,14 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEditor.Rendering;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 public class UIManager : MonoBehaviour
 {
@@ -10,33 +16,36 @@ public class UIManager : MonoBehaviour
     private Player _player;
     private LevelManager levelManager;
 
-    [Header("UI PAUSE")]
-    [SerializeField] private GameObject _PausePanel;
+    [Header("UI PAUSE")] [SerializeField] private GameObject _pausePanel;
+
+    [SerializeField] private List<GameObject> _btnsPause;
+
     [SerializeField] private Button _btnResume;
     [SerializeField] private Button _btnRetry;
     [SerializeField] private Button _btnExit;
+    [SerializeField] private Material _pauseMaterial;
 
-    [Header("UI WIN")]
-    [SerializeField] private GameObject _WinPanel;
+    public static bool PauseCharging;
+
+    [Header("UI WIN")] [SerializeField] private GameObject _WinPanel;
     [SerializeField] private Button _btnRetryW;
     [SerializeField] private Button _btnMainMenuW;
     [SerializeField] private Button _btnNextLvlW;
 
-    [Header("UI LOSE")]
-    [SerializeField] private GameObject _LosePanel;
+    [Header("UI LOSE")] [SerializeField] private GameObject _LosePanel;
     [SerializeField] private Button _btnRetryL;
     [SerializeField] private Button _btnMainMenuL;
 
     [Header("UI NEXT LVL")] // Panel con animacion de momia y carga asincronica de nivel
-    [SerializeField] private GameObject _NextLvlPanel;
+    [SerializeField]
+    private GameObject _NextLvlPanel;
 
     [SerializeField] private float _fakeTimer = 3f;
 
-    [Header("FADE")]
-    [SerializeField] private Image fadeImage;
+    [Header("FADE")] [SerializeField] private Image fadeImage;
 
-    [Header("HOUR GLASS")] 
-    [SerializeField] private Material _HourgalssBandage01;
+    [Header("HOUR GLASS")] [SerializeField]
+    private Material _HourgalssBandage01;
 
     [SerializeField] private Material _HourgalssBandage02;
 
@@ -48,7 +57,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Material _gemMaterial03;
 
     [SerializeField] private Animator _hourglassAnimator;
-    
+
 
     private float targetOffset1;
     private float targetOffset2;
@@ -58,6 +67,9 @@ public class UIManager : MonoBehaviour
     private float _targetOffset2;
     private float _targetOffset3;
     private float _fillSpeed = 1f;
+
+    private DepthOfField _blur;
+    private Volume _postProcess;
 
     void Start()
     {
@@ -75,13 +87,17 @@ public class UIManager : MonoBehaviour
         _btnResume.onClick.AddListener(() => { levelManager.OnPlaying.Invoke(); });
         _btnRetry.onClick.AddListener(RetryLevel);
         _btnExit.onClick.AddListener(GoToMainMenu);
-        
+
         _btnNextLvlW.onClick.AddListener(ShowNextLvlPanel);
         _btnRetryW.onClick.AddListener(RetryLevel);
         _btnMainMenuW.onClick.AddListener(GoToMainMenu);
 
         _btnRetryL.onClick.AddListener(RetryLevel);
         _btnMainMenuL.onClick.AddListener(GoToMainMenu);
+
+        _pauseMaterial.SetFloat("_Fill", 0f); // Asegurar que se complete la transición
+
+        _postProcess = FindObjectOfType<Volume>();
 
         ValidateGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
@@ -97,8 +113,9 @@ public class UIManager : MonoBehaviour
     // Método para pausar el juego y activar el PausePanel
     private void PauseGame()
     {
+        StartCoroutine(LoadPauseBandage());
+
         Debug.Log("PAUSED");
-        _PausePanel.SetActive(true);
 
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
@@ -107,8 +124,50 @@ public class UIManager : MonoBehaviour
 
     private void ResumeGame()
     {
+        StartCoroutine(LoadPauseBandage());
+
         Debug.Log("PLAYING");
-        _PausePanel.SetActive(false);
+    }
+
+    private IEnumerator LoadPauseBandage()
+    {
+        PauseCharging = true;
+
+        if (_postProcess.profile.TryGet(out _blur))
+            _blur.active = !_blur.active;
+
+        float startValue = _pauseMaterial.GetFloat("_Fill"); // Obtener el valor actual del material
+        float endValue = (startValue == 1f) ? 0f : 1f; // Determinar si debe ir a 1 o a 0
+        float elapsed = 0f;
+
+        StartCoroutine(CascadeButtons(_btnsPause));
+
+        //TODO: LLEVAR ESTA CORRUTINA ABAJO DEL WHILE DESPUES DE ENTREGAR AL BUILD EL 10/10
+
+        while (elapsed < 0.5f)
+        {
+            elapsed += Time.deltaTime;
+
+            float currentValue = Mathf.Lerp(startValue, endValue, elapsed / 0.5f);
+
+            _pauseMaterial.SetFloat("_Fill", currentValue); // Ajusta según la propiedad de tu shader
+            yield return null;
+        }
+
+        PauseCharging = false;
+
+        _pauseMaterial.SetFloat("_Fill", endValue); // Asegurar que se complete la transición
+    }
+
+    private IEnumerator CascadeButtons(List<GameObject> buttons)
+    {
+        foreach (var btn in buttons)
+        {
+            btn.SetActive(!btn.activeSelf);
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        buttons.Reverse();
     }
 
     public void GoToMainMenu()
@@ -178,7 +237,7 @@ public class UIManager : MonoBehaviour
 
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
-        _PausePanel.SetActive(false);
+        _pausePanel.SetActive(false);
 
         //TODO: Activar animacion de momia
         //AnimationMummy.play();
@@ -217,7 +276,7 @@ public class UIManager : MonoBehaviour
         _gemMaterial01.SetFloat("_IsPicked", 0);
         _gemMaterial02.SetFloat("_IsPicked", 0);
         _gemMaterial03.SetFloat("_IsPicked", 0);
-        
+
         foreach (var level in LevelManagerJson.Levels)
         {
             if (level.level.Equals(SceneManager.GetActiveScene().buildIndex))
@@ -278,10 +337,9 @@ public class UIManager : MonoBehaviour
             //Si llego a la cantidad de niveles max no muestro boton de sig nivel
             //TODO: MOSTRAR OTRA PANTALLA QUE NO TENGA LA DE SIGUIENTE NIVEL
             if (SceneManager.GetActiveScene().buildIndex >= Utils.MAX_LVLS)
-                _btnNextLvlW.enabled = false;    
-            
+                _btnNextLvlW.enabled = false;
+
             _WinPanel.SetActive(true);
-            
         }));
     }
 

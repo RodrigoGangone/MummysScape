@@ -16,7 +16,7 @@ public class ControllerPlayer
     public event Func<string> OnGetState = () => "ERROR OnGetState (Controller Player)";
     public event Func<PlayerSize> OnGetPlayerSize;
     public event Func<bool> OnWalkingSand;
-    public event Func<bool> OnHitOnFalling;
+    public event Func<bool> OnHooked;
 
     public ControllerPlayer(Player player)
     {
@@ -25,7 +25,6 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
-
         if (CanWalkState())
         {
             OnStateChange(OnWalkingSand!.Invoke() ? PlayerState.WalkSand : PlayerState.Walk);
@@ -157,7 +156,7 @@ public class ControllerPlayer
     {
         return PlayerSize.Small.Equals(OnGetPlayerSize.Invoke()) &&
                _model.detectionBeetle.currentHook != null &&
-               !OnHitOnFalling!.Invoke() &&
+               !OnHooked!.Invoke() &&
                OnGetState?.Invoke() switch
                {
                    STATE_IDLE => true,

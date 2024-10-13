@@ -142,7 +142,7 @@ public class ModelPlayer
         }
     }
 
-    public bool IsBoxCloseToPlayer(float maxDistance = 2f)
+    public bool IsBoxCloseToPlayer(float maxDistance = 1.8f)
     {
         Vector3 playerPosition = _player.transform.position;
         Vector3 boxPosition = _currentBox.transform.position;
@@ -222,11 +222,11 @@ public class ModelPlayer
     {
         Quaternion startRotation = (_player.transform.rotation);
 
-           Vector3 directionToButton = (new Vector3(buttonPosition.x, _player.transform.position.y, buttonPosition.z)
-                                        - _player.transform.position).normalized;
+        Vector3 directionToButton = (new Vector3(buttonPosition.x, _player.transform.position.y, buttonPosition.z)
+                                     - _player.transform.position).normalized;
 
         //Vector3 directionToButton = (buttonPosition - _player.transform.position).normalized;
-        
+
         Quaternion targetRotation = Quaternion.LookRotation(directionToButton);
 
         float duration = 0.5f;
@@ -395,11 +395,13 @@ public class ModelPlayer
     //TODO: sirve para limitar los movimientos en X/Y/Z, verificar eso
     public void Hook()
     {
-        if (isHooking) return;
-        isHooking = true;
+        if (hookBeetle == null) return;
 
-        springJoint = _player.gameObject.AddComponent<SpringJoint>();
-        springJoint.autoConfigureConnectedAnchor = false;
+        if (springJoint == null)
+        {
+            _player._modelPlayer.springJoint = _player.gameObject.AddComponent<SpringJoint>();
+            _player._modelPlayer.springJoint.autoConfigureConnectedAnchor = false;
+        }
 
         switch (hookBeetle.gameObject.tag)
         {

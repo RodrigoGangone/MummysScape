@@ -4,64 +4,79 @@ using UnityEngine;
 
 public class SM_Hook : State
 {
-    private ModelPlayer _model;
-    private ViewPlayer _view;
+    private Player _player;
 
     private bool _isHookDestiny;
     private float _time = 0;
 
-    public SM_Hook(ModelPlayer model, ViewPlayer view)
+    public SM_Hook(Player player)
     {
-        _model = model;
-        _view = view;
+        _player = player;
     }
 
     public override void OnEnter()
     {
-        _model.hookBeetle = _model.detectionBeetle.currentHook;
-        
-        _view.StateRigBuilder(true);
-        _view.PLAY_ANIM("Hook", true);
-        _view.bandageHook.enabled = true;
+        _player.IsHooked = true;
+
+        _player._modelPlayer.hookBeetle = _player._modelPlayer.detectionBeetle.currentHook;
+
+        _player._viewPlayer.StateRigBuilder(true);
+        _player._viewPlayer.PLAY_ANIM("Hook", true);
+        _player._viewPlayer.bandageHook.enabled = true;
+
+        _player.StartCoroutine(Bandage());
     }
 
     public override void OnExit()
     {
-        _view.PLAY_ANIM("Hook", false);
-        _view.StateRigBuilder(false);
+        _player._viewPlayer.PLAY_ANIM("Hook", false);
+        _player._viewPlayer.StateRigBuilder(false);
+
         ResetHook();
+
+        _player.IsHooked = false;
     }
 
     public override void OnUpdate()
     {
-        if (!_model.isHooking) return;
-
-        if (!_isHookDestiny)
-        {
-            _time += Time.deltaTime;
-            var newValue = Mathf.Lerp(1.5f, -1.5f, _time / 0.25f);
-            _view.hookMaterial.SetFloat("_rightThreshold", newValue);
-
-            if (_view.hookMaterial.GetFloat("_rightThreshold") == -1.5f)
-                _isHookDestiny = true;
-        }
-
         if (!Input.GetKey(KeyCode.Space))
             StateMachine.ChangeState(PlayerState.Fall);
         else
         {
-            _view.DrawBandage(_model.hookBeetle.transform.position);
+            _player._viewPlayer.DrawBandage(_player._modelPlayer.hookBeetle.transform.position);
             IsSwinging();
         }
     }
 
+    private IEnumerator Bandage()
+    {
+        _time = 0f; // Reseteamos el tiempo
+
+        // Mientras no se haya llegado al destino del gancho
+        while (!_isHookDestiny)
+        {
+            _time += Time.deltaTime;
+            var newValue = Mathf.Lerp(1.5f, -1.5f, _time / 1f);
+            _player._viewPlayer.hookMaterial.SetFloat("_rightThreshold", newValue);
+
+            // Si el valor llega a -1.5f, marcamos que hemos alcanzado el destino
+            if (_player._viewPlayer.hookMaterial.GetFloat("_rightThreshold") <= -1.5f)
+            {
+                _isHookDestiny = true;
+            }
+
+            yield return null; // Esperamos hasta el siguiente frame
+        }
+    }
+
+
     public override void OnFixedUpdate()
     {
-        _model.LimitVelocityRb();
+        _player._modelPlayer.LimitVelocityRb();
 
         if (!IsSwinging()) return;
 
-        _model.MoveHooked(Input.GetAxisRaw("Horizontal"),
+        _player._modelPlayer.MoveHooked(Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical"));
     }
 
@@ -74,18 +89,18 @@ public class SM_Hook : State
     {
         _time = 0;
 
-        _view.bandageHook.enabled = false;
+        _player._viewPlayer.bandageHook.enabled = false;
 
-        _view.rightHand.data.target = null;
+        _player._viewPlayer.rightHand.data.target = null;
 
-        _view.hookMaterial.SetFloat("_rightThreshold", 1.5f);
+        _player._viewPlayer.hookMaterial.SetFloat("_rightThreshold", 1.5f);
 
         _isHookDestiny = false;
 
-        _model.isHooking = false;
+        _player._modelPlayer.isHooking = false;
 
-        _model.hookBeetle = null;
+        _player._modelPlayer.hookBeetle = null;
 
-        Object.Destroy(_model.springJoint);
+        Object.Destroy(_player._modelPlayer.springJoint);
     }
 }

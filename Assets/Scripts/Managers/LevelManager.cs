@@ -13,6 +13,10 @@ public class LevelManager : MonoBehaviour
     [SerializeField] public float _maxTimeDeath = 30f;
     [SerializeField] private float _speedRecovery;
 
+    private bool _isWin;
+    private bool _isLose;
+    private bool _canPause = true;
+
     [SerializeField] private List<Collectible> _collectibles = new();
 
     private List<CollectibleNumber> _collectibleNumbers = new();
@@ -54,7 +58,7 @@ public class LevelManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape)) 
+        if (Input.GetKeyDown(KeyCode.Escape) && !UIManager.PauseCharging && _canPause)
         {
             if (_currentLevelState == LevelState.Playing)
                 OnPause?.Invoke();
@@ -62,16 +66,21 @@ public class LevelManager : MonoBehaviour
                 OnPlaying?.Invoke();
         }
 
-        if (_player.CurrentPlayerSize == PlayerSize.Head && _deathTimerCoroutine == null)
+        if (!_isWin && !_isLose)
         {
-            _deathTimerCoroutine = StartCoroutine(DeathTimerCoroutine());
-        }
-        else if (_player.CurrentPlayerSize != PlayerSize.Head && _deathTimerCoroutine != null)
-        {
-            StopCoroutine(_deathTimerCoroutine);
-            _deathTimerCoroutine = null;
+            Debug.Log("ESTOY ENTRANDO IGUAL A COROUTINES");
 
-            StartCoroutine(ResetDeathTimer());
+            if (_player.CurrentPlayerSize == PlayerSize.Head && _deathTimerCoroutine == null)
+            {
+                _deathTimerCoroutine = StartCoroutine(DeathTimerCoroutine());
+            }
+            else if (_player.CurrentPlayerSize != PlayerSize.Head && _deathTimerCoroutine != null)
+            {
+                StopCoroutine(_deathTimerCoroutine);
+                _deathTimerCoroutine = null;
+    
+                StartCoroutine(ResetDeathTimer());
+            }
         }
     }
 
@@ -131,10 +140,12 @@ public class LevelManager : MonoBehaviour
     private void HandlePause()
     {
         _player.enabled = false;
+        _player._rigidbody.isKinematic = true;
     }
 
     private void HandlePlay()
     {
+        _player._rigidbody.isKinematic = false;
         _player.enabled = true;
     }
 
@@ -152,15 +163,34 @@ public class LevelManager : MonoBehaviour
 
     private void Win()
     {
+        _isWin = true;
+        
+        if (_deathTimerCoroutine != null)
+        {
+            Debug.Log("GANE Y FRENE COROUTINE");
+            StopCoroutine(_deathTimerCoroutine);
+            _deathTimerCoroutine = null;
+        }
+        
         LevelManagerJson.AddNewLevel(SceneManager.GetActiveScene().buildIndex,
             _collectibleNumbers,
             0f);
 
         LevelManagerJson.SHOWPREFLEVELS();
+
+        _canPause = false;
     }
 
     private void Lose()
     {
+        _isLose = true;
+        
+        if (_deathTimerCoroutine != null) {
+            StopCoroutine(_deathTimerCoroutine);
+            _deathTimerCoroutine = null;
+        }
+        
+        _canPause = false;
         Debug.Log("LevelManager -> Perdiste!");
     }
 }

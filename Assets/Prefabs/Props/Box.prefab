@@ -158,6 +158,7 @@ Transform:
   - {fileID: 5658082997242978960}
   - {fileID: 2024023059566487224}
   - {fileID: 642764487462635505}
+  - {fileID: 4036804364190125436}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6014661516838782913
@@ -271,6 +272,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1903574a69fe5a84b9585a06a84898e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
+  sandMoundParticle: {fileID: 7266380108475552769}
   _bandagesAroundBox:
   - {fileID: 6982564983805294961}
   - {fileID: 8334975442316066893}
@@ -279,9 +284,6 @@ MonoBehaviour:
   rayDistanceToPull: 7
   raycastLengthToFloor: 1.75
   raycastLengthToWall: 0.1
-  playerLayerMask:
-    serializedVersion: 2
-    m_Bits: 256
 --- !u!114 &1864219845351746950
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1756,6 +1758,7 @@ MonoBehaviour:
   _functional: {r: 9.309246, g: 0, b: 17.2886, a: 1}
   _inoperable: {r: 8.47419, g: 0.18329035, b: 0, a: 1}
   _materials: []
+  _shiningParticles: {fileID: 0}
 --- !u!1 &4220009925870199367
 GameObject:
   m_ObjectHideFlags: 0
@@ -2146,3 +2149,70 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.99, y: 1, z: 0.05}
   m_Center: {x: 0, y: 0, z: -0.47}
+--- !u!1001 &8239836483572703420
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 2680766957854246762}
+    m_Modifications:
+    - target: {fileID: 5358258324152987072, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5358258324152987072, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5358258324152987072, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5358258324152987072, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5358258324152987072, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5358258324152987072, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5358258324152987072, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5358258324152987072, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 5358258324152987072, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5358258324152987072, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7947742045782784498, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+      propertyPath: m_Name
+      value: SandMounds
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+--- !u!4 &4036804364190125436 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5358258324152987072, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+  m_PrefabInstance: {fileID: 8239836483572703420}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &7266380108475552769 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 1625405383474541757, guid: 674ca5e73d972d742ae00b27d10739cb, type: 3}
+  m_PrefabInstance: {fileID: 8239836483572703420}
+  m_PrefabAsset: {fileID: 0}
