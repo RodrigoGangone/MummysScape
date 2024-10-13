@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5344838455499759919
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Agua Material
+  m_Shader: {fileID: -6465566751694194690, guid: 56fbe74c722b2d844b7b46447c943166, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _CaustictTexture:
+        m_Texture: {fileID: 2800000, guid: 4815656e51a12ad4080020ac08c6bc07, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FoamTexture:
+        m_Texture: {fileID: 2800000, guid: 4815656e51a12ad4080020ac08c6bc07, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - Vector1_ac89f6d1d9a247a0bb6894379c6dee97: 100
+    - Vector1_c6588af10514478bb210aa62dabb9716: 3
+    - Vector1_c8208d4a1965431f8fe386ee09088f00: 3
+    - Vector1_dd7ee67e262e4de69a2dcaf3bf5e5aa3: 0.2
+    - Vector1_dd7ee67e262e4de69a2dcaf3bf5e5aa3_1: 0.1
+    - _CausticSpeed: 0.02
+    - _CausticSpeedPermanent: 0.05
+    - _CausticTilling: 8
+    - _CausticTillingPermanent: 4
+    - _CaustictCutOut: 0.2
+    - _Depth: 1
+    - _DepthFallOff: 3
+    - _FoamAmount: 1
+    - _FoamCutOut: 0.115
+    - _FoamDepth: 4
+    - _FoamFallOff: 5
+    - _FoamShoreWidth: 0.85
+    - _FoamTilling: 1
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _ShowBigFoam: 0
+    - _ShowBigFoamInMiddle: 0
+    m_Colors:
+    - Color_749e810de6d841309b2a442ba06df661: {r: 1, g: 0.553727, b: 0, a: 0}
+    - Color_9a35a9767dce4767ad25cfd0bab8d7cf: {r: 0.8396226, g: 0.4826042, b: 0.07524914, a: 0}
+    - Color_cef3114bb2024ff081bec2dfef973a25: {r: 0.8584906, g: 0.03957307, b: 0, a: 0}
+    - Vector2_1: {r: 0, g: 0.1, b: 0, a: 0}
+    - Vector2_964a8853f11441fc8202d76a5a8055ce: {r: 0.1, g: 0, b: 0, a: 0}
+    - Vector2_cd68862d908747cdb0490353d84757fa: {r: 1, g: 1, b: 0, a: 0}
+    - _CaustictColor: {r: 3.9999995, g: 3.9999995, b: 3.9999995, a: 0}
+    - _CaustictColorPermanent: {r: 0.7137255, g: 0.88235295, b: 0.90588236, a: 0}
+    - _FoamColor: {r: 0.5276789, g: 0.67357284, b: 0.9245283, a: 0}
+    - _FoamSpeed: {r: 0.01, g: 0.02, b: 0, a: 0}
+    - _MainColor: {r: 0, g: 0.22398186, b: 0.5, a: 0}
+    - _ShoreColor: {r: 0.41211286, g: 0.58566207, b: 0.5943396, a: 0}
+  m_BuildTextureStacks: []
