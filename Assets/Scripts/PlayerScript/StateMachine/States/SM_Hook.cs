@@ -10,6 +10,7 @@ public class SM_Hook : State
 
     private bool _isBandageDraw;
     private float _time;
+    private const string RIGHT_THRESHOLD = "_rightThreshold";
 
     private Coroutine _drawBandageCoroutine;
 
@@ -38,22 +39,17 @@ public class SM_Hook : State
         _time = 0;
 
         _player._viewPlayer.bandageHook.enabled = false;
-
         _player._viewPlayer.rightHand.data.target = null;
-
-        _player.IsHooked = false;
+        _player._viewPlayer.PLAY_ANIM("Hook", false);
+        _player._viewPlayer.StateRigBuilder(false);
+        _player._viewPlayer.hookMaterial.SetFloat(RIGHT_THRESHOLD, 1.5f);
 
         _isBandageDraw = false;
 
         _player._modelPlayer.hookBeetle = null;
-
-        _player._viewPlayer.hookMaterial.SetFloat("_rightThreshold", 1.5f);
-
         Object.Destroy(_player._modelPlayer.springJoint);
 
-        _player._viewPlayer.PLAY_ANIM("Hook", false);
-
-        _player._viewPlayer.StateRigBuilder(false);
+        _player.IsHooked = false;
     }
 
     public override void OnUpdate()
@@ -73,9 +69,17 @@ public class SM_Hook : State
         {
             _time += Time.deltaTime;
             var newValue = Mathf.Lerp(1.5f, -1.5f, _time / 0.5f);
-            _player._viewPlayer.hookMaterial.SetFloat("_rightThreshold", newValue);
+            _player._viewPlayer.hookMaterial.SetFloat(RIGHT_THRESHOLD, newValue);
 
-            if (_player._viewPlayer.hookMaterial.GetFloat("_rightThreshold") <= -1.5f)
+            if (_player._modelPlayer.springJoint == null && newValue <= 0f)
+            {
+                _player._modelPlayer.springJoint = _player.gameObject.AddComponent<SpringJoint>();
+                _player._modelPlayer.springJoint.autoConfigureConnectedAnchor = false;
+
+                _player._modelPlayer.Hook();
+            }
+
+            if (_player._viewPlayer.hookMaterial.GetFloat(RIGHT_THRESHOLD) <= -1.5f)
             {
                 _isBandageDraw = true;
             }
@@ -84,15 +88,20 @@ public class SM_Hook : State
         }
     }
 
-
     public override void OnFixedUpdate()
     {
-        _player._modelPlayer.LimitVelocityRb();
+        ClampVelocity();
 
         if (!IsSwinging()) return;
 
         _player._modelPlayer.MoveHooked(Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical"));
+    }
+
+    private void ClampVelocity()
+    {
+        if (_player._rigidbody.velocity.magnitude > _player.SpeedHook)
+            _player._rigidbody.velocity = _player._rigidbody.velocity.normalized * _player.SpeedHook;
     }
 
     private bool IsSwinging()
