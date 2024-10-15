@@ -1,32 +1,34 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
-public class FallingSand : MonoBehaviour
+public class Geyser : MonoBehaviour
 {
     private Player _player;
 
-    private BoxCollider _viewCollider;
     [SerializeField] private Transform _view;
-
     [SerializeField] private Transform _invisiblePlatform;
-
-    [Header("SPEED")] [SerializeField] private float speedSand = 3;
-    [SerializeField] private float speedInvisiblePlatform = 5;
-    [SerializeField] private float stopTime = 3f;
-
-    [Header("WAYPOINTS")] [SerializeField] private Transform[] waypoints;
-    private int _currentWaypointIndex;
-
+    [SerializeField] private MeshCollider _meshTrigger;
+    
     private bool _isPaused;
     private bool _upInvisiblePlatform;
 
+    [Header("SPEED")] 
+    [SerializeField] private float speedSand = 3;
+    [SerializeField] private float speedInvisiblePlatform = 5;
+    [SerializeField] private float stopTime = 3f;
+
+    [Header("WAYPOINTS")] 
+    [SerializeField] private Transform[] waypoints;
+    private int _currentWaypointIndex;
+    
+    [Header("WAYPOINTS")] 
     [SerializeField] private ParticleSystem _preUp1,_preUp2;
 
     private void Start()
     {
         _player = FindObjectOfType<Player>();
-        _viewCollider = GetComponent<BoxCollider>();
+        _meshTrigger = GetComponent<MeshCollider>();
     }
 
     private void Update()
@@ -49,7 +51,8 @@ public class FallingSand : MonoBehaviour
         float step = speedSand * Time.deltaTime;
 
         _view.transform.position = Vector3.MoveTowards(_view.transform.position, targetWaypoint.position, step);
-        _viewCollider.center = new Vector3(0, _view.transform.position.y - 3.25f, 0);
+        //_viewCollider.transform.position = _view.transform.position;
+        //_viewCollider.transform.position = new Vector3(0, _view.transform.position.y/* - 3.25f*/, 0);
 
         // Pausa al llegar a un punto
         if (Vector3.Distance(_view.transform.position, targetWaypoint.position) == 0)
