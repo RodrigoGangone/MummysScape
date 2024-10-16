@@ -324,6 +324,7 @@ public class ModelPlayer
 
             // Verifica si la caja no colisiona con una pared
             if (_dirToPush != Vector3.zero &&
+                _currentBox.GetComponent<PushPullObject>().BoxInFloor() &&
                 !_currentBox.GetComponent<PushPullObject>().CheckCollisionInDirections(_dirToPush))
             {
                 return true;
@@ -374,6 +375,7 @@ public class ModelPlayer
 
                     //Check si la caja no colisiona con pared
                     if (_dirToPull != Vector3.zero &&
+                        _currentBox.GetComponent<PushPullObject>().BoxInFloor() &&
                         !_currentBox.GetComponent<PushPullObject>().CheckCollisionInDirections(_dirToPull))
                     {
                         return true;

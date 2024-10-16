@@ -8,6 +8,9 @@ public class SM_Pull : State
     
     private bool _isBandageDraw;
     private float _time;
+
+    private Transform _lastCurrentBoxTrans;
+    private PushPullObject _lastCurrentBoxScript;
     
     private Coroutine _drawBandageCoroutine;
 
@@ -22,6 +25,9 @@ public class SM_Pull : State
         
         _player._viewPlayer.PLAY_ANIM("Pull", true);
         _player._viewPlayer.bandageLineRenderer.enabled = true;
+
+        _lastCurrentBoxTrans = _player._modelPlayer.CurrentBox;
+        _lastCurrentBoxScript = _lastCurrentBoxTrans.GetComponent<PushPullObject>();
         
         _drawBandageCoroutine = _player.StartCoroutine(Bandage());
     }
@@ -37,8 +43,11 @@ public class SM_Pull : State
         _player._viewPlayer.PLAY_ANIM("Pull", false);
         _player._viewPlayer.bandageLineRenderer.enabled = false;
         _player._viewPlayer.hookMaterial.SetFloat("_rightThreshold", 1.5f);
-        
-        UnwrapBox();
+
+        if (_lastCurrentBoxScript.CheckCollisionInDirections(_player._modelPlayer.DirToPull))
+            ExplodeBox();
+        else
+            UnwrapBox();
 
         _pullTime = 0;
     }
@@ -46,7 +55,7 @@ public class SM_Pull : State
     public override void OnUpdate()
     {
         if (!Input.GetKey(KeyCode.Space) || _player._modelPlayer.CurrentBox == null ||
-            !_player._modelPlayer.CurrentBox.GetComponent<PushPullObject>().BoxInFloor())
+            !_lastCurrentBoxScript.BoxInFloor())
             StateMachine.ChangeState(PlayerState.Idle);
 
     }
@@ -59,14 +68,14 @@ public class SM_Pull : State
 
         if (_isBandageDraw &&
             !_player._modelPlayer.IsBoxCloseToPlayer() &&
-            _player._modelPlayer.CurrentBox.GetComponent<PushPullObject>().BoxInFloor())
+            _lastCurrentBoxScript.BoxInFloor())
         {
             _pullTime += Time.fixedDeltaTime;
             float speed = _player.SpeedPull.Evaluate(_pullTime);
-            _player._modelPlayer.CurrentBox.transform.position += _player._modelPlayer.DirToPull * (speed * Time.fixedDeltaTime);
+            _lastCurrentBoxTrans.transform.position += _player._modelPlayer.DirToPull * (speed * Time.fixedDeltaTime);
         }
 
-        _player._viewPlayer.DrawBandage(_player._modelPlayer.CurrentBox.position);
+        _player._viewPlayer.DrawBandage(_lastCurrentBoxTrans.position);
     }
     
     private IEnumerator Bandage()
@@ -88,9 +97,9 @@ public class SM_Pull : State
     
     private void WrapBox()
     {
-        if (_player._modelPlayer.CurrentBox == null) return;
+        if (_lastCurrentBoxTrans == null) return;
         
-        var boxScript = _player._modelPlayer.CurrentBox.GetComponent<PushPullObject>();
+        var boxScript = _lastCurrentBoxScript;
         if (boxScript != null)
         {
             _isBandageDraw = true;
@@ -100,13 +109,25 @@ public class SM_Pull : State
 
     private void UnwrapBox()
     {
-        if (_player._modelPlayer.CurrentBox == null) return;
+        if (_lastCurrentBoxTrans == null) return;
         
-        var boxScript = _player._modelPlayer.CurrentBox.GetComponent<PushPullObject>();
+        var boxScript = _lastCurrentBoxScript;
         if (boxScript != null)
         {
             _isBandageDraw = false;
             boxScript.StartUnwrap();
+        }
+    }
+    
+    private void ExplodeBox()
+    {
+        if (_lastCurrentBoxTrans == null) return;
+        
+        var boxScript = _lastCurrentBoxScript;
+        if (boxScript != null)
+        {
+            _isBandageDraw = false;
+            boxScript.StartExplode();
         }
     }
 }
