@@ -8,7 +8,7 @@ public class Geyser : MonoBehaviour
 
     [SerializeField] private Transform _view;
     [SerializeField] private Transform _invisiblePlatform;
-    [SerializeField] private MeshCollider _meshTrigger;
+    [SerializeField] private Transform _triggerTransform;
     
     private bool _isPaused;
     private bool _upInvisiblePlatform;
@@ -50,9 +50,9 @@ public class Geyser : MonoBehaviour
         float step = speedSand * Time.deltaTime;
 
         _view.transform.position = Vector3.MoveTowards(_view.transform.position, targetWaypoint.position, step);
-        _meshTrigger.transform.position = new Vector3(_meshTrigger.transform.position.x,
+        _triggerTransform.transform.position = new Vector3(_triggerTransform.transform.position.x,
             _view.transform.position.y,
-            _meshTrigger.transform.position.z);
+            _triggerTransform.transform.position.z);
 
         // Pausa al llegar a un punto
         if (Vector3.Distance(_view.transform.position, targetWaypoint.position) == 0)
