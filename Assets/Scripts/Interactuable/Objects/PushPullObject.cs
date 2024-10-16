@@ -38,7 +38,7 @@ public class PushPullObject : MonoBehaviour
 
     #region Handler Bandage Material
 
-    public void StartWrap() //iniciar proceso de envolverse
+    public void StartWrap() //Iniciar proceso de envolverse
     {
         if (currentCoroutine != null)
         {
@@ -48,7 +48,7 @@ public class PushPullObject : MonoBehaviour
         currentCoroutine = StartCoroutine(AnimateBandages(0f, 1f));
     }
 
-    public void StartUnwrap() //iniciar proceso de desenvolverse
+    public void StartUnwrap() //Iniciar proceso de desenvolverse
     {
         if (currentCoroutine != null)
         {
@@ -57,8 +57,14 @@ public class PushPullObject : MonoBehaviour
 
         currentCoroutine = StartCoroutine(AnimateBandages(currentOffset, 0f));
     }
+    
+    public void StartExplode() //Iniciar proceso de Explosion
+    {
+        SetExplode(true);
+        StartUnwrap();
+    }
 
-    public void SetExplode(bool explode)
+    private void SetExplode(bool explode) //Recorro lista de vendas y le activo el explode
     {
         foreach (GameObject bandage in _bandagesAroundBox)
         {
@@ -98,14 +104,7 @@ public class PushPullObject : MonoBehaviour
 
     public bool CheckCollisionInDirections(Vector3 direction)
     {
-        if (PerformBoxCast(direction))
-        {
-            //si no esta tocando el suelo Explode = true  y desenvolver
-            SetExplode(true);
-            StartUnwrap();
-            return true;
-        }
-
+        if (PerformBoxCast(direction)) return true;
         return false;
     }
 
@@ -185,8 +184,7 @@ public class PushPullObject : MonoBehaviour
         //si no esta tocando el suelo Explode = true  y desenvolver
         if (!inFloor)
         {
-            SetExplode(!inFloor);
-            StartUnwrap();
+            StartExplode();
         }
 
         return inFloor;
