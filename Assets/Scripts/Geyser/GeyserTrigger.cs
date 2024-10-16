@@ -1,18 +1,27 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GeyserTrigger : MonoBehaviour
 {
-    // Start is called before the first frame update
+    private Geyser _geyser;
+
     void Start()
     {
-        
+        _geyser = GetComponentInParent<Geyser>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnTriggerEnter(Collider other)
     {
-        
+        if (other.CompareTag("PlayerFather"))
+        {
+            _geyser.OnPlayerEnterTrigger(other);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("PlayerFather"))
+        {
+            _geyser.OnPlayerExitTrigger(other);
+        }
     }
 }

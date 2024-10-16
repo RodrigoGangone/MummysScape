@@ -28,7 +28,6 @@ public class Geyser : MonoBehaviour
     private void Start()
     {
         _player = FindObjectOfType<Player>();
-        _meshTrigger = GetComponent<MeshCollider>();
     }
 
     private void Update()
@@ -51,8 +50,9 @@ public class Geyser : MonoBehaviour
         float step = speedSand * Time.deltaTime;
 
         _view.transform.position = Vector3.MoveTowards(_view.transform.position, targetWaypoint.position, step);
-        //_viewCollider.transform.position = _view.transform.position;
-        //_viewCollider.transform.position = new Vector3(0, _view.transform.position.y/* - 3.25f*/, 0);
+        _meshTrigger.transform.position = new Vector3(_meshTrigger.transform.position.x,
+            _view.transform.position.y,
+            _meshTrigger.transform.position.z);
 
         // Pausa al llegar a un punto
         if (Vector3.Distance(_view.transform.position, targetWaypoint.position) == 0)
@@ -91,7 +91,7 @@ public class Geyser : MonoBehaviour
         _invisiblePlatform.position = Vector3.MoveTowards(_invisiblePlatform.position, _view.position, step);
     }
 
-    private void OnTriggerEnter(Collider other)
+    /*private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag("PlayerFather")) return;
 
@@ -107,6 +107,25 @@ public class Geyser : MonoBehaviour
         if (!other.gameObject.CompareTag("PlayerFather")) return;
 
         other.transform.SetParent(null);
+        _upInvisiblePlatform = false;
+
+        _invisiblePlatform.position = waypoints[0].position;
+    }*/
+    
+    public void OnPlayerEnterTrigger(Collider player)
+    {
+        player.transform.SetParent(_invisiblePlatform);
+        _upInvisiblePlatform = true;
+
+        if (_player.CurrentPlayerSize != PlayerSize.Head)
+        {
+            _player._modelPlayer.CountBandage(-_player.CurrentBandageStock);
+        }
+    }
+
+    public void OnPlayerExitTrigger(Collider player)
+    {
+        player.transform.SetParent(null);
         _upInvisiblePlatform = false;
 
         _invisiblePlatform.position = waypoints[0].position;

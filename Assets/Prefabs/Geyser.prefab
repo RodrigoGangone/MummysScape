@@ -43,6 +43,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1040741089406787161}
   - component: {fileID: 8194586649357514282}
+  - component: {fileID: 4444792666643841471}
   m_Layer: 0
   m_Name: MeshTrigger
   m_TagString: Untagged
@@ -87,6 +88,18 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 3188861999907982402, guid: 91f2ea7d9b0fb35468dc02a776f3ed3a, type: 3}
+--- !u!114 &4444792666643841471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650585278907215134}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23e8d2568041ea844b821142d12ee677, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2113200874918334492
 GameObject:
   m_ObjectHideFlags: 0
@@ -315,9 +328,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3f0a2f1da0345541bad2a2d7d0f0680, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  meshTrigger: {fileID: 8194586649357514282}
   _view: {fileID: 4926694485222757275}
   _invisiblePlatform: {fileID: 5779787352758213885}
+  _meshTrigger: {fileID: 8194586649357514282}
   speedSand: 3
   speedInvisiblePlatform: 5
   stopTime: 3
@@ -476,7 +489,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3109404306070683044, guid: 409d19766304de142b939e75001123a6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.238
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3109404306070683044, guid: 409d19766304de142b939e75001123a6, type: 3}
       propertyPath: m_LocalPosition.z
