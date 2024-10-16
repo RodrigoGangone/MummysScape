@@ -31,6 +31,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speed = 4;
     [SerializeField] private float _speedRotation = 8;
     [SerializeField] private float _speedPush = 0.5f;
+    [SerializeField] private float _speedHooked = 5;
     [SerializeField] private AnimationCurve _speedPull;
 
     [Header("BANDAGE")] [SerializeField] public GameObject _prefabBandage;
@@ -91,6 +92,8 @@ public class Player : MonoBehaviour
     public float Speed => CurrentSpeed();
 
     public float SpeedPush => _speedPush;
+
+    public float SpeedHook => _speedHooked;
     public AnimationCurve SpeedPull => _speedPull;
 
     public float SpeedRotation => CurrentRotation();

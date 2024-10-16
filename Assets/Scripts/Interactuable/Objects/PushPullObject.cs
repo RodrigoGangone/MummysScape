@@ -113,84 +113,45 @@ public class PushPullObject : MonoBehaviour
     {
         Vector3 center = _boxCollider.bounds.center;
         Vector3 localOffset = Vector3.zero;
-        Vector3 halfExtents = Vector3.one;
+
+        // Obtenemos el tamaño completo del BoxCollider usando bounds.size y no los extents
+        Vector3 boxSize = new Vector3(
+            _boxCollider.bounds.size.x,
+            _boxCollider.bounds.size.y * 0.9f,  // Ajustamos el tamaño de Y como en Gizmos
+            _boxCollider.bounds.size.z);
+
+        var offsetZ = new Vector3(0, 0, 0.02f);
+        var offsetX = new Vector3(0.02f, 0, 0);
 
         if (direction == Vector3.forward || direction == Vector3.back)
         {
-            halfExtents = new Vector3(_boxCollider.bounds.extents.x, _boxCollider.bounds.extents.y, 0.05f); // Fino en Z
-            localOffset = (direction == Vector3.forward ? transform.forward : -transform.forward) *
-                          _boxCollider.bounds.extents.z;
+            boxSize.z = 0.025f; // Pequeño valor en Z para evitar colisiones innecesarias
+            localOffset = direction == Vector3.forward ?
+                transform.forward * _boxCollider.bounds.extents.x + offsetZ :
+                -transform.forward * _boxCollider.bounds.extents.x - offsetZ;
         }
         else if (direction == Vector3.right || direction == Vector3.left)
         {
-            halfExtents = new Vector3(0.05f, _boxCollider.bounds.extents.y, _boxCollider.bounds.extents.z); // Fino en X
-            localOffset = (direction == Vector3.right ? transform.right : -transform.right) *
-                          _boxCollider.bounds.extents.x;
+            boxSize.x = 0.025f; // Pequeño valor en X para evitar colisiones innecesarias
+            localOffset = direction == Vector3.right ?
+                transform.right * _boxCollider.bounds.extents.x + offsetX
+                : -transform.right * _boxCollider.bounds.extents.x - offsetX;
         }
 
         Vector3 origin = center + localOffset;
 
-        int layerMask = LayerMask.GetMask("Wall", "MovableBox", "Collectible");
+        // Definimos las capas con las que el BoxCast interactuará
+        int layerMask = LayerMask.GetMask("Wall", "Box", "Collectible");
 
-        float boxCastDistance = 0.05f;
-        RaycastHit hit;
-        bool isHit = Physics.BoxCast(origin, halfExtents, direction, out hit, transform.rotation, boxCastDistance,
-            layerMask);
+        // Usamos OverlapBox para detectar objetos en el área definida por boxSize
+        Collider[] hits = Physics.OverlapBox(origin, boxSize * 0.5f, transform.rotation, layerMask);
 
-        return isHit; // Retorna si colisiona con un objeto
+        // Si hay colisiones, retornamos verdadero
+        bool isHit = hits.Length > 0; 
+
+        return isHit;
     }
-
-    private Vector3[] GetFaceCorners(Vector3 center, Vector3 extents, Vector3 direction)
-    {
-        var offset = 0.05f;
-
-        if (direction == transform.forward)
-        {
-            return new[]
-            {
-                center + transform.TransformDirection(new Vector3(extents.x, -extents.y + offset, extents.z)),
-                center + transform.TransformDirection(new Vector3(-extents.x, -extents.y + offset, extents.z)),
-                center + transform.TransformDirection(new Vector3(extents.x, extents.y - offset, extents.z)),
-                center + transform.TransformDirection(new Vector3(-extents.x, extents.y - offset, extents.z))
-            };
-        }
-
-        if (direction == -transform.forward)
-        {
-            return new[]
-            {
-                center + transform.TransformDirection(new Vector3(extents.x, -extents.y + offset, -extents.z)),
-                center + transform.TransformDirection(new Vector3(-extents.x, -extents.y + offset, -extents.z)),
-                center + transform.TransformDirection(new Vector3(extents.x, extents.y - offset, -extents.z)),
-                center + transform.TransformDirection(new Vector3(-extents.x, extents.y - offset, -extents.z))
-            };
-        }
-
-        if (direction == transform.right)
-        {
-            return new[]
-            {
-                center + transform.TransformDirection(new Vector3(extents.x, -extents.y + offset, -extents.z)),
-                center + transform.TransformDirection(new Vector3(extents.x, -extents.y + offset, extents.z)),
-                center + transform.TransformDirection(new Vector3(extents.x, extents.y - offset, -extents.z)),
-                center + transform.TransformDirection(new Vector3(extents.x, extents.y - offset, extents.z))
-            };
-        }
-
-        if (direction == -transform.right)
-        {
-            return new[]
-            {
-                center + transform.TransformDirection(new Vector3(-extents.x, -extents.y + offset, -extents.z)),
-                center + transform.TransformDirection(new Vector3(-extents.x, -extents.y + offset, extents.z)),
-                center + transform.TransformDirection(new Vector3(-extents.x, extents.y - offset, -extents.z)),
-                center + transform.TransformDirection(new Vector3(-extents.x, extents.y - offset, extents.z))
-            };
-        }
-
-        return new Vector3[0]; //dirección no valida
-    }
-
+    
     public bool BoxInFloor()
     {
         // Obtener las esquinas superiores de la caja
@@ -349,39 +310,46 @@ public class PushPullObject : MonoBehaviour
     {
         Vector3 center = _boxCollider.bounds.center;
         Vector3 localOffset = Vector3.zero;
-        Vector3 halfExtents = Vector3.one;
+
+        // Obtenemos el tamaño completo del BoxCollider usando bounds.size y no los extents
+        Vector3 boxSize = new Vector3(
+            _boxCollider.bounds.size.x,
+            _boxCollider.bounds.size.y * 0.9f,
+            _boxCollider.bounds.size.z);
+
+        var offsetZ = new Vector3(0, 0, 0.02f);
+        var offsetX = new Vector3(0.02f, 0, 0);
+
         if (direction == Vector3.forward || direction == Vector3.back)
         {
-            halfExtents = new Vector3(_boxCollider.bounds.extents.x, _boxCollider.bounds.extents.y, 0.05f); // Fino en Z
-            localOffset = (direction == Vector3.forward ? transform.forward : -transform.forward) *
-                          _boxCollider.bounds.extents.z;
+            boxSize.z = 0.025f; // Pequeño valor en Z para evitar colisiones innecesarias
+            localOffset = direction == Vector3.forward ?
+                transform.forward * _boxCollider.bounds.extents.x + offsetZ :
+                -transform.forward * _boxCollider.bounds.extents.x - offsetZ;
         }
         else if (direction == Vector3.right || direction == Vector3.left)
         {
-            halfExtents = new Vector3(0.05f, _boxCollider.bounds.extents.y, _boxCollider.bounds.extents.z); // Fino en X
-            localOffset = (direction == Vector3.right ? transform.right : -transform.right) *
-                          _boxCollider.bounds.extents.x;
+            boxSize.x = 0.025f; // Pequeño valor en X para evitar colisiones innecesarias
+            localOffset = direction == Vector3.right ?
+                transform.right * _boxCollider.bounds.extents.x + offsetX
+                : -transform.right * _boxCollider.bounds.extents.x - offsetX;
         }
 
         Vector3 origin = center + localOffset;
 
-        int layerMask = LayerMask.GetMask("Wall", "MovableBox", "Collectible");
+        int layerMask = LayerMask.GetMask("Wall", "Box", "Collectible");
 
-        RaycastHit hit;
-        float boxCastDistance = 1f;
-        bool isHit = Physics.BoxCast(origin,
-            halfExtents, direction,
-            out hit, transform.rotation,
-            0.05f, layerMask);
+        // Usamos OverlapBox para detectar objetos en el área definida por boxSize
+        Collider[] hits = Physics.OverlapBox(origin, boxSize * 0.5f, transform.rotation, layerMask);
 
-        if (isHit)
-            Gizmos.color = Color.red;
-        else
-            Gizmos.color = Color.green;
+        bool isHit = hits.Length > 0; // Si hay colisiones, isHit será verdadero
 
+        // Cambiamos el color del Gizmo dependiendo de si hubo colisión o no
+        Gizmos.color = isHit ? Color.red : Color.green;
+
+        // Dibujamos el Gizmo usando el tamaño correcto de la caja
         Gizmos.matrix = Matrix4x4.TRS(origin, transform.rotation, Vector3.one);
-        // Dibujo la caja un poco mas pequeña para evitar errores
-        Gizmos.DrawWireCube(Vector3.zero, halfExtents * 1.9f);
+        Gizmos.DrawWireCube(Vector3.zero, boxSize);
     }
 
     private void OnCollisionEnter(Collision other)
