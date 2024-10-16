@@ -22,7 +22,6 @@ public class ModelPlayer
     //PUSH/PULL OBJECT
     private Transform _currentBox;
     private Transform _currentBoxSide;
-    public bool isPulling;
     private Vector3 _dirToPush;
     private Vector3 _dirToPull;
 

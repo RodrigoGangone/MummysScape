@@ -22,16 +22,6 @@ public class AnimationEventPlayer : MonoBehaviour
         _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
     
-    public void EVENT_ANIM_PULL()
-    {
-        _player._modelPlayer.isPulling = true;
-    }
-
-    public void EVENT_ANIM_DRAW_PULL()
-    {
-        _player._viewPlayer.drawPull = true;
-    }
-    
     public void EVENT_ANIM_WIN()
     {
         _uiManager.Win();

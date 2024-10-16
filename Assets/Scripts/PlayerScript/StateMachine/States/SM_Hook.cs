@@ -1,8 +1,7 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using static Utils;
 
 public class SM_Hook : State
 {
@@ -10,7 +9,6 @@ public class SM_Hook : State
 
     private bool _isBandageDraw;
     private float _time;
-    private const string RIGHT_THRESHOLD = "_rightThreshold";
 
     private Coroutine _drawBandageCoroutine;
 
@@ -27,7 +25,7 @@ public class SM_Hook : State
 
         _player._viewPlayer.StateRigBuilder(true);
         _player._viewPlayer.PLAY_ANIM("Hook", true);
-        _player._viewPlayer.bandageHook.enabled = true;
+        _player._viewPlayer.bandageLineRenderer.enabled = true;
 
         _drawBandageCoroutine = _player.StartCoroutine(Bandage());
     }
@@ -38,7 +36,7 @@ public class SM_Hook : State
 
         _time = 0;
 
-        _player._viewPlayer.bandageHook.enabled = false;
+        _player._viewPlayer.bandageLineRenderer.enabled = false;
         _player._viewPlayer.rightHand.data.target = null;
         _player._viewPlayer.PLAY_ANIM("Hook", false);
         _player._viewPlayer.StateRigBuilder(false);
