@@ -41,6 +41,8 @@ public class Player : MonoBehaviour
     [SerializeField] public Transform handTarget;
     [SerializeField] private Transform _shootTarget;
 
+    [Header("TACKLE")] [SerializeField] public SphereCollider tackle;
+    
     [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
     [SerializeField] public Mesh[] _Meshes;
 
@@ -156,6 +158,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Drop, new SM_Drop(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Push, new SM_Push(this));
         _stateMachinePlayer.AddState(PlayerState.Pull, new SM_Pull(this));
+        _stateMachinePlayer.AddState(PlayerState.Tackle, new SM_Tackle(_modelPlayer, _viewPlayer));
         //_stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Win, new SM_Win(this));
         _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead(_modelPlayer, _viewPlayer));
@@ -498,6 +501,7 @@ public enum PlayerState
     Fall,
     Push,
     Pull,
+    Tackle,
     Drop,
     Damage,
     Win,

@@ -14,6 +14,10 @@ public class ModelPlayer
     //DROP
     public Vector3 dropPosition;
 
+    //TACKLE
+
+    public SphereCollider tackleSphereCollider;
+
     //HOOK
     public DetectionHook detectionBeetle;
     public SpringJoint springJoint;
@@ -38,6 +42,7 @@ public class ModelPlayer
 
         springJoint = _player._springJoint;
         detectionBeetle = _player._detectionBeetle;
+        tackleSphereCollider = _player.tackle;
     }
 
     public void CountBandage(int sum)
@@ -387,7 +392,7 @@ public class ModelPlayer
         _dirToPull = Vector3.zero;
         return false;
     }
-    
+
     public void Hook()
     {
         if (!hookBeetle.gameObject.CompareTag("HookJump") || hookBeetle == null) return;
@@ -398,6 +403,11 @@ public class ModelPlayer
         springJoint.minDistance = 2f;
         springJoint.spring = 100;
         springJoint.damper = 12;
+    }
+
+    public void Tackle()
+    {
+        tackleSphereCollider.enabled = true;
     }
 
     private void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
