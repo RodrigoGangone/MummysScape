@@ -14,6 +14,7 @@ public static class Utils
         public const string STATE_PULL = "SM_Pull";
         public const string STATE_FALL = "SM_Fall";
         public const string STATE_HOOK = "SM_Hook";
+        public const string STATE_SMASH = "SM_Smash";
         public const string STATE_WIN = "SM_Win";
         public const string STATE_DEAD = "SM_Dead";
         public const string STATE_DAMAGE = "SM_Damage";

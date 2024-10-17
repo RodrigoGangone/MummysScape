@@ -433,6 +433,7 @@ public class ModelPlayer
             case 0:
                 //Head size
                 _player._viewPlayer.ChangeMesh(_player._Meshes[(int)PlayerSize.Head]);
+                _player._anim.SetLayerWeight(0, 0);
                 _player._anim.SetLayerWeight(1, 0);
                 _player._anim.SetLayerWeight(2, 1);
                 _player.CurrentPlayerSize = PlayerSize.Head;

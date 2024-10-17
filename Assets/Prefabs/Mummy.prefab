@@ -26,14 +26,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 773040174386095456}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.055, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7690933721830388183}
   - {fileID: 7785350736153207974}
-  m_Father: {fileID: 3690119713168576098}
+  m_Father: {fileID: 5454077410002923607}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!198 &5786886528022462831
 ParticleSystem:
@@ -9755,7 +9755,6 @@ Transform:
   - {fileID: 6041509463655796778}
   - {fileID: 9111962799348349680}
   - {fileID: 5454077410002923607}
-  - {fileID: 5804760886823582111}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6690243958329030600
@@ -9848,6 +9847,7 @@ MonoBehaviour:
   - {fileID: 0}
   _puffFX: {fileID: 6877499864803373640}
   _walkFX: {fileID: 833570744582829568}
+  tackleFX: {fileID: 5786886528022462831}
   rightHand: {fileID: 8959279123585388697}
   rigBuilder: {fileID: 7271772858043175343}
   boxHalfExtents: {x: 0.45, y: 0.9, z: 0.45}
@@ -10248,7 +10248,7 @@ Light:
   m_BounceIntensity: 0.001
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 9.1835e-41, y: NaN, z: 9.78048e-39, w: 4.2906376e-36}
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 1.5e-44, w: 3.361691e-35}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -15205,6 +15205,7 @@ Transform:
   - {fileID: 8468364427298288558}
   - {fileID: 7925394937269159635}
   - {fileID: 8384673853804536916}
+  - {fileID: 5804760886823582111}
   m_Father: {fileID: 3690119713168576098}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5919062846150955367
