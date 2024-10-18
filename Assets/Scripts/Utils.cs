@@ -40,5 +40,15 @@ public static class Utils
     public const int FAKE_LOADING_TIME_SCENE = 3; //segs fake precarga del lvl seleccionado
 
     #endregion
+    
+    #region ShadersVar
+
+    #region Bandage
+
+    public const string RIGHT_THRESHOLD = "_rightThreshold";
+
+    #endregion
+
+    #endregion
 
 }

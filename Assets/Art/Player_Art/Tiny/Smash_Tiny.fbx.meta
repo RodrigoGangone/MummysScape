@@ -62,15 +62,22 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.7128309
-        functionName: EVENT_ANIM_HIT_TACKLE
+      - time: 0.83151776
+        functionName: EVENT_ANIM_HIT_SMASH
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 2d6e7ff75cdb63b45826f094fdda7433, type: 3}
+        floatParameter: 0
+        intParameter: 1
+        messageOptions: 0
+      - time: 0.9211823
+        functionName: EVENT_ANIM_HIT_SMASH
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 2d6e7ff75cdb63b45826f094fdda7433, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
       - time: 1
-        functionName: EVENT_ANIM_FINISH_HIT_TACKLE
+        functionName: EVENT_ANIM_GO_IDLE
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 2d6e7ff75cdb63b45826f094fdda7433, type: 3}
         floatParameter: 0

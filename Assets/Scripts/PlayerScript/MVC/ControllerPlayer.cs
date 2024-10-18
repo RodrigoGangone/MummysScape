@@ -7,7 +7,9 @@ using Debug = UnityEngine.Debug;
 
 public class ControllerPlayer
 {
+    private Player _player;
     private ModelPlayer _model;
+    private bool isSmashAnimation;
 
     private float _rotationInput;
     private float _moveInput;

@@ -20,8 +20,6 @@ public class SM_Smash : State
 
     public override void OnExit()
     {
-        _model.tackleSphereCollider.enabled = false;
-        
         _view.PLAY_ANIM("Smash", false);
     }
 
