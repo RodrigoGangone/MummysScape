@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 public class LevelManager : MonoBehaviour
 {
@@ -16,6 +17,8 @@ public class LevelManager : MonoBehaviour
     private bool _isWin;
     private bool _isLose;
     private bool _canPause = true;
+
+    internal bool isBusy; //En caso de que el craneo este usando alguna accion, evito que muera por tiempo
 
     [SerializeField] private List<Collectible> _collectibles = new();
 
@@ -42,14 +45,29 @@ public class LevelManager : MonoBehaviour
 
         ValidateCollectibleInScene();
 
-        OnPlayerWin += Win;
-        OnPlayerDeath += Lose;
+        OnPlayerWin += () =>
+        {
+            Win();
+            StopTimerDeath();
+        };
 
-        OnPlaying += ActivePlayer;
-        OnPlaying += VerifyPause;
+        OnPlayerDeath += () =>
+        {
+            Lose();
+            StopTimerDeath();
+        };
 
-        OnPause += DesactivePlayer;
-        OnPause += VerifyPause;
+        OnPlaying += () =>
+        {
+            ActivePlayer();
+            VerifyPause();
+        };
+
+        OnPause += () =>
+        {
+            DesActivePlayer();
+            VerifyPause();
+        };
 
         AddCollectible += CollectibleCount;
 
@@ -66,7 +84,7 @@ public class LevelManager : MonoBehaviour
                 OnPlaying?.Invoke();
         }
 
-        if (!_isWin && !_isLose)
+        if (!_isWin && !_isLose && !isBusy)
         {
             if (_player.CurrentPlayerSize == PlayerSize.Head && _deathTimerCoroutine == null)
             {
@@ -76,7 +94,7 @@ public class LevelManager : MonoBehaviour
             {
                 StopCoroutine(_deathTimerCoroutine);
                 _deathTimerCoroutine = null;
-    
+
                 StartCoroutine(ResetDeathTimer());
             }
         }
@@ -113,7 +131,7 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    private IEnumerator DeathTimerCoroutine()
+    public IEnumerator DeathTimerCoroutine()
     {
         while (_currentTimeDeath > 0)
         {
@@ -135,7 +153,7 @@ public class LevelManager : MonoBehaviour
         _currentTimeDeath = _maxTimeDeath;
     }
 
-    public void DesactivePlayer()
+    public void DesActivePlayer()
     {
         _player.enabled = false;
         _player._rigidbody.isKinematic = true;
@@ -159,16 +177,18 @@ public class LevelManager : MonoBehaviour
         _collectibleNumbers.Add(collectible);
     }
 
+    public void StopTimerDeath()
+    {
+        if (_deathTimerCoroutine == null) return;
+
+        StopCoroutine(_deathTimerCoroutine);
+        _deathTimerCoroutine = null;
+    }
+
     private void Win()
     {
         _isWin = true;
-        
-        if (_deathTimerCoroutine != null)
-        {
-            StopCoroutine(_deathTimerCoroutine);
-            _deathTimerCoroutine = null;
-        }
-        
+
         LevelManagerJson.AddNewLevel(SceneManager.GetActiveScene().buildIndex,
             _collectibleNumbers,
             0f);
@@ -181,12 +201,7 @@ public class LevelManager : MonoBehaviour
     private void Lose()
     {
         _isLose = true;
-        
-        if (_deathTimerCoroutine != null) {
-            StopCoroutine(_deathTimerCoroutine);
-            _deathTimerCoroutine = null;
-        }
-        
+
         _canPause = false;
     }
 }

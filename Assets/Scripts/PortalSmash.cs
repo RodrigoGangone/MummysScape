@@ -5,7 +5,6 @@ using UnityEngine;
 public class PortalSmash : MonoBehaviour
 {
     private Player player; // Referencia al jugador
-    private Coroutine banishedPlayer;
     private LevelManager levelManager;
 
     private bool _isActive;
@@ -19,7 +18,9 @@ public class PortalSmash : MonoBehaviour
     {
         levelManager = FindObjectOfType<LevelManager>();
 
-        OnPlayerTeleportOn += levelManager.DesactivePlayer;
+        OnPlayerTeleportOn += levelManager.DesActivePlayer;
+        OnPlayerTeleportOn += levelManager.StopTimerDeath;
+
         OnPlayerTeleportOff += levelManager.ActivePlayer;
     }
 
@@ -41,6 +42,8 @@ public class PortalSmash : MonoBehaviour
     // Corutina principal para manejar el teletransporte
     private IEnumerator HandleSmashCoroutine(Player player)
     {
+        levelManager.isBusy = true;
+
         // Desactivar el jugador y realizar acciones iniciales
         OnPlayerTeleportOn.Invoke();
 
@@ -48,31 +51,21 @@ public class PortalSmash : MonoBehaviour
         yield return StartCoroutine(MovePlayerToTeleport(player));
 
         // Fase 2: Desaparecer al jugador (transición de material inicial)
-        yield return banishedPlayer = StartCoroutine(HandleMaterial(true));
+        yield return StartCoroutine(player._viewPlayer.MaterialTransitionCoroutine(true));
 
         // Fase 3: Teletransportar al jugador
-        TeleportPlayer();
+        player.transform.position = teleportDestination.position + new Vector3(0, 1, 0);
+        //TeleportPlayer();
 
         // Fase 4: Aparecer al jugador en el destino (transición de material final)
-        yield return banishedPlayer = StartCoroutine(HandleMaterial(false));
+        yield return StartCoroutine(player._viewPlayer.MaterialTransitionCoroutine(false));
 
         // Reactivar el jugador después de la teletransportación
         OnPlayerTeleportOff.Invoke();
 
+        levelManager.isBusy = false;
+
         _isActive = false; // Permitir nuevas activaciones del portal
-    }
-
-    // Manejar la transición del material (desaparecer o aparecer)
-    private IEnumerator HandleMaterial(bool fadeOut)
-    {
-        // Ejecutar la transición de material según el estado (desaparecer o aparecer)
-        yield return StartCoroutine(player._viewPlayer.MaterialTransitionCoroutine(fadeOut));
-
-        // Esperar 1 segundo adicional si se está desapareciendo, para asegurar la transición completa
-        if (fadeOut)
-        {
-            yield return new WaitForSeconds(1f);
-        }
     }
 
     // Mover al jugador hacia el centro del portal
@@ -98,15 +91,14 @@ public class PortalSmash : MonoBehaviour
     }
 
     // Teletransportar al jugador al destino
-    private void TeleportPlayer()
-    {
-        if (teleportDestination != null && player != null)
-        {
-            // Mover al jugador al destino del teletransporte
-            player.transform.position = teleportDestination.position + new Vector3(0, 1, 0);
-        }
-    }
-}
+    //private void TeleportPlayer()
+    //{
+    //    if (teleportDestination != null && player != null)
+    //    {
+    //        // Mover al jugador al destino del teletransporte
+    //        player.transform.position = teleportDestination.position + new Vector3(0, 1, 0);
+    //    }
+    //}
 
 //private void TriggerTeleport()
 //{
@@ -120,3 +112,4 @@ public class PortalSmash : MonoBehaviour
 //{
 //    OnPlayerTeleport -= TeleportPlayer;
 //}
+}
