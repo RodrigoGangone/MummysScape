@@ -45,10 +45,10 @@ public class LevelManager : MonoBehaviour
         OnPlayerWin += Win;
         OnPlayerDeath += Lose;
 
-        OnPlaying += HandlePlay;
+        OnPlaying += ActivePlayer;
         OnPlaying += VerifyPause;
 
-        OnPause += HandlePause;
+        OnPause += DesactivePlayer;
         OnPause += VerifyPause;
 
         AddCollectible += CollectibleCount;
@@ -135,13 +135,13 @@ public class LevelManager : MonoBehaviour
         _currentTimeDeath = _maxTimeDeath;
     }
 
-    private void HandlePause()
+    public void DesactivePlayer()
     {
         _player.enabled = false;
         _player._rigidbody.isKinematic = true;
     }
 
-    private void HandlePlay()
+    public void ActivePlayer()
     {
         _player._rigidbody.isKinematic = false;
         _player.enabled = true;
