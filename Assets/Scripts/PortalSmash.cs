@@ -15,7 +15,7 @@ public class PortalSmash : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerSmash"))
+        if (other.gameObject.CompareTag("Smash"))
         {
             player = other.gameObject.GetComponentInParent<Player>();
 

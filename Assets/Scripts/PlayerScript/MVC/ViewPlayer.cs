@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -165,4 +166,29 @@ public class ViewPlayer
 
         return null;
     }
+
+    /*public IEnumerator Disappear()
+    {
+        var materialChanged = false;
+        
+        while (!materialChanged)
+        {
+            float elapsedTime = Time.timeSinceLevelLoad - _startTime;
+            float t1 = Mathf.Clamp01(elapsedTime / _materialTransitionDuration);
+            float body = Mathf.Lerp(1, -0.5f, t1);
+
+            _player._viewPlayer.SetValueMaterial(body, 1);
+
+            if (body == -0.5f)
+            {
+                float t2 = Mathf.Clamp01((elapsedTime - _materialTransitionDuration) / _materialTransitionDuration);
+                _player._viewPlayer.SetValueMaterial(-0.5f, Mathf.Lerp(1, -0.5f, t2));
+
+                if (t2 >= 1f)
+                {
+                    materialChanged = true;
+                }
+            }
+        }
+    }*/
 }

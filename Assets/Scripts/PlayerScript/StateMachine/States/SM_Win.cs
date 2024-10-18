@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class SM_Win : State
@@ -6,9 +7,12 @@ public class SM_Win : State
     private float _materialTransitionDuration = 2f; // Duración en segundos para cambiar el material
     private float _rotationSpeed = 90f; // Velocidad de rotación en grados por segundo
 
-    private float _startTime;
     private bool _materialChanged;
     private bool _rotationStarted;
+
+    private float _elapsedTime;
+    
+    private Coroutine _disappearCoroutine;
 
     public SM_Win(Player player)
     {
@@ -17,40 +21,21 @@ public class SM_Win : State
 
     public override void OnEnter()
     {
-        _startTime = Time.timeSinceLevelLoad;
-        _materialChanged = false;
-        _rotationStarted = false;
-
-        // Ejecutar el trigger de animación "Win"
         _player._viewPlayer.PLAY_ANIM_TRIGGER("Win");
+        
+        _materialChanged = false;
+        _rotationStarted = false;   
+        
+        _disappearCoroutine = _player.StartCoroutine(MaterialTransitionCoroutine());
     }
 
     public override void OnExit()
     {
+        _player.StopCoroutine(_disappearCoroutine);
     }
 
     public override void OnUpdate()
     {
-        if (!_materialChanged)
-        {
-            float elapsedTime = Time.timeSinceLevelLoad - _startTime;
-            float t1 = Mathf.Clamp01(elapsedTime / _materialTransitionDuration);
-            float body = Mathf.Lerp(1, -0.5f, t1);
-
-            _player._viewPlayer.SetValueMaterial(body, 1);
-
-            if (body == -0.5f)
-            {
-                float t2 = Mathf.Clamp01((elapsedTime - _materialTransitionDuration) / _materialTransitionDuration);
-                _player._viewPlayer.SetValueMaterial(-0.5f, Mathf.Lerp(1, -0.5f, t2));
-
-                if (t2 >= 1f)
-                {
-                    _materialChanged = true;
-                }
-            }
-        }
-
         // Rotar progresivamente hacia la cámara
         if (!_rotationStarted)
         {
@@ -77,6 +62,30 @@ public class SM_Win : State
         if (Quaternion.Angle(_player.transform.rotation, targetRotation) < 0.1f)
         {
             _rotationStarted = true;
+        }
+    }
+    
+    private IEnumerator MaterialTransitionCoroutine()
+    {
+        while (!_materialChanged)
+        {
+            _elapsedTime += Time.deltaTime;
+            float t1 = Mathf.Clamp01(_elapsedTime / _materialTransitionDuration);
+            float body = Mathf.Lerp(1, -0.5f, t1);
+
+            _player._viewPlayer.SetValueMaterial(body, 1);
+
+            if (body == -0.5f)
+            {
+                float t2 = Mathf.Clamp01((_elapsedTime - _materialTransitionDuration) / _materialTransitionDuration);
+                _player._viewPlayer.SetValueMaterial(-0.5f, Mathf.Lerp(1, -0.5f, t2));
+
+                if (t2 >= 1f)
+                {
+                    _materialChanged = true;
+                }
+            }
+            yield return null;
         }
     }
 }
