@@ -26,7 +26,7 @@ public class SM_Win : State
         _materialChanged = false;
         _rotationStarted = false;   
         
-        _disappearCoroutine = _player.StartCoroutine(MaterialTransitionCoroutine());
+        _disappearCoroutine = _player.StartCoroutine(HandleMaterialTransition());
     }
 
     public override void OnExit()
@@ -65,27 +65,15 @@ public class SM_Win : State
         }
     }
     
-    private IEnumerator MaterialTransitionCoroutine()
+    private IEnumerator HandleMaterialTransition()
     {
-        while (!_materialChanged)
-        {
-            _elapsedTime += Time.deltaTime;
-            float t1 = Mathf.Clamp01(_elapsedTime / _materialTransitionDuration);
-            float body = Mathf.Lerp(1, -0.5f, t1);
+        // Desvanecer al jugador (fadeOut = true)
+        yield return _player.StartCoroutine(_player._viewPlayer.MaterialTransitionCoroutine(true));
 
-            _player._viewPlayer.SetValueMaterial(body, 1);
+        // Esperar un breve momento si lo deseas
+        yield return new WaitForSeconds(2f);
 
-            if (body == -0.5f)
-            {
-                float t2 = Mathf.Clamp01((_elapsedTime - _materialTransitionDuration) / _materialTransitionDuration);
-                _player._viewPlayer.SetValueMaterial(-0.5f, Mathf.Lerp(1, -0.5f, t2));
-
-                if (t2 >= 1f)
-                {
-                    _materialChanged = true;
-                }
-            }
-            yield return null;
-        }
+        // Aparecer al jugador (fadeOut = false)
+        yield return _player.StartCoroutine(_player._viewPlayer.MaterialTransitionCoroutine(false));
     }
 }

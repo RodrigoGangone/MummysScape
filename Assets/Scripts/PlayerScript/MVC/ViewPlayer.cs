@@ -20,6 +20,10 @@ public class ViewPlayer
     public RigBuilder rigBuilder;
     public TwoBoneIKConstraint rightHand;
     
+    //Vars para disappear
+    private float _materialTransitionDuration = 2f; // Duracion en segundos para cambiar el material
+    private bool _materialChanged;
+    private float _elapsedTime;
     
     public ViewPlayer(Player p, SkinnedMeshRenderer body, SkinnedMeshRenderer head, MeshRenderer fire)
     {
@@ -43,7 +47,7 @@ public class ViewPlayer
         _headMat = headSkinnedMesh.material;
     }
 
-    public void SetValueMaterial(float valueBody, float valueHead)
+    private void SetValueMaterial(float valueBody, float valueHead)
     {
         _bodyMat.SetFloat("_CutoffHeight", valueBody);
         _headMat.SetFloat("_CutoffHeight", valueHead);
@@ -167,28 +171,52 @@ public class ViewPlayer
         return null;
     }
 
-    /*public IEnumerator Disappear()
+    internal IEnumerator MaterialTransitionCoroutine(bool fadeOut)
     {
-        var materialChanged = false;
-        
-        while (!materialChanged)
+        _elapsedTime = 0f; // Reiniciar el tiempo transcurrido al comenzar
+        _materialChanged = false; // Reiniciar el estado de materialChanged al empezar
+
+        // Valores iniciales y finales
+        float bodyStartValue = fadeOut ? 1f : -0.5f; // Iniciar en 1 para desvanecer, -0.5 para aparecer
+        float bodyEndValue = fadeOut ? -0.5f : 1f; // Finalizar en -0.5 para desvanecer, 1 para aparecer
+
+        // Fase 1: Desvanecer el cuerpo
+        while (_elapsedTime < _materialTransitionDuration)
         {
-            float elapsedTime = Time.timeSinceLevelLoad - _startTime;
-            float t1 = Mathf.Clamp01(elapsedTime / _materialTransitionDuration);
-            float body = Mathf.Lerp(1, -0.5f, t1);
+            _elapsedTime += Time.deltaTime; // Actualizar el tiempo transcurrido
+            float t = Mathf.Clamp01(_elapsedTime / _materialTransitionDuration); // Normalizar el tiempo
 
-            _player._viewPlayer.SetValueMaterial(body, 1);
+            // Interpolar el cuerpo
+            float bodyValue = Mathf.Lerp(bodyStartValue, bodyEndValue, t);
+            _player._viewPlayer.SetValueMaterial(bodyValue, bodyValue); // Mantener el mismo valor para la cabeza
 
-            if (body == -0.5f)
-            {
-                float t2 = Mathf.Clamp01((elapsedTime - _materialTransitionDuration) / _materialTransitionDuration);
-                _player._viewPlayer.SetValueMaterial(-0.5f, Mathf.Lerp(1, -0.5f, t2));
-
-                if (t2 >= 1f)
-                {
-                    materialChanged = true;
-                }
-            }
+            yield return null; // Esperar al siguiente frame
         }
-    }*/
+
+        // Asegurarse de establecer el valor final del cuerpo
+        _player._viewPlayer.SetValueMaterial(bodyEndValue, bodyEndValue);
+
+        // Reiniciar el tiempo para la segunda fase
+        _elapsedTime = 0f; 
+
+        // Fase 2: Desvanecer la cabeza
+        float headStartValue = fadeOut ? 1f : -0.5f; // Iniciar en 1 para desvanecer, -0.5 para aparecer
+        float headEndValue = fadeOut ? -0.5f : 1f; // Finalizar en -0.5 para desvanecer, 1 para aparecer
+
+        while (_elapsedTime < _materialTransitionDuration)
+        {
+            _elapsedTime += Time.deltaTime; // Actualizar el tiempo transcurrido
+            float t = Mathf.Clamp01(_elapsedTime / _materialTransitionDuration); // Normalizar el tiempo
+
+            // Interpolar la cabeza
+            float headValue = Mathf.Lerp(headStartValue, headEndValue, t);
+            _player._viewPlayer.SetValueMaterial(bodyEndValue, headValue); // Mantener el valor final del cuerpo
+
+            yield return null; // Esperar al siguiente frame
+        }
+
+        // Asegurarse de establecer el valor final de la cabeza
+        _player._viewPlayer.SetValueMaterial(bodyEndValue, headEndValue);
+        _materialChanged = true; // Marcamos que la transición ha terminado
+    }
 }
