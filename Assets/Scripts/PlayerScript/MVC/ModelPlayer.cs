@@ -226,9 +226,7 @@ public class ModelPlayer
 
         Vector3 directionToButton = (new Vector3(buttonPosition.x, _player.transform.position.y, buttonPosition.z)
                                      - _player.transform.position).normalized;
-
-        //Vector3 directionToButton = (buttonPosition - _player.transform.position).normalized;
-
+        
         Quaternion targetRotation = Quaternion.LookRotation(directionToButton);
 
         float duration = 0.5f;
@@ -277,7 +275,7 @@ public class ModelPlayer
         {
             RaycastHit hit;
 
-            if (Physics.Raycast(origin, direction, out hit, 12f))
+            if (Physics.Raycast(origin, direction, out hit, 15f))
             {
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
                 {

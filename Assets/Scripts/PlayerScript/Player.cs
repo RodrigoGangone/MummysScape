@@ -289,7 +289,7 @@ public class Player : MonoBehaviour
             {
                 RaycastHit hit;
 
-                if (Physics.Raycast(origin, direction, out hit, 12))
+                if (Physics.Raycast(origin, direction, out hit, 15))
                 {
                     Gizmos.color = Color.magenta;
                     Gizmos.DrawLine(origin, hit.point);
