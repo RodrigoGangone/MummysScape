@@ -21,7 +21,7 @@ public class ViewPlayer
     public TwoBoneIKConstraint rightHand;
 
     //Vars para disappear
-    private float _materialTransitionDuration = 0.5f; // Duracion en segundos para cambiar el material
+    private float _materialTransitionDuration = 1.5f; // Duracion en segundos para cambiar el material
     private bool _materialChanged;
     private float _elapsedTime;
 

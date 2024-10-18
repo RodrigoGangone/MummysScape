@@ -293,7 +293,7 @@ public class UIManager : MonoBehaviour
     {
         Color color = fadeImage.color;
         float alpha = 0f;
-        float duration = 3f;
+        float duration = 1.5f;
         float time = 0f;
 
         while (time < duration)
@@ -314,7 +314,7 @@ public class UIManager : MonoBehaviour
     {
         Color color = fadeImage.color;
         float alpha = 1f;
-        float duration = 3f;
+        float duration = 1.5f;
         float time = 0f;
 
         while (time < duration)
