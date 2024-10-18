@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static Utils;
+using Debug = UnityEngine.Debug;
 
 public class ControllerPlayer
 {
@@ -25,6 +27,8 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
+        Debug.Log("STATE ACTUAL " + OnGetState.Invoke());
+
         if (CanWalkState())
         {
             OnStateChange(OnWalkingSand!.Invoke() ? PlayerState.WalkSand : PlayerState.Walk);
@@ -139,7 +143,6 @@ public class ControllerPlayer
                    STATE_IDLE => true,
                    STATE_WALK => true,
                    STATE_WALK_SAND => true,
-
                    _ => false
                };
     }
@@ -194,6 +197,8 @@ public class ControllerPlayer
                OnGetState?.Invoke() switch
                {
                    STATE_IDLE => true,
+                   STATE_WALK => true,
+                   STATE_WALK_SAND => true,
                    _ => false
                };
     }

@@ -52,7 +52,7 @@ ParticleSystem:
   emitterVelocityMode: 1
   looping: 0
   prewarm: 0
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -9847,7 +9847,7 @@ MonoBehaviour:
   - {fileID: 0}
   _puffFX: {fileID: 6877499864803373640}
   _walkFX: {fileID: 833570744582829568}
-  tackleFX: {fileID: 5786886528022462831}
+  smashFX: {fileID: 5786886528022462831}
   rightHand: {fileID: 8959279123585388697}
   rigBuilder: {fileID: 7271772858043175343}
   boxHalfExtents: {x: 0.45, y: 0.9, z: 0.45}
@@ -10395,7 +10395,7 @@ ParticleSystem:
   emitterVelocityMode: 1
   looping: 0
   prewarm: 0
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -10451,7 +10451,7 @@ ParticleSystem:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-  moveWithTransform: 0
+  moveWithTransform: 1
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
   randomSeed: 0
@@ -24962,7 +24962,7 @@ ParticleSystem:
   emitterVelocityMode: 1
   looping: 0
   prewarm: 0
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -29984,8 +29984,8 @@ GameObject:
   - component: {fileID: 6041509463655796778}
   - component: {fileID: 2378700563834382388}
   m_Layer: 0
-  m_Name: Tackle
-  m_TagString: Untagged
+  m_Name: Smash
+  m_TagString: Smash
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -30022,7 +30022,7 @@ SphereCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Radius: 1.5
   m_Center: {x: 0, y: 0, z: 0}

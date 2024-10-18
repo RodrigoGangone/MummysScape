@@ -12,19 +12,16 @@ public class SM_Smash : State
         _model = model;
         _view = view;
     }
-
-    //
     
     public override void OnEnter()
     {
         _view.PLAY_ANIM("Smash", true);
-        
-        
     }
 
     public override void OnExit()
     {
         _model.tackleSphereCollider.enabled = false;
+        
         _view.PLAY_ANIM("Smash", false);
     }
 

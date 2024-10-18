@@ -41,7 +41,13 @@ public class AnimationEventPlayer : MonoBehaviour
         }
 
         _player.smashFX.Play();
+        
         _player._modelPlayer.tackleSphereCollider.enabled = true;
+    }
+    
+    public void EVENT_ANIM_FINISH_HIT_TACKLE()
+    {
+        _player._modelPlayer.tackleSphereCollider.enabled = false;
     }
 
     public void EVENT_ANIM_WIN()
