@@ -14,13 +14,12 @@ public class ViewPlayer
     private Material _headMat;
     private Material _fireMat;
     public Material hookMaterial;
-    public LineRenderer bandageHook;
+    public LineRenderer bandageLineRenderer;
 
     public RigBuilder rigBuilder;
     public TwoBoneIKConstraint rightHand;
-
-    public bool drawPull;
-
+    
+    
     public ViewPlayer(Player p, SkinnedMeshRenderer body, SkinnedMeshRenderer head, MeshRenderer fire)
     {
         _player = p;
@@ -33,7 +32,7 @@ public class ViewPlayer
 
         hookMaterial = _player._bandage.material;
 
-        bandageHook = _player._bandage;
+        bandageLineRenderer = _player._bandage;
 
         bodySkinnedMesh = body;
         headSkinnedMesh = head;
@@ -90,8 +89,8 @@ public class ViewPlayer
 
     public void DrawBandage(Vector3 finishPos)
     {
-        bandageHook.SetPosition(0, _player.handTarget.transform.position);
-        bandageHook.SetPosition(1, finishPos);
+        bandageLineRenderer.SetPosition(0, _player.handTarget.transform.position);
+        bandageLineRenderer.SetPosition(1, finishPos);
     }
 
     public void StateRigBuilder(bool act)
