@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -18,8 +19,12 @@ public class ViewPlayer
 
     public RigBuilder rigBuilder;
     public TwoBoneIKConstraint rightHand;
-    
-    
+
+    //Vars para disappear
+    private float _materialTransitionDuration = 0.5f; // Duracion en segundos para cambiar el material
+    private bool _materialChanged;
+    private float _elapsedTime;
+
     public ViewPlayer(Player p, SkinnedMeshRenderer body, SkinnedMeshRenderer head, MeshRenderer fire)
     {
         _player = p;
@@ -42,7 +47,7 @@ public class ViewPlayer
         _headMat = headSkinnedMesh.material;
     }
 
-    public void SetValueMaterial(float valueBody, float valueHead)
+    private void SetValueMaterial(float valueBody, float valueHead)
     {
         _bodyMat.SetFloat("_CutoffHeight", valueBody);
         _headMat.SetFloat("_CutoffHeight", valueHead);
@@ -164,5 +169,54 @@ public class ViewPlayer
         }
 
         return null;
+    }
+
+    internal IEnumerator MaterialTransitionCoroutine(bool fadeOut)
+    {
+        _elapsedTime = 0f;
+        _materialChanged = false;
+
+        // Fase 1: Desvanecer el cuerpo
+        
+        var bodyStartValue = fadeOut ? 1f : -0.5f;
+        var bodyEndValue = fadeOut ? -0.5f : 1f;
+        
+        var headStartValue = fadeOut ? 1f : -0.5f;
+        var headEndValue = fadeOut ? -0.5f : 1f;
+        
+        _player._viewPlayer.SetValueMaterial(bodyStartValue,headStartValue);
+
+        while (_elapsedTime < _materialTransitionDuration)
+        {
+            _elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(_elapsedTime / _materialTransitionDuration);
+
+            // Interpolar sólo el cuerpo
+            float bodyValue = Mathf.Lerp(bodyStartValue, bodyEndValue, t);
+            _player._viewPlayer.SetValueMaterial(bodyValue, headStartValue); // Mantener la cabeza visible (1f) durante esta fase
+
+            yield return null;
+        }
+
+        _player._viewPlayer.SetValueMaterial(bodyEndValue, headStartValue);
+        
+        _elapsedTime = 0f;
+
+        // Fase 2: Desvanecer la cabeza
+        
+        while (_elapsedTime < _materialTransitionDuration)
+        {
+            _elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(_elapsedTime / _materialTransitionDuration);
+
+            // Interpolar sólo la cabeza
+            float headValue = Mathf.Lerp(headStartValue, headEndValue, t);
+            _player._viewPlayer.SetValueMaterial(bodyEndValue, headValue); // Mantener el cuerpo en su valor final
+
+            yield return null;
+        }
+
+        _player._viewPlayer.SetValueMaterial(bodyEndValue, headEndValue);
+        _materialChanged = true;
     }
 }

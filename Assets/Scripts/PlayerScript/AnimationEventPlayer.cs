@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,11 +18,27 @@ public class AnimationEventPlayer : MonoBehaviour
         _player._modelPlayer.Shoot();
     }
 
-    public void EVENT_ANIM_GO_IDLE() //Se usa en animacion : Shoot
+    public void EVENT_ANIM_GO_IDLE() //Se usa en animacion : Smash
     {
         _player._stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
-    
+
+    public void EVENT_ANIM_HIT_SMASH(int value)
+    {
+        var activeSmash = value == 1;
+        
+        if (activeSmash)
+        {
+            if (_player.smashFX.isPlaying)
+            {
+                _player.smashFX.Stop();
+                _player.smashFX.Clear();
+            }
+            _player.smashFX.Play();
+        }
+        _player._modelPlayer.tackleSphereCollider.enabled = activeSmash;
+    }
+
     public void EVENT_ANIM_WIN()
     {
         _uiManager.Win();

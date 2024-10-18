@@ -25,7 +25,8 @@ public class Player : MonoBehaviour
 
     private string _currentState;
 
-    [Header("ATRIBUTES")] [SerializeField] private float _life;
+    [Header("ATRIBUTES")]
+    [SerializeField] private float _life;
     [SerializeField] private float _speedOriginal = 4;
     [SerializeField] private float _speedRotationOriginal = 8;
     [SerializeField] private float _speed = 4;
@@ -34,18 +35,25 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speedHooked = 5;
     [SerializeField] private AnimationCurve _speedPull;
 
-    [Header("BANDAGE")] [SerializeField] public GameObject _prefabBandage;
+    [Header("BANDAGE")]
+    [SerializeField] public GameObject _prefabBandage;
     [SerializeField] private int _maxBandageStock = 2;
     [SerializeField] private int _minBandageStock = 0;
     [SerializeField] private int _currBandageStock = 2;
     [SerializeField] public Transform handTarget;
     [SerializeField] private Transform _shootTarget;
 
-    [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
+    [Header("TACKLE")]
+    [SerializeField] public SphereCollider tackle;
+
+    [Header("SIZES")]
+    [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
     [SerializeField] public Mesh[] _Meshes;
 
-    [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
+    [Header("FXS")]
+    [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
+    [SerializeField] public ParticleSystem smashFX;
     [SerializeField] public TwoBoneIKConstraint rightHand;
     [SerializeField] public RigBuilder rigBuilder;
 
@@ -156,6 +164,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Drop, new SM_Drop(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Push, new SM_Push(this));
         _stateMachinePlayer.AddState(PlayerState.Pull, new SM_Pull(this));
+        _stateMachinePlayer.AddState(PlayerState.Smash, new SM_Smash(_modelPlayer, _viewPlayer));
         //_stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Win, new SM_Win(this));
         _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead(_modelPlayer, _viewPlayer));
@@ -498,6 +507,7 @@ public enum PlayerState
     Fall,
     Push,
     Pull,
+    Smash,
     Drop,
     Damage,
     Win,
