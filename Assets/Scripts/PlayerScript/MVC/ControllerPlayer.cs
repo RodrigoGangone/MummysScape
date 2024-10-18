@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static Utils;
+using Debug = UnityEngine.Debug;
 
 public class ControllerPlayer
 {
@@ -25,6 +27,8 @@ public class ControllerPlayer
 
     public void ControllerUpdate()
     {
+        Debug.Log("STATE ACTUAL " + OnGetState.Invoke());
+
         if (CanWalkState())
         {
             OnStateChange(OnWalkingSand!.Invoke() ? PlayerState.WalkSand : PlayerState.Walk);
@@ -50,6 +54,11 @@ public class ControllerPlayer
             {
                 OnStateChange(PlayerState.Hook);
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space) && CanSmashState())
+        {
+            OnStateChange(PlayerState.Smash);
         }
 
         if (CanShootState() && Input.GetKeyDown(KeyCode.E))
@@ -91,6 +100,7 @@ public class ControllerPlayer
                    STATE_PUSH => true,
                    STATE_DAMAGE => true,
                    STATE_DROP => true,
+                   STATE_SMASH => true,
                    NO_STATE => true,
                    _ => false
                };
@@ -106,6 +116,7 @@ public class ControllerPlayer
                    STATE_WALK_SAND => true,
                    STATE_WALK => true,
                    STATE_PUSH => true,
+                   STATE_SMASH => true,
                    _ => false
                };
     }
@@ -132,7 +143,6 @@ public class ControllerPlayer
                    STATE_IDLE => true,
                    STATE_WALK => true,
                    STATE_WALK_SAND => true,
-
                    _ => false
                };
     }
@@ -172,6 +182,18 @@ public class ControllerPlayer
     {
         return !PlayerSize.Head.Equals(OnGetPlayerSize.Invoke()) &&
                _model.CanDropBandage() &&
+               OnGetState?.Invoke() switch
+               {
+                   STATE_IDLE => true,
+                   STATE_WALK => true,
+                   STATE_WALK_SAND => true,
+                   _ => false
+               };
+    }
+
+    private bool CanSmashState()
+    {
+        return PlayerSize.Head.Equals(OnGetPlayerSize.Invoke()) &&
                OnGetState?.Invoke() switch
                {
                    STATE_IDLE => true,
