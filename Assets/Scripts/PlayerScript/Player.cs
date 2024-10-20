@@ -54,6 +54,7 @@ public class Player : MonoBehaviour
     [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
     [SerializeField] public ParticleSystem smashFX;
+    [SerializeField] public ParticleSystem _walkSandFX;
     [SerializeField] public TwoBoneIKConstraint rightHand;
     [SerializeField] public RigBuilder rigBuilder;
 

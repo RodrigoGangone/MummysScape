@@ -110,8 +110,21 @@ public class ViewPlayer
 
     public void PLAY_WALK(bool act)
     {
-        _player._walkFX.Play();
-        _player._walkFX.loop = act;
+        if (act)
+            _player._walkFX.Play();
+        else
+            _player._walkFX.Stop();
+    }
+
+    public void PLAY_WALK_SAND(bool act)
+    {
+        if (act)
+            _player._walkSandFX.Play();
+        else
+        {
+            _player._walkSandFX.Stop();
+            //_player._walkSandFX.Clear();
+        }
     }
 
     public void PLAY_ANIM(string anim, bool value)
@@ -177,14 +190,14 @@ public class ViewPlayer
         _materialChanged = false;
 
         // Fase 1: Desvanecer el cuerpo
-        
+
         var bodyStartValue = fadeOut ? 1f : -0.5f;
         var bodyEndValue = fadeOut ? -0.5f : 1f;
-        
+
         var headStartValue = fadeOut ? 1f : -0.5f;
         var headEndValue = fadeOut ? -0.5f : 1f;
-        
-        _player._viewPlayer.SetValueMaterial(bodyStartValue,headStartValue);
+
+        _player._viewPlayer.SetValueMaterial(bodyStartValue, headStartValue);
 
         while (_elapsedTime < _materialTransitionDuration)
         {
@@ -193,17 +206,18 @@ public class ViewPlayer
 
             // Interpolar sólo el cuerpo
             float bodyValue = Mathf.Lerp(bodyStartValue, bodyEndValue, t);
-            _player._viewPlayer.SetValueMaterial(bodyValue, headStartValue); // Mantener la cabeza visible (1f) durante esta fase
+            _player._viewPlayer.SetValueMaterial(bodyValue,
+                headStartValue); // Mantener la cabeza visible (1f) durante esta fase
 
             yield return null;
         }
 
         _player._viewPlayer.SetValueMaterial(bodyEndValue, headStartValue);
-        
+
         _elapsedTime = 0f;
 
         // Fase 2: Desvanecer la cabeza
-        
+
         while (_elapsedTime < _materialTransitionDuration)
         {
             _elapsedTime += Time.deltaTime;

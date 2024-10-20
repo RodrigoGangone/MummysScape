@@ -19,11 +19,13 @@ public class SM_WalkSand : State
     {
         Debug.Log("ON ENTER STATE WALKSAND");
         _view.PLAY_ANIM("WalkSand", true);
+        _view.PLAY_WALK_SAND(true);
     }
-    
+
     public override void OnExit()
     {
         _model.ClampMovement();
+        _view.PLAY_WALK_SAND(false);
         _view.PLAY_ANIM("WalkSand", false);
     }
 
