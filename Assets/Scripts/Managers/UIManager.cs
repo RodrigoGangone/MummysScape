@@ -44,10 +44,15 @@ public class UIManager : MonoBehaviour
 
     [Header("FADE")] [SerializeField] private Image fadeImage;
 
-    [Header("HOUR GLASS")] [SerializeField]
-    private Material _HourgalssBandage01;
-
-    [SerializeField] private Material _HourgalssBandage02;
+    [Header("HOUR GLASS")] 
+    [SerializeField] private Material _hourglassBandage01;
+    [SerializeField] private Material _hourglassBandage02;
+    [SerializeField] private Transform _hourglassScale;
+    [SerializeField] private float _speedHourglassScale;
+    
+    private Vector3 _hourglassOriginalScale;
+    private float _frecuencyHourglassScale;
+    private float _timeHourglassScale;
 
     [SerializeField] private Material _sandTimer01;
     [SerializeField] private Material _sandTimer02;
@@ -55,8 +60,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Material _gemMaterial01;
     [SerializeField] private Material _gemMaterial02;
     [SerializeField] private Material _gemMaterial03;
-
-    [SerializeField] private Animator _hourglassAnimator;
 
 
     private float targetOffset1;
@@ -98,6 +101,8 @@ public class UIManager : MonoBehaviour
         _pauseMaterial.SetFloat("_Fill", 0f); // Asegurar que se complete la transición
 
         _postProcess = FindObjectOfType<Volume>();
+
+        _hourglassOriginalScale = _hourglassScale.transform.localScale;
 
         ValidateGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
@@ -175,9 +180,28 @@ public class UIManager : MonoBehaviour
         SceneManager.LoadScene(0);
     }
 
-    public void UISetTimerDeath(float currentTimer, float maxtime)
+    public void UISetTimerDeath(float currentTimer, float maxtime) //Se modifico para que empiece a oscilar cuando tenes la mitad del tiempo, cada vez mas rapido
     {
         _targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
+
+        if (currentTimer <= (maxtime / 2))
+        {
+            _timeHourglassScale += Time.deltaTime;
+
+            _frecuencyHourglassScale += _speedHourglassScale * Time.deltaTime;
+
+            float scaleOscillation =
+                Mathf.Sin(_timeHourglassScale * _frecuencyHourglassScale) * 0.05f; // Factor reducido
+
+            _hourglassScale.localScale = _hourglassOriginalScale +
+                                         new Vector3(scaleOscillation, scaleOscillation, scaleOscillation);
+        }
+        else
+        {
+            _timeHourglassScale = 0;
+            _frecuencyHourglassScale = 0;
+            _hourglassScale.localScale = _hourglassOriginalScale;
+        }
     }
 
     public void UISetShootSlider()
@@ -192,22 +216,22 @@ public class UIManager : MonoBehaviour
         _targetOffset1 = currentBandage;
         _targetOffset2 = currentBandage;
 
-        if (currentBandage <= 0)
-        {
-            _hourglassAnimator.SetBool("isSkull", true);
-        }
-        else
-        {
-            _hourglassAnimator.SetBool("isSkull", false);
-        }
+        //if (currentBandage <= 0)
+        //{
+        //    _hourglassAnimator.SetBool("isSkull", true);
+        //}
+        //else
+        //{
+        //    _hourglassAnimator.SetBool("isSkull", false);
+        //}
     }
 
     private void UpdateMaterialOffsets()
     {
-        _HourgalssBandage01.SetFloat("_Offset",
-            Mathf.MoveTowards(_HourgalssBandage01.GetFloat("_Offset"), _targetOffset1, _fillSpeed * Time.deltaTime));
-        _HourgalssBandage02.SetFloat("_Offset",
-            Mathf.MoveTowards(_HourgalssBandage02.GetFloat("_Offset"), _targetOffset2, _fillSpeed * Time.deltaTime));
+        _hourglassBandage01.SetFloat("_Offset",
+            Mathf.MoveTowards(_hourglassBandage01.GetFloat("_Offset"), _targetOffset1, _fillSpeed * Time.deltaTime));
+        _hourglassBandage02.SetFloat("_Offset",
+            Mathf.MoveTowards(_hourglassBandage02.GetFloat("_Offset"), _targetOffset2, _fillSpeed * Time.deltaTime));
 
         _sandTimer01.SetFloat("_Fill",
             Mathf.MoveTowards(_sandTimer01.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
