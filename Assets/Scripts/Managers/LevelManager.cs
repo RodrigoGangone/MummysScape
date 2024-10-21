@@ -33,6 +33,8 @@ public class LevelManager : MonoBehaviour
     public Action OnPlaying;
     public Action OnPause;
 
+    public Action DeathTimer;
+
     public Action<CollectibleNumber> AddCollectible;
 
     private Coroutine _deathTimerCoroutine;
@@ -89,6 +91,7 @@ public class LevelManager : MonoBehaviour
             if (_player.CurrentPlayerSize == PlayerSize.Head && _deathTimerCoroutine == null)
             {
                 _deathTimerCoroutine = StartCoroutine(DeathTimerCoroutine());
+                DeathTimer.Invoke();
             }
             else if (_player.CurrentPlayerSize != PlayerSize.Head && _deathTimerCoroutine != null)
             {
