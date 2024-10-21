@@ -44,15 +44,19 @@ public class UIManager : MonoBehaviour
 
     [Header("FADE")] [SerializeField] private Image fadeImage;
 
-    [Header("HOUR GLASS")] 
-    [SerializeField] private Material _hourglassBandage01;
+    [Header("HOUR GLASS")] [SerializeField]
+    private Material _hourglassBandage01;
+
     [SerializeField] private Material _hourglassBandage02;
+    [SerializeField] private Animator _hourglassAnimator;
     [SerializeField] private Transform _hourglassScale;
-    [SerializeField] private float _speedHourglassScale;
-    
+
     private Vector3 _hourglassOriginalScale;
     private float _frecuencyHourglassScale;
     private float _timeHourglassScale;
+    private float _waitTimeBeat = 3f;
+    private Coroutine _beatCoroutineHandler;
+    private Coroutine _beatCoroutine;
 
     [SerializeField] private Material _sandTimer01;
     [SerializeField] private Material _sandTimer02;
@@ -60,7 +64,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Material _gemMaterial01;
     [SerializeField] private Material _gemMaterial02;
     [SerializeField] private Material _gemMaterial03;
-
 
     private float targetOffset1;
     private float targetOffset2;
@@ -79,10 +82,16 @@ public class UIManager : MonoBehaviour
         _player = FindObjectOfType<Player>();
         levelManager = FindObjectOfType<LevelManager>();
 
-        _player.SizeModify += UISetShootSlider;
+        _player.SizeModify += UpdateTargetOffsets;
 
         levelManager.OnPlaying += ResumeGame;
         levelManager.OnPause += PauseGame;
+
+        levelManager.DeathTimer += () =>
+        {
+            _waitTimeBeat = 3f;
+            _beatCoroutineHandler = StartCoroutine(HourglassBeatHandler());
+        };
 
         levelManager.AddCollectible += UISetCollectibleCount;
 
@@ -104,14 +113,65 @@ public class UIManager : MonoBehaviour
 
         _hourglassOriginalScale = _hourglassScale.transform.localScale;
 
+
         ValidateGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
+    }
+
+    IEnumerator HourglassBeatHandler()
+    {
+        while (true)
+        {
+            yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
+
+            yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
+
+            yield return new WaitForSeconds(_waitTimeBeat);
+
+            _waitTimeBeat *= 0.9f;
+
+            Debug.Log("TIME BEAT " + _waitTimeBeat);
+        }
+    }
+
+    IEnumerator Beat(float targetScale, float duration)
+    {
+        float elapsed = 0f;
+        Vector3 initialScale = _hourglassOriginalScale;
+        Vector3 targetScaleVector = new Vector3(targetScale, targetScale, targetScale);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = elapsed / duration;
+
+            _hourglassScale.localScale =
+                Vector3.Lerp(initialScale, targetScaleVector, Mathf.SmoothStep(0f, 1f, progress));
+
+            yield return null;
+        }
+
+        elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = elapsed / duration;
+
+            _hourglassScale.localScale =
+                Vector3.Lerp(targetScaleVector, initialScale, Mathf.SmoothStep(0f, 1f, progress));
+
+            yield return null;
+        }
+
+        _hourglassScale.localScale = _hourglassOriginalScale;
     }
 
     private void Update()
     {
         UISetTimerDeath(levelManager._currentTimeDeath,
             levelManager._maxTimeDeath); //TODO: ESTO DEBERIA ESTAR SEPARADO DEL LEVEL MANAGER
+
         UpdateMaterialOffsets(); //TODO: ESTO SE DEBERIA DETENER CUANDO LAS VENDAS ESTAN LLENAS
     }
 
@@ -180,33 +240,12 @@ public class UIManager : MonoBehaviour
         SceneManager.LoadScene(0);
     }
 
-    public void UISetTimerDeath(float currentTimer, float maxtime) //Se modifico para que empiece a oscilar cuando tenes la mitad del tiempo, cada vez mas rapido
+    public void UISetTimerDeath(float currentTimer, float maxtime)
     {
         _targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
 
-        if (currentTimer <= (maxtime / 2))
-        {
-            _timeHourglassScale += Time.deltaTime;
-
-            _frecuencyHourglassScale += _speedHourglassScale * Time.deltaTime;
-
-            float scaleOscillation =
-                Mathf.Sin(_timeHourglassScale * _frecuencyHourglassScale) * 0.05f; // Factor reducido
-
-            _hourglassScale.localScale = _hourglassOriginalScale +
-                                         new Vector3(scaleOscillation, scaleOscillation, scaleOscillation);
-        }
-        else
-        {
-            _timeHourglassScale = 0;
-            _frecuencyHourglassScale = 0;
-            _hourglassScale.localScale = _hourglassOriginalScale;
-        }
-    }
-
-    public void UISetShootSlider()
-    {
-        UpdateTargetOffsets(); // Actualizar valores de offset según las vendas actuales
+        if (currentTimer <= 0)
+            _hourglassAnimator.SetBool("isDeath", true);
     }
 
     private void UpdateTargetOffsets()
@@ -216,14 +255,12 @@ public class UIManager : MonoBehaviour
         _targetOffset1 = currentBandage;
         _targetOffset2 = currentBandage;
 
-        //if (currentBandage <= 0)
-        //{
-        //    _hourglassAnimator.SetBool("isSkull", true);
-        //}
-        //else
-        //{
-        //    _hourglassAnimator.SetBool("isSkull", false);
-        //}
+        if (currentBandage > 0 && _beatCoroutineHandler != null)
+        {
+            StopCoroutine(_beatCoroutineHandler);
+            StopCoroutine(_beatCoroutine);
+            _hourglassScale.localScale = _hourglassOriginalScale;
+        }
     }
 
     private void UpdateMaterialOffsets()
@@ -239,7 +276,7 @@ public class UIManager : MonoBehaviour
             Mathf.MoveTowards(_sandTimer02.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
     }
 
-    public void UISetCollectibleCount(CollectibleNumber num)
+    private void UISetCollectibleCount(CollectibleNumber num)
     {
         switch (num)
         {
