@@ -57,6 +57,7 @@ public class Player : MonoBehaviour
     [SerializeField] public ParticleSystem _walkSandFX;
     [SerializeField] public TwoBoneIKConstraint rightHand;
     [SerializeField] public RigBuilder rigBuilder;
+    [SerializeField] public GameObject flame;
 
     [Header("BC DROP")] [SerializeField] private Vector3 boxHalfExtents = new(0.45f, 0.9f, 0.45f);
     [SerializeField] private float maxDistance = 0.5f;

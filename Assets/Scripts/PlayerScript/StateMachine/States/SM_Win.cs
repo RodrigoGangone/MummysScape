@@ -11,8 +11,11 @@ public class SM_Win : State
     private bool _rotationStarted;
 
     private float _elapsedTime;
-    
+
     private Coroutine _disappearCoroutine;
+    private Coroutine _dissolveFlameCoroutine;
+
+    private Material _flameMaterial;
 
     public SM_Win(Player player)
     {
@@ -22,16 +25,18 @@ public class SM_Win : State
     public override void OnEnter()
     {
         _player._viewPlayer.PLAY_ANIM_TRIGGER("Win");
-        
+
         _materialChanged = false;
-        _rotationStarted = false;   
-        
-        _disappearCoroutine = _player.StartCoroutine(_player._viewPlayer.MaterialTransitionCoroutine(true));
+        _rotationStarted = false;
+
+        _flameMaterial = _player.flame.GetComponent<Renderer>().material;
+
+        _player.StartCoroutine(_player._viewPlayer.MaterialTransitionCoroutine(true));
+        _player.StartCoroutine(DissolveFlame());
     }
 
     public override void OnExit()
     {
-        _player.StopCoroutine(_disappearCoroutine);
     }
 
     public override void OnUpdate()
@@ -64,16 +69,23 @@ public class SM_Win : State
             _rotationStarted = true;
         }
     }
-    
-    //private IEnumerator HandleMaterialTransition()
-    //{
-    //    // Desvanecer al jugador (fadeOut = true)
-    //    yield return _player.StartCoroutine(_player._viewPlayer.MaterialTransitionCoroutine(true));
-    //
-    //    // Esperar un breve momento si lo deseas
-    //    yield return new WaitForSeconds(1.5f);
-    //
-    //    // Aparecer al jugador (fadeOut = false)
-    //    yield return _player.StartCoroutine(_player._viewPlayer.MaterialTransitionCoroutine(false));
-    //}
+
+    IEnumerator DissolveFlame()
+    {
+        float startValue = 1f;
+        float endValue = 0;
+        float elapsedTime = 0.0f;
+
+        while (elapsedTime < 2f)
+        {
+            elapsedTime += Time.deltaTime;
+
+            _flameMaterial.SetFloat("_Dissolve_Distortion",
+                Mathf.Lerp(startValue, endValue, elapsedTime / 2f));
+
+            yield return null;
+        }
+
+        _player.flame.SetActive(false);
+    }
 }

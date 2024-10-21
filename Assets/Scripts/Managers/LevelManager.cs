@@ -59,17 +59,13 @@ public class LevelManager : MonoBehaviour
             StopTimerDeath();
         };
 
-        OnPlaying += () =>
-        {
-            ActivePlayer();
-            VerifyPause();
-        };
+        OnPlaying += ActivePlayer;
+        OnPlaying += VerifyPause;
+        OnPlaying += () => { _player._anim.enabled = true; };
 
-        OnPause += () =>
-        {
-            DesActivePlayer();
-            VerifyPause();
-        };
+        OnPause += DesActivePlayer;
+        OnPause += VerifyPause;
+        OnPause += () => { _player._anim.enabled = false; };
 
         AddCollectible += CollectibleCount;
 
