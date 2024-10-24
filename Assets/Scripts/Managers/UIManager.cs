@@ -16,6 +16,8 @@ public class UIManager : MonoBehaviour
     private Player _player;
     private LevelManager levelManager;
 
+    [SerializeField] private Animator _mummyUI;
+
     [Header("UI PAUSE")] [SerializeField] private GameObject _pausePanel;
 
     [SerializeField] private List<GameObject> _btnsPause;
@@ -112,7 +114,6 @@ public class UIManager : MonoBehaviour
         _postProcess = FindObjectOfType<Volume>();
 
         _hourglassOriginalScale = _hourglassScale.transform.localScale;
-
 
         ValidateGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
@@ -401,12 +402,17 @@ public class UIManager : MonoBehaviour
                 _btnNextLvlW.enabled = false;
 
             _WinPanel.SetActive(true);
+            _mummyUI.SetTrigger("isWin");
         }));
     }
 
     public void Lose()
     {
-        StartCoroutine(FadeIn(() => { _LosePanel.SetActive(true); }));
+        StartCoroutine(FadeIn(() =>
+        {
+            _LosePanel.SetActive(true);
+            _mummyUI.SetTrigger("isLose");
+        }));
     }
 
     private void OnEnable()
