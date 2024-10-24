@@ -14,6 +14,10 @@ public class ModelPlayer
     //DROP
     public Vector3 dropPosition;
 
+    //TACKLE
+
+    public SphereCollider tackleSphereCollider;
+
     //HOOK
     public DetectionHook detectionBeetle;
     public SpringJoint springJoint;
@@ -37,6 +41,7 @@ public class ModelPlayer
 
         springJoint = _player._springJoint;
         detectionBeetle = _player._detectionBeetle;
+        tackleSphereCollider = _player.tackle;
     }
 
     public void CountBandage(int sum)
@@ -221,9 +226,7 @@ public class ModelPlayer
 
         Vector3 directionToButton = (new Vector3(buttonPosition.x, _player.transform.position.y, buttonPosition.z)
                                      - _player.transform.position).normalized;
-
-        //Vector3 directionToButton = (buttonPosition - _player.transform.position).normalized;
-
+        
         Quaternion targetRotation = Quaternion.LookRotation(directionToButton);
 
         float duration = 0.5f;
@@ -272,7 +275,7 @@ public class ModelPlayer
         {
             RaycastHit hit;
 
-            if (Physics.Raycast(origin, direction, out hit, 12f))
+            if (Physics.Raycast(origin, direction, out hit, 15f))
             {
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Button"))
                 {
@@ -388,7 +391,7 @@ public class ModelPlayer
         _dirToPull = Vector3.zero;
         return false;
     }
-    
+
     public void Hook()
     {
         if (!hookBeetle.gameObject.CompareTag("HookJump") || hookBeetle == null) return;
@@ -399,6 +402,11 @@ public class ModelPlayer
         springJoint.minDistance = 2f;
         springJoint.spring = 100;
         springJoint.damper = 12;
+    }
+
+    public void Tackle()
+    {
+        tackleSphereCollider.enabled = true;
     }
 
     private void SizeHandler() //Ejecutar este metodo cada vez que se dispare o agarre una venda.
@@ -424,6 +432,7 @@ public class ModelPlayer
             case 0:
                 //Head size
                 _player._viewPlayer.ChangeMesh(_player._Meshes[(int)PlayerSize.Head]);
+                _player._anim.SetLayerWeight(0, 0);
                 _player._anim.SetLayerWeight(1, 0);
                 _player._anim.SetLayerWeight(2, 1);
                 _player.CurrentPlayerSize = PlayerSize.Head;

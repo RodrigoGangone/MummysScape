@@ -34,7 +34,6 @@ RectTransform:
   m_Children:
   - {fileID: 7823191429303524457}
   - {fileID: 6938441576238566483}
-  - {fileID: 3730096783810055093}
   - {fileID: 8634479767008669914}
   - {fileID: 1504362962744038687}
   - {fileID: 5176265445523339689}
@@ -139,14 +138,15 @@ MonoBehaviour:
   _NextLvlPanel: {fileID: 7121342916584588958}
   _fakeTimer: 3
   fadeImage: {fileID: 1372754809377091621}
-  _HourgalssBandage01: {fileID: 2100000, guid: 11017e9862bdf5c46bc7d951ac919943, type: 2}
-  _HourgalssBandage02: {fileID: 2100000, guid: d22e5fc6b04b8664c915e55ae80f1230, type: 2}
+  _hourglassBandage01: {fileID: 2100000, guid: 11017e9862bdf5c46bc7d951ac919943, type: 2}
+  _hourglassBandage02: {fileID: 2100000, guid: d22e5fc6b04b8664c915e55ae80f1230, type: 2}
+  _hourglassAnimator: {fileID: 0}
+  _hourglassScale: {fileID: 0}
   _sandTimer01: {fileID: 2100000, guid: c9d7868ac02e8db4498d76c5b2a06fe9, type: 2}
   _sandTimer02: {fileID: 2100000, guid: 76f14d787a46c434e9d56da121843b1e, type: 2}
   _gemMaterial01: {fileID: 2100000, guid: 0731ba7416b738e4494afc0c1c7e328f, type: 2}
   _gemMaterial02: {fileID: 2100000, guid: 672c90a2c43dc0042b9288a7358ade2c, type: 2}
   _gemMaterial03: {fileID: 2100000, guid: 5fc5390cbe710ee4e8b1c9260533ea07, type: 2}
-  _hourglassAnimator: {fileID: 0}
 --- !u!1 &1002620212593468368
 GameObject:
   m_ObjectHideFlags: 0
@@ -1467,6 +1467,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 3730096783810055093}
   - {fileID: 2748479897567512151}
   m_Father: {fileID: 5331233646821036548}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2806,15 +2807,15 @@ RectTransform:
   m_GameObject: {fileID: 8177069968069710895}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.8, y: 1.8, z: 1.8}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 5331233646821036548}
+  m_Father: {fileID: 6938441576238566483}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 250, y: -250}
-  m_SizeDelta: {x: 200, y: 200}
+  m_SizeDelta: {x: 3000, y: 3000}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3981407268935178298
 CanvasRenderer:
@@ -2840,7 +2841,7 @@ MonoBehaviour:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
+  m_Maskable: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []

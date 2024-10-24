@@ -45,9 +45,18 @@ public class UIManager : MonoBehaviour
     [Header("FADE")] [SerializeField] private Image fadeImage;
 
     [Header("HOUR GLASS")] [SerializeField]
-    private Material _HourgalssBandage01;
+    private Material _hourglassBandage01;
 
-    [SerializeField] private Material _HourgalssBandage02;
+    [SerializeField] private Material _hourglassBandage02;
+    [SerializeField] private Animator _hourglassAnimator;
+    [SerializeField] private Transform _hourglassScale;
+
+    private Vector3 _hourglassOriginalScale;
+    private float _frecuencyHourglassScale;
+    private float _timeHourglassScale;
+    private float _waitTimeBeat = 3f;
+    private Coroutine _beatCoroutineHandler;
+    private Coroutine _beatCoroutine;
 
     [SerializeField] private Material _sandTimer01;
     [SerializeField] private Material _sandTimer02;
@@ -55,9 +64,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Material _gemMaterial01;
     [SerializeField] private Material _gemMaterial02;
     [SerializeField] private Material _gemMaterial03;
-
-    [SerializeField] private Animator _hourglassAnimator;
-
 
     private float targetOffset1;
     private float targetOffset2;
@@ -76,10 +82,16 @@ public class UIManager : MonoBehaviour
         _player = FindObjectOfType<Player>();
         levelManager = FindObjectOfType<LevelManager>();
 
-        _player.SizeModify += UISetShootSlider;
+        _player.SizeModify += UpdateTargetOffsets;
 
         levelManager.OnPlaying += ResumeGame;
         levelManager.OnPause += PauseGame;
+
+        levelManager.DeathTimer += () =>
+        {
+            _waitTimeBeat = 3f;
+            _beatCoroutineHandler = StartCoroutine(HourglassBeatHandler());
+        };
 
         levelManager.AddCollectible += UISetCollectibleCount;
 
@@ -99,14 +111,67 @@ public class UIManager : MonoBehaviour
 
         _postProcess = FindObjectOfType<Volume>();
 
+        _hourglassOriginalScale = _hourglassScale.transform.localScale;
+
+
         ValidateGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
+    }
+
+    IEnumerator HourglassBeatHandler()
+    {
+        while (true)
+        {
+            yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
+
+            yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
+
+            yield return new WaitForSeconds(_waitTimeBeat);
+
+            _waitTimeBeat *= 0.9f;
+
+            Debug.Log("TIME BEAT " + _waitTimeBeat);
+        }
+    }
+
+    IEnumerator Beat(float targetScale, float duration)
+    {
+        float elapsed = 0f;
+        Vector3 initialScale = _hourglassOriginalScale;
+        Vector3 targetScaleVector = new Vector3(targetScale, targetScale, targetScale);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = elapsed / duration;
+
+            _hourglassScale.localScale =
+                Vector3.Lerp(initialScale, targetScaleVector, Mathf.SmoothStep(0f, 1f, progress));
+
+            yield return null;
+        }
+
+        elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = elapsed / duration;
+
+            _hourglassScale.localScale =
+                Vector3.Lerp(targetScaleVector, initialScale, Mathf.SmoothStep(0f, 1f, progress));
+
+            yield return null;
+        }
+
+        _hourglassScale.localScale = _hourglassOriginalScale;
     }
 
     private void Update()
     {
         UISetTimerDeath(levelManager._currentTimeDeath,
             levelManager._maxTimeDeath); //TODO: ESTO DEBERIA ESTAR SEPARADO DEL LEVEL MANAGER
+
         UpdateMaterialOffsets(); //TODO: ESTO SE DEBERIA DETENER CUANDO LAS VENDAS ESTAN LLENAS
     }
 
@@ -178,11 +243,9 @@ public class UIManager : MonoBehaviour
     public void UISetTimerDeath(float currentTimer, float maxtime)
     {
         _targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
-    }
 
-    public void UISetShootSlider()
-    {
-        UpdateTargetOffsets(); // Actualizar valores de offset según las vendas actuales
+        if (currentTimer <= 0)
+            _hourglassAnimator.SetBool("isDeath", true);
     }
 
     private void UpdateTargetOffsets()
@@ -192,22 +255,20 @@ public class UIManager : MonoBehaviour
         _targetOffset1 = currentBandage;
         _targetOffset2 = currentBandage;
 
-        if (currentBandage <= 0)
+        if (currentBandage > 0 && _beatCoroutineHandler != null)
         {
-            _hourglassAnimator.SetBool("isSkull", true);
-        }
-        else
-        {
-            _hourglassAnimator.SetBool("isSkull", false);
+            StopCoroutine(_beatCoroutineHandler);
+            StopCoroutine(_beatCoroutine);
+            _hourglassScale.localScale = _hourglassOriginalScale;
         }
     }
 
     private void UpdateMaterialOffsets()
     {
-        _HourgalssBandage01.SetFloat("_Offset",
-            Mathf.MoveTowards(_HourgalssBandage01.GetFloat("_Offset"), _targetOffset1, _fillSpeed * Time.deltaTime));
-        _HourgalssBandage02.SetFloat("_Offset",
-            Mathf.MoveTowards(_HourgalssBandage02.GetFloat("_Offset"), _targetOffset2, _fillSpeed * Time.deltaTime));
+        _hourglassBandage01.SetFloat("_Offset",
+            Mathf.MoveTowards(_hourglassBandage01.GetFloat("_Offset"), _targetOffset1, _fillSpeed * Time.deltaTime));
+        _hourglassBandage02.SetFloat("_Offset",
+            Mathf.MoveTowards(_hourglassBandage02.GetFloat("_Offset"), _targetOffset2, _fillSpeed * Time.deltaTime));
 
         _sandTimer01.SetFloat("_Fill",
             Mathf.MoveTowards(_sandTimer01.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
@@ -215,7 +276,7 @@ public class UIManager : MonoBehaviour
             Mathf.MoveTowards(_sandTimer02.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
     }
 
-    public void UISetCollectibleCount(CollectibleNumber num)
+    private void UISetCollectibleCount(CollectibleNumber num)
     {
         switch (num)
         {
@@ -293,7 +354,7 @@ public class UIManager : MonoBehaviour
     {
         Color color = fadeImage.color;
         float alpha = 0f;
-        float duration = 3f;
+        float duration = 1.5f;
         float time = 0f;
 
         while (time < duration)
@@ -314,7 +375,7 @@ public class UIManager : MonoBehaviour
     {
         Color color = fadeImage.color;
         float alpha = 1f;
-        float duration = 3f;
+        float duration = 1.5f;
         float time = 0f;
 
         while (time < duration)
