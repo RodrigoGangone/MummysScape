@@ -355,7 +355,7 @@ public class UIManager : MonoBehaviour
     {
         Color color = fadeImage.color;
         float alpha = 0f;
-        float duration = 1.5f;
+        float duration = 1f;
         float time = 0f;
 
         while (time < duration)
@@ -376,7 +376,7 @@ public class UIManager : MonoBehaviour
     {
         Color color = fadeImage.color;
         float alpha = 1f;
-        float duration = 1.5f;
+        float duration = 1f;
         float time = 0f;
 
         while (time < duration)
@@ -388,8 +388,6 @@ public class UIManager : MonoBehaviour
         }
 
         fadeImage.color = new Color(color.r, color.g, color.b, 0f);
-
-        //TODO: Aca se podria hacer un action que active el script del player para que no se mueva mientras esta el fade
     }
 
     public void Win()
