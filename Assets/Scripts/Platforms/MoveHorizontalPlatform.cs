@@ -16,8 +16,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
 
     [Header("WAYPOINTS")] [SerializeField] private Transform[] waypoints; // Lista puntos a los que se mueve la platform
 
-    [Header("EFFECTS")] [SerializeField]
-    private float moundEmergenceSpeed = 1;
+    [Header("EFFECTS")] [SerializeField] private float moundEmergenceSpeed = 1;
 
     [SerializeField] private Transform sandMoundForward;
     [SerializeField] private Transform[] sandMoundForwardWaypoints;
@@ -41,7 +40,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
     private void Start()
     {
         platformMaterials = GetMaterialsFromChildren();
-        
+
         if (waypoints.Length > 0 && isMoving)
         {
             // Si la plataforma no está en la posicion del primer waypoint
@@ -51,8 +50,11 @@ public class MoveHorizontalPlatform : MonoBehaviour
                 transform.position = waypoints[0].position;
         }
 
-        sandMoundForward.position = sandMoundForwardWaypoints[0].position;
-        sandMoundBackward.position = sandMoundBackwardWaypoints[0].position;
+        if (sandMoundForward != null && sandMoundBackward != null)
+        {
+            sandMoundForward.position = sandMoundForwardWaypoints[0].position;
+            sandMoundBackward.position = sandMoundBackwardWaypoints[0].position;
+        }
     }
 
     private void Update()
@@ -169,7 +171,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
             moundEmergenceSpeed * Time.deltaTime);
         sandMoundBackward.position = Vector3.MoveTowards(sandMoundBackward.position, targetWaypointBackward.position,
             moundEmergenceSpeed * Time.deltaTime);
-        
+
         //Cuando avanza, se activan las partículas de adelante.
         if (_currentWaypointIndex == 1)
         {
@@ -195,6 +197,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
             sandMoundForwardParticles[0].Stop();
         }
     }
+
     private Material[] GetMaterialsFromChildren()
     {
         return GetComponentsInChildren<Renderer>()
@@ -204,15 +207,15 @@ public class MoveHorizontalPlatform : MonoBehaviour
 
     private IEnumerator GlowEffect(float duration)
     {
-        StartCoroutine(IncreaseIntensity(duration/2));
-        yield return new WaitForSeconds(duration/2);
-        StartCoroutine(DecreaseIntensity(duration/2));
+        StartCoroutine(IncreaseIntensity(duration / 2));
+        yield return new WaitForSeconds(duration / 2);
+        StartCoroutine(DecreaseIntensity(duration / 2));
     }
-    
+
     private IEnumerator IncreaseIntensity(float duration)
     {
         float elapsedTime = 0f;
-        
+
         while (elapsedTime < duration)
         {
             elapsedTime += Time.deltaTime;
@@ -225,6 +228,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
                     mat.SetFloat("_GlowIntensity", currentIntensity);
                 }
             }
+
             yield return null;
         }
     }
@@ -232,7 +236,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
     private IEnumerator DecreaseIntensity(float duration)
     {
         float elapsedTime = 0f;
-        
+
         while (elapsedTime < duration)
         {
             elapsedTime += Time.deltaTime;
@@ -245,6 +249,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
                     mat.SetFloat("_GlowIntensity", currentIntensity);
                 }
             }
+
             yield return null;
         }
     }

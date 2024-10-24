@@ -91,6 +91,8 @@ public class UIManager : MonoBehaviour
 
         levelManager.DeathTimer += () =>
         {
+            if (_beatCoroutineHandler != null) return;
+
             _waitTimeBeat = 3f;
             _beatCoroutineHandler = StartCoroutine(HourglassBeatHandler());
         };
@@ -123,6 +125,12 @@ public class UIManager : MonoBehaviour
     {
         while (true)
         {
+            if (levelManager.isBusy || levelManager._currentLevelState.Equals(LevelState.Pause))
+            {
+                yield return null;
+                continue;
+            }
+
             yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
 
             yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
@@ -130,8 +138,6 @@ public class UIManager : MonoBehaviour
             yield return new WaitForSeconds(_waitTimeBeat);
 
             _waitTimeBeat *= 0.9f;
-
-            Debug.Log("TIME BEAT " + _waitTimeBeat);
         }
     }
 
@@ -236,12 +242,12 @@ public class UIManager : MonoBehaviour
         buttons.Reverse();
     }
 
-    public void GoToMainMenu()
+    private void GoToMainMenu()
     {
         SceneManager.LoadScene(0);
     }
 
-    public void UISetTimerDeath(float currentTimer, float maxtime)
+    private void UISetTimerDeath(float currentTimer, float maxtime)
     {
         _targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
 
@@ -256,11 +262,21 @@ public class UIManager : MonoBehaviour
         _targetOffset1 = currentBandage;
         _targetOffset2 = currentBandage;
 
-        if (currentBandage > 0 && _beatCoroutineHandler != null)
+        if (currentBandage > 0)
         {
-            StopCoroutine(_beatCoroutineHandler);
-            StopCoroutine(_beatCoroutine);
-            _hourglassScale.localScale = _hourglassOriginalScale;
+            if (_beatCoroutineHandler != null)
+            {
+                StopCoroutine(_beatCoroutineHandler);
+                _beatCoroutineHandler = null;
+            }
+
+            if (_beatCoroutine != null)
+            {
+                StopCoroutine(_beatCoroutine);
+                _beatCoroutine = null;
+            }
+
+            _hourglassScale.localScale = _hourglassOriginalScale; // Restablecer tamaño original
         }
     }
 
