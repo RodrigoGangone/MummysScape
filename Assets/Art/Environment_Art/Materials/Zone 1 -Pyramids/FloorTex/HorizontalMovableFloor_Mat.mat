@@ -80,6 +80,8 @@ Material:
     m_Floats:
     - _BlendingIntensity: 1.04
     - _FloorTile: 1
+    - _GlowIntensity: 0
+    - _GlowPower: 0
     - _MaskLevel: 0.358
     - _Max: 1
     - _Min: 1
@@ -87,5 +89,7 @@ Material:
     - _QueueOffset: 0
     - _SandTile: 0.79
     - _Smoothness: 0
-    m_Colors: []
+    m_Colors:
+    - _GlowColor: {r: 0.0009765625, g: 0.0009491398, b: 0.0004560362, a: 0}
+    - _SandColor: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
