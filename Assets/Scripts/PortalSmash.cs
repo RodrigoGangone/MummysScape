@@ -14,9 +14,16 @@ public class PortalSmash : MonoBehaviour
 
     [SerializeField] private Transform teleportDestination; // Punto de destino de la teletransportación
 
+    private Animator _hippoAnim;
+
+    private const string OPEN_ANIM = "isOpen";
+    private const string CLOSE_ANIM = "isClose";
+
     private void Start()
     {
         levelManager = FindObjectOfType<LevelManager>();
+
+        _hippoAnim = GetComponentInChildren<Animator>();
 
         OnPlayerTeleportOn += levelManager.DesActivePlayer;
         OnPlayerTeleportOn += levelManager.StopTimerDeath;
@@ -42,6 +49,8 @@ public class PortalSmash : MonoBehaviour
     // Corutina principal para manejar el teletransporte
     private IEnumerator HandleSmashCoroutine(Player player)
     {
+        _hippoAnim.SetTrigger(OPEN_ANIM);
+
         levelManager.isBusy = true;
 
         // Desactivar el jugador y realizar acciones iniciales
@@ -55,7 +64,11 @@ public class PortalSmash : MonoBehaviour
 
         // Fase 3: Teletransportar al jugador
         player.transform.position = teleportDestination.position + new Vector3(0, 1, 0);
+
+        _hippoAnim.SetTrigger(CLOSE_ANIM);
         //TeleportPlayer();
+
+        teleportDestination.GetComponentInChildren<Animator>().SetTrigger(OPEN_ANIM);
 
         // Fase 4: Aparecer al jugador en el destino (transición de material final)
         yield return StartCoroutine(player._viewPlayer.MaterialTransitionCoroutine(false));
@@ -64,6 +77,8 @@ public class PortalSmash : MonoBehaviour
         OnPlayerTeleportOff.Invoke();
 
         levelManager.isBusy = false;
+
+        teleportDestination.GetComponentInChildren<Animator>().SetTrigger(CLOSE_ANIM);
 
         _isActive = false; // Permitir nuevas activaciones del portal
     }
