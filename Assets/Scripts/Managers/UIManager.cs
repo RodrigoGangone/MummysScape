@@ -16,6 +16,8 @@ public class UIManager : MonoBehaviour
     private Player _player;
     private LevelManager levelManager;
 
+    [SerializeField] private Animator _mummyUI;
+
     [Header("UI PAUSE")] [SerializeField] private GameObject _pausePanel;
 
     [SerializeField] private List<GameObject> _btnsPause;
@@ -89,6 +91,8 @@ public class UIManager : MonoBehaviour
 
         levelManager.DeathTimer += () =>
         {
+            if (_beatCoroutineHandler != null) return;
+
             _waitTimeBeat = 3f;
             _beatCoroutineHandler = StartCoroutine(HourglassBeatHandler());
         };
@@ -113,7 +117,6 @@ public class UIManager : MonoBehaviour
 
         _hourglassOriginalScale = _hourglassScale.transform.localScale;
 
-
         ValidateGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
     }
@@ -122,6 +125,12 @@ public class UIManager : MonoBehaviour
     {
         while (true)
         {
+            if (levelManager.isBusy || levelManager._currentLevelState.Equals(LevelState.Pause))
+            {
+                yield return null;
+                continue;
+            }
+
             yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
 
             yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
@@ -129,8 +138,6 @@ public class UIManager : MonoBehaviour
             yield return new WaitForSeconds(_waitTimeBeat);
 
             _waitTimeBeat *= 0.9f;
-
-            Debug.Log("TIME BEAT " + _waitTimeBeat);
         }
     }
 
@@ -235,12 +242,12 @@ public class UIManager : MonoBehaviour
         buttons.Reverse();
     }
 
-    public void GoToMainMenu()
+    private void GoToMainMenu()
     {
         SceneManager.LoadScene(0);
     }
 
-    public void UISetTimerDeath(float currentTimer, float maxtime)
+    private void UISetTimerDeath(float currentTimer, float maxtime)
     {
         _targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
 
@@ -255,11 +262,21 @@ public class UIManager : MonoBehaviour
         _targetOffset1 = currentBandage;
         _targetOffset2 = currentBandage;
 
-        if (currentBandage > 0 && _beatCoroutineHandler != null)
+        if (currentBandage > 0)
         {
-            StopCoroutine(_beatCoroutineHandler);
-            StopCoroutine(_beatCoroutine);
-            _hourglassScale.localScale = _hourglassOriginalScale;
+            if (_beatCoroutineHandler != null)
+            {
+                StopCoroutine(_beatCoroutineHandler);
+                _beatCoroutineHandler = null;
+            }
+
+            if (_beatCoroutine != null)
+            {
+                StopCoroutine(_beatCoroutine);
+                _beatCoroutine = null;
+            }
+
+            _hourglassScale.localScale = _hourglassOriginalScale; // Restablecer tamaño original
         }
     }
 
@@ -354,7 +371,7 @@ public class UIManager : MonoBehaviour
     {
         Color color = fadeImage.color;
         float alpha = 0f;
-        float duration = 1.5f;
+        float duration = 1f;
         float time = 0f;
 
         while (time < duration)
@@ -375,7 +392,7 @@ public class UIManager : MonoBehaviour
     {
         Color color = fadeImage.color;
         float alpha = 1f;
-        float duration = 1.5f;
+        float duration = 1f;
         float time = 0f;
 
         while (time < duration)
@@ -387,8 +404,6 @@ public class UIManager : MonoBehaviour
         }
 
         fadeImage.color = new Color(color.r, color.g, color.b, 0f);
-
-        //TODO: Aca se podria hacer un action que active el script del player para que no se mueva mientras esta el fade
     }
 
     public void Win()
@@ -401,12 +416,17 @@ public class UIManager : MonoBehaviour
                 _btnNextLvlW.enabled = false;
 
             _WinPanel.SetActive(true);
+            _mummyUI.SetTrigger("isWin");
         }));
     }
 
     public void Lose()
     {
-        StartCoroutine(FadeIn(() => { _LosePanel.SetActive(true); }));
+        StartCoroutine(FadeIn(() =>
+        {
+            _LosePanel.SetActive(true);
+            _mummyUI.SetTrigger("isLose");
+        }));
     }
 
     private void OnEnable()
