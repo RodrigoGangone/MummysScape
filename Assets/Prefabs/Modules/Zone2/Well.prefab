@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4038248229284955085}
   - component: {fileID: 6144376288502250862}
   - component: {fileID: 8579308005526309162}
+  - component: {fileID: 7834518439042564601}
   m_Layer: 0
   m_Name: Well
   m_TagString: Untagged
@@ -1835,3 +1836,26 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 4718357507693439950, guid: ebe4e5d10dbd797449a0a994feca3487, type: 3}
   m_Mode: 0
+--- !u!136 &7834518439042564601
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4539854213649053517}
+  m_Material: {fileID: 13400000, guid: 79b8f8c9e2e3aa64db86e8399ce69f12, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.85269135
+  m_Height: 3.88
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}

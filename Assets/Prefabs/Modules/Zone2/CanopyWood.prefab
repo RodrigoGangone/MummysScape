@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1021938318129614420}
   - component: {fileID: 1980307923433661051}
   - component: {fileID: 669345315558431255}
+  - component: {fileID: 6551306887115423714}
   m_Layer: 0
   m_Name: CanopyWood
   m_TagString: Untagged
@@ -83,3 +84,26 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!136 &6551306887115423714
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3911910935910865767}
+  m_Material: {fileID: 13400000, guid: 79b8f8c9e2e3aa64db86e8399ce69f12, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.09910095
+  m_Height: 2.8852785
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}

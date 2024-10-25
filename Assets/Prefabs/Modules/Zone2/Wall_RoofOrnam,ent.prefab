@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 8053322330821769542}
   - component: {fileID: 2504895718511590014}
   - component: {fileID: 2007926923938368722}
+  - component: {fileID: 7656032196243209580}
+  - component: {fileID: 1959212800808427384}
   m_Layer: 0
   m_Name: Wall_RoofOrnam,ent
   m_TagString: Untagged
@@ -83,3 +85,45 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &7656032196243209580
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6410173735181985932}
+  m_Material: {fileID: 13400000, guid: 79b8f8c9e2e3aa64db86e8399ce69f12, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.74972653, y: 0.2998889, z: 0.2984602}
+  m_Center: {x: 0, y: 0, z: 0.22563258}
+--- !u!65 &1959212800808427384
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6410173735181985932}
+  m_Material: {fileID: 13400000, guid: 79b8f8c9e2e3aa64db86e8399ce69f12, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.30477324, y: 0.2998889, z: 0.45162275}
+  m_Center: {x: 0.22247665, y: 0, z: -0.1490513}
