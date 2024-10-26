@@ -8,7 +8,8 @@ public class InteractableOutline : MonoBehaviour
     {
         Hook,
         Eagle,
-        MovableBox
+        MovableBox,
+        Teleport
     }
 
     [System.Serializable]
@@ -40,7 +41,7 @@ public class InteractableOutline : MonoBehaviour
 
     [SerializeField] private List<Material> _materials = new();
     [SerializeField] public ParticleSystem _shiningParticles;
-    
+
     private bool _materialOff;
     //TODO: HAY QUE USAR EL CURRENTBOX PARA GUARDAR EL OBJETO Y ENCENDER SU OUTLINE, MODIFICAR EL SCRIPT DEL PULL PARA QUE LO HAGA SIN LA NECESIDAD DE TOCAR EL INPUT
 
@@ -106,14 +107,18 @@ public class InteractableOutline : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (!other.CompareTag(_detected) || _interactableType != InteractableType.Hook) return;
-        OnMaterial();
+        if (other.CompareTag(_detected) && _interactableType == InteractableType.Hook)
+        {
+            OnMaterial();
+        }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag(_detected) || _interactableType != InteractableType.Hook) return;
-        OffMaterial();
+        if (other.CompareTag(_detected) && _interactableType == InteractableType.Hook)
+        {
+            OffMaterial();
+        }
     }
 
 
