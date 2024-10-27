@@ -1,20 +1,21 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
+using static Utils;
 
 public class PortalSmash : MonoBehaviour
 {
-    private Player _player; // Referencia al jugador
     private LevelManager _levelManager;
 
     private bool _isActive;
 
     private Action OnPlayerTeleportOn;
     private Action OnPlayerTeleportOff;
-
+    
     [SerializeField] private Transform _teleportDestination; // Punto de destino de la teletransportación
-
+    [SerializeField] private Transform _posHeadOpen;
+    [SerializeField] public Transform _posHeadClose;
+    
     private InteractableOutline _interactableOrigin;
     private InteractableOutline _interactableDestiny;
 
@@ -22,13 +23,15 @@ public class PortalSmash : MonoBehaviour
 
     private const string OPEN_ANIM = "isOpen";
     private const string CLOSE_ANIM = "isClose";
+    private const string ANIM_NAME_OPEN = "HippoOpen";
+    private const string ANIM_NAME_CLOSE = "HippoClose";
 
     private void Start()
     {
         _levelManager = FindObjectOfType<LevelManager>();
 
         _hippoAnim = GetComponentInChildren<Animator>();
-
+        
         _interactableOrigin = GetComponent<InteractableOutline>();
         _interactableDestiny = _teleportDestination.GetComponent<InteractableOutline>();
 
@@ -38,92 +41,127 @@ public class PortalSmash : MonoBehaviour
         OnPlayerTeleportOff += _levelManager.ActivePlayer;
     }
 
-    // Detectar cuando el jugador entra en el portal
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerFather"))
+        if (other.gameObject.CompareTag(PLAYER_TAG))
         {
             _interactableOrigin.OnMaterial();
             _interactableDestiny.OnMaterial();
         }
 
-        if (other.gameObject.CompareTag("Smash"))
+        if (other.gameObject.CompareTag(PLAYER_SMASH_TAG))
         {
-            _player = other.gameObject.GetComponentInParent<Player>();
+            var player = other.gameObject.GetComponentInParent<Player>();
 
-            if (_player != null && !_isActive)
+            if (player != null && !_isActive)
             {
                 _isActive = true;
-                StartCoroutine(HandleSmashCoroutine(_player));
+                StartCoroutine(HandleSmashCoroutine(player));
             }
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerFather"))
+        if (other.gameObject.CompareTag(PLAYER_TAG))
         {
             _interactableOrigin.OffMaterial();
             _interactableDestiny.OffMaterial();
         }
     }
 
-    // Corutina principal para manejar el teletransporte
     private IEnumerator HandleSmashCoroutine(Player player)
     {
-        _hippoAnim.SetTrigger(OPEN_ANIM);
+        var destinationScript = _teleportDestination.GetComponent<PortalSmash>();
+        var destinationAnim = _teleportDestination.GetComponentInChildren<Animator>();
+        
+        #region OPEN ANIM
 
-        _levelManager.isBusy = true;
+            // 0- Desactivar el jugador, paro tiempo de muerte y aviso al level manager que esta ocupado
+            OnPlayerTeleportOn.Invoke();
+            _levelManager.isBusy = true;
+            
+            // 1- Reposiciono al jugador
+            yield return StartCoroutine(MovePlayerToHeadFake(player.transform));
+            // 2- Activo la animacion Open
+            _hippoAnim.SetTrigger(OPEN_ANIM);
+            // 3- Desactivo la visual del player
+            player._viewPlayer.SetValueMaterial(-0.5f, -0.5f); // -0.5f = apagado
+            
+            //TODO: SI LA ANIMACION OPEN FINALIZO:
+            yield return StartCoroutine(WaitForAnimationEnd(_hippoAnim, ANIM_NAME_OPEN));
 
-        // Desactivar el jugador y realizar acciones iniciales
-        OnPlayerTeleportOn.Invoke();
+        #endregion
 
-        // Fase 1: Mover al jugador al centro del portal
-        yield return StartCoroutine(MovePlayerToTeleport(player));
+        #region CLOSE ANIM
+        
+            // 0- Transporto al player hacia "Teleport destination" asi veo la segunda anim
+            player.transform.rotation =
+                destinationScript._posHeadClose.rotation;
+            player.transform.position = 
+                destinationScript._posHeadClose.position;
+            
+            // 1- Activo la animacion Close
+            destinationAnim.SetTrigger(CLOSE_ANIM);
+            
+            yield return StartCoroutine(WaitForAnimationEnd(destinationAnim, ANIM_NAME_CLOSE));
 
-        // Fase 2: Desaparecer al jugador (transición de material inicial)
-        yield return StartCoroutine(player._viewPlayer.MaterialTransitionCoroutine(true));
+            // 3- Activo la visual del player
+            player._viewPlayer.SetValueMaterial(1f, 1f); // 1f = encendido
+            
+            // 4- Activar al jugar, aviso al lvl manager que no esta mas ocupado 
+            OnPlayerTeleportOff.Invoke();
+            _levelManager.isBusy = false;
+            _isActive = false;
 
-        // Fase 3: Teletransportar al jugador
-        player.transform.position = _teleportDestination.position + new Vector3(0, 1, 0);
-
-        _hippoAnim.SetTrigger(CLOSE_ANIM);
-        //TeleportPlayer();
-
-        _teleportDestination.GetComponentInChildren<Animator>().SetTrigger(OPEN_ANIM);
-
-        // Fase 4: Aparecer al jugador en el destino (transición de material final)
-        yield return StartCoroutine(player._viewPlayer.MaterialTransitionCoroutine(false));
-
-        // Reactivar el jugador después de la teletransportación
-        OnPlayerTeleportOff.Invoke();
-
-        _levelManager.isBusy = false;
-
-        _teleportDestination.GetComponentInChildren<Animator>().SetTrigger(CLOSE_ANIM);
-
-        _isActive = false; // Permitir nuevas activaciones del portal
+        #endregion
     }
 
     // Mover al jugador hacia el centro del portal
-    private IEnumerator MovePlayerToTeleport(Player player)
+    private IEnumerator MovePlayerToHeadFake(Transform playerTrans) //enviar por parametro el lastHeadfake position
     {
-        float moveSpeed = 1f;
-        float distanceThreshold = 0.1f;
+        float moveSpeed = 3f;
+        float rotationSpeed = 90f; 
+        float distanceThreshold = 0.05f;
+        float rotationThreshold = 0.05f;
 
-        // Mover al jugador hasta que esté lo suficientemente cerca del centro del portal
-        while (Vector3.Distance(player.transform.position, transform.position + new Vector3(0, 1, 0)) >
-               distanceThreshold)
+        // Mover y rotar al jugador hasta que esté lo suficientemente cerca de la posición y rotación objetivo
+        while (Vector3.Distance(playerTrans.transform.position, _posHeadOpen.position) > distanceThreshold ||
+               Quaternion.Angle(playerTrans.transform.rotation, _posHeadOpen.rotation) > rotationThreshold)
         {
-            player.transform.position =
-                Vector3.MoveTowards(player.transform.position, transform.position + new Vector3(0, 1, 0),
-                    moveSpeed * Time.deltaTime);
+            // Mover hacia la posición objetivo
+            playerTrans.position = Vector3.MoveTowards(
+                playerTrans.position,
+                _posHeadOpen.position,
+                moveSpeed * Time.deltaTime
+            );
+
+            // Rotar hacia la rotación objetivo
+            playerTrans.rotation = Quaternion.RotateTowards(
+                playerTrans.rotation,
+                _posHeadOpen.rotation,
+                rotationSpeed * Time.deltaTime
+            );
 
             // Esperar al siguiente frame
             yield return null;
         }
 
-        // Asegurar que el jugador esté exactamente en el centro del portal
-        player.transform.position = transform.position + new Vector3(0, 1, 0);
+        // Asegurar que el jugador esté exactamente en la posición y rotación objetivo
+        playerTrans.position = _posHeadOpen.position;
+        playerTrans.rotation = _posHeadOpen.rotation;
+    }
+    
+    private IEnumerator WaitForAnimationEnd(Animator hippoAnimator, string animationName)
+    {
+        yield return null;
+
+        AnimatorStateInfo currentStateInfo = hippoAnimator.GetCurrentAnimatorStateInfo(0);
+
+        while (currentStateInfo.IsName(animationName) && currentStateInfo.normalizedTime < 1.0f)
+        {
+            yield return null;
+            currentStateInfo = hippoAnimator.GetCurrentAnimatorStateInfo(0); 
+        }
     }
 }

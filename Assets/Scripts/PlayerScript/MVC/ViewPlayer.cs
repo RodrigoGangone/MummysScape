@@ -47,7 +47,7 @@ public class ViewPlayer
         _headMat = headSkinnedMesh.material;
     }
 
-    private void SetValueMaterial(float valueBody, float valueHead)
+    public void SetValueMaterial(float valueBody, float valueHead)
     {
         _bodyMat.SetFloat("_CutoffHeight", valueBody);
         _headMat.SetFloat("_CutoffHeight", valueHead);

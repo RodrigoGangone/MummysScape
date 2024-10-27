@@ -3,6 +3,7 @@
 public static class Utils
 {
     public const string PLAYER_TAG = "PlayerFather";
+    public const string PLAYER_SMASH_TAG = "Smash";
 
     #region PlayerStates
 
