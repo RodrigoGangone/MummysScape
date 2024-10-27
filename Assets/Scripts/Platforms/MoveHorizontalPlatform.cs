@@ -89,7 +89,10 @@ public class MoveHorizontalPlatform : MonoBehaviour
     {
         if (isPaused)
         {
-            ResetSandMoundPositions();
+            if (sandMoundForward != null && sandMoundBackward != null)
+            {
+                ResetSandMoundPositions();
+            }
         }
         else
         {
@@ -105,7 +108,11 @@ public class MoveHorizontalPlatform : MonoBehaviour
                 StartCoroutine(PauseAtWaypoint());
             }
 
-            MoveSandMound();
+
+            if (sandMoundForward != null && sandMoundBackward != null)
+            {
+                MoveSandMound();
+            }
         }
     }
 

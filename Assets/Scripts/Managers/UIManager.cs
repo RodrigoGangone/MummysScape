@@ -26,6 +26,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button _btnRetry;
     [SerializeField] private Button _btnExit;
     [SerializeField] private Material _pauseMaterial;
+    private const string PAUSE_FILL = "_Power"; 
 
     public static bool PauseCharging;
 
@@ -111,7 +112,7 @@ public class UIManager : MonoBehaviour
         _btnRetryL.onClick.AddListener(RetryLevel);
         _btnMainMenuL.onClick.AddListener(GoToMainMenu);
 
-        _pauseMaterial.SetFloat("_Fill", 0f); // Asegurar que se complete la transición
+        _pauseMaterial.SetFloat(PAUSE_FILL, 0f); // Asegurar que se complete la transición
 
         _postProcess = FindObjectOfType<Volume>();
 
@@ -208,7 +209,7 @@ public class UIManager : MonoBehaviour
         if (_postProcess.profile.TryGet(out _blur))
             _blur.active = !_blur.active;
 
-        float startValue = _pauseMaterial.GetFloat("_Fill"); // Obtener el valor actual del material
+        float startValue = _pauseMaterial.GetFloat(PAUSE_FILL); // Obtener el valor actual del material
         float endValue = (startValue == 1f) ? 0f : 1f; // Determinar si debe ir a 1 o a 0
         float elapsed = 0f;
 
@@ -222,13 +223,13 @@ public class UIManager : MonoBehaviour
 
             float currentValue = Mathf.Lerp(startValue, endValue, elapsed / 0.5f);
 
-            _pauseMaterial.SetFloat("_Fill", currentValue); // Ajusta según la propiedad de tu shader
+            _pauseMaterial.SetFloat(PAUSE_FILL, currentValue); // Ajusta según la propiedad de tu shader
             yield return null;
         }
 
         PauseCharging = false;
 
-        _pauseMaterial.SetFloat("_Fill", endValue); // Asegurar que se complete la transición
+        _pauseMaterial.SetFloat(PAUSE_FILL, endValue); // Asegurar que se complete la transición
     }
 
     private IEnumerator CascadeButtons(List<GameObject> buttons)

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 955797406004257216}
   - component: {fileID: 6892772813387927584}
   - component: {fileID: 2577154271700144190}
+  - component: {fileID: 3734362536366039955}
   m_Layer: 0
   m_Name: Wall_RoofCorner
   m_TagString: Untagged
@@ -83,3 +84,24 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &3734362536366039955
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6590829101047901865}
+  m_Material: {fileID: 13400000, guid: 79b8f8c9e2e3aa64db86e8399ce69f12, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.29989073, y: 0.2998889, z: 0.5997839}
+  m_Center: {x: 0, y: 0, z: 0}

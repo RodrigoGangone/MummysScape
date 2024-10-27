@@ -1,48 +1,79 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PortalSmash : MonoBehaviour
 {
-    private Player player; // Referencia al jugador
-    private LevelManager levelManager;
+    private Player _player; // Referencia al jugador
+    private LevelManager _levelManager;
 
     private bool _isActive;
 
     private Action OnPlayerTeleportOn;
     private Action OnPlayerTeleportOff;
 
-    [SerializeField] private Transform teleportDestination; // Punto de destino de la teletransportación
+    [SerializeField] private Transform _teleportDestination; // Punto de destino de la teletransportación
+
+    private InteractableOutline _interactableOrigin;
+    private InteractableOutline _interactableDestiny;
+
+    private Animator _hippoAnim;
+
+    private const string OPEN_ANIM = "isOpen";
+    private const string CLOSE_ANIM = "isClose";
 
     private void Start()
     {
-        levelManager = FindObjectOfType<LevelManager>();
+        _levelManager = FindObjectOfType<LevelManager>();
 
-        OnPlayerTeleportOn += levelManager.DesActivePlayer;
-        OnPlayerTeleportOn += levelManager.StopTimerDeath;
+        _hippoAnim = GetComponentInChildren<Animator>();
 
-        OnPlayerTeleportOff += levelManager.ActivePlayer;
+        _interactableOrigin = GetComponent<InteractableOutline>();
+        _interactableDestiny = _teleportDestination.GetComponent<InteractableOutline>();
+
+        OnPlayerTeleportOn += _levelManager.DesActivePlayer;
+        OnPlayerTeleportOn += _levelManager.StopTimerDeath;
+
+        OnPlayerTeleportOff += _levelManager.ActivePlayer;
     }
 
     // Detectar cuando el jugador entra en el portal
     private void OnTriggerEnter(Collider other)
     {
+        if (other.gameObject.CompareTag("PlayerFather"))
+        {
+            _interactableOrigin.OnMaterial();
+            _interactableDestiny.OnMaterial();
+        }
+
         if (other.gameObject.CompareTag("Smash"))
         {
-            player = other.gameObject.GetComponentInParent<Player>();
+            _player = other.gameObject.GetComponentInParent<Player>();
 
-            if (player != null && !_isActive)
+            if (_player != null && !_isActive)
             {
                 _isActive = true;
-                StartCoroutine(HandleSmashCoroutine(player));
+                StartCoroutine(HandleSmashCoroutine(_player));
             }
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.CompareTag("PlayerFather"))
+        {
+            _interactableOrigin.OffMaterial();
+            _interactableDestiny.OffMaterial();
         }
     }
 
     // Corutina principal para manejar el teletransporte
     private IEnumerator HandleSmashCoroutine(Player player)
     {
-        levelManager.isBusy = true;
+        _hippoAnim.SetTrigger(OPEN_ANIM);
+
+        _levelManager.isBusy = true;
 
         // Desactivar el jugador y realizar acciones iniciales
         OnPlayerTeleportOn.Invoke();
@@ -54,8 +85,12 @@ public class PortalSmash : MonoBehaviour
         yield return StartCoroutine(player._viewPlayer.MaterialTransitionCoroutine(true));
 
         // Fase 3: Teletransportar al jugador
-        player.transform.position = teleportDestination.position + new Vector3(0, 1, 0);
+        player.transform.position = _teleportDestination.position + new Vector3(0, 1, 0);
+
+        _hippoAnim.SetTrigger(CLOSE_ANIM);
         //TeleportPlayer();
+
+        _teleportDestination.GetComponentInChildren<Animator>().SetTrigger(OPEN_ANIM);
 
         // Fase 4: Aparecer al jugador en el destino (transición de material final)
         yield return StartCoroutine(player._viewPlayer.MaterialTransitionCoroutine(false));
@@ -63,7 +98,9 @@ public class PortalSmash : MonoBehaviour
         // Reactivar el jugador después de la teletransportación
         OnPlayerTeleportOff.Invoke();
 
-        levelManager.isBusy = false;
+        _levelManager.isBusy = false;
+
+        _teleportDestination.GetComponentInChildren<Animator>().SetTrigger(CLOSE_ANIM);
 
         _isActive = false; // Permitir nuevas activaciones del portal
     }
@@ -89,27 +126,4 @@ public class PortalSmash : MonoBehaviour
         // Asegurar que el jugador esté exactamente en el centro del portal
         player.transform.position = transform.position + new Vector3(0, 1, 0);
     }
-
-    // Teletransportar al jugador al destino
-    //private void TeleportPlayer()
-    //{
-    //    if (teleportDestination != null && player != null)
-    //    {
-    //        // Mover al jugador al destino del teletransporte
-    //        player.transform.position = teleportDestination.position + new Vector3(0, 1, 0);
-    //    }
-    //}
-
-//private void TriggerTeleport()
-//{
-//    if (OnPlayerTeleport != null)
-//    {
-//        OnPlayerTeleport.Invoke(); // Ejecutamos el Action para teletransportar
-//    }
-//}
-
-//private void OnDestroy()
-//{
-//    OnPlayerTeleport -= TeleportPlayer;
-//}
 }
