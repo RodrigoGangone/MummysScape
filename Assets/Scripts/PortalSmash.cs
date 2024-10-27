@@ -96,6 +96,9 @@ public class PortalSmash : MonoBehaviour
         // ETAPA 2 : CLOSE ANIMATION
         
         // 0- Transporto al player hacia "Teleport destination" asi veo la segunda anim
+        player.transform.rotation =
+            _teleportDestination.GetComponent<PortalSmash>()._posHeadClose.rotation;
+        
         player.transform.position = 
             _teleportDestination.GetComponent<PortalSmash>()._posHeadClose.position; //aumento altura para que no colisione con nada raro
         
@@ -118,24 +121,36 @@ public class PortalSmash : MonoBehaviour
     // Mover al jugador hacia el centro del portal
     private IEnumerator MovePlayerToHeadFake(Player player) //enviar por parametro el lastHeadfake position
     {
-        float moveSpeed = 2f;
-        float distanceThreshold = 0.1f;
+        float moveSpeed = 3f;
+        float rotationSpeed = 90f; // Velocidad de rotación en grados por segundo
+        float distanceThreshold = 0.1f; // Umbral de distancia para la posición
+        float rotationThreshold = 0.1f; // Umbral de ángulo para la rotación
 
-        // Mover al jugador hasta que esté lo suficientemente cerca del centro del portal
-        while (Vector3.Distance(player.transform.position, _posHeadOpen.position) >
-               distanceThreshold)
+        // Mover y rotar al jugador hasta que esté lo suficientemente cerca de la posición y rotación objetivo
+        while (Vector3.Distance(player.transform.position, _posHeadOpen.position) > distanceThreshold ||
+               Quaternion.Angle(player.transform.rotation, _posHeadOpen.rotation) > rotationThreshold)
         {
-            player.transform.position =
-                Vector3.MoveTowards(player.transform.position,
-                    _posHeadOpen.position,
-                    moveSpeed * Time.deltaTime);
+            // Mover hacia la posición objetivo
+            player.transform.position = Vector3.MoveTowards(
+                player.transform.position,
+                _posHeadOpen.position,
+                moveSpeed * Time.deltaTime
+            );
+
+            // Rotar hacia la rotación objetivo
+            player.transform.rotation = Quaternion.RotateTowards(
+                player.transform.rotation,
+                _posHeadOpen.rotation,
+                rotationSpeed * Time.deltaTime
+            );
 
             // Esperar al siguiente frame
             yield return null;
         }
 
-        // Asegurar que el jugador esté exactamente en el centro del portal
+        // Asegurar que el jugador esté exactamente en la posición y rotación objetivo
         player.transform.position = _posHeadOpen.position;
+        player.transform.rotation = _posHeadOpen.rotation;
     }
     
     private IEnumerator WaitForAnimationEnd(Animator hippoAnimator, string animationName)
