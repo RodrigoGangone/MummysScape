@@ -58,9 +58,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Transform _hourglassScale;
 
     private Vector3 _hourglassOriginalScale;
+
     private float _frecuencyHourglassScale;
     private float _timeHourglassScale;
     private float _waitTimeBeat = 3f;
+
     private Coroutine _beatCoroutineHandler;
     private Coroutine _beatCoroutine;
 
@@ -78,6 +80,7 @@ public class UIManager : MonoBehaviour
     private float _targetOffset1;
     private float _targetOffset2;
     private float _targetOffset3;
+
     private float _fillSpeed = 1f;
 
     private DepthOfField _blur;
@@ -309,14 +312,16 @@ public class UIManager : MonoBehaviour
 
         //TODO: CAMBIAR POR PLAYER PREFS PARA QUE NO MUESTRE SIEMPRE EL MISMO TIP
         
-        _currentTip = Random.Range(0, 2);
-
-        _tips.sprite = _tipsNextLevel[_currentTip];
-
-        _tips.SetNativeSize();
-
-        //_currentTip = (_currentTip + 1) % _tipsNextLevel.Count; //TODO: CON ESTO VOLVEMOS AL PRIMER TIP
+        int _currentTip = PlayerPrefs.GetInt("currentTip", 0);
         
+        _tips.sprite = _tipsNextLevel[_currentTip];
+        _tips.SetNativeSize();
+        
+        _currentTip = (_currentTip + 1) % _tipsNextLevel.Count;
+        
+        PlayerPrefs.SetInt("currentTip", _currentTip);
+        PlayerPrefs.Save();
+
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _pausePanel.SetActive(false);
