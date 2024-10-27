@@ -9,6 +9,7 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class UIManager : MonoBehaviour
 {
@@ -20,13 +21,11 @@ public class UIManager : MonoBehaviour
 
     [Header("UI PAUSE")] [SerializeField] private GameObject _pausePanel;
 
-    [SerializeField] private List<GameObject> _btnsPause;
-
     [SerializeField] private Button _btnResume;
     [SerializeField] private Button _btnRetry;
     [SerializeField] private Button _btnExit;
     [SerializeField] private Material _pauseMaterial;
-    private const string PAUSE_FILL = "_Power"; 
+    private const string PAUSE_FILL = "_Power";
 
     public static bool PauseCharging;
 
@@ -42,6 +41,10 @@ public class UIManager : MonoBehaviour
     [Header("UI NEXT LVL")] // Panel con animacion de momia y carga asincronica de nivel
     [SerializeField]
     private GameObject _NextLvlPanel;
+
+    private int _currentTip;
+    [SerializeField] private Image _tips;
+    [SerializeField] private List<Sprite> _tipsNextLevel = new();
 
     [SerializeField] private float _fakeTimer = 3f;
 
@@ -197,9 +200,9 @@ public class UIManager : MonoBehaviour
 
     private void ResumeGame()
     {
-        StartCoroutine(LoadPauseBandage());
+        _pausePanel.SetActive(false);
 
-        Debug.Log("PLAYING");
+        StartCoroutine(LoadPauseBandage());
     }
 
     private IEnumerator LoadPauseBandage()
@@ -212,8 +215,6 @@ public class UIManager : MonoBehaviour
         float startValue = _pauseMaterial.GetFloat(PAUSE_FILL); // Obtener el valor actual del material
         float endValue = (startValue == 1f) ? 0f : 1f; // Determinar si debe ir a 1 o a 0
         float elapsed = 0f;
-
-        StartCoroutine(CascadeButtons(_btnsPause));
 
         //TODO: LLEVAR ESTA CORRUTINA ABAJO DEL WHILE DESPUES DE ENTREGAR AL BUILD EL 10/10
 
@@ -229,18 +230,10 @@ public class UIManager : MonoBehaviour
 
         PauseCharging = false;
 
+        if (endValue == 1f)
+            _pausePanel.SetActive(true);
+
         _pauseMaterial.SetFloat(PAUSE_FILL, endValue); // Asegurar que se complete la transición
-    }
-
-    private IEnumerator CascadeButtons(List<GameObject> buttons)
-    {
-        foreach (var btn in buttons)
-        {
-            btn.SetActive(!btn.activeSelf);
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        buttons.Reverse();
     }
 
     private void GoToMainMenu()
@@ -314,6 +307,16 @@ public class UIManager : MonoBehaviour
     {
         _NextLvlPanel.SetActive(true);
 
+        //TODO: CAMBIAR POR PLAYER PREFS PARA QUE NO MUESTRE SIEMPRE EL MISMO TIP
+        
+        _currentTip = Random.Range(0, 2);
+
+        _tips.sprite = _tipsNextLevel[_currentTip];
+
+        _tips.SetNativeSize();
+
+        //_currentTip = (_currentTip + 1) % _tipsNextLevel.Count; //TODO: CON ESTO VOLVEMOS AL PRIMER TIP
+        
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _pausePanel.SetActive(false);
