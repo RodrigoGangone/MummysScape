@@ -96,10 +96,9 @@ public class PortalSmash : MonoBehaviour
         #region CLOSE ANIM
         
             // 0- Transporto al player hacia "Teleport destination" asi veo la segunda anim
-            player.transform.rotation =
-                destinationScript._posHeadClose.rotation;
-            player.transform.position = 
-                destinationScript._posHeadClose.position;
+            player.transform.rotation = destinationScript._posHeadClose.rotation;
+            
+            player.transform.position = destinationScript._posHeadClose.position;
             
             // 1- Activo la animacion Close
             destinationAnim.SetTrigger(CLOSE_ANIM);
@@ -107,6 +106,7 @@ public class PortalSmash : MonoBehaviour
             yield return StartCoroutine(WaitForAnimationEnd(destinationAnim, ANIM_NAME_CLOSE));
 
             // 3- Activo la visual del player
+            player._anim.Play(player._anim.GetCurrentAnimatorStateInfo(2).shortNameHash, 2, 0f);
             player._viewPlayer.SetValueMaterial(1f, 1f); // 1f = encendido
             
             // 4- Activar al jugar, aviso al lvl manager que no esta mas ocupado 
