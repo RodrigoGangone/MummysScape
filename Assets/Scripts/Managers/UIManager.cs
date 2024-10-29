@@ -9,6 +9,7 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class UIManager : MonoBehaviour
 {
@@ -20,13 +21,11 @@ public class UIManager : MonoBehaviour
 
     [Header("UI PAUSE")] [SerializeField] private GameObject _pausePanel;
 
-    [SerializeField] private List<GameObject> _btnsPause;
-
     [SerializeField] private Button _btnResume;
     [SerializeField] private Button _btnRetry;
     [SerializeField] private Button _btnExit;
     [SerializeField] private Material _pauseMaterial;
-    private const string PAUSE_FILL = "_Power"; 
+    private const string PAUSE_FILL = "_Power";
 
     public static bool PauseCharging;
 
@@ -43,6 +42,10 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private GameObject _NextLvlPanel;
 
+    private int _currentTip;
+    [SerializeField] private Image _tips;
+    [SerializeField] private List<Sprite> _tipsNextLevel = new();
+
     [SerializeField] private float _fakeTimer = 3f;
 
     [Header("FADE")] [SerializeField] private Image fadeImage;
@@ -55,9 +58,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Transform _hourglassScale;
 
     private Vector3 _hourglassOriginalScale;
+
     private float _frecuencyHourglassScale;
     private float _timeHourglassScale;
     private float _waitTimeBeat = 3f;
+
     private Coroutine _beatCoroutineHandler;
     private Coroutine _beatCoroutine;
 
@@ -75,6 +80,7 @@ public class UIManager : MonoBehaviour
     private float _targetOffset1;
     private float _targetOffset2;
     private float _targetOffset3;
+
     private float _fillSpeed = 1f;
 
     private DepthOfField _blur;
@@ -197,9 +203,9 @@ public class UIManager : MonoBehaviour
 
     private void ResumeGame()
     {
-        StartCoroutine(LoadPauseBandage());
+        _pausePanel.SetActive(false);
 
-        Debug.Log("PLAYING");
+        StartCoroutine(LoadPauseBandage());
     }
 
     private IEnumerator LoadPauseBandage()
@@ -212,8 +218,6 @@ public class UIManager : MonoBehaviour
         float startValue = _pauseMaterial.GetFloat(PAUSE_FILL); // Obtener el valor actual del material
         float endValue = (startValue == 1f) ? 0f : 1f; // Determinar si debe ir a 1 o a 0
         float elapsed = 0f;
-
-        StartCoroutine(CascadeButtons(_btnsPause));
 
         //TODO: LLEVAR ESTA CORRUTINA ABAJO DEL WHILE DESPUES DE ENTREGAR AL BUILD EL 10/10
 
@@ -229,18 +233,10 @@ public class UIManager : MonoBehaviour
 
         PauseCharging = false;
 
+        if (endValue == 1f)
+            _pausePanel.SetActive(true);
+
         _pauseMaterial.SetFloat(PAUSE_FILL, endValue); // Asegurar que se complete la transición
-    }
-
-    private IEnumerator CascadeButtons(List<GameObject> buttons)
-    {
-        foreach (var btn in buttons)
-        {
-            btn.SetActive(!btn.activeSelf);
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        buttons.Reverse();
     }
 
     private void GoToMainMenu()
@@ -313,6 +309,18 @@ public class UIManager : MonoBehaviour
     private void ShowNextLvlPanel()
     {
         _NextLvlPanel.SetActive(true);
+
+        //TODO: CAMBIAR POR PLAYER PREFS PARA QUE NO MUESTRE SIEMPRE EL MISMO TIP
+        
+        int _currentTip = PlayerPrefs.GetInt("currentTip", 0);
+        
+        _tips.sprite = _tipsNextLevel[_currentTip];
+        _tips.SetNativeSize();
+        
+        _currentTip = (_currentTip + 1) % _tipsNextLevel.Count;
+        
+        PlayerPrefs.SetInt("currentTip", _currentTip);
+        PlayerPrefs.Save();
 
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);

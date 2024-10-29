@@ -14698,9 +14698,12 @@ MonoBehaviour:
   _walkFX: {fileID: 833570744582829568}
   smashFX: {fileID: 5786886528022462831}
   _walkSandFX: {fileID: 4600794257928178846}
+  _fire: {fileID: 6363218855862122117}
   rightHand: {fileID: 8959279123585388697}
   rigBuilder: {fileID: 7271772858043175343}
   flame: {fileID: 2167685887469230067}
+  _fireColorNormal: {r: 0.5803922, g: 0, b: 1, a: 0}
+  _fireColorSmall: {r: 0, g: 0.81568635, b: 1, a: 0}
   boxHalfExtents: {x: 0.45, y: 0.9, z: 0.45}
   maxDistance: 0.5
   wallLayerMask:
@@ -39865,7 +39868,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.78983116, g: 0, b: 1, a: 1}
+      maxColor: {r: 0.29402828, g: 0, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -39928,9 +39931,9 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     startSize:
       serializedVersion: 2
-      minMaxState: 0
-      scalar: 1
-      minScalar: 1
+      minMaxState: 3
+      scalar: 0.5
+      minScalar: 0.2
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -39981,7 +39984,7 @@ ParticleSystem:
         m_RotationOrder: 4
     startSizeY:
       serializedVersion: 2
-      minMaxState: 0
+      minMaxState: 3
       scalar: 1
       minScalar: 1
       maxCurve:
@@ -40034,7 +40037,7 @@ ParticleSystem:
         m_RotationOrder: 4
     startSizeZ:
       serializedVersion: 2
-      minMaxState: 0
+      minMaxState: 3
       scalar: 1
       minScalar: 1
       maxCurve:

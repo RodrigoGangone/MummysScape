@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -8,20 +9,29 @@ public class ViewPlayer
 
     private CapsuleCollider _capsuleCollider;
     private Animator[] _animatorController;
-    private SkinnedMeshRenderer bodySkinnedMesh;
-    private SkinnedMeshRenderer headSkinnedMesh;
+
+    private SkinnedMeshRenderer _bodySkinnedMesh;
+    private SkinnedMeshRenderer _headSkinnedMesh;
 
     private Material _bodyMat;
     private Material _headMat;
     private Material _fireMat;
+
+    private ParticleSystem _fireParticle;
+    private ParticleSystem _smokeParticle;
+    
+    private const string _ACTIVEFLAME = "_isActive";
+    private const string _COLORFLAME = "_Color";
+
     public Material hookMaterial;
     public LineRenderer bandageLineRenderer;
 
-    public RigBuilder rigBuilder;
+    private RigBuilder rigBuilder;
     public TwoBoneIKConstraint rightHand;
 
     //Vars para disappear
-    private float _materialTransitionDuration = 1.5f; // Duracion en segundos para cambiar el material
+    private const float _materialTransitionDuration = 1.5f; // Duracion en segundos para cambiar el material
+
     private bool _materialChanged;
     private float _elapsedTime;
 
@@ -39,15 +49,19 @@ public class ViewPlayer
 
         bandageLineRenderer = _player._bandage;
 
-        bodySkinnedMesh = body;
-        headSkinnedMesh = head;
+        _bodySkinnedMesh = body;
+        _headSkinnedMesh = head;
+
         _fireMat = fire.material;
 
-        _bodyMat = bodySkinnedMesh.material;
-        _headMat = headSkinnedMesh.material;
+        _bodyMat = _bodySkinnedMesh.material;
+        _headMat = _headSkinnedMesh.material;
+
+        //_fireParticle = _fireMat.GameObject().GetComponentInChildren<ParticleSystem>();
+        //_smokeParticle = _fireMat.GameObject().GetComponentInChildren<ParticleSystem>();
     }
 
-    private void SetValueMaterial(float valueBody, float valueHead)
+    public void SetValueMaterial(float valueBody, float valueHead)
     {
         _bodyMat.SetFloat("_CutoffHeight", valueBody);
         _headMat.SetFloat("_CutoffHeight", valueHead);
@@ -56,14 +70,18 @@ public class ViewPlayer
 
     public void ChangeMesh(Mesh mesh)
     {
-        bodySkinnedMesh.sharedMesh = mesh;
+        _bodySkinnedMesh.sharedMesh = mesh;
     }
 
-    public void AdjustColliderSize()
+    public void AdjustViewProperty()
     {
         if (_capsuleCollider == null) return;
 
         float height, radius, centerY;
+
+        _fireMat.SetFloat(_ACTIVEFLAME, _player.CurrentPlayerSize == PlayerSize.Head ? 0 : 1);
+
+        _player._fire.SetActive(_player.CurrentPlayerSize != PlayerSize.Head);
 
         switch (_player.CurrentPlayerSize)
         {
@@ -71,16 +89,20 @@ public class ViewPlayer
                 height = 1.8f;
                 radius = 0.5f;
                 centerY = 0.9f;
+
+                _fireMat.SetColor(_COLORFLAME, _player._fireColorNormal);
                 break;
             case PlayerSize.Small:
                 height = 1.2f;
                 radius = 0.5f;
                 centerY = 0.6f;
+
+                _fireMat.SetColor(_COLORFLAME, _player._fireColorSmall);
                 break;
             case PlayerSize.Head:
-                height = 0.5f;
-                radius = 0.4f;
-                centerY = 0.3f;
+                height = 0.71f;
+                radius = 0.35f;
+                centerY = 0.33f;
                 break;
             default:
                 Debug.LogWarning("Unknown player size.");
