@@ -51,13 +51,22 @@ public class Player : MonoBehaviour
     [SerializeField] public Mesh[] _Meshes;
 
     [Header("FXS")]
+    
     [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
     [SerializeField] public ParticleSystem smashFX;
     [SerializeField] public ParticleSystem _walkSandFX;
+    [SerializeField] public GameObject _fire;
+    //[SerializeField] public ParticleSystem _smoke;
+
     [SerializeField] public TwoBoneIKConstraint rightHand;
     [SerializeField] public RigBuilder rigBuilder;
     [SerializeField] public GameObject flame;
+
+    [Header("FIRE COLOR")]
+    [SerializeField] public Color _fireColorNormal;
+    [SerializeField] public Color _fireColorSmall;
+    //[SerializeField] public Color _fireColorTiny;
 
     [Header("BC DROP")] [SerializeField] private Vector3 boxHalfExtents = new(0.45f, 0.9f, 0.45f);
     [SerializeField] private float maxDistance = 0.5f;

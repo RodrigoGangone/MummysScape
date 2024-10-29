@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -8,20 +9,31 @@ public class ViewPlayer
 
     private CapsuleCollider _capsuleCollider;
     private Animator[] _animatorController;
-    private SkinnedMeshRenderer bodySkinnedMesh;
-    private SkinnedMeshRenderer headSkinnedMesh;
+
+    private SkinnedMeshRenderer _bodySkinnedMesh;
+    private SkinnedMeshRenderer _headSkinnedMesh;
 
     private Material _bodyMat;
     private Material _headMat;
     private Material _fireMat;
+
+    private ParticleSystem _fireParticle;
+    private ParticleSystem _smokeParticle;
+
+    private const float _intensityColor = 15f;
+
+    private const string _DISSOLVEFLAME = "_Dissolve_Distortion";
+    private const string _COLORFLAME = "_Color";
+
     public Material hookMaterial;
     public LineRenderer bandageLineRenderer;
 
-    public RigBuilder rigBuilder;
+    private RigBuilder rigBuilder;
     public TwoBoneIKConstraint rightHand;
 
     //Vars para disappear
-    private float _materialTransitionDuration = 1.5f; // Duracion en segundos para cambiar el material
+    private const float _materialTransitionDuration = 1.5f; // Duracion en segundos para cambiar el material
+
     private bool _materialChanged;
     private float _elapsedTime;
 
@@ -39,12 +51,16 @@ public class ViewPlayer
 
         bandageLineRenderer = _player._bandage;
 
-        bodySkinnedMesh = body;
-        headSkinnedMesh = head;
+        _bodySkinnedMesh = body;
+        _headSkinnedMesh = head;
+
         _fireMat = fire.material;
 
-        _bodyMat = bodySkinnedMesh.material;
-        _headMat = headSkinnedMesh.material;
+        _bodyMat = _bodySkinnedMesh.material;
+        _headMat = _headSkinnedMesh.material;
+
+        //_fireParticle = _fireMat.GameObject().GetComponentInChildren<ParticleSystem>();
+        //_smokeParticle = _fireMat.GameObject().GetComponentInChildren<ParticleSystem>();
     }
 
     public void SetValueMaterial(float valueBody, float valueHead)
@@ -56,14 +72,18 @@ public class ViewPlayer
 
     public void ChangeMesh(Mesh mesh)
     {
-        bodySkinnedMesh.sharedMesh = mesh;
+        _bodySkinnedMesh.sharedMesh = mesh;
     }
 
-    public void AdjustColliderSize()
+    public void AdjustViewProperty()
     {
         if (_capsuleCollider == null) return;
 
         float height, radius, centerY;
+
+        _fireMat.SetFloat(_DISSOLVEFLAME, _player.CurrentPlayerSize == PlayerSize.Head ? -0.5f : 1);
+
+        _player._fire.SetActive(_player.CurrentPlayerSize != PlayerSize.Head);
 
         switch (_player.CurrentPlayerSize)
         {
@@ -71,11 +91,15 @@ public class ViewPlayer
                 height = 1.8f;
                 radius = 0.5f;
                 centerY = 0.9f;
+
+                _fireMat.SetColor(_COLORFLAME, _player._fireColorNormal * _intensityColor);
                 break;
             case PlayerSize.Small:
                 height = 1.2f;
                 radius = 0.5f;
                 centerY = 0.6f;
+
+                _fireMat.SetColor(_COLORFLAME, _player._fireColorSmall * _intensityColor);
                 break;
             case PlayerSize.Head:
                 height = 0.5f;
