@@ -22,7 +22,7 @@ public class ViewPlayer
 
     private const float _intensityColor = 15f;
 
-    private const string _DISSOLVEFLAME = "_Dissolve_Distortion";
+    private const string _ACTIVEFLAME = "_isActive";
     private const string _COLORFLAME = "_Color";
 
     public Material hookMaterial;
@@ -81,7 +81,7 @@ public class ViewPlayer
 
         float height, radius, centerY;
 
-        _fireMat.SetFloat(_DISSOLVEFLAME, _player.CurrentPlayerSize == PlayerSize.Head ? -0.5f : 1);
+        _fireMat.SetFloat(_ACTIVEFLAME, _player.CurrentPlayerSize == PlayerSize.Head ? 0 : 1);
 
         _player._fire.SetActive(_player.CurrentPlayerSize != PlayerSize.Head);
 
