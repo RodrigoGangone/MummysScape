@@ -25,8 +25,7 @@ public class Player : MonoBehaviour
 
     private string _currentState;
 
-    [Header("ATRIBUTES")]
-    [SerializeField] private float _life;
+    [Header("ATRIBUTES")] [SerializeField] private float _life;
     [SerializeField] private float _speedOriginal = 4;
     [SerializeField] private float _speedRotationOriginal = 8;
     [SerializeField] private float _speed = 4;
@@ -35,24 +34,19 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speedHooked = 5;
     [SerializeField] private AnimationCurve _speedPull;
 
-    [Header("BANDAGE")]
-    [SerializeField] public GameObject _prefabBandage;
+    [Header("BANDAGE")] [SerializeField] public GameObject _prefabBandage;
     [SerializeField] private int _maxBandageStock = 2;
     [SerializeField] private int _minBandageStock = 0;
     [SerializeField] private int _currBandageStock = 2;
     [SerializeField] public Transform handTarget;
     [SerializeField] private Transform _shootTarget;
 
-    [Header("TACKLE")]
-    [SerializeField] public SphereCollider tackle;
+    [Header("TACKLE")] [SerializeField] public SphereCollider tackle;
 
-    [Header("SIZES")]
-    [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
+    [Header("SIZES")] [SerializeField] private PlayerSize _currentPlayerSize = PlayerSize.Normal;
     [SerializeField] public Mesh[] _Meshes;
 
-    [Header("FXS")]
-    
-    [SerializeField] public ParticleSystem _puffFX;
+    [Header("FXS")] [SerializeField] public ParticleSystem _puffFX;
     [SerializeField] public ParticleSystem _walkFX;
     [SerializeField] public ParticleSystem smashFX;
     [SerializeField] public ParticleSystem _walkSandFX;
@@ -63,9 +57,11 @@ public class Player : MonoBehaviour
     [SerializeField] public RigBuilder rigBuilder;
     [SerializeField] public GameObject flame;
 
-    [Header("FIRE COLOR")]
-    [SerializeField] public Color _fireColorNormal;
-    [SerializeField] public Color _fireColorSmall;
+    [Header("FIRE COLOR")] [ColorUsage(hdr: true, showAlpha: true)] [SerializeField]
+    public Color _fireColorNormal;
+
+    [ColorUsage(hdr: true, showAlpha: true)] [SerializeField]
+    public Color _fireColorSmall;
     //[SerializeField] public Color _fireColorTiny;
 
     [Header("BC DROP")] [SerializeField] private Vector3 boxHalfExtents = new(0.45f, 0.9f, 0.45f);

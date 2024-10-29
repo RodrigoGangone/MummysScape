@@ -19,9 +19,7 @@ public class ViewPlayer
 
     private ParticleSystem _fireParticle;
     private ParticleSystem _smokeParticle;
-
-    private const float _intensityColor = 15f;
-
+    
     private const string _ACTIVEFLAME = "_isActive";
     private const string _COLORFLAME = "_Color";
 
@@ -92,14 +90,14 @@ public class ViewPlayer
                 radius = 0.5f;
                 centerY = 0.9f;
 
-                _fireMat.SetColor(_COLORFLAME, _player._fireColorNormal * _intensityColor);
+                _fireMat.SetColor(_COLORFLAME, _player._fireColorNormal);
                 break;
             case PlayerSize.Small:
                 height = 1.2f;
                 radius = 0.5f;
                 centerY = 0.6f;
 
-                _fireMat.SetColor(_COLORFLAME, _player._fireColorSmall * _intensityColor);
+                _fireMat.SetColor(_COLORFLAME, _player._fireColorSmall);
                 break;
             case PlayerSize.Head:
                 height = 0.5f;
