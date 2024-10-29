@@ -447,7 +447,7 @@ public class ModelPlayer
         }
 
         _player.SizeModify?.Invoke();
-        _player._viewPlayer.AdjustColliderSize();
+        _player._viewPlayer.AdjustViewProperty();
     }
 
     public bool CheckGround()
