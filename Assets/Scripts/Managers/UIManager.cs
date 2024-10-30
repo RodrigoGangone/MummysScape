@@ -46,7 +46,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Image _tips;
     [SerializeField] private List<Sprite> _tipsNextLevel = new();
 
-    [SerializeField] private float _fakeTimer = 3f;
+    private float _fakeTimer = 5f;
 
     [Header("FADE")] [SerializeField] private Image fadeImage;
 
