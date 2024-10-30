@@ -309,7 +309,32 @@ public class UIManager : MonoBehaviour
     private void ShowNextLvlPanel()
     {
         _NextLvlPanel.SetActive(true);
+        
+        _WinPanel.SetActive(false);
+        _LosePanel.SetActive(false);
+        _pausePanel.SetActive(false);
+        
+        //TODO: Activar animacion de momia
+        //AnimationMummy.play();
 
+        //Muetro Tips con FakeDelay
+        StartCoroutine(ShowTipsAndLoadNextScene());
+    }
+    
+    private IEnumerator ShowTipsAndLoadNextScene()
+    {
+        yield return ShowTips();
+
+        yield return LoadNextSceneAsync();
+    }
+
+    private IEnumerator ShowTips()
+    {
+        if (!_NextLvlPanel.activeSelf) _NextLvlPanel.SetActive(true);
+        if (_WinPanel.activeSelf) _WinPanel.SetActive(false);
+        if (_LosePanel.activeSelf) _LosePanel.SetActive(false);
+        if (_pausePanel.activeSelf) _pausePanel.SetActive(false);
+        
         //TODO: CAMBIAR POR PLAYER PREFS PARA QUE NO MUESTRE SIEMPRE EL MISMO TIP
         
         int _currentTip = PlayerPrefs.GetInt("currentTip", 0);
@@ -322,15 +347,7 @@ public class UIManager : MonoBehaviour
         PlayerPrefs.SetInt("currentTip", _currentTip);
         PlayerPrefs.Save();
 
-        _WinPanel.SetActive(false);
-        _LosePanel.SetActive(false);
-        _pausePanel.SetActive(false);
-
-        //TODO: Activar animacion de momia
-        //AnimationMummy.play();
-
-        //Carga asincrona
-        StartCoroutine(LoadNextSceneAsync());
+        yield return new WaitForSeconds(_fakeTimer);
     }
 
     private IEnumerator LoadNextSceneAsync()
@@ -344,7 +361,7 @@ public class UIManager : MonoBehaviour
             if (asyncLoad.progress >= 0.9f) // Esperar hasta que la carga haya terminado al 90%
             {
                 //Carga fake de "X" segundos luego cambiar de escena
-                yield return new WaitForSeconds(_fakeTimer);
+                //yield return new WaitForSeconds(_fakeTimer);
                 asyncLoad.allowSceneActivation = true;
             }
 
@@ -354,6 +371,13 @@ public class UIManager : MonoBehaviour
 
     private void RetryLevel()
     {
+        StartCoroutine(RetryLevelWithDelay());
+    }
+    
+    private IEnumerator RetryLevelWithDelay()
+    {
+        yield return StartCoroutine(ShowTips());
+
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(currentSceneIndex);
     }
