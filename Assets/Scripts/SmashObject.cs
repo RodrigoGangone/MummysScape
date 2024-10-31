@@ -1,0 +1,65 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEngine;
+
+public class SmashObject : MonoBehaviour
+{
+    [SerializeField] private Transform _wayPoint;
+    private List<Vector3> _wayPoints = new();
+
+    [SerializeField] private List<GameObject> _tables;
+
+    private const float _velocity = 3;
+
+    [SerializeField] private MeshRenderer _fatherView;
+    [SerializeField] private Collider _fatherCollider;
+
+    [SerializeField] private ParticleSystem _puffFx;
+
+    private void Start()
+    {
+        _wayPoints.Add(_wayPoint.position);
+        _wayPoints.Add(_wayPoint.position + new Vector3(0, 0, 0.25f));
+        _wayPoints.Add(_wayPoint.position + new Vector3(0, 0, 0.50f));
+        _wayPoints.Add(_wayPoint.position + new Vector3(0, 0, 0.75f));
+    }
+
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!other.CompareTag("Smash")) return;
+
+        _puffFx.Play();
+
+        _fatherView.enabled = false;
+        _fatherCollider.enabled = false;
+
+        StartCoroutine(MoveTablesWithDelay());
+    }
+
+    private IEnumerator MoveTablesWithDelay()
+    {
+        foreach (var table in _tables)
+        {
+            table.SetActive(true);
+        }
+
+        for (int i = 0; i < _wayPoints.Count; i++)
+        {
+            StartCoroutine(MoveToWaypoint(_tables[i], _wayPoints[i]));
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
+    private IEnumerator MoveToWaypoint(GameObject table, Vector3 targetPosition)
+    {
+        while (Vector3.Distance(table.transform.position, targetPosition) > 0.01f)
+        {
+            table.transform.position =
+                Vector3.MoveTowards(table.transform.position, targetPosition, _velocity * Time.deltaTime);
+            yield return null;
+        }
+    }
+}
