@@ -7,7 +7,7 @@ using UnityEngine;
 public class SmashObject : MonoBehaviour
 {
     [SerializeField] private Transform _wayPoint;
-    private List<Vector3> _wayPoints = new();
+    // private List<Vector3> _wayPoints = new();
 
     [SerializeField] private List<GameObject> _tables;
 
@@ -20,10 +20,7 @@ public class SmashObject : MonoBehaviour
 
     private void Start()
     {
-        _wayPoints.Add(_wayPoint.position);
-        _wayPoints.Add(_wayPoint.position + new Vector3(0, 0, 0.25f));
-        _wayPoints.Add(_wayPoint.position + new Vector3(0, 0, 0.50f));
-        _wayPoints.Add(_wayPoint.position + new Vector3(0, 0, 0.75f));
+        //_wayPoints.Add(_wayPoint.position);
     }
 
 
@@ -46,10 +43,15 @@ public class SmashObject : MonoBehaviour
             table.SetActive(true);
         }
 
-        for (int i = 0; i < _wayPoints.Count; i++)
+        for (int i = 0; i < _tables.Count; i++)
         {
-            StartCoroutine(MoveToWaypoint(_tables[i], _wayPoints[i]));
+            StartCoroutine(MoveToWaypoint(_tables[i], _wayPoint.position));
             yield return new WaitForSeconds(0.5f);
+        }
+
+        foreach (var table in _tables)
+        {
+            table.GetComponent<MeshCollider>().enabled = true;
         }
     }
 
