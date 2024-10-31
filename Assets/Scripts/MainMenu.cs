@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using static Utils;
@@ -25,6 +27,9 @@ public class MainMenu : MonoBehaviour
 
     [SerializeField] private Button _btnBackToMain;
     
+    private DepthOfField _blur;
+    private Volume _postProcess;
+    
     private void Awake()
     {
         //Buttons Main//
@@ -46,6 +51,13 @@ public class MainMenu : MonoBehaviour
 
     private void Start()
     {
+        //Activar Blur en la scene
+        _postProcess = FindObjectOfType<Volume>();
+        
+        if (_postProcess.profile.TryGet(out _blur))
+            _blur.active = !_blur.active;
+        
+        //Check niveles
         CheckEnabledLevels();
     }
 

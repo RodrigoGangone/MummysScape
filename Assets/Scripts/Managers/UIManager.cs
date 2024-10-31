@@ -9,6 +9,7 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class UIManager : MonoBehaviour
 {
@@ -16,14 +17,15 @@ public class UIManager : MonoBehaviour
     private Player _player;
     private LevelManager levelManager;
 
-    [Header("UI PAUSE")] [SerializeField] private GameObject _pausePanel;
+    [SerializeField] private Animator _mummyUI;
 
-    [SerializeField] private List<GameObject> _btnsPause;
+    [Header("UI PAUSE")] [SerializeField] private GameObject _pausePanel;
 
     [SerializeField] private Button _btnResume;
     [SerializeField] private Button _btnRetry;
     [SerializeField] private Button _btnExit;
     [SerializeField] private Material _pauseMaterial;
+    private const string PAUSE_FILL = "_Power";
 
     public static bool PauseCharging;
 
@@ -40,7 +42,11 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private GameObject _NextLvlPanel;
 
-    [SerializeField] private float _fakeTimer = 3f;
+    private int _currentTip;
+    [SerializeField] private Image _tips;
+    [SerializeField] private List<Sprite> _tipsNextLevel = new();
+
+    private float _fakeTimer = 5f;
 
     [Header("FADE")] [SerializeField] private Image fadeImage;
 
@@ -52,9 +58,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Transform _hourglassScale;
 
     private Vector3 _hourglassOriginalScale;
+
     private float _frecuencyHourglassScale;
     private float _timeHourglassScale;
     private float _waitTimeBeat = 3f;
+
     private Coroutine _beatCoroutineHandler;
     private Coroutine _beatCoroutine;
 
@@ -72,6 +80,7 @@ public class UIManager : MonoBehaviour
     private float _targetOffset1;
     private float _targetOffset2;
     private float _targetOffset3;
+
     private float _fillSpeed = 1f;
 
     private DepthOfField _blur;
@@ -89,6 +98,8 @@ public class UIManager : MonoBehaviour
 
         levelManager.DeathTimer += () =>
         {
+            if (_beatCoroutineHandler != null) return;
+
             _waitTimeBeat = 3f;
             _beatCoroutineHandler = StartCoroutine(HourglassBeatHandler());
         };
@@ -107,12 +118,11 @@ public class UIManager : MonoBehaviour
         _btnRetryL.onClick.AddListener(RetryLevel);
         _btnMainMenuL.onClick.AddListener(GoToMainMenu);
 
-        _pauseMaterial.SetFloat("_Fill", 0f); // Asegurar que se complete la transición
+        _pauseMaterial.SetFloat(PAUSE_FILL, 0f); // Asegurar que se complete la transición
 
         _postProcess = FindObjectOfType<Volume>();
 
         _hourglassOriginalScale = _hourglassScale.transform.localScale;
-
 
         ValidateGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
@@ -122,6 +132,12 @@ public class UIManager : MonoBehaviour
     {
         while (true)
         {
+            if (levelManager.isBusy || levelManager._currentLevelState.Equals(LevelState.Pause))
+            {
+                yield return null;
+                continue;
+            }
+
             yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
 
             yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
@@ -129,8 +145,6 @@ public class UIManager : MonoBehaviour
             yield return new WaitForSeconds(_waitTimeBeat);
 
             _waitTimeBeat *= 0.9f;
-
-            Debug.Log("TIME BEAT " + _waitTimeBeat);
         }
     }
 
@@ -189,9 +203,9 @@ public class UIManager : MonoBehaviour
 
     private void ResumeGame()
     {
-        StartCoroutine(LoadPauseBandage());
+        _pausePanel.SetActive(false);
 
-        Debug.Log("PLAYING");
+        StartCoroutine(LoadPauseBandage());
     }
 
     private IEnumerator LoadPauseBandage()
@@ -201,11 +215,9 @@ public class UIManager : MonoBehaviour
         if (_postProcess.profile.TryGet(out _blur))
             _blur.active = !_blur.active;
 
-        float startValue = _pauseMaterial.GetFloat("_Fill"); // Obtener el valor actual del material
+        float startValue = _pauseMaterial.GetFloat(PAUSE_FILL); // Obtener el valor actual del material
         float endValue = (startValue == 1f) ? 0f : 1f; // Determinar si debe ir a 1 o a 0
         float elapsed = 0f;
-
-        StartCoroutine(CascadeButtons(_btnsPause));
 
         //TODO: LLEVAR ESTA CORRUTINA ABAJO DEL WHILE DESPUES DE ENTREGAR AL BUILD EL 10/10
 
@@ -215,32 +227,24 @@ public class UIManager : MonoBehaviour
 
             float currentValue = Mathf.Lerp(startValue, endValue, elapsed / 0.5f);
 
-            _pauseMaterial.SetFloat("_Fill", currentValue); // Ajusta según la propiedad de tu shader
+            _pauseMaterial.SetFloat(PAUSE_FILL, currentValue); // Ajusta según la propiedad de tu shader
             yield return null;
         }
 
         PauseCharging = false;
 
-        _pauseMaterial.SetFloat("_Fill", endValue); // Asegurar que se complete la transición
+        if (endValue == 1f)
+            _pausePanel.SetActive(true);
+
+        _pauseMaterial.SetFloat(PAUSE_FILL, endValue); // Asegurar que se complete la transición
     }
 
-    private IEnumerator CascadeButtons(List<GameObject> buttons)
-    {
-        foreach (var btn in buttons)
-        {
-            btn.SetActive(!btn.activeSelf);
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        buttons.Reverse();
-    }
-
-    public void GoToMainMenu()
+    private void GoToMainMenu()
     {
         SceneManager.LoadScene(0);
     }
 
-    public void UISetTimerDeath(float currentTimer, float maxtime)
+    private void UISetTimerDeath(float currentTimer, float maxtime)
     {
         _targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
 
@@ -255,11 +259,21 @@ public class UIManager : MonoBehaviour
         _targetOffset1 = currentBandage;
         _targetOffset2 = currentBandage;
 
-        if (currentBandage > 0 && _beatCoroutineHandler != null)
+        if (currentBandage > 0)
         {
-            StopCoroutine(_beatCoroutineHandler);
-            StopCoroutine(_beatCoroutine);
-            _hourglassScale.localScale = _hourglassOriginalScale;
+            if (_beatCoroutineHandler != null)
+            {
+                StopCoroutine(_beatCoroutineHandler);
+                _beatCoroutineHandler = null;
+            }
+
+            if (_beatCoroutine != null)
+            {
+                StopCoroutine(_beatCoroutine);
+                _beatCoroutine = null;
+            }
+
+            _hourglassScale.localScale = _hourglassOriginalScale; // Restablecer tamaño original
         }
     }
 
@@ -295,16 +309,45 @@ public class UIManager : MonoBehaviour
     private void ShowNextLvlPanel()
     {
         _NextLvlPanel.SetActive(true);
-
+        
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _pausePanel.SetActive(false);
-
+        
         //TODO: Activar animacion de momia
         //AnimationMummy.play();
 
-        //Carga asincrona
-        StartCoroutine(LoadNextSceneAsync());
+        //Muetro Tips con FakeDelay
+        StartCoroutine(ShowTipsAndLoadNextScene());
+    }
+    
+    private IEnumerator ShowTipsAndLoadNextScene()
+    {
+        yield return ShowTips();
+
+        yield return LoadNextSceneAsync();
+    }
+
+    private IEnumerator ShowTips()
+    {
+        if (!_NextLvlPanel.activeSelf) _NextLvlPanel.SetActive(true);
+        if (_WinPanel.activeSelf) _WinPanel.SetActive(false);
+        if (_LosePanel.activeSelf) _LosePanel.SetActive(false);
+        if (_pausePanel.activeSelf) _pausePanel.SetActive(false);
+        
+        //TODO: CAMBIAR POR PLAYER PREFS PARA QUE NO MUESTRE SIEMPRE EL MISMO TIP
+        
+        int _currentTip = PlayerPrefs.GetInt("currentTip", 0);
+        
+        _tips.sprite = _tipsNextLevel[_currentTip];
+        _tips.SetNativeSize();
+        
+        _currentTip = (_currentTip + 1) % _tipsNextLevel.Count;
+        
+        PlayerPrefs.SetInt("currentTip", _currentTip);
+        PlayerPrefs.Save();
+
+        yield return new WaitForSeconds(_fakeTimer);
     }
 
     private IEnumerator LoadNextSceneAsync()
@@ -318,7 +361,7 @@ public class UIManager : MonoBehaviour
             if (asyncLoad.progress >= 0.9f) // Esperar hasta que la carga haya terminado al 90%
             {
                 //Carga fake de "X" segundos luego cambiar de escena
-                yield return new WaitForSeconds(_fakeTimer);
+                //yield return new WaitForSeconds(_fakeTimer);
                 asyncLoad.allowSceneActivation = true;
             }
 
@@ -328,6 +371,13 @@ public class UIManager : MonoBehaviour
 
     private void RetryLevel()
     {
+        StartCoroutine(RetryLevelWithDelay());
+    }
+    
+    private IEnumerator RetryLevelWithDelay()
+    {
+        yield return StartCoroutine(ShowTips());
+
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(currentSceneIndex);
     }
@@ -354,7 +404,7 @@ public class UIManager : MonoBehaviour
     {
         Color color = fadeImage.color;
         float alpha = 0f;
-        float duration = 1.5f;
+        float duration = 1f;
         float time = 0f;
 
         while (time < duration)
@@ -375,7 +425,7 @@ public class UIManager : MonoBehaviour
     {
         Color color = fadeImage.color;
         float alpha = 1f;
-        float duration = 1.5f;
+        float duration = 1f;
         float time = 0f;
 
         while (time < duration)
@@ -387,8 +437,6 @@ public class UIManager : MonoBehaviour
         }
 
         fadeImage.color = new Color(color.r, color.g, color.b, 0f);
-
-        //TODO: Aca se podria hacer un action que active el script del player para que no se mueva mientras esta el fade
     }
 
     public void Win()
@@ -401,12 +449,17 @@ public class UIManager : MonoBehaviour
                 _btnNextLvlW.enabled = false;
 
             _WinPanel.SetActive(true);
+            _mummyUI.SetTrigger("isWin");
         }));
     }
 
     public void Lose()
     {
-        StartCoroutine(FadeIn(() => { _LosePanel.SetActive(true); }));
+        StartCoroutine(FadeIn(() =>
+        {
+            _LosePanel.SetActive(true);
+            _mummyUI.SetTrigger("isLose");
+        }));
     }
 
     private void OnEnable()

@@ -26,7 +26,7 @@ public class LevelManager : MonoBehaviour
 
     private int nextSceneLoad;
 
-    private LevelState _currentLevelState = LevelState.Playing;
+    public LevelState _currentLevelState = LevelState.Playing;
 
     public Action OnPlayerWin;
     public Action OnPlayerDeath;

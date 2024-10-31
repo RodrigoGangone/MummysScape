@@ -27,8 +27,16 @@ Material:
         m_Texture: {fileID: 2800000, guid: ed67cc55556cd004c99f0d02a04754fe, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _FakeButtons:
+        m_Texture: {fileID: 2800000, guid: d4932e787d5fdc948be937a4248985e3, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Mask:
-        m_Texture: {fileID: 2800000, guid: 4836c69c3c9560342bd0bbdb247e2f9f, type: 3}
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SampleTexture2D_4830db9351c54fc3af9716fce6aec6b4_Texture_1_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 2a4b9eb6929975d49a16b89362ad45e7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Texture:
@@ -49,12 +57,18 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _BUILTIN_QueueControl: -1
+    - _BUILTIN_QueueOffset: 0
     - _Fill: 0
     - _NoiseSize: 209
-    - _Power: 0.1
-    - _SizeColor: 0.95
+    - _Power: 0
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _SizeColor: 1
     m_Colors:
     - _Color: {r: 3.169812, g: 1.51623, b: 0, a: 0}
+    - _Position_1: {r: 10.1, g: 3.32, b: 0, a: 0}
+    - _Position_2: {r: -1.025, g: -0.415, b: 0, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &1461295247330901969
 MonoBehaviour:
