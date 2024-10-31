@@ -7,7 +7,6 @@ using UnityEngine;
 public class SmashObject : MonoBehaviour
 {
     [SerializeField] private Transform _wayPoint;
-    // private List<Vector3> _wayPoints = new();
 
     [SerializeField] private List<GameObject> _tables;
 
@@ -17,12 +16,6 @@ public class SmashObject : MonoBehaviour
     [SerializeField] private Collider _fatherCollider;
 
     [SerializeField] private ParticleSystem _puffFx;
-
-    private void Start()
-    {
-        //_wayPoints.Add(_wayPoint.position);
-    }
-
 
     private void OnTriggerEnter(Collider other)
     {
