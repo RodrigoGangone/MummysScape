@@ -31,6 +31,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Noise:
+        m_Texture: {fileID: 2800000, guid: 0ae27a6e46a91bd409fc6f5f8bcd9faf, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _RefractionNormal:
         m_Texture: {fileID: 2800000, guid: 753b7081eb2c2c84a941cf3d11cc0642, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -59,8 +63,8 @@ Material:
     - Vector1_E649B5B1: 4
     - Vector1_F278FEE0: 0
     - _BlendSharpness: 12.3
-    - _CascadeSpeed: 1.83
-    - _Divide: 2.23
+    - _CascadeSpeed: -0.45
+    - _Divide: 2.29
     - _FadeDistance: 22.71
     - _FoamAmount: 0.15
     - _FoamCutoff: 7
@@ -79,10 +83,10 @@ Material:
     - _Scale: 1
     - _Smoothness: 0.5
     - _Speed: 0
-    - _Waterfall_FoamSpeed: 1
-    - _Waterfall_FoamWidth: 0.26
+    - _Waterfall_FoamSpeed: 0.6
+    - _Waterfall_FoamWidth: 0.08
     - _Waterfall_Specular: 0.15
-    - _Waterfall_TopSpred: 0.43
+    - _Waterfall_TopSpred: 0.06
     - _WavesAmount: 16.08
     - _WavesHeight: 7.47
     - _WavesSpeed: 2
