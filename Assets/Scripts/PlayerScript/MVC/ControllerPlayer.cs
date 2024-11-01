@@ -75,7 +75,7 @@ public class ControllerPlayer
                 OnStateChange(PlayerState.Drop);
         }
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.Alpha9))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }

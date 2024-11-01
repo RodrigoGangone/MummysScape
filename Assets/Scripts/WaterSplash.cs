@@ -7,6 +7,8 @@ public class WaterSplash : MonoBehaviour
 {
     [SerializeField] private ParticleSystem _waterSplashFX;
 
+    private Player _player;
+
     private Vector3 _offset = new(0, -0.5f, 0);
 
     private void OnTriggerEnter(Collider other)
@@ -18,6 +20,14 @@ public class WaterSplash : MonoBehaviour
             _waterSplashFX.transform.position = other.transform.position + _offset;
 
             _waterSplashFX.Play();
+        }
+
+        if (other.gameObject.CompareTag("PlayerFather"))
+        {
+            _player = other.GetComponent<Player>();
+
+            if (_player.CurrentBandageStock != 0)
+                _player._modelPlayer.CountBandage(-_player.CurrentBandageStock);
         }
     }
 }
