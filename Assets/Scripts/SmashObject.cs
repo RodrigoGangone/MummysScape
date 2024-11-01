@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class SmashObject : MonoBehaviour
 {
@@ -16,7 +17,7 @@ public class SmashObject : MonoBehaviour
     [SerializeField] private Collider _trigegerCollider;
     [SerializeField] private Collider _fatherCollider;
 
-    [SerializeField] private bool _issueWood;
+    [SerializeField] private bool _createPath;
 
     [SerializeField] private ParticleSystem _puffFx;
 
@@ -30,7 +31,7 @@ public class SmashObject : MonoBehaviour
         _fatherCollider.enabled = false;
         _trigegerCollider.enabled = false;
 
-        if (_issueWood)
+        if (_createPath)
         {
             StartCoroutine(MoveTablesWithDelay());
         }
@@ -45,7 +46,7 @@ public class SmashObject : MonoBehaviour
 
         for (int i = 0; i < _tables.Count; i++)
         {
-            StartCoroutine(MoveToWaypoint(_tables[i], _wayPoint.position));
+            StartCoroutine(MoveToWaypoint(_tables[i], _wayPoint));
             yield return new WaitForSeconds(0.5f);
         }
 
@@ -55,12 +56,15 @@ public class SmashObject : MonoBehaviour
         }
     }
 
-    private IEnumerator MoveToWaypoint(GameObject table, Vector3 targetPosition)
+    private IEnumerator MoveToWaypoint(GameObject table, Transform targetPosition)
     {
-        while (Vector3.Distance(table.transform.position, targetPosition) > 0.01f)
+        while (Vector3.Distance(table.transform.position, targetPosition.position) > 0.01f)
         {
             table.transform.position =
-                Vector3.MoveTowards(table.transform.position, targetPosition, _velocity * Time.deltaTime);
+                Vector3.MoveTowards(table.transform.position, targetPosition.position, _velocity * Time.deltaTime);
+
+            table.transform.rotation = Quaternion.Slerp(
+                table.transform.rotation, targetPosition.rotation, _velocity * Time.deltaTime);
             yield return null;
         }
     }
