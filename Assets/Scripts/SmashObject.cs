@@ -13,7 +13,10 @@ public class SmashObject : MonoBehaviour
     private const float _velocity = 3;
 
     [SerializeField] private MeshRenderer _fatherView;
+    [SerializeField] private Collider _trigegerCollider;
     [SerializeField] private Collider _fatherCollider;
+
+    [SerializeField] private bool _issueWood;
 
     [SerializeField] private ParticleSystem _puffFx;
 
@@ -25,8 +28,12 @@ public class SmashObject : MonoBehaviour
 
         _fatherView.enabled = false;
         _fatherCollider.enabled = false;
+        _trigegerCollider.enabled = false;
 
-        StartCoroutine(MoveTablesWithDelay());
+        if (_issueWood)
+        {
+            StartCoroutine(MoveTablesWithDelay());
+        }
     }
 
     private IEnumerator MoveTablesWithDelay()
