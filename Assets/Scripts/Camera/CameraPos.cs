@@ -16,10 +16,13 @@ public class CameraPos : MonoBehaviour
 
     void Start()
     {
-        // Inicializa la cámara en la posición inicial
-        startPoint = transform.position;
-        endPoint = positions[pos].position;
-        controlPoint = (startPoint + endPoint) / 2 + Vector3.up * 5; // Punto de control básico para la curva
+        
+        if (positions.Count > 0)
+        {
+            startPoint = transform.position;
+            endPoint = positions[pos].position;
+            controlPoint = (startPoint + endPoint) / 2 + Vector3.up * 5;
+        }
     }
 
     void FixedUpdate()
@@ -61,5 +64,34 @@ public class CameraPos : MonoBehaviour
         float tt = t * t;
         float uu = u * u;
         return (uu * p0) + (2 * u * t * p1) + (tt * p2); // Fórmula de la curva Bézier cuadrática
+    }
+    
+    // Dibujar curvas Bézier entre todas las posiciones de la lista `positions`
+    private void OnDrawGizmos()
+    {
+        if (positions == null || positions.Count < 2) return;
+
+        Gizmos.color = Color.green;
+
+        // Iterar sobre pares consecutivos de puntos en la lista `positions`
+        for (int i = 0; i < positions.Count - 1; i++)
+        {
+            Vector3 start = positions[i].position;
+            Vector3 end = positions[i + 1].position;
+            Vector3 control = (start + end) / 2 + Vector3.up * 5;  // Punto de control para la curva
+
+            // Dibuja el punto inicial y final de la curva
+            Gizmos.DrawSphere(start, 0.2f);
+            Gizmos.DrawSphere(end, 0.2f);
+
+            // Dibuja la curva Bézier entre el punto `start` y `end`
+            Vector3 previousPoint = start;
+            for (float t = 0; t <= 1; t += 0.05f)
+            {
+                Vector3 point = CalculateBezierPoint(t, start, control, end);
+                Gizmos.DrawLine(previousPoint, point);
+                previousPoint = point;
+            }
+        }
     }
 }
