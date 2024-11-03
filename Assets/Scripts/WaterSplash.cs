@@ -21,6 +21,8 @@ public class WaterSplash : MonoBehaviour
 
             _waterSplashFX.Play();
         }
+        
+        if(other.gameObject.layer == LayerMask.NameToLayer("Pickable")) other.gameObject.SetActive(false);
 
         if (other.gameObject.CompareTag("PlayerFather"))
         {

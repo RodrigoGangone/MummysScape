@@ -7,6 +7,9 @@ using UnityEngine.Serialization;
 
 public class SmashObject : MonoBehaviour
 {
+    [SerializeField] private GameObject _bubbles;
+    [SerializeField] private bool _inWater;
+    
     [SerializeField] private Transform _wayPoint;
 
     [SerializeField] private List<GameObject> _tables;
@@ -21,6 +24,11 @@ public class SmashObject : MonoBehaviour
 
     [SerializeField] private ParticleSystem _puffFx;
 
+    private void Start()
+    {
+        _bubbles.SetActive(_inWater);
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Smash")) return;
@@ -30,6 +38,7 @@ public class SmashObject : MonoBehaviour
         _fatherView.enabled = false;
         _fatherCollider.enabled = false;
         _trigegerCollider.enabled = false;
+        _bubbles.GetComponent<ParticleSystem>().Stop();
 
         if (_createPath)
         {
