@@ -27,9 +27,9 @@ public class Player : MonoBehaviour
 
     [Header("ATRIBUTES")] [SerializeField] private float _life;
     [SerializeField] private float _speedOriginal = 4;
-    [SerializeField] private float _speedRotationOriginal = 8;
+    [SerializeField] private float _speedRotationOriginal = 12;
     [SerializeField] private float _speed = 4;
-    [SerializeField] private float _speedRotation = 8;
+    [SerializeField] private float _speedRotation = 12;
     [SerializeField] private float _speedPush = 1f;
     [SerializeField] private float _speedHooked = 5;
     [SerializeField] private AnimationCurve _speedPull;
