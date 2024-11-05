@@ -118,9 +118,10 @@ public class ModelPlayer
         return false;
     }
     
+    
     private float horizontalHoldTime;
     private float verticalHoldTime;
-    private const float rotationOnlyThreshold = 0.1f; // Tiempo max para solo rotar
+    private const float rotationOnlyThreshold = 0.1f; // Tiempo requerido para comenzar a moverse
 
     public void Move(float moveHorizontal, float moveVertical, float speed, float rotation)
     {
@@ -132,9 +133,7 @@ public class ModelPlayer
         Vector3 heading = (rightMovement + upMovement).normalized;
         Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
 
-        // velocidad vertical (gravedad)
-        float verticalVelocity = _rb.velocity.y;
-        
+        // Control de temporizadores para el movimiento
         if (Mathf.Abs(moveHorizontal) > 0f)
             horizontalHoldTime += Time.deltaTime;
         else
@@ -145,28 +144,28 @@ public class ModelPlayer
         else
             verticalHoldTime = 0f;
 
-        
-        // Si el tiempo de es menor que el umbral solo rota
-        var shouldRotateOnly = horizontalHoldTime < rotationOnlyThreshold && verticalHoldTime < rotationOnlyThreshold;
+        bool shouldRotateOnly = horizontalHoldTime < rotationOnlyThreshold && verticalHoldTime < rotationOnlyThreshold;
 
-        if (shouldRotateOnly)
+        // Aplica la rotación suavemente en ambos casos
+        _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * rotation));
+
+        if (!shouldRotateOnly)
         {
-            // Solo rota
-            _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * rotation));
-            _rb.velocity = new Vector3(0, verticalVelocity, 0); // Mantiene la velocidad en Y sin alterar
+            // Añade velocidad en la dirección calculada solo después de que los inputs se mantengan por el tiempo requerido
+            _rb.velocity += heading;
+
+            // Limita la velocidad máxima horizontal
+            if (Mathf.Abs(_rb.velocity.x) > speed || Mathf.Abs(_rb.velocity.z) > speed)
+            {
+                Vector3 clampedVelocity = Vector3.ClampMagnitude(_rb.velocity, speed);
+                clampedVelocity.y = _rb.velocity.y; // Mantiene la velocidad vertical sin alterarla
+                _rb.velocity = clampedVelocity;
+            }
         }
         else
         {
-            // Aplica rotacion y movimiento, manteniendo la componente Y de la gravedad
-            _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * rotation));
-            _rb.velocity = new Vector3(heading.x * speed, verticalVelocity, heading.z * speed);
-
-            // Limita la velocidad
-            if (new Vector3(_rb.velocity.x, 0, _rb.velocity.z).magnitude > speed)
-            {
-                Vector3 clampedVelocity = Vector3.ClampMagnitude(new Vector3(_rb.velocity.x, 0, _rb.velocity.z), speed);
-                _rb.velocity = new Vector3(clampedVelocity.x, verticalVelocity, clampedVelocity.z);
-            }
+            // Detiene el movimiento horizontal mientras se mantiene la velocidad vertical (por gravedad)
+            _rb.velocity = new Vector3(0, _rb.velocity.y, 0);
         }
     }
 
