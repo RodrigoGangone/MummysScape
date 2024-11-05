@@ -1,49 +1,62 @@
 using System.Collections;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using static Utils;
 
 public class MainMenu : MonoBehaviour
-{ 
-    [Header("PANEL MAIN MENU")]
-    [SerializeField] private GameObject _mainMenuPanel;
+{
+    [Header("PANEL MAIN MENU")] [SerializeField]
+    private GameObject _mainMenuPanel;
+
     [SerializeField] private Button _btnPlay;
     [SerializeField] private Button _btnOptions;
     [SerializeField] private Button _btnExit;
-    
-    [Header("PANEL OPTIONS")]
-    [SerializeField] private GameObject _optionsPanel;
+
+    [Header("PANEL OPTIONS")] [SerializeField]
+    private GameObject _optionsPanel;
+
     [SerializeField] private Button _btnDeletePrefs;
-    
-    [Header("PANEL LEVEL SELECTOR")]
-    [SerializeField] private GameObject _lvlSelectorPanel;
+    [SerializeField] private TMP_Dropdown _frameRateSpinner;
+
+    private static List<string> FrameRateText => new(FPS.Keys);
+
+    [Header("PANEL LEVEL SELECTOR")] [SerializeField]
+    private GameObject _lvlSelectorPanel;
+
     [SerializeField] private Button[] _btnsLvls;
-    
-    [Header("PANEL CHARGE LEVEL")]
-    [SerializeField] private GameObject _chargeLvlSelected;
+
+    [Header("PANEL CHARGE LEVEL")] [SerializeField]
+    private GameObject _chargeLvlSelected;
 
     [SerializeField] private Button _btnBackToMain;
-    
+
     private DepthOfField _blur;
     private Volume _postProcess;
-    
+
     private void Awake()
     {
         //Buttons Main//
         _btnPlay.onClick.AddListener(ShowLvlSelector);
         _btnOptions.onClick.AddListener(ShowOptions);
         _btnExit.onClick.AddListener(QuitGame);
-        
+
         //Buttons Options//
-        _btnDeletePrefs.onClick.AddListener(()=>
+
+        _frameRateSpinner.AddOptions(FrameRateText);
+        _frameRateSpinner.onValueChanged.AddListener(delegate { OnDropdownValueChanged(_frameRateSpinner); });
+
+        _btnDeletePrefs.onClick.AddListener(() =>
         {
             LevelManagerJson.DeteleLevels();
             CheckEnabledLevels();
         });
-        
+
         _btnBackToMain.onClick.AddListener(ShowMain);
 
         SetLevelsInButtons();
@@ -53,28 +66,38 @@ public class MainMenu : MonoBehaviour
     {
         //Activar Blur en la scene
         _postProcess = FindObjectOfType<Volume>();
-        
+
         if (_postProcess.profile.TryGet(out _blur))
             _blur.active = !_blur.active;
-        
+
         //Check niveles
         CheckEnabledLevels();
+
+        //Check Options [FPS]
+        CheckOptions();
+    }
+    
+    private void CheckOptions() //TODO: MODIFICAR ESTO PARA QUE EXISTA UN JSON QUE GUARDE TODAS LAS OPTIONS
+    {
+        _frameRateSpinner.value =
+            _frameRateSpinner.options.FindIndex(option =>
+                option.text == PlayerPrefs.GetString(SELECTED_FPS_KEY, "60 FPS"));
     }
 
     private void CheckEnabledLevels()
     {
         LevelManagerJson.LoadLevels(); //verifico los niveles
         int levelAt = LevelManagerJson.GetLevelCount(); //obtengo la cantidad de niveles del json
-        
+
         for (int i = 0; i < _btnsLvls.Length; i++)
         {
-            if (i  <= levelAt) 
+            if (i <= levelAt)
             {
-                _btnsLvls[i].interactable = true;  
+                _btnsLvls[i].interactable = true;
             }
             else
             {
-                _btnsLvls[i].interactable = false; 
+                _btnsLvls[i].interactable = false;
             }
         }
     }
@@ -97,7 +120,7 @@ public class MainMenu : MonoBehaviour
         _btnBackToMain.gameObject.SetActive(false);
         StartCoroutine(LoadLevelAfterDelay(levelIndex));
     }
-    
+
     private IEnumerator LoadLevelAfterDelay(int levelIndex)
     {
         yield return new WaitForSeconds(FAKE_LOADING_TIME_SCENE);
@@ -119,12 +142,21 @@ public class MainMenu : MonoBehaviour
         _btnBackToMain.gameObject.SetActive(false);
     }
 
+    public void OnDropdownValueChanged(TMP_Dropdown dropdown)
+    {
+        string selectedFPSKey = dropdown.options[dropdown.value].text;
+
+        Application.targetFrameRate = FPS[selectedFPSKey];
+
+        Debug.Log("FPS SELECCIONADO " + selectedFPSKey);
+    }
+
     private void ShowOptions()
     {
         _mainMenuPanel.SetActive(false);
         _optionsPanel.SetActive(true);
         _lvlSelectorPanel.SetActive(false);
-        
+
         _btnBackToMain.gameObject.SetActive(true);
     }
 
@@ -133,10 +165,10 @@ public class MainMenu : MonoBehaviour
         _mainMenuPanel.SetActive(false);
         _optionsPanel.SetActive(false);
         _lvlSelectorPanel.SetActive(true);
-        
+
         _btnBackToMain.gameObject.SetActive(true);
     }
-    
+
     private void QuitGame()
     {
 #if UNITY_EDITOR // Si estás en el editor, detiene la ejecución del juego
@@ -145,5 +177,4 @@ public class MainMenu : MonoBehaviour
             Application.Quit();
 #endif
     }
-
 }

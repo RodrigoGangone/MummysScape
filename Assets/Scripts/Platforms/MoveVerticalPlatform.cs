@@ -61,7 +61,7 @@ public class MoveVerticalPlatform : MonoBehaviour
         transform.position = Vector3.MoveTowards(transform.position, firstWaypoint.position, step);
 
         // Si la plataforma ha alcanzado el primer waypoint
-        if (Vector3.Distance(transform.position, firstWaypoint.position) == 0)
+        if (Vector3.Distance(transform.position, firstWaypoint.position) <= 0.001f)
         {
             isMovingToFirstWaypoint = false;
             _currentWaypointIndex = 1; // Empieza a moverse hacia el segundo waypoint
@@ -83,7 +83,7 @@ public class MoveVerticalPlatform : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, targetWaypoint.position, step);
 
             // Pausa al llegar a un punto
-            if (Vector3.Distance(transform.position, targetWaypoint.position) == 0)
+            if (Vector3.Distance(transform.position, targetWaypoint.position) <= 0.001f)
             {
                 StartCoroutine(PauseAtWaypoint());
             }
