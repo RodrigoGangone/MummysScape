@@ -186,6 +186,7 @@ public class UIManager : MonoBehaviour
         UISetTimerDeath(levelManager._currentTimeDeath,
             levelManager._maxTimeDeath); //TODO: ESTO DEBERIA ESTAR SEPARADO DEL LEVEL MANAGER
 
+
         UpdateMaterialOffsets(); //TODO: ESTO SE DEBERIA DETENER CUANDO LAS VENDAS ESTAN LLENAS
     }
 
@@ -284,6 +285,8 @@ public class UIManager : MonoBehaviour
         _hourglassBandage02.SetFloat("_Offset",
             Mathf.MoveTowards(_hourglassBandage02.GetFloat("_Offset"), _targetOffset2, _fillSpeed * Time.deltaTime));
 
+        if (levelManager._currentLevelState == LevelState.Pause) return;
+
         _sandTimer01.SetFloat("_Fill",
             Mathf.MoveTowards(_sandTimer01.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
         _sandTimer02.SetFloat("_Fill",
@@ -309,18 +312,18 @@ public class UIManager : MonoBehaviour
     private void ShowNextLvlPanel()
     {
         _NextLvlPanel.SetActive(true);
-        
+
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _pausePanel.SetActive(false);
-        
+
         //TODO: Activar animacion de momia
         //AnimationMummy.play();
 
         //Muetro Tips con FakeDelay
         StartCoroutine(ShowTipsAndLoadNextScene());
     }
-    
+
     private IEnumerator ShowTipsAndLoadNextScene()
     {
         yield return ShowTips();
@@ -334,16 +337,16 @@ public class UIManager : MonoBehaviour
         if (_WinPanel.activeSelf) _WinPanel.SetActive(false);
         if (_LosePanel.activeSelf) _LosePanel.SetActive(false);
         if (_pausePanel.activeSelf) _pausePanel.SetActive(false);
-        
+
         //TODO: CAMBIAR POR PLAYER PREFS PARA QUE NO MUESTRE SIEMPRE EL MISMO TIP
-        
+
         int _currentTip = PlayerPrefs.GetInt("currentTip", 0);
-        
+
         _tips.sprite = _tipsNextLevel[_currentTip];
         _tips.SetNativeSize();
-        
+
         _currentTip = (_currentTip + 1) % _tipsNextLevel.Count;
-        
+
         PlayerPrefs.SetInt("currentTip", _currentTip);
         PlayerPrefs.Save();
 
@@ -373,7 +376,7 @@ public class UIManager : MonoBehaviour
     {
         StartCoroutine(RetryLevelWithDelay());
     }
-    
+
     private IEnumerator RetryLevelWithDelay()
     {
         yield return StartCoroutine(ShowTips());
