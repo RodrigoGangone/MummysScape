@@ -134,7 +134,11 @@ public class LevelManager : MonoBehaviour
     {
         while (_currentTimeDeath > 0)
         {
-            _currentTimeDeath -= Time.deltaTime;
+            if (_currentLevelState == LevelState.Playing)
+            {
+                _currentTimeDeath -= Time.deltaTime;
+            }
+
             yield return null;
         }
 

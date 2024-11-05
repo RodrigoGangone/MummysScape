@@ -1,3 +1,4 @@
+using TMPro.Examples;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -29,6 +30,8 @@ public class AnimationEventPlayer : MonoBehaviour
         
         if (activeSmash)
         {
+            FindObjectOfType<CameraPos>().TriggerShake(); //Shake de camara casero xd
+            
             if (_player.smashFX.isPlaying)
             {
                 _player.smashFX.Stop();

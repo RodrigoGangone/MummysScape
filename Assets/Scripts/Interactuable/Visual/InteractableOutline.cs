@@ -38,6 +38,7 @@ public class InteractableOutline : MonoBehaviour
     private const string _color = "_Outline_Color";
     private const string _detected = "Detected";
     private const string _materialNameToFind = "InteractableOutline_Ma";
+    private const string _materialNameToFindForBox = "InteractableOutline_Ma_Box";
 
     [SerializeField] private List<Material> _materials = new();
     [SerializeField] public ParticleSystem _shiningParticles;
@@ -53,7 +54,7 @@ public class InteractableOutline : MonoBehaviour
         {
             foreach (var material in renderer.materials)
             {
-                if (material.name.Contains(_materialNameToFind))
+                if (material.name.Contains(_materialNameToFind) || material.name.Contains(_materialNameToFindForBox))
                 {
                     _materials.Add(material);
                 }

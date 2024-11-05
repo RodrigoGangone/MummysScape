@@ -3,9 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class SmashObject : MonoBehaviour
 {
+    [SerializeField] private GameObject _bubbles;
+    [SerializeField] private bool _inWater;
+    
     [SerializeField] private Transform _wayPoint;
 
     [SerializeField] private List<GameObject> _tables;
@@ -13,9 +17,17 @@ public class SmashObject : MonoBehaviour
     private const float _velocity = 3;
 
     [SerializeField] private MeshRenderer _fatherView;
+    [SerializeField] private Collider _trigegerCollider;
     [SerializeField] private Collider _fatherCollider;
 
+    [SerializeField] private bool _createPath;
+
     [SerializeField] private ParticleSystem _puffFx;
+
+    private void Start()
+    {
+        _bubbles.SetActive(_inWater);
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -25,8 +37,13 @@ public class SmashObject : MonoBehaviour
 
         _fatherView.enabled = false;
         _fatherCollider.enabled = false;
+        _trigegerCollider.enabled = false;
+        _bubbles.GetComponent<ParticleSystem>().Stop();
 
-        StartCoroutine(MoveTablesWithDelay());
+        if (_createPath)
+        {
+            StartCoroutine(MoveTablesWithDelay());
+        }
     }
 
     private IEnumerator MoveTablesWithDelay()
@@ -38,7 +55,7 @@ public class SmashObject : MonoBehaviour
 
         for (int i = 0; i < _tables.Count; i++)
         {
-            StartCoroutine(MoveToWaypoint(_tables[i], _wayPoint.position));
+            StartCoroutine(MoveToWaypoint(_tables[i], _wayPoint));
             yield return new WaitForSeconds(0.5f);
         }
 
@@ -48,12 +65,15 @@ public class SmashObject : MonoBehaviour
         }
     }
 
-    private IEnumerator MoveToWaypoint(GameObject table, Vector3 targetPosition)
+    private IEnumerator MoveToWaypoint(GameObject table, Transform targetPosition)
     {
-        while (Vector3.Distance(table.transform.position, targetPosition) > 0.01f)
+        while (Vector3.Distance(table.transform.position, targetPosition.position) > 0.01f)
         {
             table.transform.position =
-                Vector3.MoveTowards(table.transform.position, targetPosition, _velocity * Time.deltaTime);
+                Vector3.MoveTowards(table.transform.position, targetPosition.position, _velocity * Time.deltaTime);
+
+            table.transform.rotation = Quaternion.Slerp(
+                table.transform.rotation, targetPosition.rotation, _velocity * Time.deltaTime);
             yield return null;
         }
     }

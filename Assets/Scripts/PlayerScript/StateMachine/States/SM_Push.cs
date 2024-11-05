@@ -22,7 +22,7 @@ public class SM_Push : State
         _model = _player._modelPlayer;
         _view = _player._viewPlayer;
 
-        _speed = _player.Speed * 0.5f;
+        _speed = _player.Speed * 0.25f;
         _speedRotationOfPlayer = 0f;
     }
 

@@ -14626,10 +14626,10 @@ MonoBehaviour:
   _stateMachinePlayer: {fileID: 0}
   _life: 100
   _speedOriginal: 4
-  _speedRotationOriginal: 8
+  _speedRotationOriginal: 12
   _speed: 4
-  _speedRotation: 8
-  _speedPush: 0.5
+  _speedRotation: 12
+  _speedPush: 1
   _speedHooked: 5
   _speedPull:
     serializedVersion: 2
@@ -19988,7 +19988,7 @@ Light:
   m_BounceIntensity: 0.001
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 1.6071212e-38}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 3.5e-43, z: 4.2458e-41, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -24845,7 +24845,7 @@ ParticleSystemRenderer:
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
-  m_RenderAlignment: 0
+  m_RenderAlignment: 1
   m_Pivot: {x: 0, y: 0, z: 0}
   m_Flip: {x: 0, y: 0, z: 0}
   m_UseCustomVertexStreams: 0
@@ -54505,7 +54505,7 @@ ParticleSystem:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-  moveWithTransform: 0
+  moveWithTransform: 1
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
   randomSeed: 0
@@ -59266,7 +59266,7 @@ ParticleSystemRenderer:
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
-  m_RenderAlignment: 0
+  m_RenderAlignment: 1
   m_Pivot: {x: 0, y: 0, z: 0}
   m_Flip: {x: 0, y: 0, z: 0}
   m_UseCustomVertexStreams: 0
@@ -61905,7 +61905,7 @@ PrefabInstance:
     - target: {fileID: -6161448157782799470, guid: 48394b49411553a4db7264eecb432275, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 6434008096517374666, guid: 48394b49411553a4db7264eecb432275, type: 3}
     - target: {fileID: -6161448157782799470, guid: 48394b49411553a4db7264eecb432275, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
