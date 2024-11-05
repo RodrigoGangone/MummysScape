@@ -58,7 +58,10 @@ public class StandingTable : MonoBehaviour
         if (!other.CompareTag("PlayerFather")) return;
 
         if (_gravityCoroutine != null)
+        {
             StopCoroutine(_gravityCoroutine);
+            _gravityCoroutine = null;
+        }
 
         if (replacementTables == null)
             replacementTables = StartCoroutine(ReplacementTables());

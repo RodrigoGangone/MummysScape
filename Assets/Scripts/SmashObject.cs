@@ -44,7 +44,7 @@ public class SmashObject : MonoBehaviour
         _fatherView.enabled = false;
         _fatherCollider.enabled = false;
         _triggerCollider.enabled = false;
-        
+
         _bubbles.GetComponent<ParticleSystem>().Stop();
 
         if (_inWater)
@@ -83,7 +83,7 @@ public class SmashObject : MonoBehaviour
                table.transform.rotation != targetPosition.rotation)
         {
             table.transform.position =
-                Vector3.MoveTowards(table.transform.position, targetPosition.position, _velocity * Time.deltaTime);
+                Vector3.Lerp(table.transform.position, targetPosition.position, _velocity * Time.deltaTime);
 
             table.transform.rotation = Quaternion.Slerp(
                 table.transform.rotation, targetPosition.rotation, _velocity * Time.deltaTime);
