@@ -118,20 +118,33 @@ public class ModelPlayer
         return false;
     }
     
-    
     private float horizontalHoldTime;
     private float verticalHoldTime;
     private const float rotationOnlyThreshold = 0.1f; // Tiempo requerido para comenzar a moverse
 
     public void Move(float moveHorizontal, float moveVertical, float speed, float rotation)
     {
-        Vector3 forward = new Vector3(_player._cameraTransform.forward.x, 0, _player._cameraTransform.forward.z).normalized;
+        // Obtener la posición actualizada de la cámara
+        Transform cameraTransform = _player._cameraTransform;
+
+        // Normalizar el vector de la dirección hacia adelante y derecha usando la cámara actualizada
+        Vector3 forward = new Vector3(cameraTransform.forward.x, 0, cameraTransform.forward.z).normalized;
         Vector3 right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
 
+        // Movimiento basado en la entrada del jugador
         Vector3 rightMovement = right * (speed * Time.deltaTime * moveHorizontal);
         Vector3 upMovement = forward * (speed * Time.deltaTime * moveVertical);
         Vector3 heading = (rightMovement + upMovement).normalized;
-        Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
+
+        // Si no hay movimiento, no calcules la rotación
+        if (heading.sqrMagnitude > 0.01f)
+        {
+            // Calcula la rotación basada en la dirección del movimiento
+            Quaternion targetRotation = Quaternion.LookRotation(heading, Vector3.up);
+
+            // Aplica la rotación suavemente con un mayor factor de interpolación para evitar tirones
+            _rb.MoveRotation(Quaternion.Slerp(_rb.rotation, targetRotation, Time.deltaTime * (rotation * 3f)));
+        }
 
         // Control de temporizadores para el movimiento
         if (Mathf.Abs(moveHorizontal) > 0f)
@@ -146,13 +159,10 @@ public class ModelPlayer
 
         bool shouldRotateOnly = horizontalHoldTime < rotationOnlyThreshold && verticalHoldTime < rotationOnlyThreshold;
 
-        // Aplica la rotación suavemente en ambos casos
-        _rb.MoveRotation(Quaternion.Lerp(_rb.rotation, targetRotation, Time.deltaTime * rotation));
-
         if (!shouldRotateOnly)
         {
             // Añade velocidad en la dirección calculada solo después de que los inputs se mantengan por el tiempo requerido
-            _rb.velocity += heading;
+            _rb.velocity += heading * speed;
 
             // Limita la velocidad máxima horizontal
             if (Mathf.Abs(_rb.velocity.x) > speed || Mathf.Abs(_rb.velocity.z) > speed)
@@ -168,7 +178,7 @@ public class ModelPlayer
             _rb.velocity = new Vector3(0, _rb.velocity.y, 0);
         }
     }
-
+    
     public bool IsBoxCloseToPlayer(float maxDistance = 1.8f)
     {
         Vector3 playerPosition = _player.transform.position;
@@ -251,7 +261,7 @@ public class ModelPlayer
 
         Vector3 directionToButton = (new Vector3(buttonPosition.x, _player.transform.position.y, buttonPosition.z)
                                      - _player.transform.position).normalized;
-        
+
         Quaternion targetRotation = Quaternion.LookRotation(directionToButton);
 
         float duration = 0.5f;
