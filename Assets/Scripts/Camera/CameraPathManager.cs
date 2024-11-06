@@ -78,11 +78,13 @@ public class CameraPathManager : MonoBehaviour
                 t = 0;
             }
         }
+        
+        if (target != null) transform.LookAt(target);
+
     }
     
     private void LateUpdate()
     {
-        if (target != null) transform.LookAt(target);
     }
 
     private Vector3 CalculateControlPoint(Vector3 start, Vector3 end, CameraNode.BezierAxis axis, float intensity)
