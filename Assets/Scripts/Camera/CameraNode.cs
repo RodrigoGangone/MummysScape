@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,7 +17,7 @@ public class CameraNode : MonoBehaviour
         // Establece valores predeterminados si aún no han sido ajustados
         foreach (var connection in connections)
         {
-            if (connection.curveAxis == 0) connection.curveAxis = BezierAxis.Y;
+            //if (connection.curveAxis == 0) connection.curveAxis = BezierAxis.Y;
             if (connection.curveIntensity == 0) connection.curveIntensity = 5f;
             if (connection.cameraSpeed == 0) connection.cameraSpeed = 1f;
         }

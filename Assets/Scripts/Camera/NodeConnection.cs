@@ -1,4 +1,3 @@
-using UnityEngine;
 
 [System.Serializable]
 public class NodeConnection
