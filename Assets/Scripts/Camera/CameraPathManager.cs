@@ -5,7 +5,7 @@ using UnityEngine;
 public class CameraPathManager : MonoBehaviour
 {
     [SerializeField] private List<CameraNode> nodes;
-    [SerializeField] private Transform player;
+    [SerializeField] private Transform target;
 
     private CameraNode currentNode;
     private float t = 0;
@@ -82,7 +82,7 @@ public class CameraPathManager : MonoBehaviour
     
     private void LateUpdate()
     {
-        if (player != null) transform.LookAt(player);
+        if (target != null) transform.LookAt(target);
     }
 
     private Vector3 CalculateControlPoint(Vector3 start, Vector3 end, CameraNode.BezierAxis axis, float intensity)
