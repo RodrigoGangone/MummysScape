@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -55,11 +56,6 @@ public class CameraPathManager : MonoBehaviour
 
     private void Update()
     {
-        if (player != null)
-        {
-            transform.LookAt(player);
-        }
-
         if (currentNode != null && Vector3.Distance(transform.position, currentNode.Position) > 0.1f)
         {
             // Calcular la distancia entre la cámara y el punto de destino
@@ -67,7 +63,7 @@ public class CameraPathManager : MonoBehaviour
 
             // Ajusta la velocidad según la distancia al objetivo. A menor distancia, menor velocidad.
             float dynamicSpeed = Mathf.Lerp(0.1f, currentSpeed, distance / 10f); 
-            // El divisor (5f) se puede ajustar para cambiar la desaceleración. Cuanto mayor el divisor, menor la desaceleración.
+            // El divisor (10f) se puede ajustar para cambiar la desaceleración. Cuanto mayor el divisor, menor la desaceleración.
 
             // Aumenta el valor de t basado en la velocidad ajustada
             t += dynamicSpeed * Time.deltaTime;
@@ -82,6 +78,11 @@ public class CameraPathManager : MonoBehaviour
                 t = 0;
             }
         }
+    }
+    
+    private void LateUpdate()
+    {
+        if (player != null) transform.LookAt(player);
     }
 
     private Vector3 CalculateControlPoint(Vector3 start, Vector3 end, CameraNode.BezierAxis axis, float intensity)
