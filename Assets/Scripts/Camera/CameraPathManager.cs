@@ -4,34 +4,39 @@ using UnityEngine;
 
 public class CameraPathManager : MonoBehaviour
 {
-    [SerializeField] private List<CameraNode> nodes; // Lista de nodos con CameraNode
-    [SerializeField] private Transform player;  // Referencia al jugador
+    [SerializeField] private List<CameraNode> nodes;
+    [SerializeField] private Transform player;
+
     private CameraNode currentNode;
-    private float speed = 1f;
     private float t = 0;
     private Vector3 startPoint;
     private Vector3 controlPoint;
     private Vector3 endPoint;
-    private float initialSpeed = 1f; // Velocidad base
-    private float minSpeed = 0.2f; // Velocidad mínima cerca del objetivo
+    private float currentSpeed;
 
     private void Start()
     {
         if (nodes.Count > 0)
         {
-            currentNode = nodes[0]; // Nodo inicial
+            currentNode = nodes[0];
             transform.position = currentNode.Position;
         }
     }
 
     public void MoveCameraToNode(CameraNode targetNode)
     {
-        if (currentNode != null && currentNode.connectedNodes.Contains(targetNode))
+        var connection = currentNode?.GetConnectionToNode(targetNode);
+
+        if (connection != null)
         {
             currentNode = targetNode;
             startPoint = transform.position;
             endPoint = targetNode.Position;
-            controlPoint = (startPoint + endPoint) / 2 + Vector3.up * 5; // Punto de control para la curva Bézier
+
+            // Usa las propiedades específicas de la conexión
+            controlPoint = CalculateControlPoint(startPoint, endPoint, connection.curveAxis, connection.curveIntensity);
+            currentSpeed = connection.cameraSpeed;
+
             t = 0;
         }
         else
@@ -42,23 +47,34 @@ public class CameraPathManager : MonoBehaviour
 
     private void Update()
     {
-        // Asegurar que la cámara mire al jugador en todo momento
         if (player != null)
         {
             transform.LookAt(player);
         }
 
-        // Movimiento suave de la cámara
         if (currentNode != null && Vector3.Distance(transform.position, currentNode.Position) > 0.1f)
         {
-            // Ajusta la velocidad según la distancia al objetivo
-            float distance = Vector3.Distance(transform.position, currentNode.Position);
-            float dynamicSpeed = Mathf.Lerp(minSpeed, initialSpeed, distance / 5f); // Ajusta el divisor para cambiar la desaceleración
-            t += dynamicSpeed * Time.deltaTime;
+            t += currentSpeed * Time.deltaTime;
             t = Mathf.Clamp01(t);
 
-            // Movimiento en la curva Bézier
             transform.position = CalculateBezierPoint(t, startPoint, controlPoint, endPoint);
+        }
+    }
+
+    private Vector3 CalculateControlPoint(Vector3 start, Vector3 end, CameraNode.BezierAxis axis, float intensity)
+    {
+        Vector3 midpoint = (start + end) / 2;
+
+        switch (axis)
+        {
+            case CameraNode.BezierAxis.X:
+                return midpoint + Vector3.right * intensity;
+            case CameraNode.BezierAxis.Y:
+                return midpoint + Vector3.up * intensity;
+            case CameraNode.BezierAxis.Z:
+                return midpoint + Vector3.forward * intensity;
+            default:
+                return midpoint;
         }
     }
 
@@ -72,34 +88,38 @@ public class CameraPathManager : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (nodes == null) return;
+        if (nodes == null || nodes.Count < 2) return;
 
         Gizmos.color = Color.cyan;
         foreach (var node in nodes)
         {
             if (node == null) continue;
 
-            foreach (var connectedNode in node.connectedNodes)
+            foreach (var connection in node.connections)
             {
-                if (connectedNode != null)
+                if (connection.targetNode != null)
                 {
-                    DrawBezierCurve(node.Position, connectedNode.Position);
+                    Vector3 controlPt = CalculateControlPoint(
+                        node.Position,
+                        connection.targetNode.Position,
+                        connection.curveAxis,
+                        connection.curveIntensity
+                    );
+                    DrawBezierCurve(node.Position, controlPt, connection.targetNode.Position);
                 }
             }
         }
     }
 
-// Método para dibujar una curva Bézier entre dos puntos
-    private void DrawBezierCurve(Vector3 start, Vector3 end)
+    private void DrawBezierCurve(Vector3 start, Vector3 control, Vector3 end)
     {
-        Vector3 controlPoint = (start + end) / 2 + Vector3.up * 5; // Ajusta la altura del punto de control para modificar la curva
-        int segmentCount = 20; // Número de segmentos para la curva, cuanto mayor sea, más suave será la curva
-
+        int segmentCount = 20;
         Vector3 previousPoint = start;
+
         for (int i = 1; i <= segmentCount; i++)
         {
             float t = i / (float)segmentCount;
-            Vector3 pointOnCurve = CalculateBezierPoint(t, start, controlPoint, end);
+            Vector3 pointOnCurve = CalculateBezierPoint(t, start, control, end);
             Gizmos.DrawLine(previousPoint, pointOnCurve);
             previousPoint = pointOnCurve;
         }
