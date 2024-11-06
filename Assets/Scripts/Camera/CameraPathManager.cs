@@ -66,7 +66,7 @@ public class CameraPathManager : MonoBehaviour
             float distance = Vector3.Distance(transform.position, endPoint);
 
             // Ajusta la velocidad según la distancia al objetivo. A menor distancia, menor velocidad.
-            float dynamicSpeed = Mathf.Lerp(0.1f, currentSpeed, distance / 5f); 
+            float dynamicSpeed = Mathf.Lerp(0.1f, currentSpeed, distance / 10f); 
             // El divisor (5f) se puede ajustar para cambiar la desaceleración. Cuanto mayor el divisor, menor la desaceleración.
 
             // Aumenta el valor de t basado en la velocidad ajustada
