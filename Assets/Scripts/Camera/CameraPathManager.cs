@@ -62,10 +62,25 @@ public class CameraPathManager : MonoBehaviour
 
         if (currentNode != null && Vector3.Distance(transform.position, currentNode.Position) > 0.1f)
         {
-            t += currentSpeed * Time.deltaTime;
+            // Calcular la distancia entre la cámara y el punto de destino
+            float distance = Vector3.Distance(transform.position, endPoint);
+
+            // Ajusta la velocidad según la distancia al objetivo. A menor distancia, menor velocidad.
+            float dynamicSpeed = Mathf.Lerp(0.1f, currentSpeed, distance / 5f); 
+            // El divisor (5f) se puede ajustar para cambiar la desaceleración. Cuanto mayor el divisor, menor la desaceleración.
+
+            // Aumenta el valor de t basado en la velocidad ajustada
+            t += dynamicSpeed * Time.deltaTime;
             t = Mathf.Clamp01(t);
 
+            // Actualiza la posición de la cámara en la curva Bézier
             transform.position = CalculateBezierPoint(t, startPoint, controlPoint, endPoint);
+
+            // Reinicia t al llegar al destino
+            if (t >= 1f)
+            {
+                t = 0;
+            }
         }
     }
 
