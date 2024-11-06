@@ -11,17 +11,6 @@ public class CameraNode : MonoBehaviour
     public Vector3 Position { get; private set; }
 
     private CameraPathManager cameraPathManager;
-    
-    private void OnValidate()
-    {
-        // Establece valores predeterminados si aún no han sido ajustados
-        foreach (var connection in connections)
-        {
-            //if (connection.curveAxis == 0) connection.curveAxis = BezierAxis.Y;
-            if (connection.curveIntensity == 0) connection.curveIntensity = 5f;
-            if (connection.cameraSpeed == 0) connection.cameraSpeed = 1f;
-        }
-    }
 
     private void Start()
     {
@@ -33,6 +22,11 @@ public class CameraNode : MonoBehaviour
             Debug.LogError("CameraPathManager no encontrado en la cámara principal.");
         }
     }
+    
+    public NodeConnection GetConnectionToNode(CameraNode targetNode)
+    {
+        return connections.Find(connection => connection.targetNode == targetNode);
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -40,10 +34,5 @@ public class CameraNode : MonoBehaviour
         {
             cameraPathManager.MoveCameraToNode(this);
         }
-    }
-
-    public NodeConnection GetConnectionToNode(CameraNode targetNode)
-    {
-        return connections.Find(connection => connection.targetNode == targetNode);
     }
 }

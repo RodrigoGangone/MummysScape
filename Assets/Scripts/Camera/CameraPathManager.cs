@@ -24,24 +24,33 @@ public class CameraPathManager : MonoBehaviour
 
     public void MoveCameraToNode(CameraNode targetNode)
     {
+        // Intenta obtener una conexión directa al nodo de destino
         var connection = currentNode?.GetConnectionToNode(targetNode);
 
-        if (connection != null)
+        // Si no hay una conexión directa, usa valores predeterminados
+        if (connection == null)
         {
-            currentNode = targetNode;
-            startPoint = transform.position;
-            endPoint = targetNode.Position;
-
-            // Usa las propiedades específicas de la conexión
-            controlPoint = CalculateControlPoint(startPoint, endPoint, connection.curveAxis, connection.curveIntensity);
-            currentSpeed = connection.cameraSpeed;
-
-            t = 0;
+            Debug.Log("No existe conexión directa. Usando valores predeterminados para la conexión.");
+        
+            connection = new NodeConnection
+            {
+                targetNode = targetNode,
+                curveAxis = CameraNode.BezierAxis.Y,  // Eje Y por defecto
+                curveIntensity = 10f,                 // Intensidad de 10 por defecto
+                cameraSpeed = 1f                      // Velocidad de 1 por defecto
+            };
         }
-        else
-        {
-            Debug.LogWarning("No existe conexión directa con el nodo de destino.");
-        }
+
+        // Establece los valores de conexión para el movimiento de la cámara
+        currentNode = targetNode;
+        startPoint = transform.position;
+        endPoint = targetNode.Position;
+    
+        // Usa las propiedades específicas de la conexión (ya sea real o por defecto)
+        controlPoint = CalculateControlPoint(startPoint, endPoint, connection.curveAxis, connection.curveIntensity);
+        currentSpeed = connection.cameraSpeed;
+    
+        t = 0;
     }
 
     private void Update()
