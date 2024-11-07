@@ -30,7 +30,8 @@ public class AnimationEventPlayer : MonoBehaviour
         
         if (activeSmash)
         {
-            FindObjectOfType<CameraPos>().TriggerShake(); //Shake de camara casero xd
+            //TODO: Volver a agregar esto
+            //FindObjectOfType<CameraPos>().TriggerShake(); //Shake de camara casero xd
             
             if (_player.smashFX.isPlaying)
             {

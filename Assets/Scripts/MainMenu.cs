@@ -24,10 +24,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private Button _btnDeletePrefs;
     [SerializeField] private TMP_Dropdown _frameRateSpinner;
 
-    public List<string> FrameRateText
-    {
-        get => new(FPS.Keys);
-    }
+    private static List<string> FrameRateText => new(FPS.Keys);
 
     [Header("PANEL LEVEL SELECTOR")] [SerializeField]
     private GameObject _lvlSelectorPanel;
@@ -53,7 +50,7 @@ public class MainMenu : MonoBehaviour
 
         _frameRateSpinner.AddOptions(FrameRateText);
         _frameRateSpinner.onValueChanged.AddListener(delegate { OnDropdownValueChanged(_frameRateSpinner); });
-        
+
         _btnDeletePrefs.onClick.AddListener(() =>
         {
             LevelManagerJson.DeteleLevels();
@@ -75,6 +72,16 @@ public class MainMenu : MonoBehaviour
 
         //Check niveles
         CheckEnabledLevels();
+
+        //Check Options [FPS]
+        CheckOptions();
+    }
+    
+    private void CheckOptions() //TODO: MODIFICAR ESTO PARA QUE EXISTA UN JSON QUE GUARDE TODAS LAS OPTIONS
+    {
+        _frameRateSpinner.value =
+            _frameRateSpinner.options.FindIndex(option =>
+                option.text == PlayerPrefs.GetString(SELECTED_FPS_KEY, "60 FPS"));
     }
 
     private void CheckEnabledLevels()

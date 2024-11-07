@@ -35,14 +35,6 @@ Material:
         m_Texture: {fileID: 2800000, guid: 0ae27a6e46a91bd409fc6f5f8bcd9faf, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _Noise_Tex:
-        m_Texture: {fileID: 2800000, guid: eb98999a6b639ae4c82651cd4d60a1c3, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _Reflection:
-        m_Texture: {fileID: 8900000, guid: c51c2b55e26bfcf4aacaa2385be9a133, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _RefractionNormal:
         m_Texture: {fileID: 2800000, guid: 753b7081eb2c2c84a941cf3d11cc0642, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -70,10 +62,9 @@ Material:
     - Vector1_E285A04C: 0.2
     - Vector1_E649B5B1: 4
     - Vector1_F278FEE0: 0
-    - _Alpha: 1.64
     - _BlendSharpness: 12.3
-    - _CascadeSpeed: 0.8
-    - _Divide: 2.11
+    - _CascadeSpeed: -0.45
+    - _Divide: 2.29
     - _FadeDistance: 22.71
     - _FoamAmount: 0.15
     - _FoamCutoff: 7
@@ -81,28 +72,21 @@ Material:
     - _FoamDistance_1: 4.39
     - _FoamScale: 38
     - _FoamSpeed: 0.5
-    - _Fresnel: 0.32
     - _InnerThreshiold: 0.482
-    - _IntensityCubemap: 0.71
     - _NoiseScale: 1.3
-    - _NormalStrength: 0.27
     - _OuterThreshiold: 0.621
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _ReflectionIntensity: 0.07
-    - _ReflectionLerp: 0.03
-    - _ReflectionRefraction: 0.19
     - _RefractionScale: 1
     - _RefractionSpeed: 0.03
-    - _RefractionStrength: 0.03
+    - _RefractionStrength: 0.04
     - _Scale: 1
     - _Smoothness: 0.5
     - _Speed: 0
-    - _WaterLerp: 0.303
-    - _Waterfall_FoamSpeed: 1.5
-    - _Waterfall_FoamWidth: -0.06
+    - _Waterfall_FoamSpeed: 0.6
+    - _Waterfall_FoamWidth: 0.08
     - _Waterfall_Specular: 0.15
-    - _Waterfall_TopSpred: 0.26
+    - _Waterfall_TopSpred: 0.06
     - _WavesAmount: 16.08
     - _WavesHeight: 7.47
     - _WavesSpeed: 2
@@ -112,10 +96,10 @@ Material:
     - Color_A038EF66: {r: 0.6886792, g: 0.613964, b: 0.613964, a: 0}
     - Color_B3D1197F: {r: 0.44495368, g: 0.9339623, b: 0.9146175, a: 0}
     - Vector2_BDC8430A: {r: 0.3, g: 0.3, b: 0, a: 0}
-    - _DeepColor: {r: 0.5707102, g: 0.6706088, b: 0.8962264, a: 0.3529412}
+    - _DeepColor: {r: 0.5136614, g: 0.52138114, b: 0.9150943, a: 0.3529412}
     - _FoamColor: {r: 0.9716981, g: 0.7240175, b: 0.45376468, a: 0.6392157}
-    - _RefractionScale: {r: 7.45, g: 5.02, b: 0, a: 0}
-    - _SurfaceColor: {r: 0.24417053, g: 0.27148455, b: 0.8773585, a: 0.12941177}
+    - _RefractionScale: {r: 2.89, g: 6.43, b: 0, a: 0}
+    - _SurfaceColor: {r: 0, g: 0.043137275, b: 1, a: 0.12941177}
   m_BuildTextureStacks: []
 --- !u!114 &234033702392092744
 MonoBehaviour:
