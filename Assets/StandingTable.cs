@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//[DefaultExecutionOrder(-50)]
 public class StandingTable : MonoBehaviour
 {
     private Player _player;
@@ -28,6 +29,7 @@ public class StandingTable : MonoBehaviour
             foreach (var table in _tables)
             {
                 var tableRb = table.GetComponent<Rigidbody>();
+
                 tableRb.isKinematic = true;
             }
         };
