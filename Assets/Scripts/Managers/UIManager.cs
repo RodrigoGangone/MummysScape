@@ -1,15 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
-using Random = UnityEngine.Random;
 
 public class UIManager : MonoBehaviour
 {
@@ -19,10 +15,12 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private Animator _mummyUI;
 
-    [Header("UI PAUSE")] [SerializeField] private GameObject _pausePanel;
-
+    [Header("UI PAUSE")] 
+    [SerializeField] private GameObject _pausePanel;
+    [SerializeField] private GameObject _optionsPanel;
     [SerializeField] private Button _btnResume;
     [SerializeField] private Button _btnRetry;
+    [SerializeField] private Button _btnOptions;
     [SerializeField] private Button _btnExit;
     [SerializeField] private Material _pauseMaterial;
     private const string PAUSE_FILL = "_Power";
@@ -109,6 +107,7 @@ public class UIManager : MonoBehaviour
         //Buttons OnClick
         _btnResume.onClick.AddListener(() => { levelManager.OnPlaying.Invoke(); });
         _btnRetry.onClick.AddListener(RetryLevel);
+        _btnOptions.onClick.AddListener(ShowOptionsPanel);
         _btnExit.onClick.AddListener(GoToMainMenu);
 
         _btnNextLvlW.onClick.AddListener(ShowNextLvlPanel);
@@ -375,6 +374,11 @@ public class UIManager : MonoBehaviour
     private void RetryLevel()
     {
         StartCoroutine(RetryLevelWithDelay());
+    }
+
+    private void ShowOptionsPanel()
+    {
+        _optionsPanel.SetActive(true);
     }
 
     private IEnumerator RetryLevelWithDelay()
