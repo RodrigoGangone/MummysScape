@@ -81,4 +81,24 @@ public class AudioManager : MonoBehaviour
             Debug.Log($"SFX '{name}' is not currently playing.");
         }
     }
+
+    public void ToogleMusic()
+    {
+        musicSource.mute = !musicSource.mute;
+    }
+    
+    public void ToogleSFX()
+    {
+        sfxSource.mute = !sfxSource.mute;
+    }
+
+    public void MusicVolume(float volume)
+    {
+        musicSource.volume = volume;
+    }
+    
+    public void SFXVolume(float volume)
+    {
+        sfxSource.volume = volume;
+    }
 }
