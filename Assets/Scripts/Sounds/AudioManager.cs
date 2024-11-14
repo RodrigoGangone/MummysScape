@@ -23,7 +23,7 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
-        PlayMusic("Theme");
+        //PlayMusic("Theme");
     }
 
     public void PlayMusic(string name)
@@ -33,6 +33,7 @@ public class AudioManager : MonoBehaviour
         if (s != null)
         {
             musicSource.clip = s.clip;
+            musicSource.loop = s.loop;
             musicSource.Play();
         }
         else Debug.Log("Music Not Found");
@@ -45,8 +46,39 @@ public class AudioManager : MonoBehaviour
         if (s != null)
         {
             sfxSource.clip = s.clip;
+            sfxSource.loop = s.loop;
             sfxSource.Play();
         }
         else Debug.Log("Sfx Not Found");
+    }
+    
+    public void StopMusic(string name)
+    {
+        Sound s = Array.Find(musicSounds, x => x.name == name);
+
+        if (s != null && musicSource.isPlaying && musicSource.clip == s.clip)
+        {
+            musicSource.Stop();
+            Debug.Log($"Stopped music: {name}");
+        }
+        else
+        {
+            Debug.Log($"Music '{name}' is not currently playing.");
+        }
+    }
+    
+    public void StopSFX(string name)
+    {
+        Sound s = Array.Find(sfxSounds, x => x.name == name);
+
+        if (s != null && sfxSource.isPlaying && sfxSource.clip == s.clip)
+        {
+            sfxSource.Stop();
+            Debug.Log($"Stopped SFX: {name}");
+        }
+        else
+        {
+            Debug.Log($"SFX '{name}' is not currently playing.");
+        }
     }
 }
