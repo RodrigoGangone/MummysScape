@@ -29,16 +29,15 @@ public class IdleBossScorpion : State
         if (_timeToSecondAttack < _scorpion._cdAttack2)
             _timeToSecondAttack += Time.deltaTime;
 
-        if (_timeToFirstAttack >= _scorpion._cdAttack1 && _scorpion.currentAttack == 1)
+        if (_timeToFirstAttack >= _scorpion._cdAttack1 && _scorpion._currentAttack == CurrentAttack.First)
             _scorpion.stateMachine.ChangeState(BossScorpionState.FirstAttackScorpion);
 
-        if (_timeToSecondAttack >= _scorpion._cdAttack2 && _scorpion.currentAttack == 2)
+        if (_timeToSecondAttack >= _scorpion._cdAttack2 && _scorpion._currentAttack == CurrentAttack.Second)
             _scorpion.stateMachine.ChangeState(BossScorpionState.SecondAttackScorpion);
 
         if (_scorpion._isDead)
             _scorpion.stateMachine.ChangeState(BossScorpionState.DeathScorpion);
 
-        //Debug.Log("Time to first attack" + _timeToFirstAttack);
     }
 
     public override void OnFixedUpdate()

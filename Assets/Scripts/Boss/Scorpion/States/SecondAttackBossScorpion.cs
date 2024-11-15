@@ -13,6 +13,7 @@ public class SecondAttackBossScorpion : State
     public override void OnEnter()
     {
         _scorpion._anim.SetBool(SECOND_ATTACK_ANIM_SCORPION, true);
+        _scorpion.SecondAttack();
         Debug.Log("ENTER SECOND");
 
     }
