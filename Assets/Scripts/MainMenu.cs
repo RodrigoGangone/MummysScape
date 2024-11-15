@@ -42,9 +42,22 @@ public class MainMenu : MonoBehaviour
     private void Awake()
     {
         //Buttons Main//
-        _btnPlay.onClick.AddListener(ShowLvlSelector);
-        _btnOptions.onClick.AddListener(ShowOptions);
-        _btnExit.onClick.AddListener(QuitGame);
+        _btnPlay.onClick.AddListener(() =>
+        {
+            AudioManager.Instance.PlaySFX(NameSounds.Click);
+            ShowLvlSelector();
+        });
+        _btnOptions.onClick.AddListener(() =>
+        {
+            AudioManager.Instance.PlaySFX(NameSounds.Click);
+            ShowOptions();
+        });
+            
+        _btnExit.onClick.AddListener(() =>
+        {
+            AudioManager.Instance.PlaySFX(NameSounds.Click);
+            QuitGame();
+        });
 
         //Buttons Options//
 
@@ -53,11 +66,16 @@ public class MainMenu : MonoBehaviour
 
         _btnDeletePrefs.onClick.AddListener(() =>
         {
+            AudioManager.Instance.PlaySFX(NameSounds.Click);
             LevelManagerJson.DeteleLevels();
             CheckEnabledLevels();
         });
 
-        _btnBackToMain.onClick.AddListener(ShowMain);
+        _btnBackToMain.onClick.AddListener(()=>
+        {
+            AudioManager.Instance.PlaySFX(NameSounds.Click);
+            ShowMain();
+        });
 
         SetLevelsInButtons();
     }
