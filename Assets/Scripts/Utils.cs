@@ -37,7 +37,7 @@ public static class Utils
 
     #region Levels
 
-    internal const int MAX_LVLS = 6; //Cantidad Maxima de lvls actualmente
+    internal const int MAX_LVLS = 7; //Cantidad Maxima de lvls actualmente
     internal const string LEVEL_AT = "levelAt"; // Hasta que lvl llegue
     internal const int LEVEL_FIRST = 1; // Num del 1er lvl en SceneBuild
     internal const int FAKE_LOADING_TIME_SCENE = 3; //segs fake precarga del lvl seleccionado
