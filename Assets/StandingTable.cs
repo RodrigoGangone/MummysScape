@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-//[DefaultExecutionOrder(-50)]
+[DefaultExecutionOrder(-50)]
 public class StandingTable : MonoBehaviour
 {
     private Player _player;

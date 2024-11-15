@@ -31,6 +31,11 @@ public class ControllerPlayer
     {
         Debug.Log("STATE ACTUAL " + OnGetState.Invoke());
 
+        if (CanDamageState())
+        {
+            OnStateChange(PlayerState.Damage);
+        }
+
         if (CanWalkState())
         {
             OnStateChange(OnWalkingSand!.Invoke() ? PlayerState.WalkSand : PlayerState.Walk);
@@ -93,6 +98,7 @@ public class ControllerPlayer
     private bool CanIdleState()
     {
         return !IsWalking() &&
+               !_model.IsDamage &&
                OnGetState?.Invoke() switch
                {
                    STATE_SHOOT => true,
@@ -111,6 +117,7 @@ public class ControllerPlayer
     private bool CanWalkState()
     {
         return IsWalking() &&
+               !_model.IsDamage &&
                !_model.CanPushBox() &&
                OnGetState?.Invoke() switch
                {
@@ -201,6 +208,25 @@ public class ControllerPlayer
                    STATE_IDLE => true,
                    STATE_WALK => true,
                    STATE_WALK_SAND => true,
+                   _ => false
+               };
+    }
+
+    private bool CanDamageState()
+    {
+        return _model.IsDamage &&
+               OnGetState?.Invoke() switch
+               {
+                   STATE_IDLE => true,
+                   STATE_SHOOT => true,
+                   STATE_WALK => true,
+                   STATE_WALK_SAND => true,
+                   STATE_FALL => true,
+                   STATE_PUSH => true,
+                   STATE_DAMAGE => true,
+                   STATE_DROP => true,
+                   STATE_SMASH => true,
+                   NO_STATE => true,
                    _ => false
                };
     }
