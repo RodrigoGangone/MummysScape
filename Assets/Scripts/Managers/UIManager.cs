@@ -18,10 +18,17 @@ public class UIManager : MonoBehaviour
     [Header("UI PAUSE")] 
     [SerializeField] private GameObject _pausePanel;
     [SerializeField] private GameObject _optionsPanel;
+    
     [SerializeField] private Button _btnResume;
     [SerializeField] private Button _btnRetry;
     [SerializeField] private Button _btnOptions;
     [SerializeField] private Button _btnExit;
+    [SerializeField] private Button _btnMusic;
+    [SerializeField] private Button _btnSFX;
+
+    [SerializeField] private Slider _musicSlider;
+    [SerializeField] private Slider _sfxSlider;
+    
     [SerializeField] private Material _pauseMaterial;
     private const string PAUSE_FILL = "_Power";
 
@@ -109,6 +116,9 @@ public class UIManager : MonoBehaviour
         _btnRetry.onClick.AddListener(RetryLevel);
         _btnOptions.onClick.AddListener(ShowOptionsPanel);
         _btnExit.onClick.AddListener(GoToMainMenu);
+        
+        _btnMusic.onClick.AddListener(ToggleMusic);
+        _btnSFX.onClick.AddListener(ToggleSFX);
 
         _btnNextLvlW.onClick.AddListener(ShowNextLvlPanel);
         _btnRetryW.onClick.AddListener(RetryLevel);
@@ -127,6 +137,29 @@ public class UIManager : MonoBehaviour
         UpdateTargetOffsets(); // Inicializar valores correctos
     }
 
+    #region Sound
+
+    private void ToggleMusic()
+    {
+        AudioManager.Instance.ToogleMusic();
+    }
+
+    private void ToggleSFX()
+    {
+        AudioManager.Instance.ToogleSFX();
+    }
+
+    public void MusicVolume()
+    {
+        AudioManager.Instance.MusicVolume(_musicSlider.value);
+    }
+    public void SFXVolume()
+    {
+        AudioManager.Instance.SFXVolume(_sfxSlider.value);
+    }
+
+    #endregion
+    
     IEnumerator HourglassBeatHandler()
     {
         while (true)
