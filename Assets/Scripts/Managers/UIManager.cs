@@ -196,6 +196,7 @@ public class UIManager : MonoBehaviour
 
         Debug.Log("PAUSED");
 
+        _optionsPanel.SetActive(false);
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _NextLvlPanel.SetActive(false);
@@ -204,6 +205,7 @@ public class UIManager : MonoBehaviour
     private void ResumeGame()
     {
         _pausePanel.SetActive(false);
+        _optionsPanel.SetActive(false);
 
         StartCoroutine(LoadPauseBandage());
     }
