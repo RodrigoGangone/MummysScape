@@ -3,17 +3,26 @@ using UnityEngine;
 [System.Serializable]
 public class Sound
 {
-    public string name;
+    public NameSounds name;
     public AudioClip clip;
     public bool loop;
 }
 
 public enum NameSounds
 {
-    Theme,
-    Explosion,
-    Jump,
-    Shoot,
-    GameOver
-    // Agrega más nombres de sonidos según sea necesario
+    ActivateInteractable,
+    BandageBlow,
+    BandageShoot1,
+    BandageShoot2,
+    BandageShoot3,
+    Collectable,
+    Click,
+    MovingBox,
+    MovingPlatform,
+    MainMenu1,
+    MainMenu2,
+    Lvl1_1,
+    Walk,
+    WalkInSand,
+    WrapBox
 }

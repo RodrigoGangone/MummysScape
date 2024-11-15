@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 public class AudioManager : MonoBehaviour
 {
@@ -23,10 +25,32 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
-        
+        PlayMusicBySceneIndex();
     }
 
-    public void PlayMusic(string name)
+    private void PlayMusicBySceneIndex()
+    {
+        int sceneIndex = SceneManager.GetActiveScene().buildIndex;
+
+        switch (sceneIndex)
+        {
+            case 0:
+                NameSounds randomSound = (Random.value > 0.5f) ? NameSounds.MainMenu1 : NameSounds.MainMenu2;
+                PlayMusic(randomSound);
+                break;
+            case 1:
+                PlayMusic(NameSounds.Lvl1_1); 
+                break;
+            case 2:
+                PlayMusic(NameSounds.Lvl1_1); 
+                break;
+            default:
+                Debug.Log("No music assigned for this scene index.");
+                break;
+        }
+    }
+
+    public void PlayMusic(NameSounds name)
     {
         Sound s = Array.Find(musicSounds, x => x.name == name);
 
@@ -39,7 +63,7 @@ public class AudioManager : MonoBehaviour
         else Debug.Log("Music Not Found");
     }
 
-    public void PlaySFX(string name)
+    public void PlaySFX(NameSounds name)
     {
         Sound s = Array.Find(sfxSounds, x => x.name == name);
 
@@ -52,7 +76,7 @@ public class AudioManager : MonoBehaviour
         else Debug.Log("Sfx Not Found");
     }
     
-    public void StopMusic(string name)
+    public void StopMusic(NameSounds name)
     {
         Sound s = Array.Find(musicSounds, x => x.name == name);
 
@@ -67,7 +91,7 @@ public class AudioManager : MonoBehaviour
         }
     }
     
-    public void StopSFX(string name)
+    public void StopSFX(NameSounds name)
     {
         Sound s = Array.Find(sfxSounds, x => x.name == name);
 

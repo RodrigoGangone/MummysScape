@@ -29,8 +29,6 @@ public class VolumeSettings : MonoBehaviour
         }
     }
     
-    #region NewMethods
-    
     private void ToggleMusic()
     {
         AudioManager.Instance.ToogleMusic();
@@ -62,31 +60,4 @@ public class VolumeSettings : MonoBehaviour
         _audioMixer.SetFloat(AUDIO_MIXER_SFX, Mathf.Log10(volume) * 20);
         PlayerPrefs.SetFloat(SFX_VOLUME, volume);
     }
-
-    #endregion
-
-
-    /*#region OldMethods
-
-        private void ToggleMusic()
-        {
-            AudioManager.Instance.ToogleMusic();
-        }
-    
-        private void ToggleSFX()
-        {
-            AudioManager.Instance.ToogleSFX();
-        }
-    
-        public void MusicVolume()
-        {
-            AudioManager.Instance.MusicVolume(_musicSlider.value);
-        }
-        public void SFXVolume()
-        {
-            AudioManager.Instance.SFXVolume(_sfxSlider.value);
-        }
-
-    #endregion*/
-
 }
