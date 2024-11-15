@@ -107,33 +107,17 @@ public class UIManager : MonoBehaviour
         levelManager.AddCollectible += UISetCollectibleCount;
 
         //Buttons OnClick
-        AddButtonProp(_btnResume,levelManager.OnPlaying.Invoke);
-        AddButtonProp(_btnRetry, RetryLevel);
-        AddButtonProp(_btnOptions, ShowOptionsPanel);
-        AddButtonProp(_btnExit, GoToMainMenu);
+        AddButtonProps(_btnResume,levelManager.OnPlaying.Invoke);
+        AddButtonProps(_btnRetry, RetryLevel);
+        AddButtonProps(_btnOptions, ShowOptionsPanel);
+        AddButtonProps(_btnExit, GoToMainMenu);
         
-        AddButtonProp(_btnNextLvlW, ShowNextLvlPanel);
-        AddButtonProp(_btnRetryW, RetryLevel);
-        AddButtonProp(_btnMainMenuW, GoToMainMenu);
+        AddButtonProps(_btnNextLvlW, ShowNextLvlPanel);
+        AddButtonProps(_btnRetryW, RetryLevel);
+        AddButtonProps(_btnMainMenuW, GoToMainMenu);
         
-        AddButtonProp(_btnRetryL, RetryLevel);
-        AddButtonProp(_btnMainMenuL, GoToMainMenu);
-
-        
-        /*_btnResume.onClick.AddListener(() =>
-        {
-            levelManager.OnPlaying.Invoke();
-        });
-        _btnRetry.onClick.AddListener(RetryLevel);
-        _btnOptions.onClick.AddListener(ShowOptionsPanel);
-        _btnExit.onClick.AddListener(GoToMainMenu);
-
-        _btnNextLvlW.onClick.AddListener(ShowNextLvlPanel);
-        _btnRetryW.onClick.AddListener(RetryLevel);
-        _btnMainMenuW.onClick.AddListener(GoToMainMenu);
-
-        _btnRetryL.onClick.AddListener(RetryLevel);
-        _btnMainMenuL.onClick.AddListener(GoToMainMenu);*/
+        AddButtonProps(_btnRetryL, RetryLevel);
+        AddButtonProps(_btnMainMenuL, GoToMainMenu);
 
         _pauseMaterial.SetFloat(PAUSE_FILL, 0f); // Asegurar que se complete la transición
 
@@ -145,12 +129,21 @@ public class UIManager : MonoBehaviour
         UpdateTargetOffsets(); // Inicializar valores correctos
     }
     
-    private void AddButtonProp(Button button, Action action)
+    private void AddButtonProps(Button button, Action mainAction, params Action[] additionalActions)
     {
         button.onClick.AddListener(() =>
         {
             AudioManager.Instance.PlaySFX(NameSounds.Click);
-            action.Invoke();
+        
+            //Accion principal
+            mainAction?.Invoke();
+
+            //Acciones secundarias
+            if (additionalActions == null) return;
+            foreach (var action in additionalActions)
+            {
+                action?.Invoke();
+            }
         });
     }
     
