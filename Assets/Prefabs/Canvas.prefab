@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7122536589441059815}
   - component: {fileID: 7253124828810875611}
   - component: {fileID: 5196650215281373347}
+  - component: {fileID: 7800931887324196658}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -126,10 +127,6 @@ MonoBehaviour:
   _btnRetry: {fileID: 2356330667333728996}
   _btnOptions: {fileID: 6185338045326004899}
   _btnExit: {fileID: 1122768949479274611}
-  _btnMusic: {fileID: 687131947407494322}
-  _btnSFX: {fileID: 9153672168182889975}
-  _musicSlider: {fileID: 4077974973938647296}
-  _sfxSlider: {fileID: 6211980586931331427}
   _pauseMaterial: {fileID: 2100000, guid: 5989c71586c05414da9771fc77a698b7, type: 2}
   _WinPanel: {fileID: 6523940995055123738}
   _btnRetryW: {fileID: 186339208617312996}
@@ -155,6 +152,23 @@ MonoBehaviour:
   _gemMaterial01: {fileID: 2100000, guid: 0731ba7416b738e4494afc0c1c7e328f, type: 2}
   _gemMaterial02: {fileID: 2100000, guid: 672c90a2c43dc0042b9288a7358ade2c, type: 2}
   _gemMaterial03: {fileID: 2100000, guid: 5fc5390cbe710ee4e8b1c9260533ea07, type: 2}
+--- !u!114 &7800931887324196658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 466187389293970183}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50182bf886774ee43a580b6d951ff099, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _audioMixer: {fileID: 24100000, guid: d99d2dfc2d161244881eb981dfa94962, type: 2}
+  _btnMusic: {fileID: 687131947407494322}
+  _btnSFX: {fileID: 9153672168182889975}
+  _musicSlider: {fileID: 4077974973938647296}
+  _sfxSlider: {fileID: 6211980586931331427}
 --- !u!1 &1002620212593468368
 GameObject:
   m_ObjectHideFlags: 0
@@ -2282,16 +2296,16 @@ MonoBehaviour:
   m_FillRect: {fileID: 8556329719139997463}
   m_HandleRect: {fileID: 2449345522387220130}
   m_Direction: 0
-  m_MinValue: 0
+  m_MinValue: 0.0001
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 1
+  m_Value: 0.5
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5196650215281373347}
-        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: SFXVolume
+      - m_Target: {fileID: 7800931887324196658}
+        m_TargetAssemblyTypeName: VolumeSettings, Assembly-CSharp
+        m_MethodName: SetSFXVolume
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2737,8 +2751,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 9010409127273462560}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.49995, y: 0}
+  m_AnchorMax: {x: 0.49995, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2891,7 +2905,7 @@ RectTransform:
   m_Father: {fileID: 162631112661169096}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0.49995, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3618,7 +3632,7 @@ RectTransform:
   m_Father: {fileID: 8064513530186645149}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0.49995, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3940,16 +3954,16 @@ MonoBehaviour:
   m_FillRect: {fileID: 8688109796684228413}
   m_HandleRect: {fileID: 6926116194144601317}
   m_Direction: 0
-  m_MinValue: 0
+  m_MinValue: 0.0001
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 1
+  m_Value: 0.5
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5196650215281373347}
-        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: MusicVolume
+      - m_Target: {fileID: 7800931887324196658}
+        m_TargetAssemblyTypeName: VolumeSettings, Assembly-CSharp
+        m_MethodName: SetMusicVolume
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4171,8 +4185,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 8037931410072758058}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.49995, y: 0}
+  m_AnchorMax: {x: 0.49995, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}

@@ -80,4 +80,16 @@ public static class Utils
     #endregion
 
     #endregion
+
+    #region Sounds
+
+    //Const para PlayerPref
+    internal const string MUSIC_VOLUME = "MusicVolume";
+    internal const string SFX_VOLUME = "SFXVolume";
+    
+    //Audio Mixer public vars
+    internal const string AUDIO_MIXER_MUSIC = "Music";
+    internal const string AUDIO_MIXER_SFX = "SFX";
+
+    #endregion
 }

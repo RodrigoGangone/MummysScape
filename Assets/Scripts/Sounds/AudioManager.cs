@@ -23,7 +23,7 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
-        //PlayMusic("Theme");
+        
     }
 
     public void PlayMusic(string name)
@@ -90,15 +90,5 @@ public class AudioManager : MonoBehaviour
     public void ToogleSFX()
     {
         sfxSource.mute = !sfxSource.mute;
-    }
-
-    public void MusicVolume(float volume)
-    {
-        musicSource.volume = volume;
-    }
-    
-    public void SFXVolume(float volume)
-    {
-        sfxSource.volume = volume;
     }
 }
