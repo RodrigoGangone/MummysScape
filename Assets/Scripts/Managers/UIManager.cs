@@ -107,7 +107,23 @@ public class UIManager : MonoBehaviour
         levelManager.AddCollectible += UISetCollectibleCount;
 
         //Buttons OnClick
-        _btnResume.onClick.AddListener(() => { levelManager.OnPlaying.Invoke(); });
+        AddButtonProp(_btnResume,levelManager.OnPlaying.Invoke);
+        AddButtonProp(_btnRetry, RetryLevel);
+        AddButtonProp(_btnOptions, ShowOptionsPanel);
+        AddButtonProp(_btnExit, GoToMainMenu);
+        
+        AddButtonProp(_btnNextLvlW, ShowNextLvlPanel);
+        AddButtonProp(_btnRetryW, RetryLevel);
+        AddButtonProp(_btnMainMenuW, GoToMainMenu);
+        
+        AddButtonProp(_btnRetryL, RetryLevel);
+        AddButtonProp(_btnMainMenuL, GoToMainMenu);
+
+        
+        /*_btnResume.onClick.AddListener(() =>
+        {
+            levelManager.OnPlaying.Invoke();
+        });
         _btnRetry.onClick.AddListener(RetryLevel);
         _btnOptions.onClick.AddListener(ShowOptionsPanel);
         _btnExit.onClick.AddListener(GoToMainMenu);
@@ -117,7 +133,7 @@ public class UIManager : MonoBehaviour
         _btnMainMenuW.onClick.AddListener(GoToMainMenu);
 
         _btnRetryL.onClick.AddListener(RetryLevel);
-        _btnMainMenuL.onClick.AddListener(GoToMainMenu);
+        _btnMainMenuL.onClick.AddListener(GoToMainMenu);*/
 
         _pauseMaterial.SetFloat(PAUSE_FILL, 0f); // Asegurar que se complete la transición
 
@@ -127,6 +143,15 @@ public class UIManager : MonoBehaviour
 
         ValidateGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
+    }
+    
+    private void AddButtonProp(Button button, Action action)
+    {
+        button.onClick.AddListener(() =>
+        {
+            AudioManager.Instance.PlaySFX(NameSounds.Click);
+            action.Invoke();
+        });
     }
     
     IEnumerator HourglassBeatHandler()
