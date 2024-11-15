@@ -17,5 +17,5 @@ public class Boss : MonoBehaviour
     [SerializeField] internal float _cdAttack1;
     [SerializeField] internal float _cdAttack2;
 
-    [SerializeField] internal Transform _targetPlayer;
+    [SerializeField] public Player player;
 }

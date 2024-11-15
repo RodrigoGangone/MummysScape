@@ -16,14 +16,12 @@ public class IdleBossScorpion : State
     public override void OnEnter()
     {
         _scorpion._anim.SetBool(IDLE_ANIM_SCORPION, true);
+        Debug.Log("ENTER IDLE");
     }
 
     public override void OnUpdate()
     {
-        Vector3 targetPosition = new Vector3(_scorpion.transform.position.x, _scorpion._targetPlayer.position.y,
-            _scorpion.transform.position.z);
-
-        _scorpion.transform.LookAt(targetPosition);
+        _scorpion._viewScorpion.transform.LookAt(_scorpion.player.transform);
 
         if (_timeToFirstAttack < _scorpion._cdAttack1)
             _timeToFirstAttack += Time.deltaTime;
@@ -39,6 +37,8 @@ public class IdleBossScorpion : State
 
         if (_scorpion._isDead)
             _scorpion.stateMachine.ChangeState(BossScorpionState.DeathScorpion);
+
+        //Debug.Log("Time to first attack" + _timeToFirstAttack);
     }
 
     public override void OnFixedUpdate()

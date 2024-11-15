@@ -1,3 +1,4 @@
+using UnityEngine;
 using static Utils;
 
 public class SecondAttackBossScorpion : State
@@ -12,6 +13,8 @@ public class SecondAttackBossScorpion : State
     public override void OnEnter()
     {
         _scorpion._anim.SetBool(SECOND_ATTACK_ANIM_SCORPION, true);
+        Debug.Log("ENTER SECOND");
+
     }
 
     public override void OnUpdate()

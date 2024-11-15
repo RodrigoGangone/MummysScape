@@ -1,3 +1,4 @@
+using UnityEngine;
 using static Utils;
 
 public class FirstAttackBossScorpion : State
@@ -12,10 +13,17 @@ public class FirstAttackBossScorpion : State
     public override void OnEnter()
     {
         _scorpion._anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, true);
+        Debug.Log("ENTER FIRST");
+
+        _scorpion.FirstAreaAttack(_scorpion.player.WalkingSand
+            ? _scorpion._pointAttackSand
+            : _scorpion._pointAttackPlatform);
     }
 
     public override void OnUpdate()
     {
+        _scorpion._viewScorpion.transform.LookAt(_scorpion.player.transform);
+
         if (_scorpion._isDead)
             _scorpion.stateMachine.ChangeState(BossScorpionState.DeathScorpion);
     }
