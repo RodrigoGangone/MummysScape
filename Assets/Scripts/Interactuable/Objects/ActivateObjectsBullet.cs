@@ -20,7 +20,9 @@ public class ActivateObjectsBullet : MonoBehaviour
     {
         if (!other.gameObject.CompareTag("Bullet")) return;
 
+        
         _boxCollider.enabled = false;
+        AudioManager.Instance.PlaySFX(NameSounds.ActivateInteractable);
         _animator.SetBool("IsActive", !_animator.GetBool("IsActive"));
 
         StartCoroutine(SineIntensity());
