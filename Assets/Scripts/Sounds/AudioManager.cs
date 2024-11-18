@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
@@ -8,8 +9,9 @@ public class AudioManager : MonoBehaviour
     public static AudioManager Instance;
     
     public Sound[] musicSounds, sfxSounds;
-    public AudioSource musicSource, sfxSource;
-
+    public AudioSource musicSource;
+    //public AudioSource sfxSource;
+    
     private void Awake()
     {
         if (Instance == null)
@@ -69,11 +71,20 @@ public class AudioManager : MonoBehaviour
 
         if (s != null)
         {
-            sfxSource.clip = s.clip;
-            sfxSource.loop = s.loop;
-            sfxSource.Play();
+            AudioSource audioSource = AudioSourceFactory.Instance.GetAudioSourceFromPool();
+
+            audioSource.clip = s.clip;
+            audioSource.loop = s.loop;
+            audioSource.Play();
+
+            // Devuelve el AudioSource al pool si no es loop cuando termina de reproducir
+            if (!s.loop) 
+                StartCoroutine(ReturnAudioSourceToPool(audioSource, s.clip.length));
         }
-        else Debug.Log("Sfx Not Found");
+        else
+        {
+            Debug.LogError($"SFX '{name}' not found!");
+        }
     }
     
     public void StopMusic(NameSounds name)
@@ -95,14 +106,24 @@ public class AudioManager : MonoBehaviour
     {
         Sound s = Array.Find(sfxSounds, x => x.name == name);
 
-        if (s != null && sfxSource.isPlaying && sfxSource.clip == s.clip)
+        if (s != null)
         {
-            sfxSource.Stop();
-            Debug.Log($"Stopped SFX: {name}");
+            foreach (Transform child in AudioSourceFactory.Instance.transform)
+            {
+                AudioSource source = child.GetComponent<AudioSource>();
+                if (source != null && source.isPlaying && source.clip == s.clip)
+                {
+                    source.Stop();
+                    AudioSourceFactory.Instance.ReturnAudioSourceToPool(source);
+                    Debug.Log($"Stopped and returned SFX: {name}");
+                    return;
+                }
+            }
+            Debug.Log($"SFX '{name}' is not currently playing.");
         }
         else
         {
-            Debug.Log($"SFX '{name}' is not currently playing.");
+            Debug.LogError($"SFX '{name}' not found!");
         }
     }
 
@@ -113,6 +134,16 @@ public class AudioManager : MonoBehaviour
     
     public void ToogleSFX()
     {
-        sfxSource.mute = !sfxSource.mute;
+        /*bool isMuted = AudioSourceFactory.Instance.GetAudioSourceFromPool().mute;
+        foreach (var source in AudioSourceFactory.Instance)
+        {
+            source.mute = !isMuted;
+        }*/
+    }
+    
+    private IEnumerator ReturnAudioSourceToPool(AudioSource audioSource, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        AudioSourceFactory.Instance.ReturnAudioSourceToPool(audioSource);
     }
 }
