@@ -22,8 +22,6 @@ public class FirstAttackBossScorpion : State
 
     public override void OnUpdate()
     {
-        _scorpion._viewScorpion.transform.LookAt(_scorpion.player.transform);
-
         if (_scorpion._isDead)
             _scorpion.stateMachine.ChangeState(BossScorpionState.DeathScorpion);
     }

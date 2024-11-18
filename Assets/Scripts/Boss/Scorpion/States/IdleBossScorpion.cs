@@ -23,6 +23,8 @@ public class IdleBossScorpion : State
     {
         _scorpion._viewScorpion.transform.LookAt(_scorpion.player.transform);
 
+        SelectCurrentAttack();
+
         if (_timeToFirstAttack < _scorpion._cdAttack1)
             _timeToFirstAttack += Time.deltaTime;
 
@@ -37,7 +39,6 @@ public class IdleBossScorpion : State
 
         if (_scorpion._isDead)
             _scorpion.stateMachine.ChangeState(BossScorpionState.DeathScorpion);
-
     }
 
     public override void OnFixedUpdate()
@@ -50,5 +51,12 @@ public class IdleBossScorpion : State
 
         _timeToFirstAttack = 0;
         _timeToSecondAttack = 0;
+    }
+
+    private void SelectCurrentAttack()
+    {
+        _scorpion._currentAttack = _scorpion.player.transform.position.y >= 11
+            ? CurrentAttack.Second
+            : CurrentAttack.First;
     }
 }

@@ -1,11 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using static Utils;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
-using UnityEngine.Serialization;
 
 public class Scorpion : Boss
 {
@@ -23,21 +20,21 @@ public class Scorpion : Boss
 
     [Header("Geysers")] //Second Attack
     [SerializeField]
-    private Geyser _geyser;
+    internal List<Geyser> _geysers;
 
-    [SerializeField] private List<Transform> _geyserPositions;
-
-    private Vector3 _boxSize = new(5f, 10f, 5f); // Ancho, alto, profundidad
-
-
-    private Vector3 _normalGeyserScale;
-    private Vector3 _bigGeyserScale = new(1.5f, 1.5f, 1.5f);
+    [SerializeField] private ParticleSystem _geysersParticles;
+    private List<ParticleSystem> _geysersParticlesList = new();
 
     public StateMachinePlayer stateMachine;
 
     void Start()
     {
-        _normalGeyserScale = _geyser.transform.localScale;
+        for (int i = 0; i < _geysers.Count; i++)
+        {
+            _geysersParticlesList.Add(
+                Instantiate(_geysersParticles, transform.position, Quaternion.identity, transform));
+            _geysersParticlesList[i].gameObject.SetActive(false);
+        }
 
         stateMachine = gameObject.AddComponent<StateMachinePlayer>();
 
@@ -51,77 +48,39 @@ public class Scorpion : Boss
         stateMachine.ChangeState(BossScorpionState.IdleScorpion);
     }
 
+    #region FirstAttack
+
     internal void FirstAreaAttack(Transform originRaycast)
     {
-        float coneAngle = 45f;
-        float angleStep = coneAngle / (_numberOfRays - 1);
-
         _firstAttackFX.Play();
 
         LayerMask playerLayerMask = LayerMask.GetMask("Player");
         LayerMask wallLayerMask = LayerMask.GetMask("Wall");
+        LayerMask boxLayerMask = LayerMask.GetMask("Box");
+
+        LayerMask wallAndBoxLayerMask = wallLayerMask | boxLayerMask;
 
         Vector3 rayOriginPlatform = originRaycast.position;
 
-        for (int i = 0; i < _numberOfRays; i++)
+        Vector3 targetPosition =
+            new Vector3(player.transform.position.x, rayOriginPlatform.y, player.transform.position.z);
+        Vector3 direction = (targetPosition - rayOriginPlatform).normalized;
+
+        if (Physics.Raycast(rayOriginPlatform, direction, out RaycastHit wallHit, _attackRadius, wallAndBoxLayerMask))
+            Debug.DrawRay(rayOriginPlatform, direction * wallHit.distance, Color.red, 1f);
+
+        else if (Physics.Raycast(rayOriginPlatform, direction, out RaycastHit playerHit, _attackRadius,
+                     playerLayerMask))
         {
-            float angle = -coneAngle / 2 + i * angleStep;
+            Debug.DrawRay(rayOriginPlatform, direction * playerHit.distance, Color.green, 1f);
 
-            Vector3 forward = new Vector3(_viewScorpion.transform.forward.x, 0, _viewScorpion.transform.forward.z)
-                .normalized;
-            Vector3 direction = Quaternion.Euler(0, angle, 0) * forward;
+            player._modelPlayer.IsDamage = true;
 
-            if (Physics.Raycast(rayOriginPlatform, direction, out RaycastHit wallHit, _attackRadius, wallLayerMask))
-                Debug.DrawRay(rayOriginPlatform, direction * wallHit.distance, Color.red, 1f);
-            else
-            {
-                if (Physics.Raycast(rayOriginPlatform, direction, out RaycastHit playerHit, _attackRadius,
-                        playerLayerMask))
-                {
-                    Debug.DrawRay(rayOriginPlatform, direction * playerHit.distance, Color.green, 1f);
-
-                    player._modelPlayer.IsDamage = true;
-
-                    StartCoroutine(MovePlayer(direction));
-                }
-                else
-                    Debug.DrawRay(rayOriginPlatform, direction * _attackRadius, Color.yellow, 1f);
-            }
+            StartCoroutine(MovePlayer(direction));
         }
 
         stateMachine.ChangeState(BossScorpionState.IdleScorpion);
     }
-
-    internal void SecondAttack()
-    {
-        LayerMask playerLayerMask = LayerMask.GetMask("Player");
-
-        foreach (var geyserPosition in _geyserPositions)
-        {
-            Collider[] hitColl = Physics.OverlapBox(geyserPosition.position,
-                _boxSize / 2,
-                quaternion.identity,
-                playerLayerMask);
-
-            foreach (Collider hit in hitColl)
-            {
-                if (hit.CompareTag(PLAYER_TAG))
-                {
-                    float playerHeight = hit.transform.position.y - geyserPosition.position.y;
-
-                    ActivateGeyser(geyserPosition.position, playerHeight > 5 ? _bigGeyserScale : _normalGeyserScale);
-                }
-            }
-        }
-    }
-
-    private void ActivateGeyser(Vector3 position, Vector3 scale)
-    {
-        // Reposicionar y escalar el geyser
-        _geyser.transform.position = position;
-        _geyser.transform.localScale = scale;
-    }
-
 
     IEnumerator MovePlayer(Vector3 dir)
     {
@@ -131,7 +90,7 @@ public class Scorpion : Boss
 
         while (true)
         {
-            player.transform.position += normalizedDir * speed * Time.deltaTime;
+            player.transform.position += normalizedDir * (speed * Time.deltaTime);
 
             if (!player._modelPlayer.CheckGround())
             {
@@ -148,31 +107,67 @@ public class Scorpion : Boss
         }
     }
 
+    #endregion
+
+    #region SecondAttack
+
+    internal void SecondAttack(Action onGeyserCompleted)
+    {
+        StartCoroutine(LineOfSecondAttack(onGeyserCompleted));
+    }
+
+    IEnumerator LineOfSecondAttack(Action onGeyserCompleted)
+    {
+        for (int i = 0; i < _geysersParticlesList.Count; i++)
+        {
+            _geysersParticlesList[i].transform.position = _viewScorpion.transform.position;
+            _geysersParticlesList[i].gameObject.SetActive(true);
+        }
+
+        float speed = 20f;
+        bool allReached;
+
+        do
+        {
+            allReached = true;
+
+            for (int i = 0; i < _geysersParticlesList.Count; i++)
+            {
+                Vector3 targetPosition = _geysers[i].transform.position;
+
+                if (Vector3.Distance(_geysersParticlesList[i].transform.position, targetPosition) > 0.1f)
+                {
+                    _geysersParticlesList[i].transform.position = Vector3.MoveTowards(
+                        _geysersParticlesList[i].transform.position,
+                        targetPosition,
+                        speed * Time.deltaTime
+                    );
+
+                    allReached = false;
+                }
+            }
+
+            yield return null;
+        } while (!allReached);
+
+        foreach (var geyserParticle in _geysersParticlesList)
+        {
+            geyserParticle.gameObject.SetActive(false);
+        }
+
+        foreach (var geyser in _geysers)
+        {
+            geyser.ActivateIntenseMode(onGeyserCompleted);
+        }
+    }
+
+    #endregion
 
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("MovableBox"))
-        {
             _isDead = true;
-        }
     }
-
-    private void OnDrawGizmos()
-    {
-        if (_geyserPositions == null || _geyserPositions.Count == 0) return;
-
-        Gizmos.color = Color.cyan;
-
-        foreach (var geyserPosition in _geyserPositions)
-        {
-            if (geyserPosition != null)
-            {
-                // Dibujar el área de detección usando directamente la posición y el tamaño de la caja
-                Gizmos.DrawWireCube(geyserPosition.position, _boxSize);
-            }
-        }
-    }
-
 }
 
 enum BossScorpionState

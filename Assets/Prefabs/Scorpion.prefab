@@ -5001,18 +5001,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ddf8ae42433daea4cbdb8983c8adc07c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentAttack: 1
+  _currentAttack: 1
   _angerLevel: 0
   _anim: {fileID: 1348689894041600828}
   _cdAttack1: 7
   _cdAttack2: 3
   player: {fileID: 0}
   _viewScorpion: {fileID: 6868333055762807989}
-  _pointAttackSand: {fileID: 5953826705190778840}
-  _pointAttackPlatform: {fileID: 2774527638174971536}
+  _pointAttackSand: {fileID: 2774527638174971536}
+  _pointAttackPlatform: {fileID: 5953826705190778840}
   _firstAttackFX: {fileID: 1640843863815819462}
-  _attackRadius: 35
-  _geysersPositions: []
+  _geysers:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   stateMachine: {fileID: 0}
 --- !u!1 &6868333055762807989
 GameObject:
