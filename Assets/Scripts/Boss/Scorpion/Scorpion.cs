@@ -9,22 +9,23 @@ public class Scorpion : Boss
 {
     [SerializeField] internal GameObject viewScorpion;
 
-    [Header("Area Attack")] //First Attack
-    private int _numberOfRays = 25;
-
-    private int _attackRadius = 50;
+    [Header("First Attack")] private int _numberOfRays = 25;
+    private const int ATTACK_RADIUS = 50;
 
     [SerializeField] internal Transform pointAttackSand;
     [SerializeField] internal Transform pointAttackPlatform;
-
     [SerializeField] private ParticleSystem _firstAttackFX;
 
-    //Second Attack
+    [Header("Second Attack")] public List<Geyser> geysers;
 
-    [Header("Geysers")] [SerializeField] internal List<Geyser> geysers;
+    [SerializeField] private List<ParticleSystem> _geysersParticlesList = new();
     [SerializeField] private ParticleSystem _geysersParticles;
 
-    private List<ParticleSystem> _geysersParticlesList = new();
+    [Header("Third Attack")] [SerializeField]
+    internal GameObject _stoneView;
+
+    [SerializeField] internal StoneScorpionTrigger _stonePrefab;
+    [SerializeField] public Transform _targetShoot;
 
     public StateMachinePlayer stateMachine;
 
@@ -43,6 +44,7 @@ public class Scorpion : Boss
         stateMachine.AddState(BossScorpionState.IdleScorpion, new IdleBossScorpion(this));
         stateMachine.AddState(BossScorpionState.FirstAttackScorpion, new FirstAttackBossScorpion(this));
         stateMachine.AddState(BossScorpionState.SecondAttackScorpion, new SecondAttackBossScorpion(this));
+        stateMachine.AddState(BossScorpionState.ThirdAttackScorpion, new ThirdAttackBossScorpion(this));
         stateMachine.AddState(BossScorpionState.DeathScorpion, new DeathBossScorpion(this));
 
         //stateMachine.ChangeState(BossScorpionState.EntryScorpion);
@@ -68,10 +70,10 @@ public class Scorpion : Boss
             new Vector3(player.transform.position.x, rayOriginPlatform.y, player.transform.position.z);
         Vector3 direction = (targetPosition - rayOriginPlatform).normalized;
 
-        if (Physics.Raycast(rayOriginPlatform, direction, out RaycastHit wallHit, _attackRadius, wallAndBoxLayerMask))
+        if (Physics.Raycast(rayOriginPlatform, direction, out RaycastHit wallHit, ATTACK_RADIUS, wallAndBoxLayerMask))
             Debug.DrawRay(rayOriginPlatform, direction * wallHit.distance, Color.red, 1f);
 
-        else if (Physics.Raycast(rayOriginPlatform, direction, out RaycastHit playerHit, _attackRadius,
+        else if (Physics.Raycast(rayOriginPlatform, direction, out RaycastHit playerHit, ATTACK_RADIUS,
                      playerLayerMask))
         {
             Debug.DrawRay(rayOriginPlatform, direction * playerHit.distance, Color.green, 1f);
@@ -84,7 +86,7 @@ public class Scorpion : Boss
         stateMachine.ChangeState(BossScorpionState.IdleScorpion);
     }
 
-    IEnumerator MovePlayer(Vector3 dir)
+    public IEnumerator MovePlayer(Vector3 dir)
     {
         float speed = 8f;
 
@@ -101,6 +103,7 @@ public class Scorpion : Boss
                 yield return new WaitForSeconds(0.5f);
 
                 player._modelPlayer.IsDamage = false;
+                _stonePrefab.transform.position = _targetShoot.position;
 
                 yield break;
             }
@@ -178,5 +181,6 @@ internal enum BossScorpionState
     IdleScorpion,
     FirstAttackScorpion,
     SecondAttackScorpion,
+    ThirdAttackScorpion,
     DeathScorpion
 }
