@@ -1,16 +1,20 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
+using static Utils;
 
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
-    
+
+    [SerializeField] private AudioMixer audioMixer;
     public Sound[] musicSounds, sfxSounds;
     public AudioSource musicSource;
-    //public AudioSource sfxSource;
+
+    private bool isSFXMuted;
     
     private void Awake()
     {
@@ -27,6 +31,8 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
+        isSFXMuted = PlayerPrefs.GetFloat(SFX_VOLUME).Equals(-80);
+        
         PlayMusicBySceneIndex();
     }
 
@@ -134,11 +140,17 @@ public class AudioManager : MonoBehaviour
     
     public void ToogleSFX()
     {
-        /*bool isMuted = AudioSourceFactory.Instance.GetAudioSourceFromPool().mute;
-        foreach (var source in AudioSourceFactory.Instance)
-        {
-            source.mute = !isMuted;
-        }*/
+        //Si no esta muteado: pone el volumen en -80
+        //Si esta muteado: poner el volumen en lo que dice las pref
+        
+        isSFXMuted = !isSFXMuted;
+
+        float targetVolume = isSFXMuted ? -80f : PlayerPrefs.GetFloat(SFX_VOLUME);
+
+        // Ajusta el volumen del grupo "SFX" en el AudioMixer.
+        audioMixer.SetFloat(AUDIO_MIXER_SFX, targetVolume);
+
+        Debug.Log($"SFX Group is now {(isSFXMuted ? "muted" : "unmuted")}. Current volume: {targetVolume}");
     }
     
     private IEnumerator ReturnAudioSourceToPool(AudioSource audioSource, float delay)
