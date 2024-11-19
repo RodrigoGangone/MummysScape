@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AudioSourceFactory : MonoBehaviour
@@ -7,6 +8,7 @@ public class AudioSourceFactory : MonoBehaviour
     [SerializeField] private AudioSource audioSourcePrefab;
     private Pool<AudioSource> audioSourcePool;
     [SerializeField] private int initialAmount = 10;
+    private List<AudioSource> activeAudioSources; // Lista para rastrear los AudioSource activos
 
     private void Awake()
     {
@@ -17,6 +19,7 @@ public class AudioSourceFactory : MonoBehaviour
         }
 
         Instance = this;
+        activeAudioSources = new List<AudioSource>();
         audioSourcePool = new Pool<AudioSource>(CreateAudioSource, TurnOnAudioSource, TurnOffAudioSource, initialAmount);
     }
 
@@ -30,6 +33,7 @@ public class AudioSourceFactory : MonoBehaviour
     private void TurnOnAudioSource(AudioSource source)
     {
         source.gameObject.SetActive(true);
+        activeAudioSources.Add(source); 
     }
 
     private void TurnOffAudioSource(AudioSource source)
@@ -37,6 +41,7 @@ public class AudioSourceFactory : MonoBehaviour
         source.Stop();
         source.clip = null; // Limpia el clip para evitar confusiones
         source.gameObject.SetActive(false);
+        activeAudioSources.Remove(source); 
     }
 
     public AudioSource GetAudioSourceFromPool()
@@ -47,5 +52,11 @@ public class AudioSourceFactory : MonoBehaviour
     public void ReturnAudioSourceToPool(AudioSource source)
     {
         audioSourcePool.ReturnObject(source);
+    }
+    
+    // Obtiene todos los AudioSource actualmente en uso
+    public List<AudioSource> GetActiveAudioSources()
+    {
+        return new List<AudioSource>(activeAudioSources); // Devuelve una copia de la lista de activos
     }
 }
