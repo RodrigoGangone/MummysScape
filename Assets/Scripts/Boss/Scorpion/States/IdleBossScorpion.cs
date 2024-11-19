@@ -21,7 +21,7 @@ public class IdleBossScorpion : State
 
     public override void OnUpdate()
     {
-        _scorpion._viewScorpion.transform.LookAt(_scorpion.player.transform);
+        _scorpion.viewScorpion.transform.LookAt(_scorpion.player.transform);
 
         SelectCurrentAttack();
 
@@ -55,7 +55,9 @@ public class IdleBossScorpion : State
 
     private void SelectCurrentAttack()
     {
-        _scorpion._currentAttack = _scorpion.player.transform.position.y >= 11
+        var currentState = _scorpion.player._stateMachinePlayer.getCurrentState();
+        
+        _scorpion._currentAttack = currentState is STATE_HOOK or STATE_FALL
             ? CurrentAttack.Second
             : CurrentAttack.First;
     }

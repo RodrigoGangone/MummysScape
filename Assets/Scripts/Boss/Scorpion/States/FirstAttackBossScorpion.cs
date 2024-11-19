@@ -16,8 +16,8 @@ public class FirstAttackBossScorpion : State
         Debug.Log("ENTER FIRST");
 
         _scorpion.FirstAreaAttack(_scorpion.player.WalkingSand
-            ? _scorpion._pointAttackSand
-            : _scorpion._pointAttackPlatform);
+            ? _scorpion.pointAttackSand
+            : _scorpion.pointAttackPlatform);
     }
 
     public override void OnUpdate()

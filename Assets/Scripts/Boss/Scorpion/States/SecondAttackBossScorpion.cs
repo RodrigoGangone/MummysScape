@@ -25,7 +25,7 @@ public class SecondAttackBossScorpion : State
     public override void OnUpdate()
     {
         // Si todos los géiseres han terminado, cambiamos al estado Idle
-        if (_completedGeysersCount == _scorpion._geysers.Count)
+        if (_completedGeysersCount == _scorpion.geysers.Count)
         {
             _scorpion.stateMachine.ChangeState(BossScorpionState.IdleScorpion);
         }
@@ -50,6 +50,6 @@ public class SecondAttackBossScorpion : State
     {
         _completedGeysersCount++;
 
-        Debug.Log($"Géiseres completados: {_completedGeysersCount}/{_scorpion._geysers.Count}");
+        Debug.Log($"Géiseres completados: {_completedGeysersCount}/{_scorpion.geysers.Count}");
     }
 }

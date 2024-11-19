@@ -3,33 +3,34 @@ using System.Collections;
 using System.Collections.Generic;
 using static Utils;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Scorpion : Boss
 {
-    [SerializeField] public GameObject _viewScorpion;
+    [SerializeField] internal GameObject viewScorpion;
 
     [Header("Area Attack")] //First Attack
     private int _numberOfRays = 25;
 
     private int _attackRadius = 50;
 
-    [SerializeField] internal Transform _pointAttackSand;
-    [SerializeField] internal Transform _pointAttackPlatform;
+    [SerializeField] internal Transform pointAttackSand;
+    [SerializeField] internal Transform pointAttackPlatform;
 
     [SerializeField] private ParticleSystem _firstAttackFX;
 
-    [Header("Geysers")] //Second Attack
-    [SerializeField]
-    internal List<Geyser> _geysers;
+    //Second Attack
 
+    [Header("Geysers")] [SerializeField] internal List<Geyser> geysers;
     [SerializeField] private ParticleSystem _geysersParticles;
+
     private List<ParticleSystem> _geysersParticlesList = new();
 
     public StateMachinePlayer stateMachine;
 
     void Start()
     {
-        for (int i = 0; i < _geysers.Count; i++)
+        for (int i = 0; i < geysers.Count; i++)
         {
             _geysersParticlesList.Add(
                 Instantiate(_geysersParticles, transform.position, Quaternion.identity, transform));
@@ -55,6 +56,7 @@ public class Scorpion : Boss
         _firstAttackFX.Play();
 
         LayerMask playerLayerMask = LayerMask.GetMask("Player");
+
         LayerMask wallLayerMask = LayerMask.GetMask("Wall");
         LayerMask boxLayerMask = LayerMask.GetMask("Box");
 
@@ -120,7 +122,7 @@ public class Scorpion : Boss
     {
         for (int i = 0; i < _geysersParticlesList.Count; i++)
         {
-            _geysersParticlesList[i].transform.position = _viewScorpion.transform.position;
+            _geysersParticlesList[i].transform.position = viewScorpion.transform.position;
             _geysersParticlesList[i].gameObject.SetActive(true);
         }
 
@@ -133,7 +135,7 @@ public class Scorpion : Boss
 
             for (int i = 0; i < _geysersParticlesList.Count; i++)
             {
-                Vector3 targetPosition = _geysers[i].transform.position;
+                Vector3 targetPosition = geysers[i].transform.position;
 
                 if (Vector3.Distance(_geysersParticlesList[i].transform.position, targetPosition) > 0.1f)
                 {
@@ -155,7 +157,7 @@ public class Scorpion : Boss
             geyserParticle.gameObject.SetActive(false);
         }
 
-        foreach (var geyser in _geysers)
+        foreach (var geyser in geysers)
         {
             geyser.ActivateIntenseMode(onGeyserCompleted);
         }
@@ -170,7 +172,7 @@ public class Scorpion : Boss
     }
 }
 
-enum BossScorpionState
+internal enum BossScorpionState
 {
     EntryScorpion,
     IdleScorpion,
