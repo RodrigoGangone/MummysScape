@@ -33,6 +33,8 @@ public class SM_Win : State
 
         _player.StartCoroutine(_player._viewPlayer.MaterialTransitionCoroutine(true));
         _player.StartCoroutine(DissolveFlame());
+        
+        AudioManager.Instance.PlaySFX(NameSounds.Portal);
     }
 
     public override void OnExit()

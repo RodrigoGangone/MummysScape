@@ -21,7 +21,8 @@ public class Collectible : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag(PLAYER_TAG)) return;
-
+        
+        AudioManager.Instance.PlaySFX(NameSounds.Collectable);
         _levelManager.AddCollectible.Invoke(_collectibleNumber);
     }
 

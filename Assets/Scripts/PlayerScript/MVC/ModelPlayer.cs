@@ -255,10 +255,8 @@ public class ModelPlayer
 
         if (randomValue < 0.5f)
             AudioManager.Instance.PlaySFX(NameSounds.BandageShoot1); 
-        else if (randomValue >= 0.5f && randomValue < 0.8f)
-            AudioManager.Instance.PlaySFX(NameSounds.BandageShoot2); 
         else
-            AudioManager.Instance.PlaySFX(NameSounds.BandageShoot3); 
+            AudioManager.Instance.PlaySFX(NameSounds.BandageShoot2); 
     }
 
     public void RotatePreShoot()

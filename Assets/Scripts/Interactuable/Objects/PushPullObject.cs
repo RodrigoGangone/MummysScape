@@ -75,6 +75,8 @@ public class PushPullObject : MonoBehaviour
 
     private IEnumerator AnimateBandages(float startOffset, float endOffset)
     {
+        AudioManager.Instance.PlaySFX(NameSounds.WrapBox);
+        
         float elapsedTime = 0f;
         currentOffset = startOffset;
 
@@ -87,6 +89,7 @@ public class PushPullObject : MonoBehaviour
         }
 
         SetBandageOffset(endOffset);
+        AudioManager.Instance.StopSFX(NameSounds.WrapBox);
     }
 
     private void SetBandageOffset(float offset)

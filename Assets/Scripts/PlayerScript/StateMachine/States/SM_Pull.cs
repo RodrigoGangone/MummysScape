@@ -21,8 +21,6 @@ public class SM_Pull : State
 
     public override void OnEnter()
     {
-        Debug.Log("ON ENTER PULL ");
-        
         _player._viewPlayer.PLAY_ANIM("Pull", true);
         _player._viewPlayer.bandageLineRenderer.enabled = true;
 
@@ -34,8 +32,6 @@ public class SM_Pull : State
 
     public override void OnExit()
     {
-        Debug.Log("ON EXIT PULL ");
-        
         _player.StopCoroutine(_drawBandageCoroutine);
         
         _time = 0;

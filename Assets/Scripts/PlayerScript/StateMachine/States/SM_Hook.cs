@@ -28,6 +28,8 @@ public class SM_Hook : State
         _player._viewPlayer.bandageLineRenderer.enabled = true;
 
         _drawBandageCoroutine = _player.StartCoroutine(Bandage());
+        
+        AudioManager.Instance.PlaySFX(NameSounds.Hook);
     }
 
     public override void OnExit()
@@ -48,6 +50,8 @@ public class SM_Hook : State
         Object.Destroy(_player._modelPlayer.springJoint);
 
         _player.IsHooked = false;
+        
+        AudioManager.Instance.StopSFX(NameSounds.Hook);
     }
 
     public override void OnUpdate()

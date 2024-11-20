@@ -104,7 +104,7 @@ public class MoveVerticalPlatform : MonoBehaviour
 
     public void StartAction()
     {
-        //AudioManager.Instance.PlaySFX(NameSounds.MovingPlatform); //TODO: ver porque rompe los fxs
+        AudioManager.Instance.PlaySFX(NameSounds.MovingPlatform);
         
         isMoving = !isMoving;
         activationParticles.Play();
