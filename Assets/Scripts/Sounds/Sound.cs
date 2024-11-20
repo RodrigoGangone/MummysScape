@@ -23,6 +23,7 @@ public enum NameSounds
     MainMenu2,
     Lvl1_1,
     Portal,
+    PoofSmoke,
     Walk,
     WalkInSand,
     WrapBox

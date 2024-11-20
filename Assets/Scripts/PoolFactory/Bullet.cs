@@ -60,6 +60,8 @@ public class Bullet : MonoBehaviour
 
     private void SpawnMummyBandage()
     {
+        AudioManager.Instance.PlaySFX(NameSounds.BandageBlow);
+        
         BulletFactory.Instance.ReturnObjectToPool(this);
         _player._modelPlayer.CreateBandageAtPosition(transform.position);
         Instantiate(_fxBullet, transform.position, transform.rotation);
