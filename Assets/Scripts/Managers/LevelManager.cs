@@ -190,7 +190,11 @@ public class LevelManager : MonoBehaviour
 
     private void Win()
     {
+        Debug.Log("WIIIIIIIIIIIIIIIN");
+
         _isWin = true;
+        
+        AudioManager.Instance.PlayMusic(NameSounds.Music_Win);
 
         LevelManagerJson.AddNewLevel(SceneManager.GetActiveScene().buildIndex,
             _collectibleNumbers,
@@ -203,7 +207,10 @@ public class LevelManager : MonoBehaviour
 
     private void Lose()
     {
+        Debug.Log("LOOOOOOOOOOOOOOOOOOOOOOOOOOOSSSSSSSSEEEEEEEEE");
         _isLose = true;
+        
+        AudioManager.Instance.PlayMusic(NameSounds.Music_Lose);
 
         _canPause = false;
     }

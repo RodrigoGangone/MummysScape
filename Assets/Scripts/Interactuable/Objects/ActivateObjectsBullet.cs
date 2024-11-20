@@ -22,7 +22,7 @@ public class ActivateObjectsBullet : MonoBehaviour
 
         
         _boxCollider.enabled = false;
-        AudioManager.Instance.PlaySFX(NameSounds.ActivateInteractable);
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_ActivateInteractable);
         _animator.SetBool("IsActive", !_animator.GetBool("IsActive"));
 
         StartCoroutine(SineIntensity());

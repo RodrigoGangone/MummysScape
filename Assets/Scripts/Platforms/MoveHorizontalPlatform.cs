@@ -130,7 +130,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
 
     public void StartAction()
     {
-        AudioManager.Instance.PlaySFX(NameSounds.MovingPlatform);
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_MovingPlatform);
         
         isMoving = !isMoving;
         activationParticles.Play();

@@ -61,7 +61,7 @@ public class MainMenu : MonoBehaviour
     {
         button.onClick.AddListener(() =>
         {
-            AudioManager.Instance.PlaySFX(NameSounds.Click);
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_Click);
         
             //Accion principal
             mainAction?.Invoke();

@@ -31,8 +31,8 @@ public class SM_Push : State
         _view.PLAY_ANIM("Push", true);
         Debug.Log("OnEnter: SM_PUSH");
         
-        AudioManager.Instance.PlaySFX(NameSounds.Walk);
-        AudioManager.Instance.PlaySFX(NameSounds.MovingBox);
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_Walk);
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_MovingBox);
     }
 
     public override void OnExit()
@@ -40,8 +40,8 @@ public class SM_Push : State
         _view.PLAY_ANIM("Push", false);
         Debug.Log("OnExit: SM_PUSH");
         
-        AudioManager.Instance.StopSFX(NameSounds.Walk);
-        AudioManager.Instance.StopSFX(NameSounds.MovingBox);
+        AudioManager.Instance.StopSFX(NameSounds.SFX_Walk);
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MovingBox);
     }
 
     public override void OnUpdate()

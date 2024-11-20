@@ -32,7 +32,10 @@ public class Quicksand : MonoBehaviour
         _timeToDeath += Time.deltaTime;
 
         if (_timeToDeath > _timeDeathNormal)
+        {
             _levelManager.OnPlayerDeath?.Invoke();
+            enabled = false;
+        }
     }
 
     private void OnCollisionStay(Collision other)

@@ -254,9 +254,9 @@ public class ModelPlayer
         float randomValue = UnityEngine.Random.value; 
 
         if (randomValue < 0.5f)
-            AudioManager.Instance.PlaySFX(NameSounds.BandageShoot1); 
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_BandageShoot1); 
         else
-            AudioManager.Instance.PlaySFX(NameSounds.BandageShoot2); 
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_BandageShoot2); 
     }
 
     public void RotatePreShoot()

@@ -44,14 +44,14 @@ public class AudioManager : MonoBehaviour
         switch (sceneIndex)
         {
             case 0:
-                NameSounds randomSound = (Random.value > 0.5f) ? NameSounds.MainMenu1 : NameSounds.MainMenu2;
+                NameSounds randomSound = (Random.value > 0.5f) ? NameSounds.Music_MainMenu1 : NameSounds.Music_MainMenu2;
                 PlayMusic(randomSound);
                 break;
             case 1:
-                PlayMusic(NameSounds.Lvl1_1); 
+                PlayMusic(NameSounds.Music_Lvl1_1); 
                 break;
             case 2:
-                PlayMusic(NameSounds.Lvl1_1); 
+                PlayMusic(NameSounds.Music_Lvl1_1); 
                 break;
             default:
                 Debug.Log("No music assigned for this scene index.");

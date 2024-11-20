@@ -29,7 +29,7 @@ public class SM_Hook : State
 
         _drawBandageCoroutine = _player.StartCoroutine(Bandage());
         
-        AudioManager.Instance.PlaySFX(NameSounds.Hook);
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_Hook);
     }
 
     public override void OnExit()
@@ -51,7 +51,7 @@ public class SM_Hook : State
 
         _player.IsHooked = false;
         
-        AudioManager.Instance.StopSFX(NameSounds.Hook);
+        AudioManager.Instance.StopSFX(NameSounds.SFX_Hook);
     }
 
     public override void OnUpdate()

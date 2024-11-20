@@ -128,7 +128,7 @@ public class ViewPlayer
     public void PLAY_PUFF()
     {
         _player._puffFX.Play();
-        AudioManager.Instance.PlaySFX(NameSounds.PoofSmoke);
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_PoofSmoke);
     }
 
     public void PLAY_WALK(bool act)

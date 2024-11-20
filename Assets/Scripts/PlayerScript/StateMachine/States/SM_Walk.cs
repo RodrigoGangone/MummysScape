@@ -19,7 +19,7 @@ public class SM_Walk : State
         _view.PLAY_ANIM("Walk", true);
         _view.PLAY_WALK(true);
         
-        AudioManager.Instance.PlaySFX(NameSounds.Walk);
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_Walk);
     }
 
     public override void OnExit()
@@ -28,7 +28,7 @@ public class SM_Walk : State
         _view.PLAY_ANIM("Walk", false);
         _view.PLAY_WALK(false);
         
-        AudioManager.Instance.StopSFX(NameSounds.Walk);
+        AudioManager.Instance.StopSFX(NameSounds.SFX_Walk);
     }
 
     public override void OnUpdate()

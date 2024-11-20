@@ -22,7 +22,7 @@ public class Collectible : MonoBehaviour
     {
         if (!other.CompareTag(PLAYER_TAG)) return;
         
-        AudioManager.Instance.PlaySFX(NameSounds.Collectable);
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_Collectable);
         _levelManager.AddCollectible.Invoke(_collectibleNumber);
     }
 
