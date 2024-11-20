@@ -43,6 +43,11 @@ public class AnimationEventPlayer : MonoBehaviour
         _player._modelPlayer.tackleSphereCollider.enabled = activeSmash;
     }
 
+    public void EVENT_UI_BREAK_HOURGLASS()
+    {
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_BreakHourglass);
+    }
+
     public void EVENT_ANIM_WIN()
     {
         _uiManager.Win();

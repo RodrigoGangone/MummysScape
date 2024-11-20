@@ -19,7 +19,18 @@ public class SM_Walk : State
         _view.PLAY_ANIM("Walk", true);
         _view.PLAY_WALK(true);
         
-        AudioManager.Instance.PlaySFX(NameSounds.SFX_Walk);
+        switch (_player.CurrentPlayerSize)
+        {
+            case PlayerSize.Normal:
+                AudioManager.Instance.PlaySFX(NameSounds.SFX_MummyWalkNormal);
+                break;
+            case PlayerSize.Small:
+                AudioManager.Instance.PlaySFX(NameSounds.SFX_MummyWalkSmall);
+                break;
+            default:
+                AudioManager.Instance.PlaySFX(NameSounds.SFX_MummyWalkNormal);
+                break;
+        }
     }
 
     public override void OnExit()
@@ -27,8 +38,23 @@ public class SM_Walk : State
         _model.ClampMovement();
         _view.PLAY_ANIM("Walk", false);
         _view.PLAY_WALK(false);
-        
-        AudioManager.Instance.StopSFX(NameSounds.SFX_Walk);
+        /*AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkNormal);
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSmall);
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkNormal);*/
+
+
+        switch (_player.CurrentPlayerSize)
+        {
+            case PlayerSize.Normal:
+                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkNormal);
+                break;
+            case PlayerSize.Small:
+                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSmall);
+                break;
+            default:
+                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkNormal);
+                break;
+        }
     }
 
     public override void OnUpdate()

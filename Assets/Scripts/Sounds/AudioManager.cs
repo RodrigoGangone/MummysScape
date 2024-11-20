@@ -163,6 +163,16 @@ public class AudioManager : MonoBehaviour
 
         Debug.Log($"SFX Group is now {(isSFXMuted ? "muted" : "unmuted")}. Current volume: {targetVolume}");*/
     }
+
+    public void MuteAllActiveSFX()
+    {
+        List<AudioSource> activeAudioSources = AudioSourceFactory.Instance.GetActiveAudioSources();
+
+        foreach (AudioSource source in activeAudioSources)
+        {
+            source.mute = true;
+        }
+    }
     
     private IEnumerator ReturnAudioSourceToPool(AudioSource audioSource, float delay)
     {

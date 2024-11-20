@@ -151,14 +151,20 @@ public class UIManager : MonoBehaviour
     {
         while (true)
         {
-            if (levelManager.isBusy || levelManager._currentLevelState.Equals(LevelState.Pause))
+            if (levelManager.isBusy || levelManager._currentLevelState.Equals(LevelState.Pause) ||
+                _player._stateMachinePlayer.getCurrentState().Equals(Utils.STATE_DEAD) ||
+                _player._stateMachinePlayer.getCurrentState().Equals(Utils.STATE_WIN))
             {
+                AudioManager.Instance.StopSFX(NameSounds.SFX_HeartBeat_1);
+                AudioManager.Instance.StopSFX(NameSounds.SFX_HeartBeat_2);
                 yield return null;
                 continue;
             }
 
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_HeartBeat_1);
             yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
-
+            
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_HeartBeat_2);
             yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
 
             yield return new WaitForSeconds(_waitTimeBeat);
@@ -337,10 +343,7 @@ public class UIManager : MonoBehaviour
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _pausePanel.SetActive(false);
-
-        //TODO: Activar animacion de momia
-        //AnimationMummy.play();
-
+        
         //Muetro Tips con FakeDelay
         StartCoroutine(ShowTipsAndLoadNextScene());
     }
@@ -481,6 +484,7 @@ public class UIManager : MonoBehaviour
             _mummyUI.SetTrigger("isWin");
             
             AudioManager.Instance.PlayMusic(NameSounds.Music_Win);
+            AudioManager.Instance.MuteAllActiveSFX();
         }));
     }
 
@@ -492,6 +496,7 @@ public class UIManager : MonoBehaviour
             _mummyUI.SetTrigger("isLose");
             
             AudioManager.Instance.PlayMusic(NameSounds.Music_Lose);
+            AudioManager.Instance.MuteAllActiveSFX();
         }));
     }
 

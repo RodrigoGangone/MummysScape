@@ -174,7 +174,7 @@ public class Player : MonoBehaviour
         _stateMachinePlayer.AddState(PlayerState.Smash, new SM_Smash(_modelPlayer, _viewPlayer));
         //_stateMachinePlayer.AddState(PlayerState.Damage, new SM_Damage(_modelPlayer, _viewPlayer));
         _stateMachinePlayer.AddState(PlayerState.Win, new SM_Win(this));
-        _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead(_modelPlayer, _viewPlayer));
+        _stateMachinePlayer.AddState(PlayerState.Dead, new SM_Dead(this));
 
         _stateMachinePlayer.ChangeState(PlayerState.Idle);
     }
