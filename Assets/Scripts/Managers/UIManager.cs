@@ -479,6 +479,8 @@ public class UIManager : MonoBehaviour
 
             _WinPanel.SetActive(true);
             _mummyUI.SetTrigger("isWin");
+            
+            AudioManager.Instance.PlayMusic(NameSounds.Music_Win);
         }));
     }
 
@@ -488,6 +490,8 @@ public class UIManager : MonoBehaviour
         {
             _LosePanel.SetActive(true);
             _mummyUI.SetTrigger("isLose");
+            
+            AudioManager.Instance.PlayMusic(NameSounds.Music_Lose);
         }));
     }
 

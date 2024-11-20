@@ -190,28 +190,19 @@ public class LevelManager : MonoBehaviour
 
     private void Win()
     {
-        Debug.Log("WIIIIIIIIIIIIIIIN");
-
         _isWin = true;
+        _canPause = false;
         
-        AudioManager.Instance.PlayMusic(NameSounds.Music_Win);
-
         LevelManagerJson.AddNewLevel(SceneManager.GetActiveScene().buildIndex,
             _collectibleNumbers,
             0f);
 
         LevelManagerJson.SHOWPREFLEVELS();
-
-        _canPause = false;
     }
 
     private void Lose()
     {
-        Debug.Log("LOOOOOOOOOOOOOOOOOOOOOOOOOOOSSSSSSSSEEEEEEEEE");
         _isLose = true;
-        
-        AudioManager.Instance.PlayMusic(NameSounds.Music_Lose);
-
         _canPause = false;
     }
 }
