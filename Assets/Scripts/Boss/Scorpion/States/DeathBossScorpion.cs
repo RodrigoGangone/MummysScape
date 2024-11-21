@@ -16,7 +16,7 @@ public class DeathBossScorpion : State
     {
         _scorpion._anim.SetTrigger(DEATH_ANIM_SCORPION);
 
-        _scorpion.viewScorpion.SetActive(false);
+        //_scorpion.viewScorpion.SetActive(false);
 
         _scorpion._winPlatform.gameObject.SetActive(true);
 
