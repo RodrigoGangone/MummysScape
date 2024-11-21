@@ -37,17 +37,37 @@ public static class Utils
 
     #region Levels
 
-    internal const int MAX_LVLS = 6; //Cantidad Maxima de lvls actualmente
+    internal const int MAX_LVLS = 7; //Cantidad Maxima de lvls actualmente
     internal const string LEVEL_AT = "levelAt"; // Hasta que lvl llegue
     internal const int LEVEL_FIRST = 1; // Num del 1er lvl en SceneBuild
     internal const int FAKE_LOADING_TIME_SCENE = 3; //segs fake precarga del lvl seleccionado
 
     #endregion
 
+    #region Boss
+
+    #region Scorpion
+
+    internal const string ToIdleScorpion = "ToIdleScorpion";
+    internal const string ToFirstAttackScorpion = "ToFirstAttackScorpion";
+    internal const string ToSecondAttackScorpion = "ToSecondAttackScorpion";
+    internal const string ToDeathScorpion = "ToDeathScorpion";
+
+    internal const string ENTRY_NAME_ANIM_SCORPION = "Entry";
+    
+    internal const string IDLE_ANIM_SCORPION = "isIdle";
+    internal const string FIRST_ATTACK_ANIM_SCORPION = "isFirstAttack";
+    internal const string SECOND_ATTACK_ANIM_SCORPION = "isSecondAttack";
+    internal const string DEATH_ANIM_SCORPION = "isDeath";
+
+    #endregion
+
+    #endregion
+
     #region Options
 
     internal const string SELECTED_FPS_KEY = "SelectedFPS";
-    
+
     private const int FPS_30_VALUE = 30;
     private const int FPS_60_VALUE = 60;
     private const int FPS_75_VALUE = 75;

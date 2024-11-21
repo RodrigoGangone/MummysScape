@@ -10,12 +10,13 @@ public class ModelPlayer
     Player _player;
     ControllerPlayer _controller;
     Rigidbody _rb;
+    
+    //DAMAGE
 
     //DROP
     public Vector3 dropPosition;
 
     //TACKLE
-
     public SphereCollider tackleSphereCollider;
 
     //HOOK
@@ -33,6 +34,8 @@ public class ModelPlayer
     public Transform CurrentBox => _currentBox;
     public Vector3 DirToPush => _dirToPush;
     public Vector3 DirToPull => _dirToPull;
+
+    public bool IsDamage { get; set; }
 
     public ModelPlayer(Player p)
     {

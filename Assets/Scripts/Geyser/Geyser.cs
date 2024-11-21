@@ -9,21 +9,19 @@ public class Geyser : MonoBehaviour
     [SerializeField] private Transform _view;
     [SerializeField] private Transform _invisiblePlatform;
     [SerializeField] private Transform _triggerTransform;
-    
+
     private bool _isPaused;
     private bool _upInvisiblePlatform;
 
-    [Header("SPEED")] 
-    [SerializeField] private float speedSand = 3;
+    [Header("SPEED")] [SerializeField] private float speedSand = 3;
     [SerializeField] private float speedInvisiblePlatform = 5;
-    [SerializeField] private float stopTime = 3f;
+    [SerializeField] private float stopTimeBase = 3f;
+    [SerializeField] private float stopTimeTop = 3f;
 
-    [Header("WAYPOINTS")] 
-    [SerializeField] private Transform[] waypoints;
+    [Header("WAYPOINTS")] [SerializeField] private Transform[] waypoints;
     private int _currentWaypointIndex;
-    
-    [Header("WAYPOINTS")] 
-    [SerializeField] private ParticleSystem _preUp1,_preUp2;
+
+    [Header("WAYPOINTS")] [SerializeField] private ParticleSystem _preUp1, _preUp2;
 
     private void Start()
     {
@@ -67,14 +65,14 @@ public class Geyser : MonoBehaviour
 
         if (_currentWaypointIndex == 0)
         {
-            yield return new WaitForSeconds(stopTime / 2);
+            yield return new WaitForSeconds(stopTimeBase / 2);
             _preUp1.Play();
             _preUp2.Play();
-            yield return new WaitForSeconds(stopTime / 2);
+            yield return new WaitForSeconds(stopTimeBase / 2);
         }
         else
         {
-            yield return new WaitForSeconds(stopTime);
+            yield return new WaitForSeconds(stopTimeTop);
             _preUp1.Stop();
             _preUp2.Stop();
         }
@@ -111,7 +109,7 @@ public class Geyser : MonoBehaviour
 
         _invisiblePlatform.position = waypoints[0].position;
     }*/
-    
+
     public void OnPlayerEnterTrigger(Collider player)
     {
         player.transform.SetParent(_invisiblePlatform);
