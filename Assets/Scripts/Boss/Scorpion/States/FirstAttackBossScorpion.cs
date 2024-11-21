@@ -16,16 +16,12 @@ public class FirstAttackBossScorpion : State
         Debug.Log("ENTER FIRST");
 
         _scorpion.FirstAreaAttack(_scorpion.player.WalkingSand
-            ? _scorpion._pointAttackSand
-            : _scorpion._pointAttackPlatform);
+            ? _scorpion.pointAttackSand
+            : _scorpion.pointAttackPlatform);
     }
 
     public override void OnUpdate()
     {
-        _scorpion._viewScorpion.transform.LookAt(_scorpion.player.transform);
-
-        if (_scorpion._isDead)
-            _scorpion.stateMachine.ChangeState(BossScorpionState.DeathScorpion);
     }
 
     public override void OnFixedUpdate()

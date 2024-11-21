@@ -21,7 +21,9 @@ public class IdleBossScorpion : State
 
     public override void OnUpdate()
     {
-        _scorpion._viewScorpion.transform.LookAt(_scorpion.player.transform);
+        _scorpion.viewScorpion.transform.LookAt(_scorpion.player.transform);
+
+        SelectCurrentAttack();
 
         if (_timeToFirstAttack < _scorpion._cdAttack1)
             _timeToFirstAttack += Time.deltaTime;
@@ -30,14 +32,10 @@ public class IdleBossScorpion : State
             _timeToSecondAttack += Time.deltaTime;
 
         if (_timeToFirstAttack >= _scorpion._cdAttack1 && _scorpion._currentAttack == CurrentAttack.First)
-            _scorpion.stateMachine.ChangeState(BossScorpionState.FirstAttackScorpion);
+            _scorpion.stateMachine.ChangeState(BossScorpionState.ThirdAttackScorpion);
 
         if (_timeToSecondAttack >= _scorpion._cdAttack2 && _scorpion._currentAttack == CurrentAttack.Second)
             _scorpion.stateMachine.ChangeState(BossScorpionState.SecondAttackScorpion);
-
-        if (_scorpion._isDead)
-            _scorpion.stateMachine.ChangeState(BossScorpionState.DeathScorpion);
-
     }
 
     public override void OnFixedUpdate()
@@ -50,5 +48,14 @@ public class IdleBossScorpion : State
 
         _timeToFirstAttack = 0;
         _timeToSecondAttack = 0;
+    }
+
+    private void SelectCurrentAttack()
+    {
+        var currentState = _scorpion.player._stateMachinePlayer.getCurrentState();
+
+        _scorpion._currentAttack = currentState is STATE_HOOK or STATE_FALL
+            ? CurrentAttack.Second
+            : CurrentAttack.First;
     }
 }
