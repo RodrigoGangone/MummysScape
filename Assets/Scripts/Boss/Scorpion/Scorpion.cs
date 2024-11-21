@@ -9,12 +9,13 @@ public class Scorpion : Boss
 {
     [SerializeField] internal GameObject viewScorpion;
 
-    [Header("First Attack")] private int _numberOfRays = 25;
-    private const int ATTACK_RADIUS = 50;
+    [Header("First Attack")] [SerializeField]
+    internal Transform pointAttackSand;
 
-    [SerializeField] internal Transform pointAttackSand;
     [SerializeField] internal Transform pointAttackPlatform;
     [SerializeField] private ParticleSystem _firstAttackFX;
+
+    private const int ATTACK_RADIUS = 50;
 
     [Header("Second Attack")] public List<Geyser> geysers;
 
@@ -27,7 +28,7 @@ public class Scorpion : Boss
     [SerializeField] internal StoneScorpionTrigger _stonePrefab;
     [SerializeField] public Transform _targetShoot;
 
-    public StateMachinePlayer stateMachine;
+    [Header("STATE MACHINE")] public StateMachinePlayer stateMachine;
 
     void Start()
     {
@@ -89,24 +90,25 @@ public class Scorpion : Boss
     public IEnumerator MovePlayer(Vector3 dir)
     {
         float speed = 8f;
-
         Vector3 normalizedDir = dir.normalized;
 
         while (true)
         {
             player.transform.position += normalizedDir * (speed * Time.deltaTime);
 
-            if (!player._modelPlayer.CheckGround())
+            if (!player._modelPlayer.CheckGround() && !player.WalkingSand)
             {
                 player.GetComponent<Rigidbody>().AddForce(normalizedDir * 5f, ForceMode.Impulse);
 
                 yield return new WaitForSeconds(0.5f);
 
                 player._modelPlayer.IsDamage = false;
-                _stonePrefab.transform.position = _targetShoot.position;
 
                 yield break;
             }
+
+            if (player.WalkingSand)
+                player.GetComponent<Rigidbody>().AddForce(normalizedDir * 0.01f, ForceMode.Impulse);
 
             yield return null;
         }
@@ -170,8 +172,8 @@ public class Scorpion : Boss
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("MovableBox"))
-            _isDead = true;
+        if (other.gameObject.layer == LayerMask.NameToLayer("Box"))
+            stateMachine.ChangeState(BossScorpionState.DeathScorpion);
     }
 }
 

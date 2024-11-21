@@ -1,15 +1,15 @@
 using System.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class StoneScorpionTrigger : MonoBehaviour
 {
     private Scorpion _scorpion;
-    private ParticleSystem _hitFx;
+    [SerializeField] private ParticleSystem _hitFx;
 
     private void Start()
     {
         _scorpion = GetComponentInParent<Scorpion>();
-        _hitFx = GetComponentInChildren<ParticleSystem>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -18,24 +18,26 @@ public class StoneScorpionTrigger : MonoBehaviour
             other.gameObject.layer == LayerMask.NameToLayer("Box") ||
             other.gameObject.layer == LayerMask.NameToLayer("Floor"))
         {
-            CollisionWithAll();
+            CollisionWithAll(other.transform.position);
         }
         else if (other.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
-            HandleCollisionWithPlayer();
+            HandleCollisionWithPlayer(other.transform.position);
         }
     }
 
-    private void CollisionWithAll()
+    private void CollisionWithAll(Vector3 pos)
     {
+        Instantiate(_hitFx, pos, quaternion.identity);
+
         _scorpion._stoneView.SetActive(false);
         _scorpion._stonePrefab.transform.position = _scorpion._targetShoot.position;
-        _hitFx.Play();
     }
 
-    private void HandleCollisionWithPlayer()
+
+    private void HandleCollisionWithPlayer(Vector3 pos)
     {
-        CollisionWithAll(); // Reutiliza la lógica común
+        CollisionWithAll(pos); // Reutiliza la lógica común
 
         Vector3 targetPosition = new Vector3(
             _scorpion.player.transform.position.x,

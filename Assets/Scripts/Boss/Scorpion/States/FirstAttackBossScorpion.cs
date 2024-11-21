@@ -22,8 +22,6 @@ public class FirstAttackBossScorpion : State
 
     public override void OnUpdate()
     {
-        if (_scorpion._isDead)
-            _scorpion.stateMachine.ChangeState(BossScorpionState.DeathScorpion);
     }
 
     public override void OnFixedUpdate()

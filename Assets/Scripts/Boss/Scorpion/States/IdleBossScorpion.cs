@@ -36,9 +36,6 @@ public class IdleBossScorpion : State
 
         if (_timeToSecondAttack >= _scorpion._cdAttack2 && _scorpion._currentAttack == CurrentAttack.Second)
             _scorpion.stateMachine.ChangeState(BossScorpionState.SecondAttackScorpion);
-
-        if (_scorpion._isDead)
-            _scorpion.stateMachine.ChangeState(BossScorpionState.DeathScorpion);
     }
 
     public override void OnFixedUpdate()

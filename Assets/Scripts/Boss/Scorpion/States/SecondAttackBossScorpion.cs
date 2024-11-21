@@ -26,12 +26,7 @@ public class SecondAttackBossScorpion : State
     {
         // Si todos los géiseres han terminado, cambiamos al estado Idle
         if (_completedGeysersCount == _scorpion.geysers.Count)
-        {
             _scorpion.stateMachine.ChangeState(BossScorpionState.IdleScorpion);
-        }
-
-        if (_scorpion._isDead)
-            _scorpion.stateMachine.ChangeState(BossScorpionState.DeathScorpion);
     }
 
     public override void OnFixedUpdate()
