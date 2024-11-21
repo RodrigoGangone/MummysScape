@@ -126,6 +126,7 @@ public class ControllerPlayer
                    STATE_WALK => true,
                    STATE_PUSH => true,
                    STATE_SMASH => true,
+                   STATE_DAMAGE => true,
                    _ => false
                };
     }
