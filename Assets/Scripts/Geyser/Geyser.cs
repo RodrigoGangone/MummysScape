@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -6,17 +7,30 @@ public class Geyser : MonoBehaviour
 {
     private Player _player;
 
-    [SerializeField] private Transform _view;
+    [FormerlySerializedAs("geyserType")] [SerializeField]
+    GeyserType _currentGeyserType;
+
+    [SerializeField] private Transform _viewBasic;
+    [SerializeField] private Transform _viewIntense;
+
     [SerializeField] private Transform _invisiblePlatform;
     [SerializeField] private Transform _triggerTransform;
 
     private bool _isPaused;
     private bool _upInvisiblePlatform;
+    public bool _isIntenseModeActive;
 
-    [Header("SPEED")] [SerializeField] private float speedSand = 3;
+    [Header("SPEED BASIC")] [SerializeField]
+    private float speedSand = 3;
+
     [SerializeField] private float speedInvisiblePlatform = 5;
     [SerializeField] private float stopTimeBase = 3f;
     [SerializeField] private float stopTimeTop = 3f;
+
+    [Header("SPEED INTENSE")] [SerializeField]
+    private float stoptimeTopIntense = 3f;
+
+    [SerializeField] private float intenseSpeed = 10f;
 
     [Header("WAYPOINTS")] [SerializeField] private Transform[] waypoints;
     private int _currentWaypointIndex;
@@ -26,15 +40,24 @@ public class Geyser : MonoBehaviour
     private void Start()
     {
         _player = FindObjectOfType<Player>();
+
+        Transform selectedView = _currentGeyserType == GeyserType.Intense ? _viewIntense : _viewBasic;
+        _viewIntense.gameObject.SetActive(selectedView == _viewIntense);
+        _viewBasic.gameObject.SetActive(selectedView == _viewBasic);
     }
 
     private void Update()
     {
-        MoveTowardsWaypoint();
+        if (_currentGeyserType == GeyserType.Basic)
+        {
+            MoveTowardsWaypoint();
+        }
 
         if (_upInvisiblePlatform)
-            UpInvisiblePlatform();
+            UpInvisiblePlatform(_currentGeyserType == GeyserType.Intense ? _viewIntense : _viewBasic);
     }
+
+    #region Basic Mode => Common use
 
     private void MoveTowardsWaypoint()
     {
@@ -47,13 +70,14 @@ public class Geyser : MonoBehaviour
         Transform targetWaypoint = waypoints[_currentWaypointIndex];
         float step = speedSand * Time.deltaTime;
 
-        _view.transform.position = Vector3.MoveTowards(_view.transform.position, targetWaypoint.position, step);
+        _viewBasic.transform.position =
+            Vector3.MoveTowards(_viewBasic.transform.position, targetWaypoint.position, step);
         _triggerTransform.transform.position = new Vector3(_triggerTransform.transform.position.x,
-            _view.transform.position.y,
+            _viewBasic.transform.position.y,
             _triggerTransform.transform.position.z);
 
         // Pausa al llegar a un punto
-        if (Vector3.Distance(_view.transform.position, targetWaypoint.position) == 0)
+        if (Vector3.Distance(_viewBasic.transform.position, targetWaypoint.position) == 0)
         {
             StartCoroutine(PauseAtWaypoint());
         }
@@ -82,33 +106,58 @@ public class Geyser : MonoBehaviour
         _isPaused = false;
     }
 
-    private void UpInvisiblePlatform()
+    private void UpInvisiblePlatform(Transform viewPos)
     {
         float step = speedInvisiblePlatform * Time.deltaTime;
 
-        _invisiblePlatform.position = Vector3.MoveTowards(_invisiblePlatform.position, _view.position, step);
+        _invisiblePlatform.position = Vector3.MoveTowards(_invisiblePlatform.position, viewPos.position, step);
     }
 
-    /*private void OnTriggerEnter(Collider other)
+    #endregion
+
+    #region IntenseMode => Boss - Scorpion
+
+    public void ActivateIntenseMode(Action onGeysersFinished = null)
     {
-        if (!other.gameObject.CompareTag("PlayerFather")) return;
+        if (_isIntenseModeActive || _currentGeyserType != GeyserType.Intense) return;
 
-        other.transform.SetParent(_invisiblePlatform);
-        _upInvisiblePlatform = true;
+        _isIntenseModeActive = true;
 
-        if (_player.CurrentPlayerSize != PlayerSize.Head)
-            _player._modelPlayer.CountBandage(-_player.CurrentBandageStock);
+        StartCoroutine(IntenseGeyserSequence(onGeysersFinished));
     }
 
-    private void OnTriggerExit(Collider other)
+    private IEnumerator IntenseGeyserSequence(Action onGeysersFinished = null)
     {
-        if (!other.gameObject.CompareTag("PlayerFather")) return;
+        while (Vector3.Distance(_viewIntense.position, waypoints[1].position) > 0.01f)
+        {
+            _viewIntense.position = Vector3.MoveTowards(_viewIntense.position, waypoints[1].position,
+                intenseSpeed * Time.deltaTime);
+            _triggerTransform.position = new Vector3(
+                _triggerTransform.position.x,
+                _viewIntense.position.y,
+                _triggerTransform.position.z);
+            yield return null;
+        }
 
-        other.transform.SetParent(null);
-        _upInvisiblePlatform = false;
+        yield return new WaitForSeconds(stoptimeTopIntense);
 
-        _invisiblePlatform.position = waypoints[0].position;
-    }*/
+        while (Vector3.Distance(_viewIntense.position, waypoints[0].position) > 0.01f)
+        {
+            _viewIntense.position = Vector3.MoveTowards(_viewIntense.position, waypoints[0].position,
+                intenseSpeed * Time.deltaTime);
+            _triggerTransform.position = new Vector3(
+                _triggerTransform.position.x,
+                _viewIntense.position.y,
+                _triggerTransform.position.z);
+            yield return null;
+        }
+
+        _isIntenseModeActive = false;
+
+        onGeysersFinished?.Invoke();
+    }
+
+    #endregion
 
     public void OnPlayerEnterTrigger(Collider player)
     {
@@ -128,4 +177,10 @@ public class Geyser : MonoBehaviour
 
         _invisiblePlatform.position = waypoints[0].position;
     }
+}
+
+enum GeyserType
+{
+    Basic,
+    Intense
 }

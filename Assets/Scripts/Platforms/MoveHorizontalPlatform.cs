@@ -103,7 +103,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, targetWaypoint.position, step);
 
             // Pausa al llegar a un punto
-            if (Vector3.Distance(transform.position, targetWaypoint.position) == 0)
+            if (Vector3.Distance(transform.position, targetWaypoint.position) <= 0.01f)
             {
                 StartCoroutine(PauseAtWaypoint());
             }

@@ -6,7 +6,6 @@ using UnityEngine.Serialization;
 public class Boss : MonoBehaviour
 {
     [Header("BOSS PROPERTY'S")] //Propiedades que comparten todos los Boss 
-    internal bool _isDead; //1 Golpe
 
     [SerializeField] internal CurrentAttack _currentAttack;
 
@@ -23,5 +22,6 @@ public class Boss : MonoBehaviour
 public enum CurrentAttack
 {
     First,
-    Second
+    Second,
+    ThirdAttack
 }
