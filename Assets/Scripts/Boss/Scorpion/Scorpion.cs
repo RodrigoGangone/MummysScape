@@ -264,7 +264,7 @@ public class Scorpion : Boss
             _geysersParticlesList[i].Play();
         }
 
-        float speed = 5f;
+        float speed = 10f;
         bool allReached;
 
         do

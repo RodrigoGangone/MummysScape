@@ -7,7 +7,7 @@ public class ThirdAttackBossScorpion : State
 {
     private Scorpion _scorpion;
     private Vector3 _initialPosPlayer;
-    private const int SPEED_PROJECTILE = 25;
+    private int SPEED_PROJECTILE = 50;
     private float _lifeTimeStone;
     private const int MAX_LIFETIME_STONE = 5;
     private List<Vector3> _pathPoints; // Lista de puntos de la trayectoria
