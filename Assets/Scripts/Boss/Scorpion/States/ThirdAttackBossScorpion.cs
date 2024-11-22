@@ -7,9 +7,9 @@ public class ThirdAttackBossScorpion : State
 {
     private Scorpion _scorpion;
     private Vector3 _initialPosPlayer;
-    private int SPEED_PROJECTILE = 50;
+    private int SPEED_PROJECTILE = 55;
     private float _lifeTimeStone;
-    private const int MAX_LIFETIME_STONE = 5;
+    private const int MAX_LIFETIME_STONE = 2;
     private List<Vector3> _pathPoints; // Lista de puntos de la trayectoria
     private int _currentPointIndex; // Índice del punto actual en la lista
     private bool _stoneIsMoving; // Flag para controlar el movimiento
@@ -21,7 +21,8 @@ public class ThirdAttackBossScorpion : State
 
     public override void OnEnter()
     {
-        _initialPosPlayer = _scorpion.player.transform.position + new Vector3(0, 1f, 0);
+        _initialPosPlayer = PredictFuturePosition();
+        
         _scorpion._anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, true);
 
         GeneratePath();
@@ -64,7 +65,7 @@ public class ThirdAttackBossScorpion : State
         Vector3 mid = (start + _initialPosPlayer) / 2 + Vector3.up * 1.5f; // Punto intermedio elevado
         Vector3 end = _initialPosPlayer; // Posición final (jugador)
 
-        int resolution = 30;
+        int resolution = 3;
 
         for (int i = 0; i <= resolution; i++)
         {
@@ -95,7 +96,27 @@ public class ThirdAttackBossScorpion : State
             _scorpion._stonePrefab.transform.position += direction * SPEED_PROJECTILE * Time.deltaTime;
         }
     }
+    
+    private Vector3 PredictFuturePosition()
+    {
+        Rigidbody playerRb = _scorpion.player.GetComponent<Rigidbody>();
+        Vector3 playerPosition = _scorpion.player.transform.position + new Vector3(0, 1f, 0); // Ajustar altura
+        Vector3 playerVelocity = playerRb != null ? playerRb.velocity : Vector3.zero;
+        Vector3 playerAcceleration = playerRb != null ? playerRb.velocity - playerRb.velocity.normalized : Vector3.zero;
 
+        Vector3 start = _scorpion._stonePrefab.transform.position;
+        float distance = Vector3.Distance(start, playerPosition);
+        float timeToImpact = distance / SPEED_PROJECTILE;
+
+        // Predicción ajustada con aceleración
+        Vector3 predictedPosition = playerPosition + playerVelocity * timeToImpact + playerAcceleration * (0.5f * (timeToImpact * timeToImpact));
+
+        // Dibujar línea de depuración
+        Debug.DrawLine(start, predictedPosition, Color.green, 2f);
+
+        return predictedPosition;
+    }
+    
     private Vector3 CalculateBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2)
     {
         float u = 1 - t;
