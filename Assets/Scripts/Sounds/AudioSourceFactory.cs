@@ -7,7 +7,7 @@ public class AudioSourceFactory : MonoBehaviour
 
     [SerializeField] private AudioSource audioSourcePrefab;
     private Pool<AudioSource> audioSourcePool;
-    [SerializeField] private int initialAmount = 10;
+    [SerializeField] private int initialAmount = 20;
     private List<AudioSource> activeAudioSources; // Lista para rastrear los AudioSource activos
 
     private void Awake()

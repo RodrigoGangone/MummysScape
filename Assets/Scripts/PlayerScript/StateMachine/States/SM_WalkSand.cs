@@ -20,6 +20,22 @@ public class SM_WalkSand : State
         Debug.Log("ON ENTER STATE WALKSAND");
         _view.PLAY_ANIM("WalkSand", true);
         _view.PLAY_WALK_SAND(true);
+        
+        switch (_player.CurrentPlayerSize)
+        {
+            case PlayerSize.Normal:
+                AudioManager.Instance.PlaySFX(NameSounds.SFX_MummyWalkSandNormal);
+                break;
+            case PlayerSize.Small:
+                AudioManager.Instance.PlaySFX(NameSounds.SFX_MummyWalkSandSmall);
+                break;
+            case PlayerSize.Head:
+                AudioManager.Instance.PlaySFX(NameSounds.SFX_MummyWalkSandHead);
+                break;
+            default:
+                AudioManager.Instance.PlaySFX(NameSounds.SFX_MummyWalkNormal);
+                break;
+        }
     }
 
     public override void OnExit()
@@ -27,6 +43,22 @@ public class SM_WalkSand : State
         _model.ClampMovement();
         _view.PLAY_WALK_SAND(false);
         _view.PLAY_ANIM("WalkSand", false);
+        
+        switch (_player.CurrentPlayerSize)
+        {
+            case PlayerSize.Normal:
+                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSandNormal);
+                break;
+            case PlayerSize.Small:
+                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSandSmall);
+                break;
+            case PlayerSize.Head:
+                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSandHead);
+                break;
+            default:
+                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkNormal);
+                break;
+        }
     }
 
     public override void OnUpdate()

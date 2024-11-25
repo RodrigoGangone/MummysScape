@@ -11,13 +11,13 @@ public class SM_Walk : State
         _player = player;
         _model = _player._modelPlayer;
         _view = _player._viewPlayer;
+
+        _player.SizeModify += CheckWalkSound;
     }
 
-    public override void OnEnter()
+    private void CheckWalkSound()
     {
-
-        _view.PLAY_ANIM("Walk", true);
-        _view.PLAY_WALK(true);
+        if (!_player._stateMachinePlayer.getCurrentState().Equals(Utils.STATE_WALK)) return;
         
         switch (_player.CurrentPlayerSize)
         {
@@ -27,10 +27,22 @@ public class SM_Walk : State
             case PlayerSize.Small:
                 AudioManager.Instance.PlaySFX(NameSounds.SFX_MummyWalkSmall);
                 break;
+            case PlayerSize.Head:
+                AudioManager.Instance.PlaySFX(NameSounds.SFX_MummyWalkHead);
+                break;
             default:
                 AudioManager.Instance.PlaySFX(NameSounds.SFX_MummyWalkNormal);
                 break;
         }
+    }
+
+    public override void OnEnter()
+    {
+
+        _view.PLAY_ANIM("Walk", true);
+        _view.PLAY_WALK(true);
+
+        CheckWalkSound();
     }
 
     public override void OnExit()
@@ -38,23 +50,10 @@ public class SM_Walk : State
         _model.ClampMovement();
         _view.PLAY_ANIM("Walk", false);
         _view.PLAY_WALK(false);
-        /*AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkNormal);
+
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkNormal);
         AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSmall);
-        AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkNormal);*/
-
-
-        switch (_player.CurrentPlayerSize)
-        {
-            case PlayerSize.Normal:
-                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkNormal);
-                break;
-            case PlayerSize.Small:
-                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSmall);
-                break;
-            default:
-                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkNormal);
-                break;
-        }
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkHead);
     }
 
     public override void OnUpdate()

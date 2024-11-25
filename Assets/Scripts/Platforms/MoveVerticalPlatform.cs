@@ -25,6 +25,9 @@ public class MoveVerticalPlatform : MonoBehaviour
     private bool isMovingToFirstWaypoint;
 
     private int _currentWaypointIndex = 0;
+    
+    private AudioSource platformAudio;
+
 
     private void Start()
     {
@@ -50,6 +53,8 @@ public class MoveVerticalPlatform : MonoBehaviour
         {
             MoveTowardsWaypoint();
         }
+        
+        HandleAudio();
     }
 
     private void MoveToFirstWaypoint()
@@ -104,8 +109,6 @@ public class MoveVerticalPlatform : MonoBehaviour
 
     public void StartAction()
     {
-        AudioManager.Instance.PlaySFX(NameSounds.SFX_MovingPlatform);
-        
         isMoving = !isMoving;
         activationParticles.Play();
         StartCoroutine((GlowEffect(glowDuration)));
@@ -188,6 +191,26 @@ public class MoveVerticalPlatform : MonoBehaviour
             }
 
             yield return null;
+        }
+    }
+    
+    private void HandleAudio()
+    {
+        if (isMoving && !isPaused)
+        {
+            if (platformAudio == null || !platformAudio.isPlaying)
+            {
+                platformAudio = AudioManager.Instance.Play3DSFX(NameSounds.SFX_MovingPlatform, transform);
+            }
+        }
+        else
+        {
+            if (platformAudio != null && platformAudio.isPlaying)
+            {
+                platformAudio.Stop();
+                AudioSourceFactory.Instance.ReturnAudioSourceToPool(platformAudio);
+                platformAudio = null;
+            }
         }
     }
 }

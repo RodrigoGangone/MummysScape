@@ -94,6 +94,58 @@ public class AudioManager : MonoBehaviour
         }
     }
     
+    public AudioSource Play3DSFX(NameSounds name, Transform parentTransform)
+    {
+        Sound s = Array.Find(sfxSounds, x => x.name == name);
+
+        if (s != null)
+        {
+            AudioSource audioSource = AudioSourceFactory.Instance.GetAudioSourceFromPool();
+
+            audioSource.clip = s.clip;
+            audioSource.loop = s.loop;
+            audioSource.spatialBlend = 1; // Config 3D
+            audioSource.minDistance = 1; 
+            audioSource.maxDistance = 7; 
+            //audioSource.rolloffMode = AudioRolloffMode.Linear; // Ajusta cómo se desvanece el sonido
+
+            audioSource.Play();
+
+            StartCoroutine(FollowTransform(audioSource, parentTransform, s.loop ? -1 : s.clip.length));
+
+            return audioSource;
+        }
+        else
+        {
+            Debug.LogError($"3D SFX '{name}' not found!");
+            return null;
+        }
+    }
+    
+    private IEnumerator FollowTransform(AudioSource source, Transform parentTransform, float duration)
+    {
+        float elapsedTime = 0;
+
+        while (elapsedTime < duration || duration == -1) //Hasta lo que dura el clip o permanentemente si el clip es loop
+        {
+            if (parentTransform != null)
+            {
+                source.transform.position = parentTransform.position;
+            }
+            else
+            {
+                break; // Salir si el transform ya no existe
+            }
+
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        // Detener y devolver al pool al finalizar
+        source.Stop();
+        AudioSourceFactory.Instance.ReturnAudioSourceToPool(source);
+    }
+    
     public void StopMusic(NameSounds name)
     {
         Sound s = Array.Find(musicSounds, x => x.name == name);
