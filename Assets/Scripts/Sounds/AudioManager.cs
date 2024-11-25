@@ -108,7 +108,6 @@ public class AudioManager : MonoBehaviour
             audioSource.spatialBlend = 1; // Config 3D
             audioSource.minDistance = s.minDistance; 
             audioSource.maxDistance = s.maxDistance; 
-            //audioSource.rolloffMode = AudioRolloffMode.Linear; // Ajusta cómo se desvanece el sonido
 
             audioSource.Play();
 
@@ -116,14 +115,34 @@ public class AudioManager : MonoBehaviour
 
             return audioSource;
         }
-        else
-        {
-            Debug.LogError($"3D SFX '{name}' not found!");
-            return null;
-        }
+
+        Debug.LogError($"3D SFX '{name}' not found!");
+        return null;
     }
     
-    private IEnumerator FollowTransform(AudioSource source, Transform parentTransform, float duration)
+    
+    public AudioSource GetClipByName(NameSounds name)
+    {
+        Sound s = Array.Find(sfxSounds, x => x.name == name);
+
+        if (s != null)
+        {
+            AudioSource audioSource = AudioSourceFactory.Instance.GetAudioSourceFromPool();
+
+            audioSource.clip = s.clip;
+            audioSource.loop = s.loop;
+            audioSource.spatialBlend = 1; // Config 3D
+            audioSource.minDistance = s.minDistance; 
+            audioSource.maxDistance = s.maxDistance; 
+
+            return audioSource;
+        }
+
+        Debug.LogError($"3D SFX '{name}' not found!");
+        return null;
+    }
+    
+    public IEnumerator FollowTransform(AudioSource source, Transform parentTransform, float duration)
     {
         float elapsedTime = 0;
 

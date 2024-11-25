@@ -41,6 +41,9 @@ public class MoveVerticalPlatform : MonoBehaviour
             else
                 transform.position = waypoints[0].position;
         }
+        
+        // Reserva un AudioSource desde el pool al inicio
+        platformAudio = AudioManager.Instance.GetClipByName(NameSounds.SFX_MovingPlatform);
     }
 
     private void Update()
@@ -198,18 +201,19 @@ public class MoveVerticalPlatform : MonoBehaviour
     {
         if (isMoving && !isPaused)
         {
-            if (platformAudio == null || !platformAudio.isPlaying)
+            StartCoroutine(AudioManager.Instance.FollowTransform(platformAudio, transform, -1));
+            if (!platformAudio.isPlaying)
             {
-                platformAudio = AudioManager.Instance.Play3DSFX(NameSounds.SFX_MovingPlatform, transform);
+                Debug.Log("HANDLE AUDIO: PLAY");
+                platformAudio.Play(); // Reanuda el audio si estaba pausado
             }
         }
         else
         {
-            if (platformAudio != null && platformAudio.isPlaying)
+            if (platformAudio.isPlaying)
             {
-                platformAudio.Stop();
-                AudioSourceFactory.Instance.ReturnAudioSourceToPool(platformAudio);
-                platformAudio = null;
+                Debug.Log("HANDLE AUDIO: PAUSE");
+                platformAudio.Pause(); // Pausa el audio si no se está moviendo
             }
         }
     }

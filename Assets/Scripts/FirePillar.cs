@@ -11,6 +11,7 @@ public class FirePillar : MonoBehaviour
 
     private void OnDisable()
     {
+        if (_fireAudio == null) return;
         _fireAudio.Stop();
         AudioSourceFactory.Instance.ReturnAudioSourceToPool(_fireAudio);
     }
