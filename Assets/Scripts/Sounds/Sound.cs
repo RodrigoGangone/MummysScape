@@ -3,9 +3,14 @@ using UnityEngine;
 [System.Serializable]
 public class Sound
 {
+    [Header("Sound Settings")]
     public NameSounds name;
     public AudioClip clip;
     public bool loop;
+    
+    [Header("3D Sound Settings")]
+    [SerializeField] public float minDistance = 1f;
+    [SerializeField] public float maxDistance = 10f;
 }
 
 public enum NameSounds

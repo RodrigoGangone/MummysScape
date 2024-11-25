@@ -13,13 +13,13 @@ public class SM_WalkSand : State
         _player = player;
         _model = _player._modelPlayer;
         _view = _player._viewPlayer;
+        
+        _player.SizeModify += CheckWalkSound;
     }
-
-    public override void OnEnter()
+    
+    private void CheckWalkSound()
     {
-        Debug.Log("ON ENTER STATE WALKSAND");
-        _view.PLAY_ANIM("WalkSand", true);
-        _view.PLAY_WALK_SAND(true);
+        if (!_player._stateMachinePlayer.getCurrentState().Equals(Utils.STATE_WALK)) return;
         
         switch (_player.CurrentPlayerSize)
         {
@@ -38,27 +38,24 @@ public class SM_WalkSand : State
         }
     }
 
+    public override void OnEnter()
+    {
+        Debug.Log("ON ENTER STATE WALKSAND");
+        _view.PLAY_ANIM("WalkSand", true);
+        _view.PLAY_WALK_SAND(true);
+        
+        CheckWalkSound();
+    }
+
     public override void OnExit()
     {
         _model.ClampMovement();
         _view.PLAY_WALK_SAND(false);
         _view.PLAY_ANIM("WalkSand", false);
         
-        switch (_player.CurrentPlayerSize)
-        {
-            case PlayerSize.Normal:
-                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSandNormal);
-                break;
-            case PlayerSize.Small:
-                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSandSmall);
-                break;
-            case PlayerSize.Head:
-                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSandHead);
-                break;
-            default:
-                AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkNormal);
-                break;
-        }
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSandNormal);
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSandSmall);
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkSandHead);
     }
 
     public override void OnUpdate()

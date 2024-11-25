@@ -80,6 +80,7 @@ public class AudioManager : MonoBehaviour
         {
             AudioSource audioSource = AudioSourceFactory.Instance.GetAudioSourceFromPool();
 
+            audioSource.spatialBlend = 0; // Config 3D
             audioSource.clip = s.clip;
             audioSource.loop = s.loop;
             audioSource.Play();
@@ -105,8 +106,8 @@ public class AudioManager : MonoBehaviour
             audioSource.clip = s.clip;
             audioSource.loop = s.loop;
             audioSource.spatialBlend = 1; // Config 3D
-            audioSource.minDistance = 1; 
-            audioSource.maxDistance = 7; 
+            audioSource.minDistance = s.minDistance; 
+            audioSource.maxDistance = s.maxDistance; 
             //audioSource.rolloffMode = AudioRolloffMode.Linear; // Ajusta cómo se desvanece el sonido
 
             audioSource.Play();
