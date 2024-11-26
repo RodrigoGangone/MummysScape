@@ -55,13 +55,14 @@ public class Bullet : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Button"))
+        {
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_BandageBlow);
             SpawnMummyBandage();
+        }
     }
 
     private void SpawnMummyBandage()
     {
-        AudioManager.Instance.PlaySFX(NameSounds.SFX_BandageBlow);
-        
         BulletFactory.Instance.ReturnObjectToPool(this);
         _player._modelPlayer.CreateBandageAtPosition(transform.position);
         Instantiate(_fxBullet, transform.position, transform.rotation);
