@@ -215,6 +215,7 @@ public class AudioManager : MonoBehaviour
     {
         isSFXMuted = !isSFXMuted;
         
+        /*
         // AudioSources activos desde la pool
         List<AudioSource> activeAudioSources = AudioSourceFactory.Instance.GetActiveAudioSources();
 
@@ -222,10 +223,9 @@ public class AudioManager : MonoBehaviour
         foreach (AudioSource source in activeAudioSources)
         {
             source.mute = isSFXMuted;
-        }
+        }*/
 
         //TODO: En caso de que no funcione el bloque de arriba usar este.
-        /*
         //Si no esta muteado: pone el volumen en -80
         //Si esta muteado: poner el volumen en lo que dice las pref
          float targetVolume = isSFXMuted ? -80 : PlayerPrefs.GetFloat(SFX_VOLUME);
@@ -233,7 +233,7 @@ public class AudioManager : MonoBehaviour
         // Ajusta el volumen del grupo "SFX" en el AudioMixer.
         audioMixer.SetFloat(AUDIO_MIXER_SFX, targetVolume);
 
-        Debug.Log($"SFX Group is now {(isSFXMuted ? "muted" : "unmuted")}. Current volume: {targetVolume}");*/
+        Debug.Log($"SFX Group is now {(isSFXMuted ? "muted" : "unmuted")}. Current volume: {targetVolume}");
     }
 
     public void MuteAllActiveSFX()
