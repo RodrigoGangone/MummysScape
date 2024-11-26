@@ -19,7 +19,7 @@ public class SM_WalkSand : State
     
     private void CheckWalkSound()
     {
-        if (!_player._stateMachinePlayer.getCurrentState().Equals(Utils.STATE_WALK)) return;
+        if (!_player._stateMachinePlayer.getCurrentState().Equals(Utils.STATE_WALK_SAND)) return;
         
         switch (_player.CurrentPlayerSize)
         {
