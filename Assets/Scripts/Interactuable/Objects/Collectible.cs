@@ -10,18 +10,25 @@ public class Collectible : MonoBehaviour
 
     public CollectibleNumber CollectibleNumber => _collectibleNumber;
 
+    private AudioSource collectableProximityAudio;
+
 
     private void Start()
     {
         _levelManager = FindObjectOfType<LevelManager>();
 
         _levelManager.AddCollectible += AddCollectFX;
+
+        collectableProximityAudio = AudioManager.Instance.GetClipByName(NameSounds.SFX_CollectableProximity);
+        collectableProximityAudio.Play();
+        StartCoroutine(AudioManager.Instance.FollowTransform(collectableProximityAudio, transform, -1));
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag(PLAYER_TAG)) return;
-        
+        collectableProximityAudio.Pause();
+        AudioManager.Instance.ReturnAudioSourceToPool(collectableProximityAudio, 0.1f);
         AudioManager.Instance.PlaySFX(NameSounds.SFX_Collectable);
         _levelManager.AddCollectible.Invoke(_collectibleNumber);
     }

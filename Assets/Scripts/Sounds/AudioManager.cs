@@ -246,7 +246,7 @@ public class AudioManager : MonoBehaviour
         }
     }
     
-    private IEnumerator ReturnAudioSourceToPool(AudioSource audioSource, float delay)
+    public IEnumerator ReturnAudioSourceToPool(AudioSource audioSource, float delay)
     {
         yield return new WaitForSeconds(delay);
         AudioSourceFactory.Instance.ReturnAudioSourceToPool(audioSource);
