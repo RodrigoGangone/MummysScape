@@ -102,6 +102,7 @@ public class SM_Pull : State
         var boxScript = _lastCurrentBoxScript;
         if (boxScript != null)
         {
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_WrapBox);
             _isBandageDraw = true;
             boxScript.StartWrap();
         }
@@ -114,6 +115,7 @@ public class SM_Pull : State
         var boxScript = _lastCurrentBoxScript;
         if (boxScript != null)
         {
+            AudioManager.Instance.StopSFX(NameSounds.SFX_WrapBox);
             _isBandageDraw = false;
             boxScript.StartUnwrap();
         }
@@ -126,6 +128,7 @@ public class SM_Pull : State
         var boxScript = _lastCurrentBoxScript;
         if (boxScript != null)
         {
+            AudioManager.Instance.StopSFX(NameSounds.SFX_WrapBox);
             _isBandageDraw = false;
             boxScript.StartExplode();
         }

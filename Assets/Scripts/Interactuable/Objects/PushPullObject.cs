@@ -26,6 +26,8 @@ public class PushPullObject : MonoBehaviour
     [SerializeField] private float rayDistanceToPull = 7f; // Distancia de los raycasts
     [SerializeField] private float raycastLengthToFloor = 1.75f; // Longitud del raycast
     [SerializeField] private float raycastLengthToWall = 0.1f; // Longitud del raycast hacia las paredes
+    
+   // private AudioSource wrapAudio;
 
     private void Start()
     {
@@ -34,6 +36,8 @@ public class PushPullObject : MonoBehaviour
         wallLayerMask = LayerMask.GetMask("Wall");
 
         SetBandageOffset(0f);
+        
+        //wrapAudio = AudioManager.Instance.GetClipByName(NameSounds.SFX_WrapBox);
     }
 
     #region Handler Bandage Material
@@ -52,6 +56,7 @@ public class PushPullObject : MonoBehaviour
     {
         if (currentCoroutine != null)
         {
+            //if (wrapAudio.isPlaying) AudioManager.Instance.StopSFX(NameSounds.SFX_WrapBox);
             StopCoroutine(currentCoroutine);
         }
 
@@ -60,6 +65,7 @@ public class PushPullObject : MonoBehaviour
     
     public void StartExplode() //Iniciar proceso de Explosion
     {
+        //if (wrapAudio.isPlaying) AudioManager.Instance.StopSFX(NameSounds.SFX_WrapBox);
         SetExplode(true);
         StartUnwrap();
     }
@@ -75,7 +81,7 @@ public class PushPullObject : MonoBehaviour
 
     private IEnumerator AnimateBandages(float startOffset, float endOffset)
     {
-        AudioManager.Instance.PlaySFX(NameSounds.SFX_WrapBox);
+        //if (!wrapAudio.isPlaying) AudioManager.Instance.PlaySFX(NameSounds.SFX_WrapBox);
         
         float elapsedTime = 0f;
         currentOffset = startOffset;
@@ -89,7 +95,8 @@ public class PushPullObject : MonoBehaviour
         }
 
         SetBandageOffset(endOffset);
-        AudioManager.Instance.StopSFX(NameSounds.SFX_WrapBox);
+        
+        //if (wrapAudio.isPlaying) AudioManager.Instance.StopSFX(NameSounds.SFX_WrapBox);
     }
 
     private void SetBandageOffset(float offset)
