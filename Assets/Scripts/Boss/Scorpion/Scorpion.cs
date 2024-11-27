@@ -6,62 +6,91 @@ using UnityEngine.Serialization;
 
 public class Scorpion : Boss
 {
-    [SerializeField] internal GameObject viewScorpion;
-    [SerializeField] public LevelManager levelManager;
+    [Header("Scorpion Propertys")] public StateMachinePlayer stateMachine;
+    public GameObject viewScorpion;
+    public LevelManager LevelManager;
 
-    [Header("First Attack")] [SerializeField]
-    internal Transform pointAttackSand;
+    [Header("First Attack")] internal StoneScorpionTrigger stoneprefab;
+    [SerializeField] internal Transform targetShoot;
+    internal GameObject stoneView;
 
-    [SerializeField] internal Transform pointAttackPlatform;
-    [SerializeField] private ParticleSystem _firstAttackFX;
+    [Header("Second Attack")] private List<Geyser> _allGeysers = new();
 
-    private const int ATTACK_RADIUS = 50;
-
-    [Header("Second Attack")] public List<Geyser> geysersStageOne;
-    public List<Geyser> geysersStageTwo;
-    public List<Geyser> geysersStageThree;
-
-    private List<Geyser> allGeysers = new();
-
-    [SerializeField] private List<ParticleSystem> _geysersParticlesList = new();
-
+    private List<ParticleSystem> _geyserParticlesList = new();
     [SerializeField] private ParticleSystem _geysersParticles;
 
-    [Header("Third Attack")] [SerializeField]
-    internal GameObject _stoneView;
+    [SerializeField] internal List<Geyser> geysersStageOne = new();
+    [SerializeField] internal List<Geyser> geysersStageTwo = new();
+    [SerializeField] internal List<Geyser> geysersStageThree = new();
 
-    [SerializeField] internal StoneScorpionTrigger _stonePrefab;
-    [SerializeField] public Transform _targetShoot;
-
-    [Header("LEVEL CONTROL")] [SerializeField]
-    internal Vector3 _downPosStage; // Vector para bajar stages
+    [Header("Stage Propertys")] private Vector3 downPosStage = new(0, -7, 0);
+    private StageScorpion _currentStage;
 
     [SerializeField] private List<Transform> _stages;
     [SerializeField] private List<GameObject> _cameraNodes;
-    [SerializeField] private StageScorpion _currentStage;
-    [SerializeField] internal Transform _winPlatform;
+    [SerializeField] private Transform _winPlatform;
 
-    [Header("STATE MACHINE")] public StateMachinePlayer stateMachine;
+    #region Old
+
+    // [SerializeField] internal GameObject viewScorpion;
+    // [SerializeField] public LevelManager levelManager;
+    //
+    // [Header("First Attack")] [SerializeField]
+    // internal Transform pointAttackSand;
+    //
+    // [SerializeField] internal Transform pointAttackPlatform;
+    // [SerializeField] private ParticleSystem _firstAttackFX;
+    //
+    // private const int ATTACK_RADIUS = 50;
+    //
+    // [Header("Second Attack")] public List<Geyser> geysersStageOne;
+    // public List<Geyser> geysersStageTwo;
+    // public List<Geyser> geysersStageThree;
+    //
+    // private List<Geyser> allGeysers = new();
+    //
+    // [SerializeField] private List<ParticleSystem> _geysersParticlesList = new();
+    //
+    // [SerializeField] private ParticleSystem _geysersParticles;
+    //
+    // [Header("Third Attack")] [SerializeField]
+    // internal GameObject _stoneView;
+    //
+    // [SerializeField] internal StoneScorpionTrigger _stonePrefab;
+    // [SerializeField] public Transform _targetShoot;
+    //
+    // [Header("LEVEL CONTROL")] [SerializeField]
+    // internal Vector3 _downPosStage; // Vector para bajar stages
+    //
+    // [SerializeField] private List<Transform> _stages;
+    // [SerializeField] private List<GameObject> _cameraNodes;
+    // [SerializeField] private StageScorpion _currentStage;
+    // [SerializeField] internal Transform _winPlatform;
+    //
+    // [Header("STATE MACHINE")] public StateMachinePlayer stateMachine;
+
+    #endregion
 
     void Start()
     {
-        allGeysers.AddRange(geysersStageOne);
-        //allGeysers.AddRange(geysersStageTwo);
-        //allGeysers.AddRange(geysersStageThree);
+        stoneprefab = GetComponentInChildren<StoneScorpionTrigger>();
 
-        for (int i = 0; i < allGeysers.Count; i++)
+        _allGeysers.AddRange(geysersStageOne);
+        _allGeysers.AddRange(geysersStageTwo);
+        _allGeysers.AddRange(geysersStageThree);
+
+        for (int i = 0; i < _allGeysers.Count; i++)
         {
-            _geysersParticlesList.Add(
+            _geyserParticlesList.Add(
                 Instantiate(_geysersParticles, transform.position, Quaternion.identity, transform));
         }
 
         stateMachine = gameObject.AddComponent<StateMachinePlayer>();
 
         stateMachine.AddState(BossScorpionState.EntryScorpion, new EntryBossScorpion(this));
-        stateMachine.AddState(BossScorpionState.IdleScorpion, new IdleBossScorpion(this));
-        stateMachine.AddState(BossScorpionState.FirstAttackScorpion, new FirstAttackBossScorpion(this));
+        stateMachine.AddState(BossScorpionState.IdleScorpion, new IdleBossScorpion(this, player));
+        stateMachine.AddState(BossScorpionState.FirstAttackScorpion, new FirstAttackBossScorpion(this, player));
         stateMachine.AddState(BossScorpionState.SecondAttackScorpion, new SecondAttackBossScorpion(this));
-        stateMachine.AddState(BossScorpionState.ThirdAttackScorpion, new ThirdAttackBossScorpion(this));
         stateMachine.AddState(BossScorpionState.DeathScorpion, new DeathBossScorpion(this));
 
         stateMachine.ChangeState(BossScorpionState.IdleScorpion);
@@ -78,38 +107,25 @@ public class Scorpion : Boss
 
     private void AdvanceToNextStage()
     {
-        if ((int)_currentStage < Enum.GetValues(typeof(StageScorpion)).Length - 1)
+        int totalStages = _stages.Count;
+        int nextStageIndex = (int)_currentStage + 1;
+
+        if (nextStageIndex < totalStages)
         {
-            _currentStage = (StageScorpion)((int)_currentStage + 1);
-            HandleStageChange();
-        }
-        else
-            stateMachine.ChangeState(BossScorpionState.DeathScorpion);
-    }
+            // Actualizar la etapa actual
+            _currentStage = (StageScorpion)nextStageIndex;
 
-    private void HandleStageChange()
-    {
-        int currentStageIndex = (int)_currentStage - 1; // La etapa actual es el índice anterior
-        int nextStageIndex = (int)_currentStage; // La nueva etapa es el índice actual
+            Transform currentStageTransform = _stages[nextStageIndex - 1];
+            Transform nextStageTransform = nextStageIndex < totalStages ? _stages[nextStageIndex] : null;
 
-        // Validar que la etapa actual es válida para apagarse
-        if (currentStageIndex >= 0 && currentStageIndex < _stages.Count)
-        {
-            Transform currentStageTransform = _stages[currentStageIndex];
-            Vector3 targetPosition = currentStageTransform.position + _downPosStage;
+            Vector3 targetPosition = currentStageTransform.position + downPosStage;
 
-            // Mover y apagar la etapa actual, y encender la siguiente
-            Transform nextStageTransform = nextStageIndex < _stages.Count ? _stages[nextStageIndex] : null;
+            // Mover la etapa actual hacia abajo y manejar el estado de las etapas
             StartCoroutine(MoveAndHandleStages(currentStageTransform, nextStageTransform, targetPosition));
         }
-        else if (nextStageIndex < _stages.Count)
-        {
-            // Si no hay etapa actual, encender directamente la siguiente
-            _stages[nextStageIndex].gameObject.SetActive(true);
-        }
         else
         {
-            // Si no hay más etapas, el jefe muere
+            // Cambiar a estado de muerte si no hay más etapas
             stateMachine.ChangeState(BossScorpionState.DeathScorpion);
         }
     }
@@ -153,76 +169,7 @@ public class Scorpion : Boss
             stateMachine.ChangeState(BossScorpionState.DeathScorpion);
         }
     }
-
-
-    #region FirstAttack
-
-    internal void FirstAreaAttack(Transform originRaycast)
-    {
-        _firstAttackFX.Play();
-
-        LayerMask playerLayerMask = LayerMask.GetMask("Player");
-        LayerMask wallLayerMask = LayerMask.GetMask("Wall");
-        LayerMask boxLayerMask = LayerMask.GetMask("Box");
-        LayerMask wallAndBoxLayerMask = wallLayerMask | boxLayerMask;
-
-        Vector3 rayOriginPlatform = originRaycast.position;
-        Vector3 targetPosition =
-            new Vector3(player.transform.position.x, rayOriginPlatform.y, player.transform.position.z);
-        Vector3 direction = (targetPosition - rayOriginPlatform).normalized;
-
-        if (Physics.Raycast(rayOriginPlatform, direction, out RaycastHit wallHit, ATTACK_RADIUS, wallAndBoxLayerMask))
-        {
-            Debug.DrawRay(rayOriginPlatform, direction * wallHit.distance, Color.red, 1f);
-        }
-        else if (Physics.Raycast(rayOriginPlatform, direction, out RaycastHit playerHit, ATTACK_RADIUS,
-                     playerLayerMask))
-        {
-            Debug.DrawRay(rayOriginPlatform, direction * playerHit.distance, Color.green, 1f);
-            player._modelPlayer.IsDamage = true;
-
-            StartCoroutine(MovePlayer(direction));
-        }
-
-        stateMachine.ChangeState(BossScorpionState.IdleScorpion);
-    }
-
-    public IEnumerator MovePlayer(Vector3 dir)
-    {
-        float speed = 8f;
-        Vector3 normalizedDir = dir.normalized;
-        float rayLength = 1f; // Longitud del rayo para detectar la capa Sand
-
-        while (player._modelPlayer.CheckGround() && !IsOnSand(rayLength))
-        {
-            player.transform.position += normalizedDir * (speed * Time.deltaTime);
-            yield return null;
-        }
-
-        player.GetComponent<Rigidbody>().AddForce(normalizedDir * (IsOnSand(rayLength) ? 10f : 5f), ForceMode.Impulse);
-
-        yield return new WaitForSeconds(0.5f);
-
-        player._modelPlayer.IsDamage = false;
-    }
-
-    private bool IsOnSand(float rayLength)
-    {
-        Vector3 rayOrigin = player.transform.position + Vector3.up * 0.1f; // Origen del rayo
-        Ray ray = new Ray(rayOrigin, Vector3.down);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, rayLength))
-        {
-            // Comprueba si la capa del objeto detectado es "Sand"
-            return hit.collider.gameObject.layer == LayerMask.NameToLayer("Sand");
-        }
-
-        return false;
-    }
-
-    #endregion
-
+    
     #region SecondAttack
 
     internal void SecondAttack(Action onGeyserCompleted)
@@ -317,7 +264,6 @@ internal enum BossScorpionState
     IdleScorpion,
     FirstAttackScorpion,
     SecondAttackScorpion,
-    ThirdAttackScorpion,
     DeathScorpion
 }
 

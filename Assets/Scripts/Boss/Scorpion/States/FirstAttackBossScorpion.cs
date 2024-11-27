@@ -1,23 +1,20 @@
+using System.Collections;
 using UnityEngine;
 using static Utils;
 
 public class FirstAttackBossScorpion : State
 {
     private Scorpion _scorpion;
+    private Player _player;
 
-    public FirstAttackBossScorpion(Scorpion scorpion)
+    public FirstAttackBossScorpion(Scorpion scorpion, Player player)
     {
         _scorpion = scorpion;
+        _player = player;
     }
 
     public override void OnEnter()
     {
-        _scorpion._anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, true);
-        Debug.Log("ENTER FIRST");
-
-        _scorpion.FirstAreaAttack(_scorpion.player.WalkingSand
-            ? _scorpion.pointAttackSand
-            : _scorpion.pointAttackPlatform);
     }
 
     public override void OnUpdate()
@@ -30,6 +27,39 @@ public class FirstAttackBossScorpion : State
 
     public override void OnExit()
     {
-        _scorpion._anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, false);
+    }
+
+    public IEnumerator MovePlayer(Vector3 dir)
+    {
+        float speed = 8f;
+        Vector3 normalizedDir = dir.normalized;
+        float rayLength = 1f; // Longitud del rayo para detectar la capa Sand
+
+        while (_player._modelPlayer.CheckGround() && !IsOnSand(rayLength))
+        {
+            _player.transform.position += normalizedDir * (speed * Time.deltaTime);
+            yield return null;
+        }
+
+        _player.GetComponent<Rigidbody>().AddForce(normalizedDir * (IsOnSand(rayLength) ? 10f : 5f), ForceMode.Impulse);
+
+        yield return new WaitForSeconds(0.5f);
+
+        _player._modelPlayer.IsDamage = false;
+    }
+
+    private bool IsOnSand(float rayLength)
+    {
+        Vector3 rayOrigin = _player.transform.position + Vector3.up * 0.1f; // Origen del rayo
+        Ray ray = new Ray(rayOrigin, Vector3.down);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, rayLength))
+        {
+            // Comprueba si la capa del objeto detectado es "Sand"
+            return hit.collider.gameObject.layer == LayerMask.NameToLayer("Sand");
+        }
+
+        return false;
     }
 }

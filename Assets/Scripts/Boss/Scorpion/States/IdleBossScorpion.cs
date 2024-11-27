@@ -4,39 +4,38 @@ using static Utils;
 public class IdleBossScorpion : State
 {
     private Scorpion _scorpion;
+    private Player _player;
 
-    private float _timeToFirstAttack;
-    private float _timeToSecondAttack;
+    private float _currentCoolDownFirst;
+    private float _currentCoolDownSecond;
 
-    public IdleBossScorpion(Scorpion scorpion)
+    private const string ANIM_ROTATION_RIGHT = "Right";
+    private const string ANIM_ROTATION_LEFT = "Left";
+
+    public IdleBossScorpion(Scorpion scorpion, Player player)
     {
         _scorpion = scorpion;
+        _player = player;
     }
 
     public override void OnEnter()
     {
-        _scorpion._anim.SetBool(IDLE_ANIM_SCORPION, true);
+        _scorpion.anim.SetBool(IDLE_ANIM_SCORPION, true);
         Debug.Log("ENTER IDLE");
     }
 
     public override void OnUpdate()
     {
-        if (_scorpion.levelManager._currentLevelState != LevelState.Playing) return;
+        if (_scorpion.LevelManager._currentLevelState != LevelState.Playing) return;
 
-        _scorpion.viewScorpion.transform.LookAt(_scorpion.player.transform);
-
+        SelectRotation();
         SelectCurrentAttack();
+        UpdateCooldown();
 
-        if (_timeToFirstAttack < _scorpion._cdAttack1)
-            _timeToFirstAttack += Time.deltaTime;
+        if (IsReadyForAttack(CurrentAttack.First, _currentCoolDownFirst, _scorpion.coolDownFirst))
+            _scorpion.stateMachine.ChangeState(BossScorpionState.FirstAttackScorpion);
 
-        if (_timeToSecondAttack < _scorpion._cdAttack2)
-            _timeToSecondAttack += Time.deltaTime;
-
-        if (_timeToFirstAttack >= _scorpion._cdAttack1 && _scorpion._currentAttack == CurrentAttack.First)
-            _scorpion.stateMachine.ChangeState(BossScorpionState.ThirdAttackScorpion);
-
-        if (_timeToSecondAttack >= _scorpion._cdAttack2 && _scorpion._currentAttack == CurrentAttack.Second)
+        if (IsReadyForAttack(CurrentAttack.Second, _currentCoolDownSecond, _scorpion.coolDownSecond))
             _scorpion.stateMachine.ChangeState(BossScorpionState.SecondAttackScorpion);
     }
 
@@ -46,18 +45,54 @@ public class IdleBossScorpion : State
 
     public override void OnExit()
     {
-        _scorpion._anim.SetBool(IDLE_ANIM_SCORPION, false);
+        _scorpion.anim.SetBool(IDLE_ANIM_SCORPION, false);
 
-        _timeToFirstAttack = 0;
-        _timeToSecondAttack = 0;
+        _currentCoolDownFirst = 0;
+        _currentCoolDownSecond = 0;
     }
 
+    //TODO: Agregar validacion para modificar acciones de geyser en ciertos lados del stage
+//Todo: Por ejemplo, cuando estoy en el final del stage 2 y tengo que cubrirme con una plataforma que se mueve
     private void SelectCurrentAttack()
     {
         var currentState = _scorpion.player._stateMachinePlayer.getCurrentState();
 
-        _scorpion._currentAttack = currentState is STATE_HOOK or STATE_FALL
+        _scorpion.currentAttack = currentState is STATE_HOOK or STATE_FALL
             ? CurrentAttack.Second
             : CurrentAttack.First;
+    }
+
+    private void SelectRotation()
+    {
+        Vector3 playerPos = _player.transform.position;
+        Vector3 scorpionPos = _scorpion.transform.position;
+
+        Vector3 dirToPlayer = new Vector3(playerPos.x - scorpionPos.x, 0, playerPos.z - scorpionPos.z).normalized;
+        Quaternion targetRot = Quaternion.LookRotation(dirToPlayer);
+
+        float currentYAngle = _scorpion.transform.rotation.eulerAngles.y;
+        float targetYAngle = targetRot.eulerAngles.y;
+        float deltaAngle = Mathf.DeltaAngle(currentYAngle, targetYAngle);
+
+        if (Mathf.Abs(deltaAngle) > 1) // Umbral para evitar spam de triggers
+        {
+            _scorpion.anim.SetTrigger(deltaAngle > 0 ? ANIM_ROTATION_RIGHT : ANIM_ROTATION_LEFT);
+            _scorpion.transform.rotation = Quaternion.Lerp(
+                _scorpion.transform.rotation,
+                Quaternion.Euler(0, targetYAngle, 0),
+                Time.deltaTime * 2f // Controla la velocidad de rotación
+            );
+        }
+    }
+
+    private void UpdateCooldown()
+    {
+        _currentCoolDownFirst = Mathf.Min(_currentCoolDownFirst + Time.deltaTime, _scorpion.coolDownFirst);
+        _currentCoolDownSecond = Mathf.Min(_currentCoolDownSecond + Time.deltaTime, _scorpion.coolDownSecond);
+    }
+
+    private bool IsReadyForAttack(CurrentAttack attackType, float currentCooldown, float requiredCooldown)
+    {
+        return currentCooldown >= requiredCooldown && _scorpion.currentAttack == attackType;
     }
 }
