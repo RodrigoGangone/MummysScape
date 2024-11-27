@@ -16,6 +16,8 @@ public class Sound
 public enum NameSounds
 {
     SFX_ActivateInteractable,
+    SFX_AmbientDesert_1,
+    SFX_AmbientOasis_1,
     SFX_BandageBlow,
     SFX_BandageShoot1,
     SFX_BandageShoot2,

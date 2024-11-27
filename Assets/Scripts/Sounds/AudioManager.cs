@@ -41,21 +41,24 @@ public class AudioManager : MonoBehaviour
     {
         int sceneIndex = SceneManager.GetActiveScene().buildIndex;
 
-        switch (sceneIndex)
+        if (sceneIndex == 0)
         {
-            case 0:
-                NameSounds randomSound = (Random.value > 0.5f) ? NameSounds.Music_MainMenu1 : NameSounds.Music_MainMenu2;
-                PlayMusic(randomSound);
-                break;
-            case 1:
-                PlayMusic(NameSounds.Music_Lvl1_1); 
-                break;
-            case 2:
-                PlayMusic(NameSounds.Music_Lvl1_1); 
-                break;
-            default:
-                Debug.Log("No music assigned for this scene index.");
-                break;
+            NameSounds randomSound = Random.value > 0.5f ? NameSounds.Music_MainMenu1 : NameSounds.Music_MainMenu2;
+            PlayMusic(randomSound);
+        }
+        else if (sceneIndex >= 1 && sceneIndex <= 4)
+        {
+            PlayMusic(NameSounds.Music_Lvl1_1); 
+            PlaySFX(NameSounds.SFX_AmbientDesert_1);
+        }
+        else if (sceneIndex > 4)
+        {
+            PlayMusic(NameSounds.Music_Lvl1_1); 
+            PlaySFX(NameSounds.SFX_AmbientOasis_1);
+        }
+        else
+        {
+            Debug.Log("No music assigned for this scene index.");
         }
     }
 
