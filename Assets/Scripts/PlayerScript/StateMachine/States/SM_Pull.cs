@@ -28,6 +28,8 @@ public class SM_Pull : State
         _lastCurrentBoxScript = _lastCurrentBoxTrans.GetComponent<PushPullObject>();
         
         _drawBandageCoroutine = _player.StartCoroutine(Bandage());
+        
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_MovingBox);
     }
 
     public override void OnExit()
@@ -46,6 +48,8 @@ public class SM_Pull : State
             UnwrapBox();
 
         _pullTime = 0;
+        
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MovingBox);
     }
 
     public override void OnUpdate()
