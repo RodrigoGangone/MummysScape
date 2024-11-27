@@ -357,6 +357,10 @@ public class PushPullObject : MonoBehaviour
     {
         if (other.gameObject.name == "FloorBox")
         {
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_BoxOnSand);
+            
+            Camera.main?.GetComponent<CameraPathManager>().ShakeCamera(0.25f, 0.1f);
+            
             if (!sandMoundParticle.isPlaying)
                 sandMoundParticle.Play();
         }
