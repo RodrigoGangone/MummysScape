@@ -10,10 +10,12 @@ public class EntryBossScorpion : State
     {
         _scorpion = scorpion;
     }
-    
+
     public override void OnEnter()
     {
-        _scorpion.StartCoroutine(WaitForAnimationEnd(_scorpion._anim, ENTRY_NAME_ANIM_SCORPION));
+        _scorpion.Effects.preGeyser.Play();
+
+        _scorpion.StartCoroutine(WaitForAnimationEnd(_scorpion.anim, ENTRY_NAME_ANIM_SCORPION));
     }
 
     public override void OnUpdate()
@@ -40,6 +42,6 @@ public class EntryBossScorpion : State
             currentStateInfo = scorpionAnimator.GetCurrentAnimatorStateInfo(0);
         }
 
-        _scorpion.stateMachine.ChangeState(BossScorpionState.IdleScorpion);
+        _scorpion.stateMachine.ChangeState(ScorpionState.IdleScorpion);
     }
 }

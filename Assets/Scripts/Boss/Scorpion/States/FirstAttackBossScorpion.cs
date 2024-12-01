@@ -4,13 +4,12 @@ using static Utils;
 
 public class FirstAttackBossScorpion : State
 {
-    private Scorpion _scorpion;
+    private FirstAttackProperties _firstAttackProperties;
     private Player _player;
 
-    public FirstAttackBossScorpion(Scorpion scorpion, Player player)
+    public FirstAttackBossScorpion(FirstAttackProperties firstAttackProperties)
     {
-        _scorpion = scorpion;
-        _player = player;
+        _firstAttackProperties = firstAttackProperties;
     }
 
     public override void OnEnter()

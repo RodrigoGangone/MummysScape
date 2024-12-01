@@ -5,33 +5,34 @@ using static Utils;
 
 public class SecondAttackBossScorpion : State
 {
-    private Scorpion _scorpion;
+    private SecondAttackProperties _secondAttackProperties;
+
     private int _completedGeysersCount; // Contador de géiseres completados
     private List<Geyser> _currentStageGeysers; // Géiseres activos según la etapa actual
 
-    public SecondAttackBossScorpion(Scorpion scorpion)
+    public SecondAttackBossScorpion(SecondAttackProperties secondAttackProperties)
     {
-        _scorpion = scorpion;
+        _secondAttackProperties = secondAttackProperties;
     }
 
     public override void OnEnter()
     {
-        _scorpion._anim.SetBool(SECOND_ATTACK_ANIM_SCORPION, true);
-
-        // Seleccionar los géiseres correspondientes a la etapa actual
-        _currentStageGeysers = _scorpion.GetCurrentStageGeysers();
-
-        if (_currentStageGeysers == null || _currentStageGeysers.Count == 0)
-        {
-            Debug.LogWarning("No hay géiseres definidos para la etapa actual.");
-            _scorpion.stateMachine.ChangeState(BossScorpionState.IdleScorpion);
-            return;
-        }
-
-        // Iniciar el ataque con los géiseres y pasar el callback para contar los completados
-        _scorpion.SecondAttack(OnGeyserCompleted);
-
-        Debug.Log("ENTER SECOND");
+        //  _scorpion._anim.SetBool(SECOND_ATTACK_ANIM_SCORPION, true);
+//
+        //  // Seleccionar los géiseres correspondientes a la etapa actual
+        //  _currentStageGeysers = _scorpion.GetCurrentStageGeysers();
+//
+        //  if (_currentStageGeysers == null || _currentStageGeysers.Count == 0)
+        //  {
+        //      Debug.LogWarning("No hay géiseres definidos para la etapa actual.");
+        //      _scorpion.stateMachine.ChangeState(BossScorpionState.IdleScorpion);
+        //      return;
+        //  }
+//
+        //  // Iniciar el ataque con los géiseres y pasar el callback para contar los completados
+        //  _scorpion.SecondAttack(OnGeyserCompleted);
+//
+        //  Debug.Log("ENTER SECOND");
     }
 
     public override void OnUpdate()
@@ -39,7 +40,7 @@ public class SecondAttackBossScorpion : State
         // Si todos los géiseres han terminado, cambiamos al estado Idle
         if (_completedGeysersCount == _currentStageGeysers.Count)
         {
-            _scorpion.stateMachine.ChangeState(BossScorpionState.IdleScorpion);
+            //_scorpion.stateMachine.ChangeState(BossScorpionState.IdleScorpion);
         }
     }
 
@@ -49,9 +50,9 @@ public class SecondAttackBossScorpion : State
 
     public override void OnExit()
     {
-        Debug.Log("EXIT SECOND");
-        _scorpion._anim.SetBool(SECOND_ATTACK_ANIM_SCORPION, false);
-        _completedGeysersCount = 0;
+        //   Debug.Log("EXIT SECOND");
+        //   _scorpion._anim.SetBool(SECOND_ATTACK_ANIM_SCORPION, false);
+        //   _completedGeysersCount = 0;
     }
 
     // Este método será llamado cuando un géiser termine su secuencia
