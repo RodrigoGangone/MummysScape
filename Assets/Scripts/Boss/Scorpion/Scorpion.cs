@@ -9,6 +9,7 @@ public class FirstAttackProperties
 {
     [SerializeField] public GameObject stone;
     [SerializeField] public Transform targetShoot;
+    [SerializeField] public int countStone;
 }
 
 [Serializable]
@@ -67,7 +68,14 @@ public class Scorpion : Boss
     {
         anim = GetComponentInChildren<Animator>();
 
+        FirstAttackBossScorpion.SetAnimator(anim);
+        SecondAttackBossScorpion.SetAnimator(anim);
+
+        FirstAttackBossScorpion.SetPositions(player.transform, transform);
+        SecondAttackBossScorpion.SetPositions(player.transform, transform);
+
         stateMachine = gameObject.AddComponent<StateMachinePlayer>();
+
 
         InitializedGeysers();
 

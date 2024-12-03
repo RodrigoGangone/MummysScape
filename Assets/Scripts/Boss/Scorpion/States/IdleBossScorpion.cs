@@ -19,10 +19,11 @@ public class IdleBossScorpion : State
         UpdateCooldown();
     };
 
-    private Action RestartCoolDown => () =>
+    private Action<CurrentAttack> RestartCoolDown => (currentAttack) =>
     {
-        _currentCoolDownFirst = 0;
-        _currentCoolDownSecond = 0;
+        _ = currentAttack == CurrentAttack.First
+            ? (_currentCoolDownFirst = 0)
+            : (_currentCoolDownSecond = 0);
     };
 
     public IdleBossScorpion(Scorpion scorpion)
@@ -56,7 +57,7 @@ public class IdleBossScorpion : State
     {
         _scorpion.anim.SetBool(IDLE_ANIM_SCORPION, false);
 
-        RestartCoolDown.Invoke();
+        RestartCoolDown.Invoke(_scorpion.currentAttack);
     }
 
     //TODO: Agregar validacion para modificar acciones de geyser en ciertos lados del stage
@@ -81,7 +82,7 @@ public class IdleBossScorpion : State
         float deltaAngle = Mathf.DeltaAngle(currentYAngle, targetYAngle);
 
         _scorpion.anim.SetTrigger(deltaAngle > 0 ? ANIM_ROTATION_RIGHT : ANIM_ROTATION_LEFT);
-        
+
         _scorpion.transform.rotation = Quaternion.Lerp(
             _scorpion.transform.rotation,
             Quaternion.Euler(0, targetYAngle, 0),

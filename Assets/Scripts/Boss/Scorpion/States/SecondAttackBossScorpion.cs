@@ -15,6 +15,14 @@ public class SecondAttackBossScorpion : State
         _secondAttackProperties = secondAttackProperties;
     }
 
+    public static void SetAnimator(Animator animator)
+    {
+    }
+
+    public static void SetPositions(Transform ScorpionPos, Transform PlayerPos)
+    {
+    }
+
     public override void OnEnter()
     {
         //  _scorpion._anim.SetBool(SECOND_ATTACK_ANIM_SCORPION, true);

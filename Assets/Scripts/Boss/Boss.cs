@@ -11,8 +11,8 @@ public class Boss : MonoBehaviour
 
     [HideInInspector] public CurrentAttack currentAttack;
 
-    [HideInInspector] public float coolDownFirst = 100f;
-    [HideInInspector] public float coolDownSecond = 100f;
+    [HideInInspector] public float coolDownFirst = 3f;
+    [HideInInspector] public float coolDownSecond = 3f;
 
     [HideInInspector] public Animator anim;
 }

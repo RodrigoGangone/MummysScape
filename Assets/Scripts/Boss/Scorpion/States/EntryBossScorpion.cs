@@ -13,7 +13,7 @@ public class EntryBossScorpion : State
 
     public override void OnEnter()
     {
-        _scorpion.Effects.preGeyser.Play();
+       // _scorpion.Effects.preGeyser.Play();
 
         _scorpion.StartCoroutine(WaitForAnimationEnd(_scorpion.anim, ENTRY_NAME_ANIM_SCORPION));
     }
