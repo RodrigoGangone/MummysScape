@@ -1,27 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class Boss : MonoBehaviour
 {
-    [Header("BOSS PROPERTY'S")] //Propiedades que comparten todos los Boss 
+    [Header("BOSS PROPERTY'S")] public Player player;
+    public LevelManager levelManager;
 
-    [SerializeField] internal CurrentAttack _currentAttack;
+    [HideInInspector] public StateMachinePlayer stateMachine;
 
-    [SerializeField] internal float _angerLevel;
+    [HideInInspector] public CurrentAttack currentAttack;
 
-    [SerializeField] internal Animator _anim;
+     public float coolDownFirst = 10f;
+     public float coolDownSecond = 10f;
 
-    [SerializeField] internal float _cdAttack1;
-    [SerializeField] internal float _cdAttack2;
-
-    [SerializeField] public Player player;
+    [HideInInspector] public Animator anim;
 }
 
 public enum CurrentAttack
 {
     First,
-    Second,
-    ThirdAttack
+    Second
 }

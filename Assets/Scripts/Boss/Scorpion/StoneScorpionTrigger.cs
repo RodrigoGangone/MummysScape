@@ -14,39 +14,39 @@ public class StoneScorpionTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("Wall") ||
-            other.gameObject.layer == LayerMask.NameToLayer("Box") ||
-            other.gameObject.layer == LayerMask.NameToLayer("Floor"))
-        {
-            CollisionWithAll(other.transform.position);
-        }
-        else if (other.gameObject.layer == LayerMask.NameToLayer("Player"))
-        {
-            HandleCollisionWithPlayer(other.transform.position);
-        }
+   //    if (other.gameObject.layer == LayerMask.NameToLayer("Wall") ||
+   //        other.gameObject.layer == LayerMask.NameToLayer("Box") ||
+   //        other.gameObject.layer == LayerMask.NameToLayer("Floor"))
+   //    {
+   //        CollisionWithAll(other.transform.position);
+   //    }
+   //    else if (other.gameObject.layer == LayerMask.NameToLayer("Player"))
+   //    {
+   //        HandleCollisionWithPlayer(other.transform.position);
+   //    }
     }
 
     private void CollisionWithAll(Vector3 pos)
     {
-        Instantiate(_hitFx, pos, quaternion.identity);
-
-        _scorpion._stoneView.SetActive(false);
-        _scorpion._stonePrefab.transform.position = _scorpion._targetShoot.position;
+     //   Instantiate(_hitFx, pos, quaternion.identity);
+//
+     //   _scorpion._stoneView.SetActive(false);
+     //   _scorpion._stonePrefab.transform.position = _scorpion._targetShoot.position;
     }
 
 
-    private void HandleCollisionWithPlayer(Vector3 pos)
-    {
-        CollisionWithAll(pos); // Reutiliza la lógica común
+ // private void HandleCollisionWithPlayer(Vector3 pos)
+ // {
+ //     CollisionWithAll(pos); // Reutiliza la lógica común
 
-        Vector3 targetPosition = new Vector3(
-            _scorpion.player.transform.position.x,
-            _scorpion.viewScorpion.transform.position.y,
-            _scorpion.player.transform.position.z
-        );
-        Vector3 direction = (targetPosition - _scorpion.viewScorpion.transform.position).normalized;
+ //     Vector3 targetPosition = new Vector3(
+ //         _scorpion.player.transform.position.x,
+ //         _scorpion.viewScorpion.transform.position.y,
+ //         _scorpion.player.transform.position.z
+ //     );
+ //     Vector3 direction = (targetPosition - _scorpion.viewScorpion.transform.position).normalized;
 
-        _scorpion.player._modelPlayer.IsDamage = true;
-        StartCoroutine(_scorpion.MovePlayer(direction));
-    }
+ //     _scorpion.player._modelPlayer.IsDamage = true;
+ //     StartCoroutine(_scorpion.MovePlayer(direction));
+ // }
 }
