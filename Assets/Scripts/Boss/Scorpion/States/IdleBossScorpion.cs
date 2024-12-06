@@ -21,6 +21,8 @@ public class IdleBossScorpion : State
 
     public override void OnUpdate()
     {
+        if (_scorpion.levelManager._currentLevelState != LevelState.Playing) return;
+
         _scorpion.viewScorpion.transform.LookAt(_scorpion.player.transform);
 
         SelectCurrentAttack();

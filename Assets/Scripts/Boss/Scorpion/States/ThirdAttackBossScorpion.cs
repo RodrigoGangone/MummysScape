@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Serialization;
 using static Utils;
 using UnityEngine;
 
@@ -8,11 +7,12 @@ public class ThirdAttackBossScorpion : State
 {
     private Scorpion _scorpion;
     private Vector3 _initialPosPlayer;
-    private const int SPEED_PROJECTILE = 25;
+    private int SPEED_PROJECTILE = 55;
     private float _lifeTimeStone;
-    private const int MAX_LIFETIME_STONE = 5;
+    private const int MAX_LIFETIME_STONE = 2;
     private List<Vector3> _pathPoints; // Lista de puntos de la trayectoria
     private int _currentPointIndex; // Índice del punto actual en la lista
+    private bool _stoneIsMoving; // Flag para controlar el movimiento
 
     public ThirdAttackBossScorpion(Scorpion scorpion)
     {
@@ -21,23 +21,26 @@ public class ThirdAttackBossScorpion : State
 
     public override void OnEnter()
     {
-        _initialPosPlayer = _scorpion.player.transform.position + new Vector3(0, 1f, 0);
+        _initialPosPlayer = PredictFuturePosition();
+        
         _scorpion._anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, true);
-        _scorpion._stoneView.SetActive(true);
 
         GeneratePath();
-
         _currentPointIndex = 0;
+        _stoneIsMoving = false;
+
+        _scorpion.StartCoroutine(StartStoneAfterDelay(0.8f));
     }
 
     public override void OnUpdate()
     {
+        if (!_stoneIsMoving) return;
+
         MoveStone();
 
         _lifeTimeStone += Time.deltaTime;
 
-        if (_lifeTimeStone > MAX_LIFETIME_STONE ||
-            !_scorpion._stoneView.activeInHierarchy)
+        if (_lifeTimeStone > MAX_LIFETIME_STONE || !_scorpion._stoneView.activeInHierarchy)
             _scorpion.stateMachine.ChangeState(BossScorpionState.IdleScorpion);
     }
 
@@ -54,7 +57,7 @@ public class ThirdAttackBossScorpion : State
         _pathPoints = null;
     }
 
-    void GeneratePath()
+    private void GeneratePath()
     {
         _pathPoints = new List<Vector3>();
 
@@ -62,7 +65,7 @@ public class ThirdAttackBossScorpion : State
         Vector3 mid = (start + _initialPosPlayer) / 2 + Vector3.up * 1.5f; // Punto intermedio elevado
         Vector3 end = _initialPosPlayer; // Posición final (jugador)
 
-        int resolution = 30;
+        int resolution = 3;
 
         for (int i = 0; i <= resolution; i++)
         {
@@ -72,7 +75,7 @@ public class ThirdAttackBossScorpion : State
         }
     }
 
-    void MoveStone()
+    private void MoveStone()
     {
         if (_currentPointIndex < _pathPoints.Count)
         {
@@ -88,20 +91,46 @@ public class ThirdAttackBossScorpion : State
         }
         else
         {
-            // Sigue moviéndose en línea recta después de la trayectoria
             Vector3 direction =
                 (_pathPoints[^1] - _pathPoints[^2]).normalized; // Dirección de la última sección de la trayectoria
             _scorpion._stonePrefab.transform.position += direction * SPEED_PROJECTILE * Time.deltaTime;
         }
     }
+    
+    private Vector3 PredictFuturePosition()
+    {
+        Rigidbody playerRb = _scorpion.player.GetComponent<Rigidbody>();
+        Vector3 playerPosition = _scorpion.player.transform.position + new Vector3(0, 1f, 0); // Ajustar altura
+        Vector3 playerVelocity = playerRb != null ? playerRb.velocity : Vector3.zero;
+        Vector3 playerAcceleration = playerRb != null ? playerRb.velocity - playerRb.velocity.normalized : Vector3.zero;
 
+        Vector3 start = _scorpion._stonePrefab.transform.position;
+        float distance = Vector3.Distance(start, playerPosition);
+        float timeToImpact = distance / SPEED_PROJECTILE;
 
-    Vector3 CalculateBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2)
+        // Predicción ajustada con aceleración
+        Vector3 predictedPosition = playerPosition + playerVelocity * timeToImpact + playerAcceleration * (0.5f * (timeToImpact * timeToImpact));
+
+        // Dibujar línea de depuración
+        Debug.DrawLine(start, predictedPosition, Color.green, 2f);
+
+        return predictedPosition;
+    }
+    
+    private Vector3 CalculateBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2)
     {
         float u = 1 - t;
         float tt = t * t;
         float uu = u * u;
 
         return (uu * p0) + (2 * u * t * p1) + (tt * p2);
+    }
+
+    private IEnumerator StartStoneAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        _scorpion._stoneView.SetActive(true);
+        _stoneIsMoving = true;
     }
 }
