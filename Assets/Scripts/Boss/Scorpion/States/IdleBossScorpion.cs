@@ -39,9 +39,7 @@ public class IdleBossScorpion : State
     public override void OnUpdate()
     {
         if (_scorpion.levelManager._currentLevelState != LevelState.Playing) return;
-
-        Parameters?.Invoke();
-
+        
         if (IsReadyForAttack(CurrentAttack.First, _currentCoolDownFirst, _scorpion.coolDownFirst))
             _scorpion.stateMachine.ChangeState(ScorpionState.FirstAttackScorpion);
 
@@ -51,6 +49,9 @@ public class IdleBossScorpion : State
 
     public override void OnFixedUpdate()
     {
+        if (_scorpion.levelManager._currentLevelState != LevelState.Playing) return;
+
+        Parameters?.Invoke();
     }
 
     public override void OnExit()

@@ -5,6 +5,17 @@ using System.Linq;
 using UnityEngine;
 
 [Serializable]
+public class ViewScorpion
+{
+    [SerializeField] internal ParticleSystem entryScorpion;
+    [SerializeField] internal ParticleSystem preGeyser;
+    [SerializeField] internal ParticleSystem preStone;
+    [SerializeField] internal ParticleSystem stone;
+    [SerializeField] internal ParticleSystem damage;
+    [SerializeField] internal ParticleSystem death;
+}
+
+[Serializable]
 public class FirstAttackProperties
 {
     [SerializeField] public GameObject stone;
@@ -49,39 +60,21 @@ public class Scorpion : Boss
     [SerializeField] private SecondAttackProperties _secondAttack;
     [SerializeField] private StageProperties _stageProperties;
 
-    [System.Serializable]
-    public struct VFX
-    {
-        [SerializeField] internal ParticleSystem entryScorpion;
-        [SerializeField] internal ParticleSystem preGeyser;
-        [SerializeField] internal ParticleSystem preStone;
-        [SerializeField] internal ParticleSystem stone;
-        [SerializeField] internal ParticleSystem damage;
-        [SerializeField] internal ParticleSystem death;
-    }
+    public ViewScorpion Effects => effects;
 
-    public VFX Effects => effects;
-
-    [SerializeField] private VFX effects;
+    [SerializeField] private ViewScorpion effects;
 
     private void Start()
     {
         anim = GetComponentInChildren<Animator>();
 
-        FirstAttackBossScorpion.SetAnimator(anim);
-        SecondAttackBossScorpion.SetAnimator(anim);
-
-        FirstAttackBossScorpion.SetPositions(player.transform, transform);
-        SecondAttackBossScorpion.SetPositions(player.transform, transform);
-
         stateMachine = gameObject.AddComponent<StateMachinePlayer>();
-
 
         InitializedGeysers();
 
         stateMachine.AddState(ScorpionState.EntryScorpion, new EntryBossScorpion(this));
         stateMachine.AddState(ScorpionState.IdleScorpion, new IdleBossScorpion(this));
-        stateMachine.AddState(ScorpionState.FirstAttackScorpion, new FirstAttackBossScorpion(FirstAttack));
+        stateMachine.AddState(ScorpionState.FirstAttackScorpion, new FirstAttackBossScorpion(this));
         stateMachine.AddState(ScorpionState.SecondAttackScorpion, new SecondAttackBossScorpion(SecondAttack));
         stateMachine.AddState(ScorpionState.DeathScorpion, new DeathBossScorpion(this));
 

@@ -13,9 +13,10 @@ public class EntryBossScorpion : State
 
     public override void OnEnter()
     {
-       // _scorpion.Effects.preGeyser.Play();
+        _scorpion.Effects.entryScorpion.Play();
 
-        _scorpion.StartCoroutine(WaitForAnimationEnd(_scorpion.anim, ENTRY_NAME_ANIM_SCORPION));
+        _scorpion.StartCoroutine(WaitForAnimationEnd(_scorpion.anim, ENTRY_NAME_ANIM_SCORPION,
+            _scorpion.Effects.entryScorpion));
     }
 
     public override void OnUpdate()
@@ -30,13 +31,22 @@ public class EntryBossScorpion : State
     {
     }
 
-    private IEnumerator WaitForAnimationEnd(Animator scorpionAnimator, string animationName)
+    private IEnumerator WaitForAnimationEnd(Animator scorpionAnimator, string animationName, ParticleSystem entryEffect)
     {
-        yield return null;
+        while (entryEffect.isPlaying)
+            yield return null;
+
+        _scorpion.anim.SetTrigger(ENTRY_ANIM_SCORPION);
 
         AnimatorStateInfo currentStateInfo = scorpionAnimator.GetCurrentAnimatorStateInfo(0);
 
-        while (currentStateInfo.IsName(animationName) && currentStateInfo.normalizedTime < 1.0f)
+        while (!currentStateInfo.IsName(animationName))
+        {
+            yield return null;
+            currentStateInfo = scorpionAnimator.GetCurrentAnimatorStateInfo(0);
+        }
+
+        while (currentStateInfo.normalizedTime < 1.0f)
         {
             yield return null;
             currentStateInfo = scorpionAnimator.GetCurrentAnimatorStateInfo(0);

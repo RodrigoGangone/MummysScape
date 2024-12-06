@@ -5,47 +5,35 @@ using static Utils;
 
 public class FirstAttackBossScorpion : State
 {
+    private Scorpion _scorpion;
     private FirstAttackProperties _firstAttackProperties;
-    private static Vector3 _playerPos;
-    private static Vector3 _scorpionPos;
-
-    private static Animator _animator;
-    private static readonly string animationName = "FirstAttack";
 
     private Vector3 _initialPosPlayer;
 
     private List<List<Vector3>> _allPaths; // Lista de trayectorias
 
-    private float _coneAngle = 45f;
+    private float _coneAngle = 20f;
     private float _arcBezierHeight = 5f;
 
-    public FirstAttackBossScorpion(FirstAttackProperties firstAttackProperties)
+    private List<GameObject> _stonesPool;
+    private Dictionary<GameObject, List<Vector3>> _activeStones = new();
+    private int _currentPathIndex;
+    private float _speed = 30f;
+
+    public FirstAttackBossScorpion(Scorpion scorpion)
     {
-        _firstAttackProperties = firstAttackProperties;
+        _scorpion = scorpion;
+
+        _firstAttackProperties = scorpion.FirstAttack;
     }
 
-    private List<GameObject> _stonesPool; // Pool de piedras
-    private Dictionary<GameObject, List<Vector3>> _activeStones = new(); // Piedras activas y sus trayectorias
-    private int _currentPathIndex; // Índice de progreso en la trayectoria
-    private float _speed = 5f; // Velocidad de las piedras
 
     public override void OnEnter()
     {
-        // _animator.SetBool(animationName, true);
+        _scorpion.anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, true);
 
         InitializeStonesPool();
         GenerateAndLaunchStones();
-    }
-
-    public static void SetAnimator(Animator animator)
-    {
-        _animator = animator;
-    }
-
-    public static void SetPositions(Transform ScorpionPos, Transform PlayerPos)
-    {
-        _playerPos = PlayerPos.position;
-        _scorpionPos = ScorpionPos.position;
     }
 
     public override void OnUpdate()
@@ -59,43 +47,46 @@ public class FirstAttackBossScorpion : State
 
     public override void OnExit()
     {
-        // _animator.SetBool(animationName, false);
+        _scorpion.anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, false);
     }
 
+    private bool _poolInitialized;
 
     private void InitializeStonesPool()
     {
+        if (_poolInitialized) return;
+
         _stonesPool = new List<GameObject>();
         _activeStones = new Dictionary<GameObject, List<Vector3>>();
 
         for (int i = 0; i < _firstAttackProperties.countStone; i++)
         {
-            // Crea una instancia única de la piedra
             GameObject stone = GameObject.Instantiate(_firstAttackProperties.stone);
-            stone.SetActive(false); // Inicia inactiva
+            stone.SetActive(false);
             _stonesPool.Add(stone);
         }
+
+        _poolInitialized = true;
     }
 
 
     private void GenerateAndLaunchStones()
     {
         _allPaths = new List<List<Vector3>>();
+        
         float angleIncrement = _coneAngle / (_firstAttackProperties.countStone - 1);
         Vector3 targetShootPos = _firstAttackProperties.targetShoot.position; // Posición inicial
 
-        for (int i = 0; i < _firstAttackProperties.countStone; i++)
+        for (int i = 0; i < _scorpion.FirstAttack.countStone; i++)
         {
-            // Calcula el ángulo para dispersar las piedras
             float angle = -_coneAngle / 2 + angleIncrement * i;
 
-            // Dirección desde el targetShoot hacia el player
-            Vector3 direction = Quaternion.Euler(0, angle, 0) * (_playerPos - targetShootPos).normalized;
+            Vector3 direction = Quaternion.Euler(0, angle, 0) *
+                                (_scorpion.player.transform.position - targetShootPos).normalized;
 
-            // Define la posición final
-            Vector3 targetPosition = targetShootPos + direction * Vector3.Distance(targetShootPos, _playerPos);
+            Vector3 targetPosition = targetShootPos +
+                                     direction * Vector3.Distance(targetShootPos, _scorpion.player.transform.position);
 
-            // Generar la trayectoria Bezier
             Vector3 start = targetShootPos;
             Vector3 mid = (start + targetPosition) / 2 + Vector3.up * _arcBezierHeight;
             List<Vector3> path = new List<Vector3>();
@@ -120,7 +111,7 @@ public class FirstAttackBossScorpion : State
     }
 
 
-    private Dictionary<GameObject, int> _stonePathIndices = new(); // Índices de progreso por piedra
+    private Dictionary<GameObject, int> _stonePathIndices = new();
 
     private void UpdateStonesMovement()
     {
@@ -128,35 +119,28 @@ public class FirstAttackBossScorpion : State
         {
             List<Vector3> path = _activeStones[stone];
 
-            // Asegúrate de tener un índice para la piedra
             if (!_stonePathIndices.ContainsKey(stone))
-            {
                 _stonePathIndices[stone] = 0; // Comienza desde el primer punto de la trayectoria
-            }
 
             int currentIndex = _stonePathIndices[stone];
 
             if (currentIndex < path.Count - 1)
             {
-                // Mueve la piedra hacia el siguiente punto en la trayectoria
                 stone.transform.position = Vector3.MoveTowards(
                     stone.transform.position,
                     path[currentIndex + 1],
                     _speed * Time.deltaTime
                 );
 
-                // Verifica si ha llegado al siguiente punto de la trayectoria
                 if (Vector3.Distance(stone.transform.position, path[currentIndex + 1]) < 0.1f)
-                {
                     _stonePathIndices[stone] = currentIndex + 1; // Actualiza el índice
-                }
             }
             else
             {
-                // Finaliza el movimiento de la piedra
                 stone.SetActive(false);
                 _activeStones.Remove(stone);
                 _stonePathIndices.Remove(stone); // Limpia el índice
+                _scorpion.stateMachine.ChangeState(ScorpionState.IdleScorpion);
             }
         }
     }
