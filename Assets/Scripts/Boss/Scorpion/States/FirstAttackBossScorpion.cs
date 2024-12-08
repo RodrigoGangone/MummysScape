@@ -20,6 +20,8 @@ public class FirstAttackBossScorpion : State
     private int _currentPathIndex;
     private float _speed = 30f;
 
+    private int targetFrame = 190;
+
     public FirstAttackBossScorpion(Scorpion scorpion)
     {
         _scorpion = scorpion;
@@ -33,8 +35,30 @@ public class FirstAttackBossScorpion : State
         _scorpion.anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, true);
 
         InitializeStonesPool();
-        GenerateAndLaunchStones();
+
+        _scorpion.StartCoroutine(DelayProjectile());
+
+//        GenerateAndLaunchStones();
     }
+
+    IEnumerator DelayProjectile()
+    {
+        float targetFrameNormalized = targetFrame / 300f;
+
+        while (true)
+        {
+            float currentTime = _scorpion.anim.GetCurrentAnimatorStateInfo(0).normalizedTime % 1;
+
+            if (currentTime >= targetFrameNormalized)
+            {
+                GenerateAndLaunchStones();
+                break;
+            }
+
+            yield return null;
+        }
+    }
+
 
     public override void OnUpdate()
     {
@@ -73,7 +97,7 @@ public class FirstAttackBossScorpion : State
     private void GenerateAndLaunchStones()
     {
         _allPaths = new List<List<Vector3>>();
-        
+
         float angleIncrement = _coneAngle / (_firstAttackProperties.countStone - 1);
         Vector3 targetShootPos = _firstAttackProperties.targetShoot.position; // Posición inicial
 

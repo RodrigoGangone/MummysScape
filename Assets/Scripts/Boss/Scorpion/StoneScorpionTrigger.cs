@@ -1,52 +1,47 @@
-using System.Collections;
+using System;
 using Unity.Mathematics;
 using UnityEngine;
 
 public class StoneScorpionTrigger : MonoBehaviour
 {
     private Scorpion _scorpion;
+    private CapsuleCollider _capsuleCollider;
+    private int _layerMask;
     [SerializeField] private ParticleSystem _hitFx;
 
     private void Start()
     {
-        _scorpion = GetComponentInParent<Scorpion>();
+        _scorpion = FindObjectOfType<Scorpion>();
+        _capsuleCollider = GetComponent<CapsuleCollider>();
+        _layerMask = LayerMask.GetMask("Wall", "Box", "Floor");
+    }
+
+    private void Update()
+    {
+        if (Physics.Raycast(transform.position, Vector3.forward, 0.3f, _layerMask))
+            gameObject.layer = LayerMask.NameToLayer("NoInteractable");
     }
 
     private void OnTriggerEnter(Collider other)
     {
-   //    if (other.gameObject.layer == LayerMask.NameToLayer("Wall") ||
-   //        other.gameObject.layer == LayerMask.NameToLayer("Box") ||
-   //        other.gameObject.layer == LayerMask.NameToLayer("Floor"))
-   //    {
-   //        CollisionWithAll(other.transform.position);
-   //    }
-   //    else if (other.gameObject.layer == LayerMask.NameToLayer("Player"))
-   //    {
-   //        HandleCollisionWithPlayer(other.transform.position);
-   //    }
+        if (other.gameObject.layer == LayerMask.NameToLayer("Wall") ||
+            other.gameObject.layer == LayerMask.NameToLayer("Box") ||
+            other.gameObject.layer == LayerMask.NameToLayer("Floor") ||
+            other.gameObject.layer == LayerMask.NameToLayer("Player"))
+            Instantiate(_hitFx, other.transform.position, quaternion.identity);
     }
 
-    private void CollisionWithAll(Vector3 pos)
+    private void OnDrawGizmos()
     {
-     //   Instantiate(_hitFx, pos, quaternion.identity);
-//
-     //   _scorpion._stoneView.SetActive(false);
-     //   _scorpion._stonePrefab.transform.position = _scorpion._targetShoot.position;
+        Gizmos.color = Color.red;
+
+        Vector3 rayOrigin = transform.position;
+        Vector3 rayDirection = Vector3.forward;
+        float rayLength = 0.3f;
+
+        Gizmos.DrawLine(rayOrigin, rayOrigin + rayDirection * rayLength);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawSphere(rayOrigin + rayDirection * rayLength, 0.05f);
     }
-
-
- // private void HandleCollisionWithPlayer(Vector3 pos)
- // {
- //     CollisionWithAll(pos); // Reutiliza la lógica común
-
- //     Vector3 targetPosition = new Vector3(
- //         _scorpion.player.transform.position.x,
- //         _scorpion.viewScorpion.transform.position.y,
- //         _scorpion.player.transform.position.z
- //     );
- //     Vector3 direction = (targetPosition - _scorpion.viewScorpion.transform.position).normalized;
-
- //     _scorpion.player._modelPlayer.IsDamage = true;
- //     StartCoroutine(_scorpion.MovePlayer(direction));
- // }
 }

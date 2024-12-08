@@ -54,6 +54,7 @@ public static class Utils
     internal const string ToDeathScorpion = "ToDeathScorpion";
 
     internal const string ENTRY_NAME_ANIM_SCORPION = "Intro_Scorpion";
+    internal const string FIRSTATTACK_NAME_ANIM_SCORPION = "Attack01_Scorpion";
     
     internal const string ENTRY_ANIM_SCORPION = "Entry";
     internal const string IDLE_ANIM_SCORPION = "isIdle";

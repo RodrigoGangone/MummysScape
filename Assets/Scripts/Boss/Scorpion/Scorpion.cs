@@ -71,7 +71,7 @@ public class Scorpion : Boss
         stateMachine = gameObject.AddComponent<StateMachinePlayer>();
 
         InitializedGeysers();
-
+        
         stateMachine.AddState(ScorpionState.EntryScorpion, new EntryBossScorpion(this));
         stateMachine.AddState(ScorpionState.IdleScorpion, new IdleBossScorpion(this));
         stateMachine.AddState(ScorpionState.FirstAttackScorpion, new FirstAttackBossScorpion(this));
