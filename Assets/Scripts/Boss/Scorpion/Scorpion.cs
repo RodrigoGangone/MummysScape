@@ -72,7 +72,8 @@ public class Scorpion : Boss
         if (other.gameObject.layer == LayerMask.NameToLayer("Box"))
         {
             other.gameObject.SetActive(false);
-            AdvanceToNextStage();
+            stateMachine.ChangeState(BossScorpionState.DeathScorpion);
+            //AdvanceToNextStage();
         }
     }
 
