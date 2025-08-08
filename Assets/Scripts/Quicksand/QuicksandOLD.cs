@@ -57,7 +57,10 @@ public class QuicksandOLD : MonoBehaviour
             currentMoveSpeed = moveSpeedDown;
 
             if (_currentTime >= _timeDeath)
+            {
                 _levelManager.OnPlayerDeath?.Invoke();
+                enabled = false; //dehabilito el script para no llamar multiples veces a OnPlayerDeath
+            }
         }
     }
 

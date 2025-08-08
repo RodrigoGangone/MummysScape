@@ -25,6 +25,9 @@ public class MoveVerticalPlatform : MonoBehaviour
     private bool isMovingToFirstWaypoint;
 
     private int _currentWaypointIndex = 0;
+    
+    private AudioSource platformAudio;
+
 
     private void Start()
     {
@@ -38,6 +41,9 @@ public class MoveVerticalPlatform : MonoBehaviour
             else
                 transform.position = waypoints[0].position;
         }
+        
+        // Reserva un AudioSource desde el pool al inicio
+        platformAudio = AudioManager.Instance.GetClipByName(NameSounds.SFX_MovingPlatform);
     }
 
     private void Update()
@@ -50,6 +56,8 @@ public class MoveVerticalPlatform : MonoBehaviour
         {
             MoveTowardsWaypoint();
         }
+        
+        HandleAudio();
     }
 
     private void MoveToFirstWaypoint()
@@ -186,6 +194,27 @@ public class MoveVerticalPlatform : MonoBehaviour
             }
 
             yield return null;
+        }
+    }
+    
+    private void HandleAudio()
+    {
+        if (isMoving && !isPaused)
+        {
+            StartCoroutine(AudioManager.Instance.FollowTransform(platformAudio, transform, -1));
+            if (!platformAudio.isPlaying)
+            {
+                Debug.Log("HANDLE AUDIO: PLAY");
+                platformAudio.Play(); // Reanuda el audio si estaba pausado
+            }
+        }
+        else
+        {
+            if (platformAudio.isPlaying)
+            {
+                Debug.Log("HANDLE AUDIO: PAUSE");
+                platformAudio.Pause(); // Pausa el audio si no se está moviendo
+            }
         }
     }
 }

@@ -1,15 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
-using Random = UnityEngine.Random;
 
 public class UIManager : MonoBehaviour
 {
@@ -19,11 +15,15 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private Animator _mummyUI;
 
-    [Header("UI PAUSE")] [SerializeField] private GameObject _pausePanel;
-
+    [Header("UI PAUSE")] 
+    [SerializeField] private GameObject _pausePanel;
+    [SerializeField] private GameObject _optionsPanel;
+    
     [SerializeField] private Button _btnResume;
     [SerializeField] private Button _btnRetry;
+    [SerializeField] private Button _btnOptions;
     [SerializeField] private Button _btnExit;
+    
     [SerializeField] private Material _pauseMaterial;
     private const string PAUSE_FILL = "_Power";
 
@@ -107,16 +107,17 @@ public class UIManager : MonoBehaviour
         levelManager.AddCollectible += UISetCollectibleCount;
 
         //Buttons OnClick
-        _btnResume.onClick.AddListener(() => { levelManager.OnPlaying.Invoke(); });
-        _btnRetry.onClick.AddListener(RetryLevel);
-        _btnExit.onClick.AddListener(GoToMainMenu);
-
-        _btnNextLvlW.onClick.AddListener(ShowNextLvlPanel);
-        _btnRetryW.onClick.AddListener(RetryLevel);
-        _btnMainMenuW.onClick.AddListener(GoToMainMenu);
-
-        _btnRetryL.onClick.AddListener(RetryLevel);
-        _btnMainMenuL.onClick.AddListener(GoToMainMenu);
+        AddButtonProps(_btnResume,levelManager.OnPlaying.Invoke);
+        AddButtonProps(_btnRetry, RetryLevel);
+        AddButtonProps(_btnOptions, ShowOptionsPanel);
+        AddButtonProps(_btnExit, GoToMainMenu);
+        
+        AddButtonProps(_btnNextLvlW, ShowNextLvlPanel);
+        AddButtonProps(_btnRetryW, RetryLevel);
+        AddButtonProps(_btnMainMenuW, GoToMainMenu);
+        
+        AddButtonProps(_btnRetryL, RetryLevel);
+        AddButtonProps(_btnMainMenuL, GoToMainMenu);
 
         _pauseMaterial.SetFloat(PAUSE_FILL, 0f); // Asegurar que se complete la transición
 
@@ -127,19 +128,43 @@ public class UIManager : MonoBehaviour
         ValidateGems();
         UpdateTargetOffsets(); // Inicializar valores correctos
     }
+    
+    private void AddButtonProps(Button button, Action mainAction, params Action[] additionalActions)
+    {
+        button.onClick.AddListener(() =>
+        {
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_Click);
+        
+            //Accion principal
+            mainAction?.Invoke();
 
+            //Acciones secundarias
+            if (additionalActions == null) return;
+            foreach (var action in additionalActions)
+            {
+                action?.Invoke();
+            }
+        });
+    }
+    
     IEnumerator HourglassBeatHandler()
     {
         while (true)
         {
-            if (levelManager.isBusy || levelManager._currentLevelState.Equals(LevelState.Pause))
+            if (levelManager.isBusy || levelManager._currentLevelState.Equals(LevelState.Pause) ||
+                _player._stateMachinePlayer.getCurrentState().Equals(Utils.STATE_DEAD) ||
+                _player._stateMachinePlayer.getCurrentState().Equals(Utils.STATE_WIN))
             {
+                AudioManager.Instance.StopSFX(NameSounds.SFX_HeartBeat_1);
+                AudioManager.Instance.StopSFX(NameSounds.SFX_HeartBeat_2);
                 yield return null;
                 continue;
             }
 
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_HeartBeat_1);
             yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
-
+            
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_HeartBeat_2);
             yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
 
             yield return new WaitForSeconds(_waitTimeBeat);
@@ -197,6 +222,7 @@ public class UIManager : MonoBehaviour
 
         Debug.Log("PAUSED");
 
+        _optionsPanel.SetActive(false);
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _NextLvlPanel.SetActive(false);
@@ -205,6 +231,7 @@ public class UIManager : MonoBehaviour
     private void ResumeGame()
     {
         _pausePanel.SetActive(false);
+        _optionsPanel.SetActive(false);
 
         StartCoroutine(LoadPauseBandage());
     }
@@ -316,10 +343,7 @@ public class UIManager : MonoBehaviour
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _pausePanel.SetActive(false);
-
-        //TODO: Activar animacion de momia
-        //AnimationMummy.play();
-
+        
         //Muetro Tips con FakeDelay
         StartCoroutine(ShowTipsAndLoadNextScene());
     }
@@ -375,6 +399,11 @@ public class UIManager : MonoBehaviour
     private void RetryLevel()
     {
         StartCoroutine(RetryLevelWithDelay());
+    }
+
+    private void ShowOptionsPanel()
+    {
+        _optionsPanel.SetActive(true);
     }
 
     private IEnumerator RetryLevelWithDelay()
@@ -453,6 +482,9 @@ public class UIManager : MonoBehaviour
 
             _WinPanel.SetActive(true);
             _mummyUI.SetTrigger("isWin");
+            
+            AudioManager.Instance.PlayMusic(NameSounds.Music_Win);
+            AudioManager.Instance.MuteAllActiveSFX();
         }));
     }
 
@@ -462,6 +494,9 @@ public class UIManager : MonoBehaviour
         {
             _LosePanel.SetActive(true);
             _mummyUI.SetTrigger("isLose");
+            
+            AudioManager.Instance.PlayMusic(NameSounds.Music_Lose);
+            AudioManager.Instance.MuteAllActiveSFX();
         }));
     }
 

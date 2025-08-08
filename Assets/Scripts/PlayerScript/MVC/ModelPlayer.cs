@@ -243,11 +243,23 @@ public class ModelPlayer
 
     public void Shoot()
     {
+        PlayShootRandomSound();
+        
         if (_player.CurrentBandageStock > _player.MinBandageStock)
         {
             BulletFactory.Instance.GetObjectFromPool();
             CountBandage(-1);
         }
+    }
+    
+    private void PlayShootRandomSound()
+    {
+        float randomValue = UnityEngine.Random.value; 
+
+        if (randomValue < 0.5f)
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_BandageShoot1); 
+        else
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_BandageShoot2); 
     }
 
     public void RotatePreShoot()

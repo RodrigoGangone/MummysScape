@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -42,24 +43,36 @@ public class MainMenu : MonoBehaviour
     private void Awake()
     {
         //Buttons Main//
-        _btnPlay.onClick.AddListener(ShowLvlSelector);
-        _btnOptions.onClick.AddListener(ShowOptions);
-        _btnExit.onClick.AddListener(QuitGame);
-
+        AddButtonProps(_btnPlay, ShowLvlSelector);
+        AddButtonProps(_btnOptions, ShowOptions);
+        AddButtonProps(_btnExit, QuitGame);
+        
         //Buttons Options//
-
         _frameRateSpinner.AddOptions(FrameRateText);
         _frameRateSpinner.onValueChanged.AddListener(delegate { OnDropdownValueChanged(_frameRateSpinner); });
-
-        _btnDeletePrefs.onClick.AddListener(() =>
-        {
-            LevelManagerJson.DeteleLevels();
-            CheckEnabledLevels();
-        });
-
-        _btnBackToMain.onClick.AddListener(ShowMain);
+        
+        AddButtonProps(_btnDeletePrefs, LevelManagerJson.DeteleLevels, CheckEnabledLevels);
+        AddButtonProps(_btnBackToMain, ShowMain);
 
         SetLevelsInButtons();
+    }
+    
+    private void AddButtonProps(Button button, Action mainAction, params Action[] additionalActions)
+    {
+        button.onClick.AddListener(() =>
+        {
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_Click);
+        
+            //Accion principal
+            mainAction?.Invoke();
+
+            //Acciones secundarias
+            if (additionalActions == null) return;
+            foreach (var action in additionalActions)
+            {
+                action?.Invoke();
+            }
+        });
     }
 
     private void Start()

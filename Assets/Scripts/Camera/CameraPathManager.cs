@@ -1,4 +1,4 @@
-using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,6 +14,9 @@ public class CameraPathManager : MonoBehaviour
     private Vector3 endPoint;
     private float currentSpeed;
 
+    //CameraShake
+    private bool isShaking = false;
+    
     private void Start()
     {
         if (nodes.Count > 0)
@@ -83,8 +86,39 @@ public class CameraPathManager : MonoBehaviour
 
     }
     
-    private void LateUpdate()
+    public void ShakeCamera(float duration, float magnitude)
     {
+        if (!isShaking)
+        {
+            StartCoroutine(Shake(duration, magnitude));
+        }
+    }
+    
+    private IEnumerator Shake(float duration, float magnitude)
+    {
+        isShaking = true;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            // Posición base actual en cada frame del shake
+            Vector3 currentBasePosition = transform.position;
+
+            // Calcula un desplazamiento aleatorio
+            Vector3 randomOffset = new Vector3(
+                Random.Range(-0.25f, 0.25f) * magnitude,
+                Random.Range(-0.25f, 0.25f) * magnitude,
+                Random.Range(-0.25f, 0.25f) * magnitude
+            );
+
+            // Aplica el desplazamiento aleatorio sobre la posición base
+            transform.position = currentBasePosition + randomOffset;
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        isShaking = false; // Termina la sacudida
     }
 
     private Vector3 CalculateControlPoint(Vector3 start, Vector3 end, CameraNode.BezierAxis axis, float intensity)

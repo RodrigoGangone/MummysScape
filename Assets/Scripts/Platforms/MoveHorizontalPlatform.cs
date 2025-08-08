@@ -9,7 +9,7 @@ using static Utils;
 public class MoveHorizontalPlatform : MonoBehaviour
 {
     [Header("PLAY ON AWAKE")] [SerializeField]
-    private bool isMoving;
+    public bool isMoving;
 
     [Header("SPEED")] public float speed = 1;
     public float stopTime = 0.5f;
@@ -32,10 +32,12 @@ public class MoveHorizontalPlatform : MonoBehaviour
     [SerializeField] private float glowIntensity = 0.15f;
     private Material[] platformMaterials;
 
-    private bool isPaused;
+    public bool isPaused;
     private bool isMovingToFirstWaypoint;
 
     private int _currentWaypointIndex = 0;
+    
+    private AudioSource platformAudio;
 
     private void Start()
     {
@@ -55,6 +57,8 @@ public class MoveHorizontalPlatform : MonoBehaviour
             sandMoundForward.position = sandMoundForwardWaypoints[0].position;
             sandMoundBackward.position = sandMoundBackwardWaypoints[0].position;
         }
+
+        platformAudio = AudioManager.Instance.GetClipByName(NameSounds.SFX_MovingPlatform);
     }
 
     private void Update()
@@ -67,6 +71,8 @@ public class MoveHorizontalPlatform : MonoBehaviour
         {
             MoveTowardsWaypoint();
         }
+
+        HandleAudio();
     }
 
     private void MoveToFirstWaypoint()
@@ -78,7 +84,7 @@ public class MoveHorizontalPlatform : MonoBehaviour
         transform.position = Vector3.MoveTowards(transform.position, firstWaypoint.position, step);
 
         // Si la plataforma ha alcanzado el primer waypoint
-        if (Vector3.Distance(transform.position, firstWaypoint.position) == 0)
+        if (Vector3.Distance(transform.position, firstWaypoint.position) <= 0.001f)
         {
             isMovingToFirstWaypoint = false;
             _currentWaypointIndex = 1; // Empieza a moverse hacia el segundo waypoint
@@ -258,6 +264,27 @@ public class MoveHorizontalPlatform : MonoBehaviour
             }
 
             yield return null;
+        }
+    }
+    
+    private void HandleAudio()
+    {
+        if (isMoving && !isPaused)
+        {
+            StartCoroutine(AudioManager.Instance.FollowTransform(platformAudio, transform, -1));
+            if (!platformAudio.isPlaying)
+            {
+                Debug.Log("Resuming audio playback.");
+                platformAudio.Play();
+            }
+        }
+        else
+        {
+            if (platformAudio.isPlaying)
+            {
+                Debug.Log("Pausing audio playback.");
+                platformAudio.Pause();
+            }
         }
     }
 }
