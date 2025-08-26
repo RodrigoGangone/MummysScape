@@ -2,6 +2,7 @@ using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
+using static PlayerEnum;
 
 public class ViewPlayer
 {

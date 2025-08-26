@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
+using static PlayerEnum;
 
 public class Geyser : MonoBehaviour
 {
