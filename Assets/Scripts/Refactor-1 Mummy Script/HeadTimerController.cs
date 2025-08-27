@@ -27,18 +27,16 @@ public sealed class HeadTimerController : MonoBehaviour
 
     private TimerService.Handle _handle;
 
-    private void OnEnable()
-    {
-        if (_model != null) _model.OnSizeChanged += HandleSize;
-        HandleSize(_model != null ? _model.Size : PlayerSize.Normal);
-    }
+    private void OnEnable()  { if (_model != null) { _model.OnSizeChanged += HandleSize; HandleSize(_model.Size); } }
+    private void OnDisable() { if (_model != null) _model.OnSizeChanged -= HandleSize; _timers?.Cancel(_handle); }
 
-    private void OnDisable()
+    public void Bind(PlayerModel model)
     {
         if (_model != null) _model.OnSizeChanged -= HandleSize;
-        _timers?.Cancel(_handle);
+        _model = model;
+        if (isActiveAndEnabled && _model != null) { _model.OnSizeChanged += HandleSize; HandleSize(_model.Size); }
     }
-
+    
     private void HandleSize(PlayerSize s)
     {
         // Sprite según estado

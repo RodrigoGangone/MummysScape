@@ -17,6 +17,8 @@ public sealed class PlayerController : MonoBehaviour
     [SerializeField] private MovementRuntime _movement;
     [SerializeField] private PlayerInputReaderLegacy _input;  // podés cambiar por el de New Input System
     [SerializeField] private HeadTimerController _headTimer;  // opcional (puede estar en UI)
+    [SerializeField] private InteractionRuntime _interactions;
+    [SerializeField] private GameObject _bandagePickupPrefab; // opcional
 
     private StateMachinePlayer _sm;
     private Rigidbody _rb;
@@ -39,23 +41,29 @@ public sealed class PlayerController : MonoBehaviour
         // View opcional: actualizar sprite del reloj cuando cambie el Size
         _model.OnSizeChanged += size => _view?.SetHeadTimerSprite(size == PlayerSize.Head);
 
-        // HeadTimer (si está en el mismo prefab, le pasamos el model)
-        if (_headTimer != null)
-        {
-            // Para que HeadTimer obtenga OnSizeChanged, le inyectamos el model (si no lo arrastraste por Inspector).
-            var so = _headTimer.GetType().GetField("_model", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (so != null) so.SetValue(_headTimer, _model);
-        }
-
+        _headTimer?.Bind(_model);
+        
         // Contexto compartido por States
-        _ctx = new PlayerContext(transform, _rb, _cameraProvider, _model, _view, _movement, _input);
+        _ctx = new PlayerContext(transform, _rb, _cameraProvider, _model, _view, _movement, _input, _interactions);
 
         // Estados (tu API AddState / ChangeState)
         _sm.AddState(PlayerStateId.Idle,  new IdleState(_ctx));
         _sm.AddState(PlayerStateId.Walk,  new WalkState(_ctx));
         _sm.AddState(PlayerStateId.Shoot, new ShootState(_ctx));
         _sm.AddState(PlayerStateId.Smash, new SmashState(_ctx));
+        _sm.AddState(PlayerStateId.Drop,    new DropBandageState(_ctx, _bandagePickupPrefab));
+        _sm.AddState(PlayerStateId.Attract, new AttractState(_ctx, _interactions));
 
         _sm.ChangeState(PlayerStateId.Idle);
+    }
+    
+    /// <summary>
+    /// Intenta sumar 'amount' vendas al Model (retorna false si ya estás en el máximo).
+    /// </summary>
+    public bool TryCollectBandage(int amount)
+    {
+        int before = _model.Bandages;
+        _model.AddBandages(amount);
+        return _model.Bandages > before;
     }
 }

@@ -12,7 +12,7 @@ public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
     {
         if (Input.GetKeyDown(KeyCode.E))     _shootDown = true;
         if (Input.GetKeyDown(KeyCode.Q))     _dropDown  = true;
-        if (Input.GetKeyDown(KeyCode.Space)) _smashDown = true;
+        if (Input.GetKeyDown(KeyCode.Space)) { _smashDown = true; _attractDown = true; } // <- ambos
         // _attractDown si mapeás otra tecla para atraer
     }
 

@@ -14,15 +14,17 @@ public sealed class PlayerContext
 
     private readonly ICameraProvider _camProvider;
     private readonly MovementRuntime _movement;
+    private readonly InteractionRuntime _interactions;
 
     public PlayerContext(
         Transform tf, Rigidbody rb,
         ICameraProvider camProvider,
         PlayerModel model, PlayerView view,
-        MovementRuntime movement, IPlayerInput input)
+        MovementRuntime movement, IPlayerInput input, InteractionRuntime interactionRuntime)
     {
         Tf = tf; Rb = rb; _camProvider = camProvider;
         Model = model; View = view; _movement = movement; Input = input;
+        _interactions = interactionRuntime;
     }
 
     public Camera Cam => _camProvider?.Current ?? Camera.main;
@@ -37,5 +39,13 @@ public sealed class PlayerContext
         Vector3 right = cam ? cam.transform.right   : Vector3.right;
         fwd.y = 0f; right.y = 0f; fwd.Normalize(); right.Normalize();
         return (fwd * v + right * h).normalized;
+    }
+    
+    /// <summary>Intento de target al frente para Attract (wrap del InteractionRuntime).</summary>
+    public bool TryGetAttractTarget(out IAttractable target)
+    {
+        target = null;
+        if (_interactions == null) return false;
+        return _interactions.TryFindAttractable(Tf, out target, out _);
     }
 }
