@@ -9,6 +9,7 @@ using static PlayerEnum;
 /// </summary>
 [RequireComponent(typeof(StateMachinePlayer))]
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(PlayerInputStateDriver))]
 public sealed class PlayerController : MonoBehaviour
 {
     [Header("Refs (Scene/Prefab)")]
@@ -22,6 +23,7 @@ public sealed class PlayerController : MonoBehaviour
     [SerializeField] private GameObject _bandagePickupPrefab; // opcional
 
     private StateMachinePlayer _sm;
+    private PlayerInputStateDriver _inputDriver;
     private Rigidbody _rb;
     private PlayerModel _model;
     private PlayerContext _ctx;
@@ -32,6 +34,8 @@ public sealed class PlayerController : MonoBehaviour
         _rb = GetComponent<Rigidbody>();
         _rb.interpolation = RigidbodyInterpolation.Interpolate;
         _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        
+        _inputDriver = GetComponent<PlayerInputStateDriver>();
 
         // Model con 2 vendas (Normal)
         _model = new PlayerModel();
@@ -59,13 +63,12 @@ public sealed class PlayerController : MonoBehaviour
         //_sm.AddState(PlayerStateId.Swing, new SwingState(_ctx));
         //_sm.AddState(PlayerStateId.Dead, new DeadState(_ctx));
         
-        _sm.SetGuard(new PlayerTransitionGuard(_ctx));
-        _sm.ChangeState(PlayerStateId.Idle);
+        _sm.SetGuard(new PlayerTransitionGuard(_ctx));  // Guard central (usa TransitionRules + SizeRules)
+        _inputDriver.Bind(_ctx, _sm);   // Driver que convierte inputs a estados
+        _sm.ChangeState(PlayerStateId.Idle); // Estado inicial
     }
     
-    /// <summary>
-    /// Intenta sumar 'amount' vendas al Model (retorna false si ya estás en el máximo).
-    /// </summary>
+    // Intenta sumar 'amount' vendas al Model (retorna false si ya estás en el máximo).
     public bool TryCollectBandage(int amount)
     {
         int before = _model.Bandages;
@@ -73,6 +76,6 @@ public sealed class PlayerController : MonoBehaviour
         return _model.Bandages > before;
     }
     
-    /// <summary>Invocado por HeadTimer al expirar (UnityEvent): mata al player.</summary>
+    // Invocado por HeadTimer al expirar (UnityEvent): mata al player.</summary>
     public void Kill() => _sm.ChangeState(PlayerStateId.Dead);
 }

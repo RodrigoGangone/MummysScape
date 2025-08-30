@@ -22,12 +22,6 @@ public sealed class AttractState : State
         Debug.Log("AttractState");
 
         //TODO: esto por el momento esta debug. La idea seria que entre a este STATE luego de hacer match con el objeto y tenga el OKAY para poder pullearlo.
-        
-        // Ray/esfera al frente
-        /*if (!_interactions.TryFindAttractable(_ctx.Tf, out _target, out var hit))
-        { StateMachine.ChangeState(PlayerStateId.Idle); return; }*/
-        
-        StateMachine.ChangeState(PlayerStateId.Idle);
     }
 
     public override void OnUpdate() { }

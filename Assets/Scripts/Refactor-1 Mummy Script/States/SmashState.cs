@@ -15,7 +15,7 @@ public sealed class SmashState : State
         Debug.Log("Smash!");
         _ctx.View?.PlaySmash();
 
-        StateMachine.ChangeState(PlayerStateId.Idle);
+        //StateMachine.ChangeState(PlayerStateId.Idle);
     }
 
     public override void OnUpdate() { }

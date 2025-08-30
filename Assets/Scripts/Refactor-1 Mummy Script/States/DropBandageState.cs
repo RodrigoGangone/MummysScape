@@ -22,19 +22,16 @@ public sealed class DropBandageState : State
         if (!_ctx.Model.TryConsumeBandage())
         {
             Debug.Log("DropBandage! pero sin vendas");
-            StateMachine.ChangeState(PlayerStateId.Idle); 
             return;
         }
 
-        // Spawn del prefab venda
+        // Spawn del prefab venda //TODO: mejorar esto para que la venda no se pueda agarrar hasta que salgas del trigger y vuelvas a entrar.
         if (_bandagePickupPrefab != null)
         {
             Vector3 pos = _ctx.Rb.position + _ctx.Tf.forward * 0.5f + Vector3.up * 0.2f;
             Quaternion rot = Quaternion.identity;
             Object.Instantiate(_bandagePickupPrefab, pos, rot);
         }
-
-        StateMachine.ChangeState(PlayerStateId.Idle);
     }
 
     public override void OnUpdate() { }

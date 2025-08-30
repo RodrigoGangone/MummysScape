@@ -26,23 +26,4 @@ public static class TransitionRules
 
     public static bool Can(PlayerStateId from, PlayerStateId to) =>
         _allowed.TryGetValue(from, out var nexts) && Array.IndexOf(nexts, to) >= 0;
-
-    /// <summary>
-    /// Mapea un PlayerStateId a su PlayerActionId homónimo.
-    /// Mantener explícito (switch) evita reflexiones y errores por renombre.
-    /// </summary>
-    public static PlayerActionId ToAction(PlayerStateId state) => state switch
-    {
-        PlayerStateId.Idle        => PlayerActionId.Idle,
-        PlayerStateId.Walk        => PlayerActionId.Walk,
-        PlayerStateId.Fall        => PlayerActionId.Fall,
-        PlayerStateId.Shoot       => PlayerActionId.Shoot,
-        PlayerStateId.Smash       => PlayerActionId.Smash,
-        PlayerStateId.DropBandage => PlayerActionId.DropBandage,
-        PlayerStateId.Push        => PlayerActionId.Push,
-        PlayerStateId.Attract     => PlayerActionId.Attract,
-        PlayerStateId.Swing       => PlayerActionId.Swing,
-        PlayerStateId.Dead        => PlayerActionId.Dead,
-        _ => PlayerActionId.Idle
-    };
 }

@@ -13,18 +13,17 @@ public sealed class ShootState : State
     public override void OnEnter()
     {
         Debug.Log("Shoot!");
+        
         // Si no hay vendas vuelvo a idle, sino las consumo
         if (!_ctx.Model.TryConsumeBandage())
         {
             Debug.Log("Shoot! PERO SIN VENDAS");
-            StateMachine.ChangeState(PlayerStateId.Idle); 
-            return;
         }
-
+        
+        /*
         // TODO: tu raycast/proyectil real
         _ctx.View?.PlayShoot();
-
-        StateMachine.ChangeState(PlayerStateId.Idle);
+        */
     }
 
     public override void OnUpdate() { }

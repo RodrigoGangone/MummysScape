@@ -1,5 +1,5 @@
 using static PlayerEnum;
-using static PlayerEnum.PlayerActionId;
+using static PlayerEnum.PlayerStateId;
 using static PlayerEnum.PlayerSize;
 
 /// <summary>
@@ -9,7 +9,7 @@ using static PlayerEnum.PlayerSize;
 
 public class SizeRules
 {
-    public static bool Can(PlayerSize s, PlayerActionId a) => s switch
+    public static bool Can(PlayerSize s, PlayerStateId  a) => s switch
     {
         Normal => a is Idle or Walk or Shoot or DropBandage or Push or Attract or Fall or Dead,
         Small  => a is Idle or Walk or Shoot or DropBandage or Swing or Fall or Dead,
