@@ -15,30 +15,33 @@ public sealed class WalkState : State
     public override void OnUpdate()
     {
         // Q -> DropBandage (si permitido)
-        if (_ctx.Input.ConsumeDropDown() && SizeRules.Can(_ctx.Model.Size, PlayerActionId.DropBandage))
+        if (_ctx.Input.ConsumeDropDown())
         {
-            StateMachine.ChangeState(PlayerStateId.Drop);
+            StateMachine.ChangeState(PlayerStateId.DropBandage);
+            return;
         } 
         
         // E -> Shoot
-        if (_ctx.Input.ConsumeShootDown() && SizeRules.Can(_ctx.Model.Size, PlayerActionId.Shoot))
+        if (_ctx.Input.ConsumeShootDown())
         {
             StateMachine.ChangeState(PlayerStateId.Shoot);
+            return;
         }
 
         // Space -> primero Smash (si estás en Head), sino Attract (si target al frente)
-        if (SizeRules.Can(_ctx.Model.Size, PlayerActionId.Smash) && _ctx.Input.ConsumeSmashDown())
+        if (_ctx.Input.ConsumeSmashDown())
         {
             StateMachine.ChangeState(PlayerStateId.Smash);
             return;
         }
         
-        if (SizeRules.Can(_ctx.Model.Size, PlayerActionId.Attract) && _ctx.Input.ConsumeAttractDown())
+        if (_ctx.Input.ConsumeAttractDown())
         {
             // opcional: verificá target antes de entrar
             if (_ctx.TryGetAttractTarget(out _))
             {
                 StateMachine.ChangeState(PlayerStateId.Attract);
+                return;
             } 
         }
     }

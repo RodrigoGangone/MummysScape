@@ -15,21 +15,24 @@ public sealed class PlayerContext
     private readonly ICameraProvider _camProvider;
     private readonly MovementRuntime _movement;
     private readonly InteractionRuntime _interactions;
+    private readonly GroundCheckRuntime _ground;
 
     public PlayerContext(
         Transform tf, Rigidbody rb,
         ICameraProvider camProvider,
         PlayerModel model, PlayerView view,
-        MovementRuntime movement, IPlayerInput input, InteractionRuntime interactionRuntime)
+        MovementRuntime movement, IPlayerInput input, InteractionRuntime interactionRuntime,
+        GroundCheckRuntime ground)
     {
         Tf = tf; Rb = rb; _camProvider = camProvider;
         Model = model; View = view; _movement = movement; Input = input;
-        _interactions = interactionRuntime;
+        _interactions = interactionRuntime; _ground = ground;
     }
 
-    public Camera Cam => _camProvider?.Current ?? Camera.main;
+    private Camera Cam => _camProvider?.Current ?? Camera.main;
     public float MoveSpeed => _movement.MoveSpeed;
     public float TurnSpeed => _movement.TurnSpeed;
+    public bool IsGrounded() => _ground != null && _ground.IsGrounded(Tf);
 
     /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>
     public Vector3 CameraRelativeDir(float h, float v)

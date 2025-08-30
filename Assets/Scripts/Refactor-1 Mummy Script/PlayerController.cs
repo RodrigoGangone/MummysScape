@@ -18,6 +18,7 @@ public sealed class PlayerController : MonoBehaviour
     [SerializeField] private PlayerInputReaderLegacy _input;  // podés cambiar por el de New Input System
     [SerializeField] private HeadTimerController _headTimer;  // opcional (puede estar en UI)
     [SerializeField] private InteractionRuntime _interactions;
+    [SerializeField] private GroundCheckRuntime _ground;
     [SerializeField] private GameObject _bandagePickupPrefab; // opcional
 
     private StateMachinePlayer _sm;
@@ -33,7 +34,7 @@ public sealed class PlayerController : MonoBehaviour
         _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
         // Model con 2 vendas (Normal)
-        _model = new PlayerModel(PlayerModel.MaxBandages);
+        _model = new PlayerModel();
 
         // MovementRuntime escucha Size del Model
         _movement.Bind(_model);
@@ -44,16 +45,21 @@ public sealed class PlayerController : MonoBehaviour
         _headTimer?.Bind(_model);
         
         // Contexto compartido por States
-        _ctx = new PlayerContext(transform, _rb, _cameraProvider, _model, _view, _movement, _input, _interactions);
+        _ctx = new PlayerContext(transform, _rb, _cameraProvider, _model, _view, _movement, _input, _interactions, _ground);
 
         // Estados (tu API AddState / ChangeState)
         _sm.AddState(PlayerStateId.Idle,  new IdleState(_ctx));
         _sm.AddState(PlayerStateId.Walk,  new WalkState(_ctx));
+        //_sm.AddState(PlayerStateId.Fall, new FallState(_ctx));
         _sm.AddState(PlayerStateId.Shoot, new ShootState(_ctx));
         _sm.AddState(PlayerStateId.Smash, new SmashState(_ctx));
-        _sm.AddState(PlayerStateId.Drop,  new DropBandageState(_ctx, _bandagePickupPrefab));
+        _sm.AddState(PlayerStateId.DropBandage, new DropBandageState(_ctx, _bandagePickupPrefab));
+        //_sm.AddState(PlayerStateId.Push, new PushState(_ctx));
         _sm.AddState(PlayerStateId.Attract, new AttractState(_ctx, _interactions));
-
+        //_sm.AddState(PlayerStateId.Swing, new SwingState(_ctx));
+        //_sm.AddState(PlayerStateId.Dead, new DeadState(_ctx));
+        
+        _sm.SetGuard(new PlayerTransitionGuard(_ctx));
         _sm.ChangeState(PlayerStateId.Idle);
     }
     
@@ -66,4 +72,7 @@ public sealed class PlayerController : MonoBehaviour
         _model.AddBandages(amount);
         return _model.Bandages > before;
     }
+    
+    /// <summary>Invocado por HeadTimer al expirar (UnityEvent): mata al player.</summary>
+    public void Kill() => _sm.ChangeState(PlayerStateId.Dead);
 }

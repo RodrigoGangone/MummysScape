@@ -332,7 +332,7 @@ public class Player : MonoBehaviour
 
         #endregion
 
-        #region Evitar Drop cerca de Wall
+        #region Evitar DropBandage cerca de Wall
 
         if (GizmoWallDrop)
         {

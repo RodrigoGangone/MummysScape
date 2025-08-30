@@ -9,6 +9,6 @@ public interface IPlayerInput
     bool ConsumeShootDown();              // E
     bool ConsumeDropDown();               // Q
     bool ConsumeSmashDown();              // Space
-    bool ConsumeAttractDown();            // opcional
+    bool ConsumeAttractDown();            // Space (atraer cajas) si lo separás
     bool IsAnyActionHeld();               // útil para bloqueos/pausa
 }

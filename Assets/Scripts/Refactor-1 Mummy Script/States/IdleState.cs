@@ -14,37 +14,49 @@ public sealed class IdleState : State
 
     public override void OnUpdate()
     {
+        //TODO: todavia no hay un fallstate
+        //if (!_ctx.IsGrounded()) { StateMachine.ChangeState(PlayerStateId.Fall); return; }
+
         var mv = _ctx.Input.Move;
         if (Mathf.Abs(mv.x) > 0.01f || Mathf.Abs(mv.y) > 0.01f)
         {
+            //TODO: todavia no hay un pushstate
+            // ¿hay caja adelante? -> Push, si está permitido por Size
+            //if (_ctx.HasPushableAhead() && SizeRules.Can(_ctx.Model.Size, PlayerActionId.Push))
+            //    StateMachine.ChangeState(PlayerStateId.Push);
+            //else
             StateMachine.ChangeState(PlayerStateId.Walk);
             return;
         }
 
         // Q -> DropBandage 
-        if (_ctx.Input.ConsumeDropDown() && SizeRules.Can(_ctx.Model.Size, PlayerActionId.DropBandage))
+        if (_ctx.Input.ConsumeDropDown())
         {
-            StateMachine.ChangeState(PlayerStateId.Drop);
+            StateMachine.ChangeState(PlayerStateId.DropBandage);
+            return;
         } 
         
         // E -> Shoot
-        if (_ctx.Input.ConsumeShootDown() && SizeRules.Can(_ctx.Model.Size, PlayerActionId.Shoot))
+        if (_ctx.Input.ConsumeShootDown())
         {
             StateMachine.ChangeState(PlayerStateId.Shoot);
+            return;
         }
 
         // Space -> primero Smash (si estás en Head), sino Attract (si target al frente)
-        if (SizeRules.Can(_ctx.Model.Size, PlayerActionId.Smash) && _ctx.Input.ConsumeSmashDown())
+        if (_ctx.Input.ConsumeSmashDown())
         {
             StateMachine.ChangeState(PlayerStateId.Smash);
             return;
         }
-        if (SizeRules.Can(_ctx.Model.Size, PlayerActionId.Attract) && _ctx.Input.ConsumeAttractDown())
+        
+        if (_ctx.Input.ConsumeAttractDown())
         {
             // opcional: verificá target antes de entrar
             if (_ctx.TryGetAttractTarget(out _))
             {
                 StateMachine.ChangeState(PlayerStateId.Attract);
+                return;
             }
         }
     }

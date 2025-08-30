@@ -4,21 +4,23 @@
 /// 2 => Normal, 1 => Small, 0 => Head.
 /// Emite OnBandagesChanged(old,current) y OnSizeChanged(newSize).
 /// </summary>
+
+using System;
 using static PlayerEnum;
 public sealed class PlayerModel
 {
-    public const int MinBandages = 0;
-    public const int MaxBandages = 2;
+    private const int MinBandages = 0;
+    private const int MaxBandages = 2 ;
 
     public int Bandages { get; private set; }
     public PlayerSize Size => MapSize(Bandages);
 
-    public event System.Action<int,int> OnBandagesChanged;
-    public event System.Action<PlayerSize> OnSizeChanged;
+    public event Action<int,int> OnBandagesChanged;
+    public event Action<PlayerSize> OnSizeChanged;
 
-    public PlayerModel(int startBandages = MaxBandages)
+    public PlayerModel()
     {
-        Bandages = Clamp(startBandages, MinBandages, MaxBandages);
+        Bandages = Clamp(MaxBandages, MinBandages, MaxBandages);
     }
 
     public bool TryConsumeBandage(int amount = 1)
@@ -34,7 +36,7 @@ public sealed class PlayerModel
         SetBandages(Bandages + amount);
     }
 
-    public void SetBandages(int target)
+    private void SetBandages(int target)
     {
         int clamped = Clamp(target, MinBandages, MaxBandages);
         if (clamped == Bandages) return;
