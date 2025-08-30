@@ -4,6 +4,9 @@ using UnityEngine;
 /// InteractionRuntime
 /// Provee utilidades de interacción del jugador: búsqueda de target para atraer, parámetros y LayerMasks.
 /// </summary>
+
+
+//TODO: VER QUE HACER CON ESTA CLASE PARA LOS INTERACTABLES, HAY QUE MODIFICARLA
 public sealed class InteractionRuntime : MonoBehaviour
 {
     [Header("Attract")]

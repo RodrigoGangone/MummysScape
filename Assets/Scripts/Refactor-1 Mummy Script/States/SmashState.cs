@@ -12,13 +12,6 @@ public sealed class SmashState : State
 
     public override void OnEnter()
     {
-        if (!SizeRules.Can(_ctx.Model.Size, PlayerActionId.Smash))
-        {
-            StateMachine.ChangeState(PlayerStateId.Idle);
-            return;
-        }
-
-        // TODO: tu lógica real (AOE/daño al suelo/trigger de puzzle)
         Debug.Log("Smash!");
         _ctx.View?.PlaySmash();
 

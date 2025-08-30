@@ -19,49 +19,20 @@ public sealed class AttractState : State
 
     public override void OnEnter()
     {
-        Debug.Log("------ AttractState ------");
+        Debug.Log("AttractState");
+
+        //TODO: esto por el momento esta debug. La idea seria que entre a este STATE luego de hacer match con el objeto y tenga el OKAY para poder pullearlo.
         
-        // Validación por tamaño
-        if (!SizeRules.Can(_ctx.Model.Size, PlayerActionId.Attract))
-        { StateMachine.ChangeState(PlayerStateId.Idle); return; }
-
         // Ray/esfera al frente
-        if (!_interactions.TryFindAttractable(_ctx.Tf, out _target, out var hit))
-        { StateMachine.ChangeState(PlayerStateId.Idle); return; }
-
-        _targetTf = (hit.collider != null) ? hit.collider.attachedRigidbody?.transform ?? hit.collider.transform : null;
-        _time = 0f;
+        /*if (!_interactions.TryFindAttractable(_ctx.Tf, out _target, out var hit))
+        { StateMachine.ChangeState(PlayerStateId.Idle); return; }*/
+        
+        StateMachine.ChangeState(PlayerStateId.Idle);
     }
 
-    public override void OnUpdate()
-    {
-        _time += Time.deltaTime;
-        if (_time > _maxTime) { StateMachine.ChangeState(PlayerStateId.Idle); }
-    }
+    public override void OnUpdate() { }
 
-    public override void OnFixedUpdate()
-    {
-        if (_target == null) { StateMachine.ChangeState(PlayerStateId.Idle); return; }
+    public override void OnFixedUpdate() { }
 
-        // Punto objetivo = un poco delante del player (evita chocar)
-        Vector3 aim = _ctx.Rb.position + _ctx.Tf.forward * _interactions.StopDistance;
-
-        // Aplica atracción
-        bool pulled = _target.PullTowards(aim, _interactions.PullStrength, _interactions.PullMaxSpeed);
-
-        // Si ya está cerca, terminar
-        if (_targetTf != null)
-        {
-            Vector3 flat = _targetTf.position; flat.y = _ctx.Rb.position.y;
-            if ((flat - aim).sqrMagnitude <= (_interactions.StopDistance * _interactions.StopDistance))
-            {
-                StateMachine.ChangeState(PlayerStateId.Idle);
-                return;
-            }
-        }
-
-        if (!pulled) StateMachine.ChangeState(PlayerStateId.Idle);
-    }
-
-    public override void OnExit() { _target = null; _targetTf = null; }
+    public override void OnExit() { }
 }

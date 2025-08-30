@@ -16,15 +16,17 @@ public sealed class DropBandageState : State
 
     public override void OnEnter()
     {
-        // Validación por tamaño
-        if (!SizeRules.Can(_ctx.Model.Size, PlayerActionId.DropBandage))
-        { StateMachine.ChangeState(PlayerStateId.Idle); return; }
+        Debug.Log("DropBandage!");
+        
+        // Si no hay vendas vuelvo a idle, sino las consumo
+        if (!_ctx.Model.TryConsumeBandage())
+        {
+            Debug.Log("DropBandage! pero sin vendas");
+            StateMachine.ChangeState(PlayerStateId.Idle); 
+            return;
+        }
 
-        // Consume venda si hay
-        if (!_ctx.Model.TryConsumeBandage(1))
-        { StateMachine.ChangeState(PlayerStateId.Idle); return; }
-
-        // Spawn opcional del pickup
+        // Spawn del prefab venda
         if (_bandagePickupPrefab != null)
         {
             Vector3 pos = _ctx.Rb.position + _ctx.Tf.forward * 0.5f + Vector3.up * 0.2f;
