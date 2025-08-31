@@ -47,11 +47,11 @@ public class PlayerInputStateDriver : MonoBehaviour
         var mv = _input.Move;
 
         // 1) Ambiente: caída
-        /*if (!grounded)
+        if (!grounded)
         {
             _sm.ChangeState(Fall);
             return;
-        }*/
+        }
 
         // 2) Space (hold): Smash (Head) > Attract (si hay target)
         if (_input.IsSpaceHeld())

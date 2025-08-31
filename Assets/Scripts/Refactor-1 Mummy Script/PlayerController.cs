@@ -10,6 +10,7 @@ using static PlayerEnum;
 [RequireComponent(typeof(StateMachinePlayer))]
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputStateDriver))]
+[RequireComponent(typeof(GroundCheckRuntime))]
 public sealed class PlayerController : MonoBehaviour
 {
     [Header("Refs (Scene/Prefab)")]
@@ -47,6 +48,8 @@ public sealed class PlayerController : MonoBehaviour
         _model.OnSizeChanged += size => _view?.SetHeadTimerSprite(size == PlayerSize.Head);
 
         _headTimer?.Bind(_model);
+
+        _ground = GetComponent<GroundCheckRuntime>();
         
         // Contexto compartido por States
         _ctx = new PlayerContext(transform, _rb, _cameraProvider, _model, _view, _movement, _input, _interactions, _ground);
@@ -54,7 +57,7 @@ public sealed class PlayerController : MonoBehaviour
         // Estados (tu API AddState / ChangeState)
         _sm.AddState(PlayerStateId.Idle,  new IdleState(_ctx));
         _sm.AddState(PlayerStateId.Walk,  new WalkState(_ctx));
-        //_sm.AddState(PlayerStateId.Fall, new FallState(_ctx));
+        _sm.AddState(PlayerStateId.Fall, new FallState(_ctx));
         _sm.AddState(PlayerStateId.Shoot, new ShootState(_ctx));
         _sm.AddState(PlayerStateId.Smash, new SmashState(_ctx));
         _sm.AddState(PlayerStateId.DropBandage, new DropBandageState(_ctx, _bandagePickupPrefab));

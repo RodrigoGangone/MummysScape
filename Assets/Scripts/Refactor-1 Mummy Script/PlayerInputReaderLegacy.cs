@@ -23,6 +23,5 @@ public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
     
     public bool IsSpaceHeld() => Input.GetKey(KeyCode.Space);
 
-    public bool IsAnyActionHeld() =>
-        Input.GetKey(KeyCode.E) || Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.Space);
+    public bool IsAnyActionHeld() => Input.GetKey(KeyCode.E) || Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.Space);
 }
