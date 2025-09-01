@@ -44,11 +44,19 @@ public sealed class PlayerContext
         return (fwd * v + right * h).normalized;
     }
     
-    /// <summary>Intento de target al frente para Attract (wrap del InteractionRuntime).</summary>
+    /// <summary>Target al frente para Attract (si existe InteractionRuntime). </summary>
     public bool TryGetAttractTarget(out IAttractable target)
     {
         target = null;
         if (_interactions == null) return false;
         return _interactions.TryFindAttractable(Tf, out target, out _);
+    }
+
+    /// <summary>Target al frente para Swing (si existe InteractionRuntime). </summary>
+    public bool TryGetSwingTarget(out ISwingable target)
+    {
+        target = null;
+        if (_interactions == null) return false;
+        return _interactions.TryFindSwingable(Tf, out target, out _);
     }
 }

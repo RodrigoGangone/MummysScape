@@ -32,4 +32,13 @@ public sealed class InteractionRuntime : MonoBehaviour
         target = ok ? hit.collider.GetComponentInParent<IAttractable>() : null;
         return ok && target != null;
     }
+    
+    public bool TryFindSwingable(Transform origin, out ISwingable target, out RaycastHit hit)
+    {
+        Vector3 start = origin.position + Vector3.up * 0.6f;
+        Vector3 dir   = origin.forward;
+        bool ok = Physics.SphereCast(start, _attractRadius, dir, out hit, _attractDistance, _attractMask, QueryTriggerInteraction.Ignore);
+        target = ok ? hit.collider.GetComponentInParent<ISwingable>() : null;
+        return ok && target != null;
+    }
 }

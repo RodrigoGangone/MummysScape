@@ -42,50 +42,47 @@ public class PlayerInputStateDriver : MonoBehaviour
     {
         if (_ctx == null || _sm == null || _input == null) return;
 
-        var size = _ctx.Model.Size;
-        var grounded = _ctx.IsGrounded();
         var mv = _input.Move;
 
-        // 1) Ambiente: caída
-        if (!grounded)
+        // 1) Ambiente: caída 
+        if (!_ctx.IsGrounded())
         {
             _sm.ChangeState(Fall);
             return;
         }
 
-        // 2) Space (hold): Smash (Head) > Attract (si hay target)
+        // 2) Space press => Smash (Head). Si el guard/SizeRules no dejan, sigue el flujo.
+        if (_input.ConsumeSpaceDown())
+        {
+            if (_sm.ChangeState(Smash)) return;
+        }
+
+        // 3) Space hold => Swing > Attract (según target frente)
         if (_input.IsSpaceHeld())
         {
-            if (size == Head)
+            if (_ctx.TryGetSwingTarget(out _)) // Small: el guard lo permite; otros tamaños lo bloquean
             {
-                _sm.ChangeState(Smash);
-                return;
+                if (_sm.ChangeState(Swing)) return;
             }
 
-            if (size == Normal)
+            if (_ctx.TryGetAttractTarget(out _)) // Normal: permitido; otros tamaños bloquean
             {
-                if (_ctx.TryGetAttractTarget(out _))
-                {
-                    _sm.ChangeState(Attract);
-                    return;
-                }
+                if (_sm.ChangeState(Attract)) return;
             }
         }
 
-        // 3) Edge: E / Q
+        // 4) Edge: E / Q
         if (_input.ConsumeShootDown())
         {
-            _sm.ChangeState(Shoot);
-            return;
+            if (_sm.ChangeState(Shoot)) return;
         }
 
         if (_input.ConsumeDropDown())
         {
-            _sm.ChangeState(DropBandage);
-            return;
+            if (_sm.ChangeState(DropBandage)) return;
         }
 
-        // 4) Movimiento base
+        // 5) Movimiento base
         if (Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone)
             _sm.ChangeState(Walk);
         else
