@@ -9,25 +9,34 @@ using static PlayerEnum.PlayerSize;
 [CreateAssetMenu(menuName = "MummysScape/MovementBySize")]
 public sealed class MovementBySizeConfig : ScriptableObject
 {
-    [Header("Normal")]
+    [Header("Normal")] 
     public float normalMove = 5f;
-    public float normalTurn = 12f;
+    public float normalTurn = 14f;
 
     [Header("Small")]
-    public float smallMove  = 6f;
-    public float smallTurn  = 14f;
+    public float smallMove = 7f;
+    public float smallTurn = 16f;
 
-    [Header("Head")]
-    public float headMove   = 4f;
-    public float headTurn   = 10f;
+    [Header("Head")] 
+    public float headMove = 5f;
+    public float headTurn = 14f;
 
     public void Get(PlayerSize size, out float move, out float turn)
     {
         switch (size)
         {
-            case Small: move = smallMove; turn = smallTurn; break;
-            case Head:  move = headMove;  turn = headTurn;  break;
-            default:               move = normalMove;turn = normalTurn; break;
+            case Small:
+                move = smallMove;
+                turn = smallTurn;
+                break;
+            case Head:
+                move = headMove;
+                turn = headTurn;
+                break;
+            default:
+                move = normalMove;
+                turn = normalTurn;
+                break;
         }
     }
 }

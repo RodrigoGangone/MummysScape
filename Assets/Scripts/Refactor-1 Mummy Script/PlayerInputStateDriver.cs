@@ -62,12 +62,14 @@ public class PlayerInputStateDriver : MonoBehaviour
         {
             if (_ctx.TryGetSwingTarget(out _)) // Small: el guard lo permite; otros tamaños lo bloquean
             {
-                if (_sm.ChangeState(Swing)) return;
+                _sm.ChangeState(Swing); 
+                return;
             }
 
             if (_ctx.TryGetAttractTarget(out _)) // Normal: permitido; otros tamaños bloquean
             {
-                if (_sm.ChangeState(Attract)) return;
+                _sm.ChangeState(Attract);
+                return;
             }
         }
 
