@@ -38,6 +38,7 @@ public class PlayerInputStateDriver : MonoBehaviour
         if (_sm == null) _sm = GetComponent<StateMachinePlayer>();
     }
 
+    //TODO: ver que hacer con los "if" previos a pasar de state,ya que provocan entrar al state 1 vez por frame.
     private void Update()
     {
         if (_ctx == null || _sm == null || _input == null) return;
@@ -84,9 +85,16 @@ public class PlayerInputStateDriver : MonoBehaviour
             if (_sm.ChangeState(DropBandage)) return;
         }
 
-        // 5) Movimiento base
+        // 5) Movimiento base + 
         if (Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone)
+        {
+            if (_ctx.TryGetPushTarget(out _ , out _))
+            {
+                _sm.ChangeState(Push); 
+                return;
+            }
             _sm.ChangeState(Walk);
+        }
         else
             _sm.ChangeState(Idle);
     }

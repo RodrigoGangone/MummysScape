@@ -44,6 +44,12 @@ public sealed class PlayerContext
         return (fwd * v + right * h).normalized;
     }
     
+    public bool TryGetPushTarget(out IPushable target, out PushInfo info)
+    {
+        target = null; info = default;
+        return _interactions != null && _interactions.TryFindPushable(Tf, out target, out info);
+    }
+    
     /// <summary>Target al frente para Attract (si existe InteractionRuntime). </summary>
     public bool TryGetAttractTarget(out IAttractable target)
     {

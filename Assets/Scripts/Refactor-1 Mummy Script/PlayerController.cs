@@ -34,7 +34,7 @@ public sealed class PlayerController : MonoBehaviour
         _sm = GetComponent<StateMachinePlayer>();
         _rb = GetComponent<Rigidbody>();
         _rb.interpolation = RigidbodyInterpolation.Interpolate;
-        _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY;
         
         _inputDriver = GetComponent<PlayerInputStateDriver>();
 
