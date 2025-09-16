@@ -31,23 +31,5 @@ public sealed class PlayerTransitionGuard : IStateTransitionGuard
 
         return true;
     }
-
-    /*public bool Can(Enum from, Enum to)
-    {
-        // Soporte inicial (sin estado previo): permitir el primer estado.
-        if (from is null) return true;
-
-        // Tipado fuerte esperado
-        if (from is not PlayerStateId f || to is not PlayerStateId t) return false;
-
-        // 1) Matriz de adyacencia
-        if (!TransitionRules.Can(f, t)) return false;
-
-        // 2) Reglas por tamaño (acción del estado destino)
-        var action = TransitionRules.ToAction(t);
-        if (!SizeRules.Can(_ctx.Model.Size, action)) return false;  // usa tu SizeRules actual :contentReference[oaicite:0]{index=0}
-
-        return true;
-    }*/
 }
 

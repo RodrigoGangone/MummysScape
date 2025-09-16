@@ -11,15 +11,15 @@ public sealed class MovementBySizeConfig : ScriptableObject
 {
     [Header("Normal")] 
     public float normalMove = 5f;
-    public float normalTurn = 14f;
+    public float normalTurn = 25f;
 
     [Header("Small")]
-    public float smallMove = 7f;
-    public float smallTurn = 16f;
+    public float smallMove = 8f;
+    public float smallTurn = 20f;
 
     [Header("Head")] 
     public float headMove = 5f;
-    public float headTurn = 14f;
+    public float headTurn = 20f;
 
     public void Get(PlayerSize size, out float move, out float turn)
     {

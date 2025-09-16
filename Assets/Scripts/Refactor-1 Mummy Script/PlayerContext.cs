@@ -44,6 +44,7 @@ public sealed class PlayerContext
         return (fwd * v + right * h).normalized;
     }
     
+    /// <summary>Target al frente para Push (si existe InteractionRuntime). </summary>
     public bool TryGetPushTarget(out IPushable target, out PushInfo info)
     {
         target = null; info = default;

@@ -28,6 +28,7 @@ public class StateMachinePlayer : MonoBehaviour
         }
     }
 
+    public Enum CurrentId()=> _currentId;
     public String getCurrentState() =>  (_currentState != null) ? _currentState.ToString() : NO_STATE;
     
     public bool ChangeState(Enum name)
