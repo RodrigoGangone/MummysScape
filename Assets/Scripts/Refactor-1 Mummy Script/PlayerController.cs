@@ -34,7 +34,7 @@ public sealed class PlayerController : MonoBehaviour
         _sm = GetComponent<StateMachinePlayer>();
         _rb = GetComponent<Rigidbody>();
         _rb.interpolation = RigidbodyInterpolation.Interpolate;
-        _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY;
+        _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         
         _inputDriver = GetComponent<PlayerInputStateDriver>();
 
@@ -61,8 +61,8 @@ public sealed class PlayerController : MonoBehaviour
         _sm.AddState(PlayerStateId.Shoot, new ShootState(_ctx));
         _sm.AddState(PlayerStateId.Smash, new SmashState(_ctx));
         _sm.AddState(PlayerStateId.DropBandage, new DropBandageState(_ctx, _bandagePickupPrefab));
-        _sm.AddState(PlayerStateId.Push, new PushState(_ctx));
-        _sm.AddState(PlayerStateId.Attract, new AttractState(_ctx, _interactions));
+        //_sm.AddState(PlayerStateId.Push, new PushState(_ctx));
+        //_sm.AddState(PlayerStateId.Attract, new AttractState(_ctx));
         //_sm.AddState(PlayerStateId.Swing, new SwingState(_ctx));
         //_sm.AddState(PlayerStateId.Dead, new DeadState(_ctx));
         

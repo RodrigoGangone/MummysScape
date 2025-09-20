@@ -7,21 +7,9 @@ using static PlayerEnum;
 /// </summary>
 public sealed class AttractState : State
 {
-    private readonly PlayerContext _ctx;
-    private readonly InteractionRuntime _interactions;
-    private IAttractable _target;
-    private Transform _targetTf;
-    private float _time;
-    private const float _maxTime = 1.0f; // seguridad para no quedar colgado
-
-    public AttractState(PlayerContext ctx, InteractionRuntime interactions)
-    { _ctx = ctx; _interactions = interactions; }
-
     public override void OnEnter()
     {
         Debug.Log("AttractState");
-
-        //TODO: esto por el momento esta debug. La idea seria que entre a este STATE luego de hacer match con el objeto y tenga el OKAY para poder pullearlo.
     }
 
     public override void OnUpdate() { }

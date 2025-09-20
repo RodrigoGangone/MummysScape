@@ -61,7 +61,7 @@ public class PlayerInputStateDriver : MonoBehaviour
         // 3) Space hold => Swing > Attract (según target frente)
         if (_input.IsSpaceHeld())
         {
-            if (_ctx.TryGetSwingTarget(out _)) // Small: el guard lo permite; otros tamaños lo bloquean
+            /*if (_ctx.TryGetSwingTarget(out _)) // Small: el guard lo permite; otros tamaños lo bloquean
             {
                 _sm.ChangeState(Swing); 
                 return;
@@ -71,7 +71,7 @@ public class PlayerInputStateDriver : MonoBehaviour
             {
                 _sm.ChangeState(Attract);
                 return;
-            }
+            }*/
         }
 
         // 4) Edge: E / Q
@@ -85,14 +85,9 @@ public class PlayerInputStateDriver : MonoBehaviour
             if (_sm.ChangeState(DropBandage)) return;
         }
 
-        // 5) Movimiento base + 
+        // 5) Movimientos: Walk & Idle 
         if (Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone)
         {
-            if (_ctx.TryGetPushTarget(out _ , out _))
-            {
-                _sm.ChangeState(Push); 
-                return;
-            }
             _sm.ChangeState(Walk);
         }
         else

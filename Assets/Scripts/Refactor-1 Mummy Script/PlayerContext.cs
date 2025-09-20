@@ -43,27 +43,4 @@ public sealed class PlayerContext
         fwd.y = 0f; right.y = 0f; fwd.Normalize(); right.Normalize();
         return (fwd * v + right * h).normalized;
     }
-    
-    /// <summary>Target al frente para Push (si existe InteractionRuntime). </summary>
-    public bool TryGetPushTarget(out IPushable target, out PushInfo info)
-    {
-        target = null; info = default;
-        return _interactions != null && _interactions.TryFindPushable(Tf, out target, out info);
-    }
-    
-    /// <summary>Target al frente para Attract (si existe InteractionRuntime). </summary>
-    public bool TryGetAttractTarget(out IAttractable target)
-    {
-        target = null;
-        if (_interactions == null) return false;
-        return _interactions.TryFindAttractable(Tf, out target, out _);
-    }
-
-    /// <summary>Target al frente para Swing (si existe InteractionRuntime). </summary>
-    public bool TryGetSwingTarget(out ISwingable target)
-    {
-        target = null;
-        if (_interactions == null) return false;
-        return _interactions.TryFindSwingable(Tf, out target, out _);
-    }
 }
