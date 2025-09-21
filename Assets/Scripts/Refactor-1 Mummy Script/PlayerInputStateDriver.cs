@@ -1,6 +1,5 @@
 using UnityEngine;
 using static PlayerEnum.PlayerStateId;
-using static PlayerEnum.PlayerSize;
 
 /// <summary>
 /// PlayerInputStateDriver
@@ -87,11 +86,8 @@ public class PlayerInputStateDriver : MonoBehaviour
         float moveSqr = mv.sqrMagnitude;
         bool wantsMove = moveSqr > (_moveDeadZone * _moveDeadZone);
 
-        var currentEnum = _sm.CurrentId();
-        PlayerEnum.PlayerStateId? currentId = currentEnum is PlayerEnum.PlayerStateId id ? id : null;
-
         bool canPush = false;
-        if (_ctx.Model.Size == Normal && wantsMove)
+        if (wantsMove)
         {
             canPush = _ctx.TryGetPushInfo(mv, out _);
         }
@@ -100,11 +96,14 @@ public class PlayerInputStateDriver : MonoBehaviour
             _ctx.ClearPushCache();
         }
 
+        var currentEnum = _sm.CurrentId();
+        PlayerEnum.PlayerStateId? currentId = currentEnum is PlayerEnum.PlayerStateId id ? id : null;
+
         if (currentId == PlayerEnum.PlayerStateId.Push)
         {
             if (canPush) return; // el estado se mantiene y gestiona su salida
         }
-        else if (canPush && (currentId == PlayerEnum.PlayerStateId.Idle || currentId == PlayerEnum.PlayerStateId.Walk))
+        else if (canPush)
         {
             if (_sm.ChangeState(Push)) return;
         }

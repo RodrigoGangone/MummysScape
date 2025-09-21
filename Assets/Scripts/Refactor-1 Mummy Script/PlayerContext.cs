@@ -56,8 +56,16 @@ public sealed class PlayerContext
         return _interactions.TryGetPushInfo(Tf, moveInput, worldMove, out info);
     }
 
-    public bool TryGetCachedPush(out PushInfo info) =>
-        _interactions != null && _interactions.TryGetCachedPush(out info);
+    public bool TryGetCachedPush(out PushInfo info)
+    {
+        if (_interactions == null)
+        {
+            info = default;
+            return false;
+        }
+
+        return _interactions.TryGetCachedPush(out info);
+    }
 
     public void ClearPushCache() => _interactions?.ClearPushCache();
 }
