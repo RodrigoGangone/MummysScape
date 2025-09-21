@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using static PlayerEnum.PlayerStateId;
 using static PlayerEnum.PlayerSize;
@@ -24,7 +23,7 @@ public class PlayerInputStateDriver : MonoBehaviour
     private StateMachinePlayer _sm;
     private PlayerContext _ctx;
     private IPlayerInput _input;
-    
+
 
     public void Bind(PlayerContext ctx, StateMachinePlayer sm)
     {
@@ -45,7 +44,7 @@ public class PlayerInputStateDriver : MonoBehaviour
 
         var mv = _input.Move;
 
-        // 1) Ambiente: caída 
+        // 1) Ambiente: caída
         if (!_ctx.IsGrounded())
         {
             _sm.ChangeState(Fall);
@@ -63,7 +62,7 @@ public class PlayerInputStateDriver : MonoBehaviour
         {
             /*if (_ctx.TryGetSwingTarget(out _)) // Small: el guard lo permite; otros tamaños lo bloquean
             {
-                _sm.ChangeState(Swing); 
+                _sm.ChangeState(Swing);
                 return;
             }
 
@@ -85,8 +84,32 @@ public class PlayerInputStateDriver : MonoBehaviour
             if (_sm.ChangeState(DropBandage)) return;
         }
 
-        // 5) Movimientos: Walk & Idle 
-        if (Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone)
+        float moveSqr = mv.sqrMagnitude;
+        bool wantsMove = moveSqr > (_moveDeadZone * _moveDeadZone);
+
+        var currentEnum = _sm.CurrentId();
+        PlayerEnum.PlayerStateId? currentId = currentEnum is PlayerEnum.PlayerStateId id ? id : null;
+
+        bool canPush = false;
+        if (_ctx.Model.Size == Normal && wantsMove)
+        {
+            canPush = _ctx.TryGetPushInfo(mv, out _);
+        }
+        else
+        {
+            _ctx.ClearPushCache();
+        }
+
+        if (currentId == PlayerEnum.PlayerStateId.Push)
+        {
+            if (canPush) return; // el estado se mantiene y gestiona su salida
+        }
+        else if (canPush && (currentId == PlayerEnum.PlayerStateId.Idle || currentId == PlayerEnum.PlayerStateId.Walk))
+        {
+            if (_sm.ChangeState(Push)) return;
+        }
+
+        if (wantsMove)
         {
             _sm.ChangeState(Walk);
         }
@@ -94,3 +117,4 @@ public class PlayerInputStateDriver : MonoBehaviour
             _sm.ChangeState(Idle);
     }
 }
+

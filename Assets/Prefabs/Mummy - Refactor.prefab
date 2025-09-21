@@ -376,12 +376,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1aff284bb4a70445bfd22db1adceb03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interactablesMask:
+  _bodyCollider: {fileID: 4263530151276915557}
+  _pushLayer:
     serializedVersion: 2
     m_Bits: 16777216
-  _frontRange: 5
-  _maxFaceAngleDeg: 25
-  _snapInset: 0.5
+  _rayLength: 1
+  _raySeparation: 0.5
+  _minForwardDot: 0.4
+  _playerFacePadding: 0.05
+  _drawGizmos: 1
+  _validColor: {r: 0.2, g: 1, b: 0.3, a: 0.9}
+  _invalidColor: {r: 1, g: 0.25, b: 0.25, a: 0.7}
 --- !u!54 &2259937421141407715
 Rigidbody:
   m_ObjectHideFlags: 0

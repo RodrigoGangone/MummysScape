@@ -43,4 +43,21 @@ public sealed class PlayerContext
         fwd.y = 0f; right.y = 0f; fwd.Normalize(); right.Normalize();
         return (fwd * v + right * h).normalized;
     }
+
+    public bool TryGetPushInfo(Vector2 moveInput, out PushInfo info)
+    {
+        if (_interactions == null)
+        {
+            info = default;
+            return false;
+        }
+
+        Vector3 worldMove = CameraRelativeDir(moveInput.x, moveInput.y);
+        return _interactions.TryGetPushInfo(Tf, moveInput, worldMove, out info);
+    }
+
+    public bool TryGetCachedPush(out PushInfo info) =>
+        _interactions != null && _interactions.TryGetCachedPush(out info);
+
+    public void ClearPushCache() => _interactions?.ClearPushCache();
 }
