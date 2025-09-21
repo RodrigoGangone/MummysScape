@@ -97,6 +97,20 @@ public sealed class BoxPushAttract : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Determina si el collider recibido pertenece a una cara empujable registrada.
+    /// </summary>
+    public bool IsFaceCollider(Collider faceCollider)
+    {
+        if (faceCollider == null)
+            return false;
+
+        if (_faces.Count == 0)
+            CacheFaces();
+
+        return _faces.ContainsKey(faceCollider);
+    }
+
     public void Move(Vector3 displacement)
     {
         if (displacement.sqrMagnitude <= 0f) return;

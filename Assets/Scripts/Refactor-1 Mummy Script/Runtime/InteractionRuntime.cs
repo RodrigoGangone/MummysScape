@@ -25,6 +25,8 @@ public sealed class InteractionRuntime : MonoBehaviour
     [SerializeField] private Color _validColor = new(0.2f, 1f, 0.3f, 0.9f);
     [SerializeField] private Color _invalidColor = new(1f, 0.25f, 0.25f, 0.7f);
 
+    private static readonly RaycastHit[] s_RaycastHits = new RaycastHit[8];
+
     private PushInfo? _cachedPush;
     private GizmoData _gizmo;
     private float _playerDistance;
@@ -89,8 +91,8 @@ public sealed class InteractionRuntime : MonoBehaviour
         Vector3 originRight = originCenter + halfOffset;
         Vector3 originLeft = originCenter - halfOffset;
 
-        bool hitRight = Physics.Raycast(originRight, forward, out var rayRight, _rayLength, _pushLayer, QueryTriggerInteraction.Collide);
-        bool hitLeft = Physics.Raycast(originLeft, forward, out var rayLeft, _rayLength, _pushLayer, QueryTriggerInteraction.Collide);
+        bool hitRight = TryFindFaceHit(originRight, forward, out var rayRight, out var rightBox);
+        bool hitLeft = TryFindFaceHit(originLeft, forward, out var rayLeft, out var leftBox);
 
         UpdateGizmo(originCenter, forward, right, rayLeft, hitLeft, rayRight, hitRight);
 
@@ -112,13 +114,13 @@ public sealed class InteractionRuntime : MonoBehaviour
             return false;
         }
 
-        var target = rayRight.collider.GetComponentInParent<BoxPushAttract>();
-        if (target == null || target != rayLeft.collider.GetComponentInParent<BoxPushAttract>())
+        if (rightBox != leftBox)
         {
             _cachedPush = null;
             return false;
         }
 
+        var target = rightBox;
         Vector3 contact = (rayLeft.point + rayRight.point) * 0.5f;
         if (!target.TryBuildInfo(rayRight.collider, _playerDistance, contact, out var built))
         {
@@ -166,6 +168,41 @@ public sealed class InteractionRuntime : MonoBehaviour
         _gizmo.rightHit = hitRight;
         _gizmo.leftPoint = hitLeft ? left.point : _gizmo.originLeft + forward * _rayLength;
         _gizmo.rightPoint = hitRight ? rightHit.point : _gizmo.originRight + forward * _rayLength;
+    }
+
+    /// <summary>
+    /// Busca el primer trigger válido de BoxPushAttract golpeado por el rayo, descartando colliders físicos.
+    /// </summary>
+    private bool TryFindFaceHit(Vector3 origin, Vector3 direction, out RaycastHit hit, out BoxPushAttract box)
+    {
+        hit = default;
+        box = null;
+
+        int hitCount = Physics.RaycastNonAlloc(origin, direction, s_RaycastHits, _rayLength, _pushLayer, QueryTriggerInteraction.Collide);
+        if (hitCount <= 0)
+            return false;
+
+        float bestDistance = float.MaxValue;
+        for (int i = 0; i < hitCount; i++)
+        {
+            var candidate = s_RaycastHits[i];
+            var collider = candidate.collider;
+            if (collider == null || !collider.isTrigger)
+                continue;
+
+            var attract = collider.GetComponentInParent<BoxPushAttract>();
+            if (attract == null || !attract.IsFaceCollider(collider))
+                continue;
+
+            if (candidate.distance >= bestDistance)
+                continue;
+
+            bestDistance = candidate.distance;
+            hit = candidate;
+            box = attract;
+        }
+
+        return box != null;
     }
 
     private void OnDrawGizmos()
