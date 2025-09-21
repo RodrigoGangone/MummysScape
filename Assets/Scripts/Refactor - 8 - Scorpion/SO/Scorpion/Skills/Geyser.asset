@@ -10,9 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: StageOne
-  m_EditorClassIdentifier: Assembly-CSharp::StageStatsSO
-  speedMultiplier: 1
-  damageMultiplier: 1
-  cooldownMultiplier: 1
-  aggression: 1
+  m_Name: Geyser
+  m_EditorClassIdentifier: Assembly-CSharp::GeyserSkill
+  baseCooldown: 3
+  conditions:
+  - {fileID: 11400000, guid: 2407eea52a2092d429e719558234474a, type: 2}

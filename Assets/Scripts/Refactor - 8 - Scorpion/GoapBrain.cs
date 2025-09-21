@@ -1,28 +1,33 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 /// <summary>
 /// Planner GOAP mínimo: devuelve una intención simbólica que el BossActor mapea a la FSM.
 /// </summary>
+// GoapBrain.cs
 public sealed class GoapBrain
 {
-    public string DecideNextIntent(in WorldModel wm, IBossContext ctx)
+    public string DecideNextIntent(in WorldModel wm, IBossContext ctx, BossSkillSO runtimePrimary, BossSkillSO runtimeSecondary)
     {
-        if (wm.Config == null) return "Idle";
+        bool aHas = wm.Config.PrimarySkill;
+        bool bHas = wm.Config.SecondarySkill;
+        
+        bool aReady = runtimePrimary != null && runtimePrimary.IsReady(Time.time, wm.Config, wm.StageIndex);
+        bool bReady = runtimeSecondary != null && runtimeSecondary.IsReady(Time.time, wm.Config, wm.StageIndex);
 
-        bool inSight = wm.DistanceBP <= wm.Config.sightRange && (wm.HasLineOfSight || wm.DistanceBP <= 1.25f);
-        if (!inSight) return "Idle"; // o "Search" si luego agregás ese estado
+        //f (wm.HasLineOfSight)
+        //
+            if (aReady) return "Primary";
+            if (bReady) return "Secondary";
 
-        bool inAttack = wm.DistanceBP <= wm.Config.attackRange;
+            // Tenés LoS pero no hay skills listas:
+            Debug.Log($"[GOAP] LoS=TRUE, Aready={aReady}, Bready={bReady} → Idle (cooldowns/condiciones)");
+            return "Idle";
+        
 
-        bool aReady = wm.Config.SkillA && wm.Config.SkillA.IsReady(Time.time, wm.Config, wm.StageIndex);
-        bool bReady = wm.Config.SkillB && wm.Config.SkillB.IsReady(Time.time, wm.Config, wm.StageIndex);
-
-        // Política simple: B cuando está un poco más lejos, A cuando está bien en rango
-        if (bReady && wm.DistanceBP <= wm.Config.attackRange * 1.2f) return "SkillB";
-        if (aReady && inAttack) return "SkillA";
-
-        if (wm.DistanceBP > wm.Config.attackRange) return "Chase";
+        // No hay LoS: explícitalo
+        Debug.Log("[GOAP] LoS=FALSE → Idle");
         return "Idle";
     }
 }

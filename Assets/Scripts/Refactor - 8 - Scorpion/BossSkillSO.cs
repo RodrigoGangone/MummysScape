@@ -55,18 +55,19 @@ public readonly struct WorldModel
 public abstract class BossSkillSO : ScriptableObject
 {
     [Header("Datos")]
-    [SerializeField] private string skillName = "UnnamedSkill";
     [SerializeField, Min(0f)] private float baseCooldown = 3f;
 
     [Header("Condiciones (todas deben cumplirse)")]
     [SerializeField] private SkillConditionSO[] conditions;
 
-    private float _lastUseTime = -999f;
+    private float _lastUseTime = -999;
 
     /// <summary> Devuelve true si el cooldown (ajustado por Stage) ya se cumplió. </summary>
     public bool IsReady(float now, BossConfigSO config, int stageIndex)
     {
+        
         float cd = GetCooldownForStage(config, stageIndex);
+        //Debug.Log(_lastUseTime + "BossSkillSO" + now);
         return now >= _lastUseTime + cd;
     }
 
@@ -105,8 +106,6 @@ public abstract class BossSkillSO : ScriptableObject
 
     /// <summary> Lógica específica de la habilidad. Evitar dependencias duras: usar IBossContext. </summary>
     protected abstract void Execute(in WorldModel wm, IBossContext ctx);
-
-    public override string ToString() => skillName;
 }
 
 /// <summary>
@@ -143,5 +142,23 @@ public sealed class StageRangeConditionSO : SkillConditionSO
     public override bool Evaluate(in WorldModel wm, IBossContext ctx)
         => wm.StageIndex >= minStage && wm.StageIndex <= maxStageInclusive;
 }
+
+/// <summary> Habilita la skill solo con un Size en especifico. </summary>
+[CreateAssetMenu(menuName = "Boss/Conditions/Player Size")]
+public sealed class PlayerSizeConditionSO : SkillConditionSO
+{
+    [SerializeField] private PlayerSize[] allowedSizes;
+    public override bool Evaluate(in WorldModel wm, IBossContext ctx) => Array.IndexOf(allowedSizes, ctx.Player.CurrentPlayerSize) >= 0;
+}
+
+
+/// <summary> Habilita la skill dependiendo donde este posicionado el Player. </summary>
+[CreateAssetMenu(menuName = "Boss/Conditions/Player in ground")]
+public sealed class PlayerGroundConditionSO : SkillConditionSO
+{
+    [SerializeField] private bool inGround;
+    public override bool Evaluate(in WorldModel wm, IBossContext ctx) => inGround == ctx.Player._modelPlayer.CheckGround();
+}
+
 
 #endregion

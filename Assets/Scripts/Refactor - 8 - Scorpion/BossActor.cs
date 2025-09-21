@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-
+using static BossCommonState;
 using System;
-using UnityEngine;
 
 /// <summary>
 /// Actor genérico del Jefe. Integra Config por Stages, GOAP, y tu FSM existente.
@@ -20,11 +17,11 @@ public sealed class BossActor : MonoBehaviour, IBossContext
     [SerializeField] private Player player;
     [SerializeField] private Animator animator;
 
-    [Header("FSM (tu implementación)")]
+    [Header("FSM")]
     public StateMachinePlayer stateMachine;
 
-    [Header("Percepción")]
-    [SerializeField] private LayerMask losObstacleMask = ~0; // Layers que bloquean la visión
+    [Header("Percepción")] [Tooltip("Layers que bloquean la visión")]
+    [SerializeField] private LayerMask losObstacleMask;
 
     [Header("Debug")]
     [SerializeField] private bool drawGizmos;
@@ -44,6 +41,9 @@ public sealed class BossActor : MonoBehaviour, IBossContext
     private float _time;              // cache Time.time
     private string _lastIntent = "";  // para evitar spam de triggers
 
+    private BossSkillSO _runtimePrimarySkill;
+    private BossSkillSO _runtimeSecondarySkill;
+    
     // Eventos opcionales
     public event Action<int> OnStageChanged;
     public event Action OnDeath;
@@ -54,15 +54,18 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (stateMachine == null) stateMachine = gameObject.AddComponent<StateMachinePlayer>();
 
+        _runtimePrimarySkill = config.PrimarySkill != null ? Instantiate(config.PrimarySkill) : null;
+        _runtimeSecondarySkill = config.SecondarySkill != null ? Instantiate(config.SecondarySkill) : null;
+        
         // Estados mínimos comunes (puedes renombrar a gusto en tu FSM):
-        stateMachine.AddState(BossCommonState.Entry, new BS_Entry(this));
-        stateMachine.AddState(BossCommonState.Idle, new BS_Idle(this));
-        stateMachine.AddState(BossCommonState.Chase, new BS_Chase(this));
-        stateMachine.AddState(BossCommonState.UseSkillA, new BS_UseSkillA(this));
-        stateMachine.AddState(BossCommonState.UseSkillB, new BS_UseSkillB(this));
-        stateMachine.AddState(BossCommonState.Die, new BS_Die(this));
+        stateMachine.AddState(Entry, new BS_Entry(this));
+        stateMachine.AddState(Idle, new BS_Idle(this));
+        stateMachine.AddState(Chase, new BS_Chase(this));
+        stateMachine.AddState(Primary, new BS_UseSkillA(this));
+        stateMachine.AddState(Secondary, new BS_UseSkillB(this));
+        stateMachine.AddState(Die, new BS_Die(this));
 
-        stateMachine.ChangeState(BossCommonState.Entry);
+        stateMachine.ChangeState(Entry);
 
         _goap = new GoapBrain();
         _stageIndex = 0;
@@ -75,7 +78,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
         // Decisión GOAP cada frame (con LOS precalculado)
         var wm = BuildWorldModel();
-        var intent = _goap.DecideNextIntent(wm, this);
+        var intent = _goap.DecideNextIntent(wm, this, _runtimePrimarySkill, _runtimeSecondarySkill);
 
         // Evitar “thrashing”: solo disparar si cambió
         if (intent != _lastIntent)
@@ -125,7 +128,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         return !Physics.Raycast(from + Vector3.up * losRayHeight, dir, dist, losObstacleMask, QueryTriggerInteraction.Ignore);
     }
 
-    public WorldModel BuildWorldModel()
+    private WorldModel BuildWorldModel()
     {
         bool los = HasLineOfSight(transform.position, player.transform.position);
         return new WorldModel(this, los);
@@ -135,48 +138,50 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     public bool TryUseSkillA()
     {
+        Debug.Log("TryExecuteA");
         var wm = BuildWorldModel();
-        return config.SkillA != null && config.SkillA.TryExecute(wm, this, _time);
+        return _runtimePrimarySkill != null && _runtimePrimarySkill.TryExecute(wm, this, _time);
     }
 
     public bool TryUseSkillB()
     {
+        Debug.Log("TryExecuteB");
         var wm = BuildWorldModel();
-        return config.SkillB != null && config.SkillB.TryExecute(wm, this, _time);
+        return _runtimeSecondarySkill != null && _runtimeSecondarySkill.TryExecute(wm, this, _time);
     }
+
 
     #endregion
 
-    #region IBossContext: TriggerFSM mapping
 
     /// <summary>
     /// Puente simbólico → tu FSM. Mapea el intent string a tus estados reales.
     /// </summary>
     public void TriggerFSM(string intentOrEvent)
     {
-            switch (intentOrEvent)
-            {
-                case "Entry":  stateMachine.ChangeState(BossCommonState.Entry); break;
-                case "Idle":   stateMachine.ChangeState(BossCommonState.Idle); break;
-                case "Chase":  stateMachine.ChangeState(BossCommonState.Chase); break;
-                case "SkillA": stateMachine.ChangeState(BossCommonState.UseSkillA); break;
-                case "SkillB": stateMachine.ChangeState(BossCommonState.UseSkillB); break;
-                case "Die":    stateMachine.ChangeState(BossCommonState.Die); break;
-                default:       Debug.LogWarning($"[BossActor] Intent desconocido: {intentOrEvent}"); break;
-            }     
+        switch (intentOrEvent)
+        {
+            case "Entry":  stateMachine.ChangeState(Entry); break;
+            case "Idle":   stateMachine.ChangeState(Idle); break;
+            case "Chase":  stateMachine.ChangeState(Chase); break;
+            case "Primary": stateMachine.ChangeState(Primary); break;
+            case "Secondary": stateMachine.ChangeState(Secondary); break;
+            case "Die":    stateMachine.ChangeState(Die); break;
+            default:       Debug.LogWarning($"[BossActor] Intent desconocido: {intentOrEvent}"); break;
+        }
+        _lastIntent = intentOrEvent; // ← sincroniza el “recuerdo” del planner con la FSM
     }
 
-    #endregion
 
     private void OnDrawGizmosSelected()
     {
-        if (!drawGizmos || config == null) return;
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, config.sightRange);
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, config.attackRange);
-        Gizmos.color = Color.gray;
-        Gizmos.DrawWireSphere(transform.position, config.loseSightRange);
+        //if (!drawGizmos || config == null) return;
+        //Gizmos.color = Color.yellow;
+        //Gizmos.DrawWireSphere(transform.position, config.sightRange);
+        //Gizmos.color = Color.red;
+        //Gizmos.DrawWireSphere(transform.position, config.attackRange);
+        //Gizmos.color = Color.gray;
+        //Gizmos.DrawWireSphere(transform.position, config.loseSightRange);
     }
 }
 
@@ -186,7 +191,7 @@ public enum BossCommonState
     Entry,
     Idle,
     Chase,
-    UseSkillA,
-    UseSkillB,
+    Primary,
+    Secondary,
     Die
 }
