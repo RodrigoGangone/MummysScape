@@ -9,9 +9,11 @@ using static PlayerEnum;
 /// </summary>
 public sealed class PushState : State
 {
-    private const float SnapLerpSpeed = 12f;
+    private const float SnapSmoothTime = 0.08f;
+    private const float SnapMaxSpeed = 5f;
     private readonly PlayerContext _ctx;
     private PushInfo _current;
+    private Vector2 _snapVelocity;
 
     public PushState(PlayerContext ctx) => _ctx = ctx;
 
@@ -26,7 +28,8 @@ public sealed class PushState : State
             }
         }
 
-        ForceSnap(_current);
+        _snapVelocity = Vector2.zero;
+        SnapToAnchor(_current, _current.PlayerAnchor, false);
         AlignRotation(_current, true);
         _ctx.View?.SetMoveSpeedVisual(0f);
     }
@@ -35,6 +38,7 @@ public sealed class PushState : State
     {
         _ctx.View?.SetMoveSpeedVisual(0f);
         _ctx.ClearPushCache();
+        _snapVelocity = Vector2.zero;
     }
 
     public override void OnUpdate() { }
@@ -105,10 +109,33 @@ public sealed class PushState : State
         var rb = _ctx.Rb;
         Vector3 currentPos = rb.position;
         Vector3 target = new(anchor.x, currentPos.y, anchor.z);
-        float t = instant ? 1f : Mathf.Clamp01(SnapLerpSpeed * Time.fixedDeltaTime);
-        Vector3 next = Vector3.Lerp(currentPos, target, t);
+        Vector2 currentXZ = new(currentPos.x, currentPos.z);
+        Vector2 targetXZ = new(target.x, target.z);
+
+        Vector2 nextXZ;
+        if (instant)
+        {
+            _snapVelocity = Vector2.zero;
+            nextXZ = targetXZ;
+        }
+        else
+        {
+            nextXZ = Vector2.SmoothDamp(
+                currentXZ,
+                targetXZ,
+                ref _snapVelocity,
+                SnapSmoothTime,
+                SnapMaxSpeed,
+                Time.fixedDeltaTime);
+
+            if ((targetXZ - nextXZ).sqrMagnitude <= 0.0004f)
+            {
+                nextXZ = targetXZ;
+                _snapVelocity = Vector2.zero;
+            }
+        }
+
+        Vector3 next = new(nextXZ.x, currentPos.y, nextXZ.y);
         rb.MovePosition(next);
     }
-
-    private void ForceSnap(in PushInfo info) => SnapToAnchor(info, info.PlayerAnchor, true);
 }
