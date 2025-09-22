@@ -95,9 +95,19 @@ public sealed class PushState : State
     private void AlignRotation(in PushInfo info, bool instant)
     {
         var rb = _ctx.Rb;
-        Vector3 forward = -info.FaceNormal;
-        if (forward.sqrMagnitude < 0.0001f) forward = rb.transform.forward;
-        Quaternion targetRot = Quaternion.LookRotation(forward, Vector3.up);
+        Vector3 forward = info.BoxHorizontalCenter - rb.position;
+        forward.y = 0f;
+        if (forward.sqrMagnitude < 0.0001f)
+        {
+            forward = -info.FaceNormal;
+        }
+
+        if (forward.sqrMagnitude < 0.0001f)
+        {
+            forward = rb.transform.forward;
+        }
+
+        Quaternion targetRot = Quaternion.LookRotation(forward.normalized, Vector3.up);
         Quaternion result = instant
             ? targetRot
             : Quaternion.Slerp(rb.rotation, targetRot, Mathf.Clamp01(_ctx.TurnSpeed * Time.fixedDeltaTime));

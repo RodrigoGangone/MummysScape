@@ -68,7 +68,7 @@ public sealed class BoxPushAttract : MonoBehaviour
         normalWorld = Vector3.ProjectOnPlane(normalWorld, Vector3.up).normalized;
         if (normalWorld.sqrMagnitude < 0.0001f) normalWorld = Vector3.forward;
 
-        Vector3 axisWorld = normalWorld; // Se mueve en la misma dirección que la normal (±X o ±Z).
+        Vector3 axisWorld = -normalWorld; // La caja avanza alejándose del jugador (±X o ±Z).
         Vector3 faceCenter = trigger.bounds.center;
 
         return new FaceData(trigger, normalWorld, axisWorld, faceCenter);
@@ -89,12 +89,28 @@ public sealed class BoxPushAttract : MonoBehaviour
     {
         if (_faces.TryGetValue(faceCollider, out var face))
         {
-            info = new PushInfo(this, faceCollider, face.Normal, face.Axis, face.FaceCenter, contactPoint, Mathf.Max(0f, playerDistance));
+            info = new PushInfo(
+                this,
+                faceCollider,
+                face.Normal,
+                face.Axis,
+                face.FaceCenter,
+                contactPoint,
+                Mathf.Max(0f, playerDistance),
+                GetHorizontalCenter());
             return true;
         }
 
         info = default;
         return false;
+    }
+
+    /// <summary>
+    /// Centro del volumen principal de la caja (los consumidores pueden proyectarlo a XZ).
+    /// </summary>
+    public Vector3 GetHorizontalCenter()
+    {
+        return _mainCollider != null ? _mainCollider.bounds.center : transform.position;
     }
 
     /// <summary>

@@ -4,7 +4,8 @@ using UnityEngine;
 /// PushInfo
 /// Paquete de datos inmutable sobre un empuje válido contra un BoxPushAttract.
 /// Incluye la cara tocada, su normal proyectada al plano XZ, el eje permitido
-/// (±X o ±Z), el centro de la cara y cuánto debe separarse el jugador.
+/// (±X o ±Z), el centro de la cara, el centro horizontal de la caja y cuánto
+/// debe separarse el jugador.
 /// </summary>
 public readonly struct PushInfo
 {
@@ -15,6 +16,7 @@ public readonly struct PushInfo
     public readonly Vector3 FaceCenter;
     public readonly Vector3 ContactPoint;
     public readonly float PlayerDistance;
+    public readonly Vector3 BoxHorizontalCenter;
 
     public PushInfo(
         BoxPushAttract target,
@@ -23,7 +25,8 @@ public readonly struct PushInfo
         Vector3 moveAxis,
         Vector3 faceCenter,
         Vector3 contactPoint,
-        float playerDistance)
+        float playerDistance,
+        Vector3 boxHorizontalCenter)
     {
         Target = target;
         FaceCollider = faceCollider;
@@ -32,8 +35,9 @@ public readonly struct PushInfo
         FaceCenter = faceCenter;
         ContactPoint = contactPoint;
         PlayerDistance = playerDistance;
+        BoxHorizontalCenter = boxHorizontalCenter;
     }
 
     /// <summary>Posición deseada del pivot del jugador a la distancia indicada.</summary>
-    public Vector3 PlayerAnchor => FaceCenter - FaceNormal * PlayerDistance;
+    public Vector3 PlayerAnchor => FaceCenter + FaceNormal * PlayerDistance;
 }
