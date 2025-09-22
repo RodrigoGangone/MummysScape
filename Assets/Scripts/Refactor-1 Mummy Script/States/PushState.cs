@@ -1,5 +1,5 @@
+using System;
 using UnityEngine;
-using static PlayerEnum;
 
 /// <summary>
 /// PushState
@@ -9,23 +9,60 @@ using static PlayerEnum;
 /// </summary>
 public sealed class PushState : State
 {
+    private const float RotationLerpSpeed = 12f;
+
+    private readonly PlayerContext _ctx;
+
+    private PushInfo _info;
+
+    public PushState(PlayerContext ctx)
+    {
+        _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
+    }
+
+    public void SetPushInfo(PushInfo info) => _info = info;
+
     public override void OnEnter()
     {
-        throw new System.NotImplementedException();
+        AlignRotation(0f);
     }
 
     public override void OnExit()
     {
-        throw new System.NotImplementedException();
+        _info = default;
     }
 
     public override void OnUpdate()
     {
-        throw new System.NotImplementedException();
+        AlignRotation(Time.deltaTime);
     }
 
     public override void OnFixedUpdate()
     {
-        throw new System.NotImplementedException();
+    }
+
+    private void AlignRotation(float deltaTime)
+    {
+        if (_ctx?.Tf == null || _info.Pushable == null)
+        {
+            return;
+        }
+
+        Vector3 direction = _info.GetHorizontalDirectionFrom(_ctx.Tf.position);
+        if (direction == Vector3.zero)
+        {
+            direction = -_info.FaceNormal;
+            direction.y = 0f;
+            if (direction.sqrMagnitude <= Mathf.Epsilon)
+            {
+                return;
+            }
+
+            direction.Normalize();
+        }
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
+        float lerpFactor = deltaTime > 0f ? Mathf.Clamp01(deltaTime * RotationLerpSpeed) : 1f;
+        _ctx.Tf.rotation = Quaternion.Slerp(_ctx.Tf.rotation, targetRotation, lerpFactor);
     }
 }
