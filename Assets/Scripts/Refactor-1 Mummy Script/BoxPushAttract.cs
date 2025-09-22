@@ -5,7 +5,9 @@ using UnityEngine;
 /// BoxPushAttract
 /// Resuelve la cara activa de una caja empujable (colliders hijo con trigger)
 /// y entrega PushInfo con la normal proyectada al plano XZ y el eje de
-/// desplazamiento (±X o ±Z). También aplica el movimiento usando Rigidbody.
+/// desplazamiento (±X o ±Z). Expone TryMoveAlongAxis para trasladar la caja
+/// bloqueando paredes mediante BoxCast y aplica el movimiento con Rigidbody
+/// o transform.
 /// </summary>
 public sealed class BoxPushAttract : MonoBehaviour
 {
@@ -13,22 +15,30 @@ public sealed class BoxPushAttract : MonoBehaviour
     [SerializeField] private Rigidbody _rigidbody;
     [SerializeField] private BoxCollider _mainCollider;
 
+    [Header("Movement Constraints")]
+    [SerializeField] private LayerMask _obstacleMask;
+    [SerializeField, Range(0f, 0.2f)] private float _castPadding = 0.02f;
+    [SerializeField, Range(0f, 1f)] private float _minBlockNormalDot = 0.35f;
+
     [Header("Debug")]
     [SerializeField] private bool _drawFaceGizmos;
     [SerializeField] private Color _faceGizmoColor = new(0.2f, 0.6f, 1f, 0.65f);
 
     private readonly Dictionary<Collider, FaceData> _faces = new();
+    private static readonly RaycastHit[] s_BoxCastHits = new RaycastHit[8];
 
     private void Reset()
     {
         _rigidbody = GetComponent<Rigidbody>();
         _mainCollider = GetComponent<BoxCollider>();
+        if (_obstacleMask == 0) _obstacleMask = DefaultObstacleMask();
     }
 
     private void Awake()
     {
         if (_rigidbody == null) _rigidbody = GetComponent<Rigidbody>();
         if (_mainCollider == null) _mainCollider = GetComponent<BoxCollider>();
+        if (_obstacleMask == 0) _obstacleMask = DefaultObstacleMask();
         CacheFaces();
     }
 
@@ -37,6 +47,7 @@ public sealed class BoxPushAttract : MonoBehaviour
     {
         if (_rigidbody == null) _rigidbody = GetComponent<Rigidbody>();
         if (_mainCollider == null) _mainCollider = GetComponent<BoxCollider>();
+        if (_obstacleMask == 0) _obstacleMask = DefaultObstacleMask();
         CacheFaces();
     }
 #endif
@@ -127,10 +138,44 @@ public sealed class BoxPushAttract : MonoBehaviour
         return _faces.ContainsKey(faceCollider);
     }
 
+    /// <summary>
+    /// Intenta desplazar la caja siguiendo un eje horizontal (±X o ±Z).
+    /// Respeta colisiones frontales usando BoxCast; retorna false si no se movió.
+    /// </summary>
+    public bool TryMoveAlongAxis(Vector3 axis, float distance, out Vector3 displacement)
+    {
+        displacement = Vector3.zero;
+
+        if (distance <= 0f)
+            return false;
+
+        Vector3 snappedAxis = SnapToAxis(axis);
+        if (snappedAxis.sqrMagnitude < 0.5f)
+            return false;
+
+        Vector3 direction = snappedAxis.normalized;
+        float allowedDistance = ComputeAllowedDistance(direction, distance);
+        if (allowedDistance <= 0f)
+            return false;
+
+        displacement = direction * allowedDistance;
+        ApplyDisplacement(displacement);
+        return true;
+    }
+
+    /// <summary>
+    /// Mantiene compatibilidad moviendo sin validaciones externas.
+    /// </summary>
     public void Move(Vector3 displacement)
     {
-        if (displacement.sqrMagnitude <= 0f) return;
+        if (displacement.sqrMagnitude <= 0f)
+            return;
 
+        ApplyDisplacement(displacement);
+    }
+
+    private void ApplyDisplacement(Vector3 displacement)
+    {
         if (_rigidbody != null)
         {
             _rigidbody.velocity = Vector3.zero;
@@ -142,6 +187,70 @@ public sealed class BoxPushAttract : MonoBehaviour
             transform.position += displacement;
         }
     }
+
+    private float ComputeAllowedDistance(Vector3 direction, float requestedDistance)
+    {
+        if (_mainCollider == null)
+            return requestedDistance;
+
+        if (requestedDistance <= 0f)
+            return 0f;
+
+        Transform colTransform = _mainCollider.transform;
+        Quaternion orientation = colTransform.rotation;
+        Vector3 halfExtents = Vector3.Scale(_mainCollider.size * 0.5f, AbsVector(colTransform.lossyScale));
+        halfExtents = Vector3.Max(halfExtents - Vector3.one * _castPadding, Vector3.one * 0.001f);
+        Vector3 origin = colTransform.TransformPoint(_mainCollider.center);
+
+        float castDistance = requestedDistance + _castPadding;
+        float allowedDistance = requestedDistance;
+        int hitCount = Physics.BoxCastNonAlloc(
+            origin,
+            halfExtents,
+            direction,
+            s_BoxCastHits,
+            orientation,
+            castDistance,
+            _obstacleMask,
+            QueryTriggerInteraction.Ignore);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            var hit = s_BoxCastHits[i];
+            var collider = hit.collider;
+            if (collider == null)
+                continue;
+
+            if (collider.transform == colTransform)
+                continue;
+
+            if (collider.transform.IsChildOf(transform))
+                continue;
+
+            if (collider.attachedRigidbody != null && collider.attachedRigidbody == _rigidbody)
+                continue;
+
+            if (collider.isTrigger)
+                continue;
+
+            float facing = Vector3.Dot(hit.normal, -direction);
+            if (facing < _minBlockNormalDot)
+                continue;
+
+            float candidate = Mathf.Max(0f, hit.distance - _castPadding);
+            if (candidate < allowedDistance)
+                allowedDistance = candidate;
+        }
+
+        return Mathf.Clamp(allowedDistance, 0f, requestedDistance);
+    }
+
+    private static Vector3 AbsVector(Vector3 v)
+    {
+        return new Vector3(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));
+    }
+
+    private static int DefaultObstacleMask() => Physics.DefaultRaycastLayers;
 
     private void OnDrawGizmosSelected()
     {

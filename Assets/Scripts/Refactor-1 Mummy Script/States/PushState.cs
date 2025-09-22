@@ -5,7 +5,8 @@ using static PlayerEnum;
 /// PushState
 /// Mantiene el ciclo de empuje: valida contacto en InteractionRuntime,
 /// proyecta el input al eje permitido (±X o ±Z), traslada la caja con
-/// BoxPushAttract y mantiene al jugador centrado frente a la cara.
+/// BoxPushAttract (TryMoveAlongAxis) respetando bloqueos frontales y mantiene
+/// al jugador centrado frente a la cara.
 /// </summary>
 public sealed class PushState : State
 {
@@ -85,11 +86,26 @@ public sealed class PushState : State
 
         float pushStrength = inputMagnitude * Mathf.Clamp01(forwardDot);
         float distance = _ctx.MoveSpeed * pushStrength * Time.fixedDeltaTime;
-        Vector3 displacement = info.MoveAxis * distance;
+        if (distance <= 0f)
+        {
+            SnapToAnchor(info, info.PlayerAnchor, false);
+            _ctx.View?.SetMoveSpeedVisual(0f);
+            return;
+        }
 
-        info.Target.Move(displacement);
-        SnapToAnchor(info, info.PlayerAnchor + displacement, false);
-        _ctx.View?.SetMoveSpeedVisual(pushStrength);
+        if (info.Target.TryMoveAlongAxis(info.MoveAxis, distance, out var boxDisplacement))
+        {
+            SnapToAnchor(info, info.PlayerAnchor + boxDisplacement, false);
+            float travelledRatio = boxDisplacement.sqrMagnitude > 0f
+                ? Mathf.Clamp01(boxDisplacement.magnitude / distance)
+                : 0f;
+            _ctx.View?.SetMoveSpeedVisual(pushStrength * travelledRatio);
+        }
+        else
+        {
+            SnapToAnchor(info, info.PlayerAnchor, false);
+            _ctx.View?.SetMoveSpeedVisual(0f);
+        }
     }
 
     private void AlignRotation(in PushInfo info, bool instant)
