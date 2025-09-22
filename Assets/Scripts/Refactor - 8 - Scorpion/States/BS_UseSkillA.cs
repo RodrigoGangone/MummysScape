@@ -12,8 +12,7 @@ public sealed class BS_UseSkillA : State
     public override void OnEnter()
     {
         _fired = _actor.TryUseSkillA();
-        // Si la skill dispara una animación, dejá que la anim llame un evento y desde allí vuelvas a Idle.
-        // Para simplificar, si no hay anim, volvemos pronto:
+        
         if (!_fired)
             _actor.TriggerFSM("Idle");
         else

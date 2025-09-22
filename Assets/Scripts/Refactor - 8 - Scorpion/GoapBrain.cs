@@ -10,24 +10,20 @@ public sealed class GoapBrain
 {
     public string DecideNextIntent(in WorldModel wm, IBossContext ctx, BossSkillSO runtimePrimary, BossSkillSO runtimeSecondary)
     {
-        bool aHas = wm.Config.PrimarySkill;
-        bool bHas = wm.Config.SecondarySkill;
-        
-        bool aReady = runtimePrimary != null && runtimePrimary.IsReady(Time.time, wm.Config, wm.StageIndex);
-        bool bReady = runtimeSecondary != null && runtimeSecondary.IsReady(Time.time, wm.Config, wm.StageIndex);
+        bool aValid = runtimePrimary != null && runtimePrimary.CanExecute(wm, ctx, Time.time);
+        bool bValid = runtimeSecondary != null && runtimeSecondary.CanExecute(wm, ctx, Time.time);
 
-        //f (wm.HasLineOfSight)
-        //
-            if (aReady) return "Primary";
-            if (bReady) return "Secondary";
+        if (aValid && bValid) 
+            return "Primary"; 
 
-            // Tenés LoS pero no hay skills listas:
-            Debug.Log($"[GOAP] LoS=TRUE, Aready={aReady}, Bready={bReady} → Idle (cooldowns/condiciones)");
-            return "Idle";
-        
+        if (aValid)
+            return "Primary";
 
-        // No hay LoS: explícitalo
-        Debug.Log("[GOAP] LoS=FALSE → Idle");
+        if (bValid)
+            return "Secondary";
+
+        Debug.Log($"[GOAP] A y B no disponibles → Idle");
         return "Idle";
     }
+
 }

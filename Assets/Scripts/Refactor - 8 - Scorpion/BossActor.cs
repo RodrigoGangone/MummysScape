@@ -57,7 +57,6 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         _runtimePrimarySkill = config.PrimarySkill != null ? Instantiate(config.PrimarySkill) : null;
         _runtimeSecondarySkill = config.SecondarySkill != null ? Instantiate(config.SecondarySkill) : null;
         
-        // Estados mínimos comunes (puedes renombrar a gusto en tu FSM):
         stateMachine.AddState(Entry, new BS_Entry(this));
         stateMachine.AddState(Idle, new BS_Idle(this));
         stateMachine.AddState(Chase, new BS_Chase(this));
@@ -76,7 +75,6 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         _time = Time.time;
         if (player == null || config == null || config.StageCount == 0) return;
 
-        // Decisión GOAP cada frame (con LOS precalculado)
         var wm = BuildWorldModel();
         var intent = _goap.DecideNextIntent(wm, this, _runtimePrimarySkill, _runtimeSecondarySkill);
 
@@ -106,15 +104,14 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         if (_stageIndex >= config.StageCount)
         {
             // Sin más stages: muerte
-            _stageIndex = config.StageCount; // clamp
+            _stageIndex = config.StageCount;
             TriggerFSM("Die");
             OnDeath?.Invoke();
-            enabled = false; // apagar Actor
+            enabled = false;
         }
         else
         {
             OnStageChanged?.Invoke(_stageIndex);
-            // Puedes disparar un trigger de transición visual aquí si querés
         }
     }
 
@@ -170,18 +167,6 @@ public sealed class BossActor : MonoBehaviour, IBossContext
             default:       Debug.LogWarning($"[BossActor] Intent desconocido: {intentOrEvent}"); break;
         }
         _lastIntent = intentOrEvent; // ← sincroniza el “recuerdo” del planner con la FSM
-    }
-
-
-    private void OnDrawGizmosSelected()
-    {
-        //if (!drawGizmos || config == null) return;
-        //Gizmos.color = Color.yellow;
-        //Gizmos.DrawWireSphere(transform.position, config.sightRange);
-        //Gizmos.color = Color.red;
-        //Gizmos.DrawWireSphere(transform.position, config.attackRange);
-        //Gizmos.color = Color.gray;
-        //Gizmos.DrawWireSphere(transform.position, config.loseSightRange);
     }
 }
 

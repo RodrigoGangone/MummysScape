@@ -14,11 +14,6 @@ public sealed class BossConfigSO : ScriptableObject
     [SerializeField] private BossSkillSO primarySkill;
     [SerializeField] private BossSkillSO secondarySkill;
 
-    [Header("Percepción")]
-    [Min(0f)] public float sightRange = 15f;
-    [Min(0f)] public float attackRange = 4f;
-    [Min(0f)] public float loseSightRange = 18f;
-
     [Header("Movimiento")]
     [SerializeField] private MovementMode movementMode;
     [SerializeField, Min(0f)] private float baseMoveSpeed = 3f;

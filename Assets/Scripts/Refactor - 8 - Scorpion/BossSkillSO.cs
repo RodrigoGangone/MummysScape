@@ -12,14 +12,8 @@ public interface IBossContext
     Animator Animator { get; }
     GameObject GameObject { get; }
     Player Player { get; }
-
-    // Señal “simbólica” para tu FSM existente (StateMachine).
     void TriggerFSM(string intentOrEvent);
-
-    // Lectura del stage actual (0..N-1).
     int CurrentStageIndex { get; }
-
-    // Acceso a la configuración viva del Boss.
     BossConfigSO Config { get; }
 }
 
@@ -63,7 +57,7 @@ public abstract class BossSkillSO : ScriptableObject
     private float _lastUseTime = -999;
 
     /// <summary> Devuelve true si el cooldown (ajustado por Stage) ya se cumplió. </summary>
-    public bool IsReady(float now, BossConfigSO config, int stageIndex)
+    private bool IsReady(float now, BossConfigSO config, int stageIndex)
     {
         
         float cd = GetCooldownForStage(config, stageIndex);
@@ -71,39 +65,52 @@ public abstract class BossSkillSO : ScriptableObject
         return now >= _lastUseTime + cd;
     }
 
+    /// <summary>
+    /// Evalúa si esta skill puede ejecutarse (cooldown + condiciones + lógica adicional).
+    /// NO ejecuta, NO consume cooldown.
+    /// </summary>
+    public bool CanExecute(in WorldModel wm, IBossContext ctx, float now)
+    {
+        if (!IsReady(now, wm.Config, wm.StageIndex))
+            return false;
+
+        if (conditions != null)
+        {
+            foreach (var c in conditions)
+                if (c != null && !c.Evaluate(wm, ctx))
+                    return false;
+        }
+
+        return CanExecuteExtra(wm, ctx);
+    }
+
+    
     /// <summary> Consulta el cooldown específico desde StageStats (si hay mapping), o usa baseCooldown. </summary>
-    protected virtual float GetCooldownForStage(BossConfigSO config, int stageIndex)
+    private float GetCooldownForStage(BossConfigSO config, int stageIndex)
     {
         var stats = config?.GetStage(stageIndex);
         if (stats == null) return baseCooldown;
 
-        // Por defecto, usa un multiplicador general. Si luego querés mapear por-skill, lo ampliamos.
         return Mathf.Max(0f, baseCooldown * stats.cooldownMultiplier);
     }
 
     /// <summary> Hook para condiciones propias de la skill que no viven en SOs reutilizables. </summary>
-    protected virtual bool CanExecuteExtra(in WorldModel wm, IBossContext ctx) => true;
+    protected bool CanExecuteExtra(in WorldModel wm, IBossContext ctx) => true;
 
     /// <summary> Intenta ejecutar la skill (verifica cooldown + condiciones). </summary>
+    /// <summary>
+    /// Intenta ejecutar la skill. Si pasa todos los chequeos, la ejecuta y entra en cooldown.
+    /// </summary>
     public bool TryExecute(in WorldModel wm, IBossContext ctx, float now)
     {
-        if (!IsReady(now, wm.Config, wm.StageIndex)) return false;
-
-        // Eval de condiciones componibles
-        if (conditions != null)
-        {
-            for (int i = 0; i < conditions.Length; i++)
-                if (conditions[i] != null && !conditions[i].Evaluate(wm, ctx))
-                    return false;
-        }
-
-        if (!CanExecuteExtra(wm, ctx)) return false;
+        if (!CanExecute(wm, ctx, now))
+            return false;
 
         Execute(wm, ctx);
         _lastUseTime = now;
         return true;
     }
-
+    
     /// <summary> Lógica específica de la habilidad. Evitar dependencias duras: usar IBossContext. </summary>
     protected abstract void Execute(in WorldModel wm, IBossContext ctx);
 }
@@ -139,8 +146,7 @@ public sealed class StageRangeConditionSO : SkillConditionSO
 {
     [SerializeField, Min(0)] private int minStage = 0;
     [SerializeField, Min(0)] private int maxStageInclusive = 99;
-    public override bool Evaluate(in WorldModel wm, IBossContext ctx)
-        => wm.StageIndex >= minStage && wm.StageIndex <= maxStageInclusive;
+    public override bool Evaluate(in WorldModel wm, IBossContext ctx) => wm.StageIndex >= minStage && wm.StageIndex <= maxStageInclusive;
 }
 
 /// <summary> Habilita la skill solo con un Size en especifico. </summary>
@@ -151,7 +157,6 @@ public sealed class PlayerSizeConditionSO : SkillConditionSO
     public override bool Evaluate(in WorldModel wm, IBossContext ctx) => Array.IndexOf(allowedSizes, ctx.Player.CurrentPlayerSize) >= 0;
 }
 
-
 /// <summary> Habilita la skill dependiendo donde este posicionado el Player. </summary>
 [CreateAssetMenu(menuName = "Boss/Conditions/Player in ground")]
 public sealed class PlayerGroundConditionSO : SkillConditionSO
@@ -159,6 +164,5 @@ public sealed class PlayerGroundConditionSO : SkillConditionSO
     [SerializeField] private bool inGround;
     public override bool Evaluate(in WorldModel wm, IBossContext ctx) => inGround == ctx.Player._modelPlayer.CheckGround();
 }
-
 
 #endregion
