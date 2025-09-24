@@ -132,16 +132,6 @@ public sealed class InteractionRuntime : MonoBehaviour
             return false;
         }
 
-        if (box.IsMoving)
-        {
-            if (recordDebug)
-            {
-                _debugHasValidHit = false;
-            }
-
-            return false;
-        }
-
         if (recordDebug)
         {
             _debugHasValidHit = true;
