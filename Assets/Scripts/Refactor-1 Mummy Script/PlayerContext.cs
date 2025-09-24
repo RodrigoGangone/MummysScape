@@ -45,7 +45,11 @@ public sealed class PlayerContext
     }
 
     public bool TryGetPushTarget(out BoxPushAttract box, out BoxPushAttract.PushFace face)
-        => _interactions != null && _interactions.TryGetPushTarget(out box, out face);
+    {
+        box = null;
+        face = BoxPushAttract.PushFace.Forward;
+        return _interactions != null && _interactions.TryGetPushTarget(out box, out face);
+    }
 
     public InteractionRuntime Interactions => _interactions;
 }
