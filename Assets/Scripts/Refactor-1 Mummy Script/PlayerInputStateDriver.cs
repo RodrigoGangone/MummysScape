@@ -10,7 +10,9 @@ using static PlayerEnum.PlayerSize;
 /// 1) Ambiente: Fall si no está en suelo.
 /// 2) Space (hold): Head->Smash; si no, Attract si hay target al frente.
 /// 3) Edge: E->Shoot; Q->DropBandage.
-/// 4) Movimiento: Walk/Idle según deadzone.
+/// 4) Push: si ambos raycast detectan una cara válida y hay input, entra en Push.
+/// 5) Movimiento: Walk/Idle según deadzone.
+/// 6) Idle fallback cuando no hay input.
 /// Todas las transiciones pasan por el Guard (TransitionRules + SizeRules).
 /// </summary>
 
@@ -85,12 +87,28 @@ public class PlayerInputStateDriver : MonoBehaviour
             if (_sm.ChangeState(DropBandage)) return;
         }
 
-        // 5) Movimientos: Walk & Idle 
-        if (Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone)
+        // 5) Push: mantener el estado si hay objetivo válido frente.
+        bool wantsMove = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
+
+        if (wantsMove && _ctx.TryGetPushTarget(out _, out _))
+        {
+            var current = _sm.CurrentId();
+            if (current is PlayerEnum.PlayerStateId currentId && currentId == Push)
+            {
+                return;
+            }
+
+            if (_sm.ChangeState(Push)) return;
+        }
+
+        // 6) Movimientos: Walk & Idle
+        if (wantsMove)
         {
             _sm.ChangeState(Walk);
         }
         else
+        {
             _sm.ChangeState(Idle);
+        }
     }
 }
