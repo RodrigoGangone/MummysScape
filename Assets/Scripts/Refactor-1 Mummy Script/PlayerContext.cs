@@ -43,4 +43,18 @@ public sealed class PlayerContext
         fwd.y = 0f; right.y = 0f; fwd.Normalize(); right.Normalize();
         return (fwd * v + right * h).normalized;
     }
+
+    public bool TryGetPushTarget(out BoxPushAttract box, out BoxPushAttract.PushFace face)
+    {
+        if (_interactions != null && _interactions.TryGetPushTarget(out box, out face))
+        {
+            return true;
+        }
+
+        box = null;
+        face = default;
+        return false;
+    }
+
+    public InteractionRuntime Interactions => _interactions;
 }
