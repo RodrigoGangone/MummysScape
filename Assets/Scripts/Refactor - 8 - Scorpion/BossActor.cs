@@ -20,11 +20,8 @@ public sealed class BossActor : MonoBehaviour, IBossContext
     [Header("FSM")]
     public StateMachinePlayer stateMachine;
 
-    [Header("Percepción")] [Tooltip("Layers que bloquean la visión")]
+    [Header("Percepción")] [Tooltip("Layers que bloquean la visión y largo del LoS")]
     [SerializeField] private LayerMask losObstacleMask;
-
-    [Header("Debug")]
-    [SerializeField] private bool drawGizmos;
     [SerializeField] private float losRayHeight = 1.5f;
 
     // IBossContext
@@ -40,9 +37,24 @@ public sealed class BossActor : MonoBehaviour, IBossContext
     private int _stageIndex;          // 0..N-1
     private float _time;              // cache Time.time
     private string _lastIntent = "";  // para evitar spam de triggers
-
+    
     private BossSkillSO _runtimePrimarySkill;
     private BossSkillSO _runtimeSecondarySkill;
+
+    private bool _isEntry;
+    public bool IsEntry => _isEntry = true;
+    public void NotifyEntryEnded() => _isEntry = false;
+
+    public bool IsExecutingSkill { get; private set; }
+    public void NotifySkillStarted() => IsExecutingSkill = true;
+    public void NotifySkillEnded() => IsExecutingSkill = false;
+
+    public bool IsDamaged { get; private set; }
+    private void NotifyDamaged() => IsDamaged = true;
+    public void NotifyRecovery() => IsDamaged = false;
+
+    public bool IsDie { get; private set; }
+    private void NotifyDie() => IsDie = true;
     
     // Eventos opcionales
     public event Action<int> OnStageChanged;
@@ -60,11 +72,13 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         stateMachine.AddState(Entry, new BS_Entry(this));
         stateMachine.AddState(Idle, new BS_Idle(this));
         stateMachine.AddState(Chase, new BS_Chase(this));
+        stateMachine.AddState(Damaged, new BS_Damaged(this));
         stateMachine.AddState(Primary, new BS_UseSkillA(this));
         stateMachine.AddState(Secondary, new BS_UseSkillB(this));
         stateMachine.AddState(Die, new BS_Die(this));
 
-        stateMachine.ChangeState(Entry);
+        stateMachine.ChangeState(Idle);
+        //stateMachine.ChangeState(Entry); TODO: Descomentar
 
         _goap = new GoapBrain();
         _stageIndex = 0;
@@ -88,11 +102,9 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     private void OnTriggerEnter(Collider other)
     {
-        // Cada “Box” hace daño y avanza de Stage
         if (other.gameObject.layer == LayerMask.NameToLayer("Box"))
         {
             OnDamaged?.Invoke();
-            AdvanceStage();
             other.gameObject.SetActive(false);
         }
     }
@@ -105,14 +117,11 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         {
             // Sin más stages: muerte
             _stageIndex = config.StageCount;
-            TriggerFSM("Die");
             OnDeath?.Invoke();
             enabled = false;
         }
         else
-        {
             OnStageChanged?.Invoke(_stageIndex);
-        }
     }
 
     private bool HasLineOfSight(Vector3 from, Vector3 to)
@@ -161,6 +170,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
             case "Entry":  stateMachine.ChangeState(Entry); break;
             case "Idle":   stateMachine.ChangeState(Idle); break;
             case "Chase":  stateMachine.ChangeState(Chase); break;
+            case "Damaged":  stateMachine.ChangeState(Damaged); break;
             case "Primary": stateMachine.ChangeState(Primary); break;
             case "Secondary": stateMachine.ChangeState(Secondary); break;
             case "Die":    stateMachine.ChangeState(Die); break;
@@ -168,15 +178,22 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         }
         _lastIntent = intentOrEvent; // ← sincroniza el “recuerdo” del planner con la FSM
     }
+
+    private void OnEnable()
+    {
+        OnDamaged += NotifyDamaged;
+        OnDamaged += AdvanceStage;
+
+        OnDeath += NotifyDie;
+    }
+
+    private void OnDisable()
+    {
+        OnDamaged -= NotifyDamaged;
+        OnDamaged -= AdvanceStage;
+        
+        OnDeath -= NotifyDie;
+    }
 }
 
-/// <summary> Estados comunes “placeholder” para usar con tu StateMachine real. </summary>
-public enum BossCommonState
-{
-    Entry,
-    Idle,
-    Chase,
-    Primary,
-    Secondary,
-    Die
-}
+public enum BossCommonState { Entry, Idle, Chase, Damaged, Primary, Secondary, Die }

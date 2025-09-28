@@ -12,7 +12,7 @@ public class FirstAttackBossScorpion : State
 
     public override void OnEnter()
     {
-        _scorpion._anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, true);
+        _scorpion._anim.SetBool(PRIMARY_ANIM_SCORPION, true);
         Debug.Log("ENTER FIRST");
 
         _scorpion.FirstAreaAttack(_scorpion.player.WalkingSand
@@ -30,6 +30,6 @@ public class FirstAttackBossScorpion : State
 
     public override void OnExit()
     {
-        _scorpion._anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, false);
+        _scorpion._anim.SetBool(PRIMARY_ANIM_SCORPION, false);
     }
 }

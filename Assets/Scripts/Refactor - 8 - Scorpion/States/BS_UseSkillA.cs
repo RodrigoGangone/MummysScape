@@ -1,7 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-
+using static Utils;
 /// <summary> Estado que ejecuta Skill A y vuelve a Idle. </summary>
 public sealed class BS_UseSkillA : State
 {
@@ -11,20 +10,24 @@ public sealed class BS_UseSkillA : State
 
     public override void OnEnter()
     {
+        _actor.NotifySkillStarted();
+
         _fired = _actor.TryUseSkillA();
         
+        _actor.Animator.SetBool(PRIMARY_ANIM_SCORPION, true);
+        
         if (!_fired)
-            _actor.TriggerFSM("Idle");
+            _actor.NotifySkillEnded();
         else
-            _actor.StartCoroutine(ReturnAfter(0.2f));
+            _actor.StartCoroutine(ReturnAfter(2f));
     }
 
     public override void OnUpdate() { }
     public override void OnFixedUpdate() { }
-    public override void OnExit() { }
+    public override void OnExit() => _actor.Animator.SetBool(PRIMARY_ANIM_SCORPION, false);
     private IEnumerator ReturnAfter(float t)
     {
         yield return new WaitForSeconds(t);
-        _actor.TriggerFSM("Idle");
+        _actor.NotifySkillEnded();
     }
 }

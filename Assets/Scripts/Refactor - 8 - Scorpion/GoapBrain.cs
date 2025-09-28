@@ -1,29 +1,47 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// Planner GOAP mínimo: devuelve una intención simbólica que el BossActor mapea a la FSM.
 /// </summary>
-// GoapBrain.cs
 public sealed class GoapBrain
 {
-    public string DecideNextIntent(in WorldModel wm, IBossContext ctx, BossSkillSO runtimePrimary, BossSkillSO runtimeSecondary)
+    private static class Intent
     {
-        bool aValid = runtimePrimary != null && runtimePrimary.CanExecute(wm, ctx, Time.time);
-        bool bValid = runtimeSecondary != null && runtimeSecondary.CanExecute(wm, ctx, Time.time);
-
-        if (aValid && bValid) 
-            return "Primary"; 
-
-        if (aValid)
-            return "Primary";
-
-        if (bValid)
-            return "Secondary";
-
-        Debug.Log($"[GOAP] A y B no disponibles → Idle");
-        return "Idle";
+        public const string None      = "None";
+        public const string Die   = "Die";
+        public const string Damaged   = "Damaged";
+        public const string Primary   = "Primary";
+        public const string Secondary = "Secondary";
+        public const string Idle      = "Idle";
     }
 
+    // GoapBrain.DecideNextIntent
+    public string DecideNextIntent(in WorldModel wm, IBossContext ctx, BossSkillSO runtimePrimary, BossSkillSO runtimeSecondary)
+    {
+        // Si el contexto no es un BossActor, no hay decisión posible.
+        if (ctx is not BossActor boss) return Intent.None;
+
+        //Priorizamos la muerte del Boss por sobre todas las cosas
+        if (boss.IsDie)          return Intent.Die;
+
+        // Estados que no deben cambiar intención (early-outs).
+        //if (boss.IsEntry)            return Intent.None; TODO: Descomentar 
+        if (boss.IsExecutingSkill)   return Intent.None;
+
+        // Priorizamos daño si aplica (si querés que no interrumpa skills, ponelo antes de IsExecutingSkill).
+        if (boss.IsDamaged)          return Intent.Damaged;
+
+        // Cacheamos Time.time para evitar leerlo dos veces.
+        float now = Time.time;
+
+        bool aValid = runtimePrimary   != null && runtimePrimary.CanExecute(wm, ctx, now);
+        bool bValid = runtimeSecondary != null && runtimeSecondary.CanExecute(wm, ctx, now);
+
+        // Lógica de selección mínima: primaria sobre secundaria; si ninguna, Idle.
+        if (aValid) return Intent.Primary;
+        if (bValid) return Intent.Secondary;
+
+        // Solo vuelve a Idle si no hay nada pendiente
+        return Intent.Idle;
+    }
 }

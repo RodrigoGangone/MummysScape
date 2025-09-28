@@ -23,7 +23,7 @@ public class ThirdAttackBossScorpion : State
     {
         _initialPosPlayer = PredictFuturePosition();
         
-        _scorpion._anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, true);
+        _scorpion._anim.SetBool(PRIMARY_ANIM_SCORPION, true);
 
         GeneratePath();
         _currentPointIndex = 0;
@@ -50,7 +50,7 @@ public class ThirdAttackBossScorpion : State
 
     public override void OnExit()
     {
-        _scorpion._anim.SetBool(FIRST_ATTACK_ANIM_SCORPION, false);
+        _scorpion._anim.SetBool(PRIMARY_ANIM_SCORPION, false);
         _scorpion._stoneView.SetActive(false);
         _scorpion._stonePrefab.transform.position = _scorpion._targetShoot.position;
         _lifeTimeStone = 0;

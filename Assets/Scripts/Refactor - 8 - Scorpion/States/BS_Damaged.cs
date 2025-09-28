@@ -1,22 +1,22 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using static Utils;
-
-/// <summary> Estado de entrada (intro). </summary>
-public sealed class BS_Entry : State
+public class BS_Damaged : State
 {
     private readonly BossActor _actor;
-    public BS_Entry(BossActor actor) { _actor = actor; }
+    public BS_Damaged(BossActor actor) { _actor = actor; }
+
     public override void OnEnter()
     {
-        _actor.Animator?.SetTrigger(ENTRY_NAME_ANIM_SCORPION);
+        _actor.Animator.SetTrigger(DAMAGED_ANIM_SCORPION);
         
-        _actor.StartCoroutine(WaitForAnimationEnd(_actor.Animator, ENTRY_NAME_ANIM_SCORPION));
+        _actor.StartCoroutine(WaitForAnimationEnd(_actor.Animator, DAMAGED_ANIM_SCORPION));
     }
-
     public override void OnUpdate() { }
     public override void OnFixedUpdate() { }
-    public override void OnExit() { _actor.Animator.SetBool(IDLE_ANIM_SCORPION, true); }
+
+    public override void OnExit() { }
     
     private IEnumerator WaitForAnimationEnd(Animator scorpionAnimator, string animationName)
     {
@@ -30,6 +30,6 @@ public sealed class BS_Entry : State
             currentStateInfo = scorpionAnimator.GetCurrentAnimatorStateInfo(0);
         }
         
-        _actor.NotifyEntryEnded();
+        _actor.NotifyRecovery();
     }
 }
