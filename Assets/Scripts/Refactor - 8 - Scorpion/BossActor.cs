@@ -86,6 +86,9 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     private void Update()
     {
+        if(Input.GetKeyDown(KeyCode.A))
+            OnStageChanged?.Invoke(CurrentStageIndex + 1);
+        
         _time = Time.time;
         if (player == null || config == null || config.StageCount == 0) return;
 
