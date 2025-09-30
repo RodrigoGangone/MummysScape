@@ -15,6 +15,10 @@ using PlayerStateId = PlayerEnum.PlayerStateId;
 public sealed class PushState : State
 {
     private const float PushSpeedFactor = 0.5f;
+    
+    private const float LateralCenterSpeedFactor = 0.35f; // % de MoveSpeed usado para centrar
+    private const float LateralDeadzoneMeters    = 0.02f; // no corrijas offsets laterales ínfimos
+    private const float LateralMaxStepMeters     = 0.10f; // tope por FixedUpdate (evita micro-snaps)
 
     // Umbrales de salida y rotación
     private const float ExitAxisDotThreshold = 0.2f; // si el DOT(input,eje) cae por debajo con input → salir
@@ -163,29 +167,53 @@ public sealed class PushState : State
     }
 
     /// <summary>
-    /// Rotación suave hacia el centro horizontal de la caja, modulada por TurnSpeed y axisFactor.
-    /// Solo se usa cuando el empuje realmente ocurrió (TryMove == true).
+    /// Alinea suavemente al centro horizontal de la caja:
+    /// - Rota hacia el centro con Slerp.
+    /// - Desplaza lateralmente (perpendicular al eje de empuje) con paso acotado.
+    /// Sólo se ejecuta si el empuje se concretó en este FixedUpdate (axisFactor>0 y TryMove==true).
     /// </summary>
     private void SmoothLookAtBoxCenter(float axisFactor)
     {
         if (_box == null || axisFactor <= 0f)
             return;
 
+        // --- 1) Rotación suave al centro (horizontal) ---
         Vector3 playerPos = _ctx.Rb.position;
         Vector3 target = _box.transform.position;
         target.y = playerPos.y;
 
-        Vector3 dir = target - playerPos;
-        dir.y = 0f;
+        Vector3 toCenter = target - playerPos;
+        toCenter.y = 0f;
+        if (toCenter.sqrMagnitude > 1e-6f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(toCenter.normalized, Vector3.up);
+            float rotT = Mathf.Clamp01(_ctx.TurnSpeed * Time.fixedDeltaTime) * axisFactor;
+            _ctx.Rb.MoveRotation(Quaternion.Slerp(_ctx.Rb.rotation, targetRot, rotT));
+        }
 
-        if (dir.sqrMagnitude <= 1e-6f)
+        // --- 2) Micro-centraje lateral respecto a la cara ---
+        // Eje lateral = perpendicular al eje de empuje en el plano XZ.
+        Vector3 lateral = Vector3.Cross(Vector3.up, _pushAxis);
+        lateral.y = 0f;
+        if (lateral.sqrMagnitude <= 1e-6f) return;
+        lateral.Normalize();
+
+        // Offset lateral = proyección del vector al centro sobre el eje lateral
+        float lateralOffset = Vector3.Dot(toCenter, lateral);
+
+        // Deadzone: no corrijas ruido
+        if (Mathf.Abs(lateralOffset) <= LateralDeadzoneMeters)
             return;
 
-        dir.Normalize();
+        // Paso máximo por frame, proporcional a MoveSpeed y modulada por axisFactor
+        float maxStep = Mathf.Min(
+            _ctx.MoveSpeed * LateralCenterSpeedFactor * Time.fixedDeltaTime * axisFactor,
+            LateralMaxStepMeters
+        );
 
-        Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
-        float t = Mathf.Clamp01(_ctx.TurnSpeed * Time.fixedDeltaTime) * axisFactor;
-        Quaternion smooth = Quaternion.Slerp(_ctx.Rb.rotation, targetRot, t);
-        _ctx.Rb.MoveRotation(smooth);
+        float step = Mathf.Clamp(lateralOffset, -maxStep, maxStep);
+
+        // Aplicar desplazamiento lateral suave, acumulativo al MovePosition previo
+        _ctx.Rb.MovePosition(_ctx.Rb.position + lateral * step);
     }
 }
