@@ -62,36 +62,20 @@ public class PlayerInputStateDriver : MonoBehaviour
             if (_sm.ChangeState(DropBandage)) return;
         }
 
-        // 4) Push con gating: requiere target válido + alineación al eje + ángulo razonable
+        // filtra ruido del stick
         bool wantsMove = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
-
-        if (wantsMove && _ctx.TryGetPushTarget(out var box, out var face))
+        
+        // 4) Push con gating: requiere target válido + alineación al eje + ángulo razonable
+        if (CanEnterPush(mv))
         {
-            Vector3 desiredDir = _ctx.CameraRelativeDir(mv.x, mv.y);
-            Vector3 axis = box.GetPushAxis(face); // eje X/Z desde la cara
-
-            float axisDot = Vector3.Dot(desiredDir, axis);
-            float axisOk = axisDot >= _enterPushAxisDot ? 1f : 0f;
-
-            // ángulo al centro de la caja (horizontal)
-            Vector3 playerPos = _ctx.Rb.position;
-            Vector3 toBox = box.transform.position - playerPos;
-            toBox.y = 0f;
-
-            bool angleOk = toBox.sqrMagnitude <= 1e-6f 
-                || Vector3.Angle(_ctx.Rb.rotation * Vector3.forward, toBox.normalized) <= _enterPushAngleDeg;
-
-            if (axisOk == 1f && angleOk)
-            {
-                var current = _sm.CurrentId();
-                if (current is PlayerEnum.PlayerStateId id && id == Push)
-                {
-                    // ya estamos en Push, dejá que el estado gobierne
-                    return;
-                }
-
-                if (_sm.ChangeState(Push)) return;
-            }
+            var current = _sm.CurrentId();
+            // si YA estoy en Push, corto acá para no caer al fallback Walk/Idle.
+            if (current is PlayerEnum.PlayerStateId id && id == Push)
+                return;
+            // Si logro entrar a Push, también corto.
+            if (_sm.ChangeState(Push))
+                return;
+            // Si no pude cambiar (guard lo impide), sigo y aplico fallback Walk/Idle.
         }
 
         // 5) Walk / Idle
@@ -104,4 +88,32 @@ public class PlayerInputStateDriver : MonoBehaviour
             _sm.ChangeState(Idle);
         }
     }
+
+    //TODO: ver si en un futuro este metodo puede derivarse a una de las clases que ya tenemos encargadas de validar pasos a states
+    private bool CanEnterPush(Vector2 mv)
+    {
+        if (Mathf.Abs(mv.x) <= _moveDeadZone && Mathf.Abs(mv.y) <= _moveDeadZone)
+            return false;
+
+        if (!_ctx.TryGetPushTarget(out var box, out var face))
+            return false;
+
+        Vector3 desiredDir = _ctx.CameraRelativeDir(mv.x, mv.y);
+        Vector3 axis = box.GetPushAxis(face);
+        float axisDot = Vector3.Dot(desiredDir, axis);
+        if (axisDot < _enterPushAxisDot)
+            return false;
+
+        Vector3 playerPos = _ctx.Rb.position;
+        Vector3 toBox = box.transform.position - playerPos; toBox.y = 0f;
+
+        if (toBox.sqrMagnitude > 1e-6f &&
+            Vector3.Angle(_ctx.Rb.rotation * Vector3.forward, toBox.normalized) > _enterPushAngleDeg)
+            return false;
+
+        return true;
+    }
+
+
+
 }

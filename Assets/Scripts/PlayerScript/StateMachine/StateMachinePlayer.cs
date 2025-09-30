@@ -33,8 +33,9 @@ public class StateMachinePlayer : MonoBehaviour
     
     public bool ChangeState(Enum name)
     {
+        // si al state al que se intenta ingresar no existe o es el state actual = return false;
         if (!_allStates.ContainsKey(name) || _allStates[name].Equals(_currentState)) return false;
-        //consulta al guard. Si no hay guard, deja pasar.
+        // consulta al guard. Si no hay guard, deja pasar.
         if (_guard != null && !_guard.Can(_currentId, name)) return false;
         
         _currentState?.OnExit();
