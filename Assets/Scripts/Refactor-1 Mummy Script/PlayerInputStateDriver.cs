@@ -1,21 +1,11 @@
-
 using UnityEngine;
 using static PlayerEnum.PlayerStateId;
-using static PlayerEnum.PlayerSize;
 
 /// <summary>
 /// PlayerInputStateDriver
-/// Traduce inputs crudos a Estados destino y ejecuta StateMachine.ChangeState.
-/// Priorización:
-/// 1) Ambiente: Fall si no está en suelo.
-/// 2) Space (hold): Head->Smash; si no, Attract si hay target al frente.
-/// 3) Edge: E->Shoot; Q->DropBandage.
-/// 4) Push: si ambos raycast detectan una cara válida y hay input, entra en Push.
-/// 5) Movimiento: Walk/Idle según deadzone.
-/// 6) Idle fallback cuando no hay input.
-/// Todas las transiciones pasan por el Guard (TransitionRules + SizeRules).
+/// Agrega "gating" para entrar a Push: exige alineación al eje y mirar razonablemente al centro de la caja.
+/// Evita reentradas indeseadas cuando el jugador está intentando salir girando.
 /// </summary>
-
 [DisallowMultipleComponent]
 [RequireComponent(typeof(StateMachinePlayer))]
 public class PlayerInputStateDriver : MonoBehaviour
@@ -23,10 +13,13 @@ public class PlayerInputStateDriver : MonoBehaviour
     [Header("Tuning")]
     [SerializeField, Min(0f)] private float _moveDeadZone = 0.1f;
 
+    [Header("Push Gating")]
+    [SerializeField, Range(0f,1f)] private float _enterPushAxisDot = 0.6f; // alineación mínima al eje
+    [SerializeField, Range(0f,90f)] private float _enterPushAngleDeg = 35f; // mirar aprox hacia el centro
+
     private StateMachinePlayer _sm;
     private PlayerContext _ctx;
     private IPlayerInput _input;
-    
 
     public void Bind(PlayerContext ctx, StateMachinePlayer sm)
     {
@@ -40,68 +33,68 @@ public class PlayerInputStateDriver : MonoBehaviour
         if (_sm == null) _sm = GetComponent<StateMachinePlayer>();
     }
 
-    //TODO: ver que hacer con los "if" previos a pasar de state,ya que provocan entrar al state 1 vez por frame.
     private void Update()
     {
         if (_ctx == null || _sm == null || _input == null) return;
 
         var mv = _input.Move;
 
-        // 1) Ambiente: caída 
+        // 1) Caída
         if (!_ctx.IsGrounded())
         {
             _sm.ChangeState(Fall);
             return;
         }
 
-        // 2) Space press => Smash (Head). Si el guard/SizeRules no dejan, sigue el flujo.
+        // 2) Acciones instantáneas (ejemplos)
         if (_input.ConsumeSpaceDown())
         {
             if (_sm.ChangeState(Smash)) return;
         }
 
-        // 3) Space hold => Swing > Attract (según target frente)
-        if (_input.IsSpaceHeld())
-        {
-            /*if (_ctx.TryGetSwingTarget(out _)) // Small: el guard lo permite; otros tamaños lo bloquean
-            {
-                _sm.ChangeState(Swing); 
-                return;
-            }
-
-            if (_ctx.TryGetAttractTarget(out _)) // Normal: permitido; otros tamaños bloquean
-            {
-                _sm.ChangeState(Attract);
-                return;
-            }*/
-        }
-
-        // 4) Edge: E / Q
+        // 3) Edge: E / Q
         if (_input.ConsumeShootDown())
         {
             if (_sm.ChangeState(Shoot)) return;
         }
-
         if (_input.ConsumeDropDown())
         {
             if (_sm.ChangeState(DropBandage)) return;
         }
 
-        // 5) Push: mantener el estado si hay objetivo válido frente.
+        // 4) Push con gating: requiere target válido + alineación al eje + ángulo razonable
         bool wantsMove = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
 
-        if (wantsMove && _ctx.TryGetPushTarget(out _, out _))
+        if (wantsMove && _ctx.TryGetPushTarget(out var box, out var face))
         {
-            var current = _sm.CurrentId();
-            if (current is PlayerEnum.PlayerStateId currentId && currentId == Push)
-            {
-                return;
-            }
+            Vector3 desiredDir = _ctx.CameraRelativeDir(mv.x, mv.y);
+            Vector3 axis = box.GetPushAxis(face); // eje X/Z desde la cara
 
-            if (_sm.ChangeState(Push)) return;
+            float axisDot = Vector3.Dot(desiredDir, axis);
+            float axisOk = axisDot >= _enterPushAxisDot ? 1f : 0f;
+
+            // ángulo al centro de la caja (horizontal)
+            Vector3 playerPos = _ctx.Rb.position;
+            Vector3 toBox = box.transform.position - playerPos;
+            toBox.y = 0f;
+
+            bool angleOk = toBox.sqrMagnitude <= 1e-6f 
+                || Vector3.Angle(_ctx.Rb.rotation * Vector3.forward, toBox.normalized) <= _enterPushAngleDeg;
+
+            if (axisOk == 1f && angleOk)
+            {
+                var current = _sm.CurrentId();
+                if (current is PlayerEnum.PlayerStateId id && id == Push)
+                {
+                    // ya estamos en Push, dejá que el estado gobierne
+                    return;
+                }
+
+                if (_sm.ChangeState(Push)) return;
+            }
         }
 
-        // 6) Movimientos: Walk & Idle
+        // 5) Walk / Idle
         if (wantsMove)
         {
             _sm.ChangeState(Walk);
