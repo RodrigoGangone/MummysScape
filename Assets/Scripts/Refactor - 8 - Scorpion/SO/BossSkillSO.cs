@@ -9,10 +9,7 @@ using UnityEngine;
 public interface IBossContext
 {
     Transform Transform { get; }
-    Animator Animator { get; }
-    GameObject GameObject { get; }
     Player Player { get; }
-    void TriggerFSM(string intentOrEvent);
     int CurrentStageIndex { get; }
     BossConfigSO Config { get; }
 }
@@ -22,8 +19,8 @@ public interface IBossContext
 /// </summary>
 public readonly struct WorldModel
 {
-    public readonly Vector3 BossPos;
-    public readonly Vector3 PlayerPos;
+    private readonly Vector3 BossPos;
+    private readonly Vector3 PlayerPos;
     public readonly float DistanceBP;
     public readonly bool HasLineOfSight;
     public readonly int StageIndex;
@@ -59,9 +56,7 @@ public abstract class BossSkillSO : ScriptableObject
     /// <summary> Devuelve true si el cooldown (ajustado por Stage) ya se cumplió. </summary>
     private bool IsReady(float now, BossConfigSO config, int stageIndex)
     {
-        
         float cd = GetCooldownForStage(config, stageIndex);
-        //Debug.Log(_lastUseTime + "BossSkillSO" + now);
         return now >= _lastUseTime + cd;
     }
 
@@ -83,7 +78,6 @@ public abstract class BossSkillSO : ScriptableObject
 
         return CanExecuteExtra(wm, ctx);
     }
-
     
     /// <summary> Consulta el cooldown específico desde StageStats (si hay mapping), o usa baseCooldown. </summary>
     private float GetCooldownForStage(BossConfigSO config, int stageIndex)
@@ -95,7 +89,7 @@ public abstract class BossSkillSO : ScriptableObject
     }
 
     /// <summary> Hook para condiciones propias de la skill que no viven en SOs reutilizables. </summary>
-    protected bool CanExecuteExtra(in WorldModel wm, IBossContext ctx) => true;
+    private bool CanExecuteExtra(in WorldModel wm, IBossContext ctx) => true;
 
     /// <summary> Intenta ejecutar la skill (verifica cooldown + condiciones). </summary>
     /// <summary>

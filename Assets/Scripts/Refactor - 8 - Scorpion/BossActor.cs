@@ -86,9 +86,6 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.A))
-            OnStageChanged?.Invoke(CurrentStageIndex + 1);
-        
         _time = Time.time;
         if (player == null || config == null || config.StageCount == 0) return;
 
@@ -99,7 +96,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         if (intent != _lastIntent)
         {
             _lastIntent = intent;
-            TriggerFSM(intent);
+            TriggerFsm(intent);
         }
     }
 
@@ -121,7 +118,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
             // Sin más stages: muerte
             _stageIndex = config.StageCount;
             OnDeath?.Invoke();
-            enabled = false;
+            //enabled = false;
         }
         else
             OnStageChanged?.Invoke(_stageIndex);
@@ -166,7 +163,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
     /// <summary>
     /// Puente simbólico → tu FSM. Mapea el intent string a tus estados reales.
     /// </summary>
-    public void TriggerFSM(string intentOrEvent)
+    public void TriggerFsm(string intentOrEvent)
     {
         switch (intentOrEvent)
         {

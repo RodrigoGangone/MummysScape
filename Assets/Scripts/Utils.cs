@@ -60,7 +60,7 @@ public static class Utils
     internal const string SECONDARY_ANIM_SCORPION = "isSecondary";
     internal const string CHASE_ANIM_SCORPION = "isChase";
     internal const string DAMAGED_ANIM_SCORPION = "isDamaged";
-    internal const string DIE_ANIM_SCORPION = "isDeath";
+    internal const string DIE_ANIM_SCORPION = "isDie";
 
     #endregion
 
