@@ -76,7 +76,7 @@ public abstract class BossSkillSO : ScriptableObject
                     return false;
         }
 
-        return CanExecuteExtra(wm, ctx);
+        return true;
     }
     
     /// <summary> Consulta el cooldown específico desde StageStats (si hay mapping), o usa baseCooldown. </summary>
@@ -87,9 +87,6 @@ public abstract class BossSkillSO : ScriptableObject
 
         return Mathf.Max(0f, baseCooldown * stats.cooldownMultiplier);
     }
-
-    /// <summary> Hook para condiciones propias de la skill que no viven en SOs reutilizables. </summary>
-    private bool CanExecuteExtra(in WorldModel wm, IBossContext ctx) => true;
 
     /// <summary> Intenta ejecutar la skill (verifica cooldown + condiciones). </summary>
     /// <summary>

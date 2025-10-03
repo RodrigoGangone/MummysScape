@@ -1,6 +1,7 @@
 using UnityEngine;
 using static BossCommonState;
 using System;
+using UnityEngine.Events;
 
 /// <summary>
 /// Actor genérico del Jefe. Integra Config por Stages, GOAP, y tu FSM existente.
@@ -23,7 +24,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
     [Header("Percepción")] [Tooltip("Layers que bloquean la visión y largo del LoS")]
     [SerializeField] private LayerMask losObstacleMask;
     [SerializeField] private float losRayHeight = 1.5f;
-
+    
     // IBossContext
     public Transform Transform => transform;
     public Animator Animator => animator;
@@ -41,8 +42,8 @@ public sealed class BossActor : MonoBehaviour, IBossContext
     private BossSkillSO _runtimePrimarySkill;
     private BossSkillSO _runtimeSecondarySkill;
 
-    private bool _isEntry;
-    public bool IsEntry => _isEntry = true;
+    private bool _isEntry = true;
+    public bool IsEntry => _isEntry;
     public void NotifyEntryEnded() => _isEntry = false;
 
     public bool IsExecutingSkill { get; private set; }
@@ -55,6 +56,9 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     public bool IsDie { get; private set; }
     private void NotifyDie() => IsDie = true;
+
+    public Func<bool> OnPrimarySkill;
+    public Func<bool> OnSecondarySkill;
     
     // Eventos opcionales
     public event Action<int> OnStageChanged;
@@ -77,8 +81,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         stateMachine.AddState(Secondary, new BS_UseSkillB(this));
         stateMachine.AddState(Die, new BS_Die(this));
 
-        stateMachine.ChangeState(Idle);
-        //stateMachine.ChangeState(Entry); TODO: Descomentar
+        stateMachine.ChangeState(Entry);
 
         _goap = new GoapBrain();
         _stageIndex = 0;
@@ -142,7 +145,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     #region Uso de Skills (llamados desde estados)
 
-    public bool TryUseSkillA()
+    private bool TryUseSkillA()
     {
         Debug.Log("TryExecuteA");
         var wm = BuildWorldModel();
@@ -181,6 +184,9 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     private void OnEnable()
     {
+        OnPrimarySkill += TryUseSkillA;
+        OnSecondarySkill += TryUseSkillB;
+        
         OnDamaged += NotifyDamaged;
         OnDamaged += AdvanceStage;
 

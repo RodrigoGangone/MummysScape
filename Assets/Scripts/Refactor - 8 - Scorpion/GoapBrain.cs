@@ -25,7 +25,7 @@ public sealed class GoapBrain
         if (boss.IsDie)          return Intent.Die;
 
         // Estados que no deben cambiar intención (early-outs).
-        //if (boss.IsEntry)            return Intent.None; TODO: Descomentar 
+        if (boss.IsEntry)            return Intent.None;
         if (boss.IsExecutingSkill)   return Intent.None;
 
         // Priorizamos daño si aplica (si querés que no interrumpa skills, ponelo antes de IsExecutingSkill).
