@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb470f1e280f39f47b3435a5770309ce, type: 3}
+  m_Name: Scorpion_Geyser
+  m_EditorClassIdentifier: 
+  baseCooldown: 3
+  conditions:
+  - {fileID: 11400000, guid: 6b3394747bdc37a4ca00be711c41726c, type: 2}
+  providerEmpty: {fileID: 4783978745147800958, guid: 1e1fdea207859ab45b6ec38d6fc64b4d, type: 3}
+  baseRadius: 1
+  scaleRadiusWithStage: 0
+  travelParticlesPrefab: {fileID: 6372541559103551465, guid: 9d5c4ae3941fa88429c22a0631160896, type: 3}
+  travelSpeed: 10
