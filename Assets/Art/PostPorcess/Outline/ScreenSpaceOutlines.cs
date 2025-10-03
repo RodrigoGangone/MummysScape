@@ -74,7 +74,8 @@ public class ScreenSpaceOutlines : ScriptableRendererFeature
             _normalsHandle = new RenderTargetHandle();
             _normalsHandle.Init("_SceneViewSpaceNormals");
 
-            _filteringSettings = new FilteringSettings(RenderQueueRange.opaque, outlinesLayerMask);
+            _filteringSettings = new FilteringSettings(RenderQueueRange.all, outlinesLayerMask);
+            _filteringSettings.renderingLayerMask = uint.MaxValue; 
         }
         
         public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
@@ -119,9 +120,10 @@ public class ScreenSpaceOutlines : ScriptableRendererFeature
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
-                var drawingSettings = CreateDrawingSettings(_shaderTagIdList, ref renderingData, renderingData.cameraData.defaultOpaqueSortFlags);
+                var drawingSettings = CreateDrawingSettings(
+                    _shaderTagIdList, ref renderingData, renderingData.cameraData.defaultOpaqueSortFlags);
                 drawingSettings.overrideMaterial = _normalsMaterial;
-
+                
                 //Usamos el FilteringSettings con LayerMask configurado
                 context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref _filteringSettings);
                 // Aseguramos que la textura quede accesible como global para el shader de outline
