@@ -16,14 +16,12 @@ public sealed class PushState : State
     private float _halfSpeed;
     private const float INPUT_DEADZONE = 0.05f;
 
-    // Toggle opcional: si true, evita por completo reacción física entre ambos.
-    private const bool IGNORE_COLLISIONS_DURING_PUSH = false;
-    private System.Collections.Generic.List<(Collider a, Collider b)> _ignoredPairs;
-
     public PushState(PlayerContext ctx) => _ctx = ctx;
 
     public override void OnEnter()
     {
+        Debug.Log("PushState!");
+        
         if (!_ctx.TryGetPushTarget(out _box, out _, out _))
         {
             StateMachine.ChangeState(PlayerEnum.PlayerStateId.Walk);
@@ -31,34 +29,12 @@ public sealed class PushState : State
         }
 
         _halfSpeed = _ctx.MoveSpeed * 0.5f;
-
-        if (IGNORE_COLLISIONS_DURING_PUSH)
-        {
-            _ignoredPairs = new();
-            var playerCols = _ctx.Tf.GetComponentsInChildren<Collider>();
-            var boxCols    = _box.GetComponentsInChildren<Collider>();
-            foreach (var pc in playerCols)
-                foreach (var bc in boxCols)
-                {
-                    if (!pc || !bc) continue;
-                    Physics.IgnoreCollision(pc, bc, true);
-                    _ignoredPairs.Add((pc, bc));
-                }
-        }
+        
         _box.SetPushMode(true);
-        Debug.Log("PushState!");
     }
 
     public override void OnExit()
     {
-        if (IGNORE_COLLISIONS_DURING_PUSH && _ignoredPairs != null)
-        {
-            foreach (var (a,b) in _ignoredPairs)
-                if (a && b) Physics.IgnoreCollision(a, b, false);
-            _ignoredPairs.Clear();
-            _ignoredPairs = null;
-        }
-
         _box?.StopImmediate();
         _box?.SetPushMode(false); // ⬅️ vuelve a congelar XZ fuera de push
         _box = null;
@@ -75,14 +51,14 @@ public sealed class PushState : State
         // 0) Si caigo, salgo a Fall
         if (!_ctx.IsGrounded())
         {
-            StateMachine.ChangeState(PlayerEnum.PlayerStateId.Fall);
+            StateMachine.ChangeState(PlayerStateId.Fall);
             return;
         }
 
         // 1) Si pierdo la caja o cambia la referencia, salgo a Walk
         if (_box == null || !_ctx.TryGetPushTarget(out var stillBox, out _, out _) || stillBox != _box)
         {
-            StateMachine.ChangeState(PlayerEnum.PlayerStateId.Walk);
+            StateMachine.ChangeState(PlayerStateId.Walk);
             return;
         }
 
@@ -90,7 +66,7 @@ public sealed class PushState : State
         Vector2 mv = _ctx.Input.Move;
         if (Mathf.Abs(mv.x) < INPUT_DEADZONE && Mathf.Abs(mv.y) < INPUT_DEADZONE)
         {
-            StateMachine.ChangeState(PlayerEnum.PlayerStateId.Idle);
+            StateMachine.ChangeState(PlayerStateId.Idle); 
             return;
         }
 
