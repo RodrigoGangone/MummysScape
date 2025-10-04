@@ -43,4 +43,13 @@ public sealed class PlayerContext
         fwd.y = 0f; right.y = 0f; fwd.Normalize(); right.Normalize();
         return (fwd * v + right * h).normalized;
     }
+    
+    /// <summary>Conveniencia: corre el PushChecker de InteractionRuntime.</summary>
+    public bool TryGetPushTarget(out BoxPushAttract target, out RaycastHit left, out RaycastHit right)
+    {
+        target = null;
+        left = default;
+        right = default;
+        return _interactions != null && _interactions.TryGetPushTarget(Tf, out target, out left, out right);
+    }
 }

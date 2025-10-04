@@ -44,7 +44,8 @@ public class PlayerInputStateDriver : MonoBehaviour
         if (_ctx == null || _sm == null || _input == null) return;
 
         var mv = _input.Move;
-
+        bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
+        
         // 1) Ambiente: caída 
         if (!_ctx.IsGrounded())
         {
@@ -85,12 +86,15 @@ public class PlayerInputStateDriver : MonoBehaviour
             if (_sm.ChangeState(DropBandage)) return;
         }
 
-        // 5) Movimientos: Walk & Idle 
-        if (Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone)
+        // 5) Push si me estoy moviendo y tengo caja válida enfrente
+        if (moving && _ctx.TryGetPushTarget(out _, out _, out _))
         {
-            _sm.ChangeState(Walk);
+            if (_sm.IsCurrent(Push)) return;
+            if (_sm.ChangeState(Push)) return;
         }
-        else
-            _sm.ChangeState(Idle);
+
+        // 6) Walk / Idle
+        if (moving) _sm.ChangeState(Walk);
+        else _sm.ChangeState(Idle);
     }
 }
