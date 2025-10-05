@@ -179622,6 +179622,57 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 182332734284622658, guid: ebe4e5d10dbd797449a0a994feca3487, type: 3}
   m_Mode: 0
+--- !u!1 &1784788902
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1784788904}
+  - component: {fileID: 1784788903}
+  m_Layer: 0
+  m_Name: EventManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1784788903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1784788902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e677a5f13d590134a86333401df2b8da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bossEvents:
+    OnBossDeath: {fileID: 0}
+    OnStageChanged: {fileID: 0}
+  playerEvents:
+    OnPlayerDamaged: {fileID: 0}
+    OnPlayerDeath: {fileID: 11400000, guid: 7b0b59825b6200a449c18cefc41aa39c, type: 2}
+    OnPlayerRespawn: {fileID: 0}
+--- !u!4 &1784788904
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1784788902}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -10.300254, y: 11.003977, z: -5.7971253}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1789983213
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -213938,3 +213989,4 @@ SceneRoots:
   - {fileID: 167944644}
   - {fileID: 442174961036245455}
   - {fileID: 329844493}
+  - {fileID: 1784788904}
