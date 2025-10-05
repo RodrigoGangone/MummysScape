@@ -68,7 +68,10 @@ public sealed class InteractionRuntime : MonoBehaviour
         if (a != b) return false;
 
         target = a.GetComponentInChildren<BoxPushAttract>();
-        return target != null;
+        if (target == null) return false;
+
+        // ⬇️ NO se puede empujar si la caja no está soportada por el suelo permitido
+        return target.IsGroundedForPush();
     }
 
     private void OnDrawGizmos()

@@ -61,6 +61,14 @@ public sealed class PushState : State
             StateMachine.ChangeState(PlayerStateId.Walk);
             return;
         }
+        
+        // ⬇️ si la caja pierde soporte válido (hueco), corto el Push
+        if (!_box.IsGroundedForPush())
+        {
+            StateMachine.ChangeState(PlayerEnum.PlayerStateId.Walk);
+            return;
+        }
+
 
         // 2) Sin input => Idle
         Vector2 mv = _ctx.Input.Move;
