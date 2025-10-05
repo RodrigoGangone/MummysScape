@@ -1,46 +1,47 @@
 using UnityEngine;
 
 /// <summary>
-/// GroundCheckRuntime
-/// Chequeo de suelo mediante un único SphereCast hacia abajo (estable en bordes/pendientes).
-/// - Filtra por LayerMask (usar "Floor").
-/// - NonAlloc para evitar GC.
-/// - Devuelve bool via IsGrounded y, opcionalmente, info completa via TryGetGround.
-/// - Incluye límite de pendiente y Gizmos para debug en la Scene.
+/// GroundCheckRuntime (v3 - Single SphereCast)
+/// Chequeo de suelo con UN SOLO SphereCast hacia abajo.
+/// - Radio y origin offset editables desde el inspector.
+/// - Filtro de pendiente por MaxGroundAngle (90 = desactivado).
+/// - NonAlloc (sin GC por frame).
+/// - Gizmos: una esfera (origen), línea de cast y punto/normal en el hit.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class GroundCheckRuntime : MonoBehaviour
 {
     [Header("Layer")]
-    [Tooltip("Asignar únicamente la capa 'Floor'.")]
-    [SerializeField] private LayerMask _groundMask = 0; // Seteá 'Floor' en el Inspector
+    [Tooltip("Capas consideradas 'suelo' (ej: Floor).")]
+    [SerializeField] private LayerMask _groundMask = 0;
 
     [Header("Probe Geometry")]
-    [Tooltip("Offset desde el pivot del player al centro de la sonda (ideal: un poco por encima del piso).")]
+    [Tooltip("Offset desde el pivot del player al centro de la sonda.")]
     [SerializeField] private Vector3 _originOffset = new Vector3(0f, 0f, 0f);
 
-    [Tooltip("Radio del pie para el SphereCast.")]
-    [Min(0f)][SerializeField] private float _footRadius = 0.2f;
+    [Tooltip("Radio de la esfera del pie para el SphereCast.")]
+    [Min(0f)][SerializeField] private float _footRadius = 0.22f;
 
-    [Tooltip("Cuánto 'busca' hacia abajo el SphereCast.")]
-    [Min(0f)][SerializeField] private float _castDistance = 0.4f;
+    [Tooltip("Alcance del SphereCast hacia abajo.")]
+    [Min(0f)][SerializeField] private float _castDistance = 0.35f;
 
     [Header("Slope")]
-    [Tooltip("Ángulo máximo (en grados) para considerar 'suelo'. 0 = horizontal, 90 = todo.")]
+    [Tooltip("Ángulo máximo (grados) para considerar 'suelo'. 90 = cualquier pendiente.")]
     [Range(0f, 90f)][SerializeField] private float _maxGroundAngle = 90f;
 
     [Header("Debug")]
     [SerializeField] private bool _drawGizmos = true;
     [SerializeField] private Color _hitColor = new(0.2f, 1f, 0.2f, 0.9f);
-    [SerializeField] private Color _missColor = new(1f, 0.2f, 0.2f, 0.6f);
+    [SerializeField] private Color _missColor = new(1f, 0.2f, 0.2f, 0.7f);
     [SerializeField] private Color _normalColor = new(0.2f, 0.6f, 1f, 0.9f);
 
-    // Cache para NonAlloc (evita alocaciones por frame)
+    // NonAlloc caches
     private readonly RaycastHit[] _hits = new RaycastHit[4];
 
-    // Para gizmos
+    // Último resultado para gizmos
     private bool _lastHit;
     private Vector3 _lastOrigin, _lastEnd, _lastPoint, _lastNormal;
+    private float _lastRadius;
 
     public struct GroundInfo
     {
@@ -51,53 +52,62 @@ public sealed class GroundCheckRuntime : MonoBehaviour
         public Collider collider;
     }
 
-    /// <summary>Conveniencia: solo bool grounded (usa TryGetGround interno).</summary>
+    /// <summary>Conveniencia: solo bool grounded.</summary>
     public bool IsGrounded(Transform tf) => TryGetGround(tf, out _);
 
     /// <summary>
-    /// SphereCast hacia abajo. Si hay varios hits, devuelve el más cercano que cumpla con el límite de pendiente.
+    /// ÚNICO SphereCast hacia abajo. Devuelve el hit más cercano que respete MaxGroundAngle.
     /// </summary>
-    private bool TryGetGround(Transform tf, out GroundInfo info)
+    public bool TryGetGround(Transform tf, out GroundInfo info)
     {
-        var origin = tf.position + _originOffset;
-        var dir = Vector3.down;
+        Vector3 origin = tf.position + _originOffset;
+        Vector3 dir = Vector3.down;
 
         _lastOrigin = origin;
-        _lastEnd = origin + dir * _castDistance;
+        _lastEnd    = origin + dir * _castDistance;
+        _lastRadius = _footRadius;
 
         var best = new RaycastHit { distance = float.MaxValue };
         int count = Physics.SphereCastNonAlloc(
-            origin, _footRadius, dir, _hits, _castDistance, _groundMask, QueryTriggerInteraction.Ignore);
+            origin,
+            _footRadius,
+            dir,
+            _hits,
+            _castDistance,
+            _groundMask,
+            QueryTriggerInteraction.Ignore
+        );
 
         bool anyValid = false;
         for (int i = 0; i < count; i++)
         {
             var h = _hits[i];
-            if (IsValidSlope(h.normal) && h.distance < best.distance)
+            if (!IsSlopeValid(h.normal)) continue;
+            if (h.distance < best.distance)
             {
                 best = h;
                 anyValid = true;
             }
         }
 
-        _lastHit = anyValid;
-        _lastPoint = anyValid ? best.point : _lastEnd;
-        _lastNormal = anyValid ? best.normal : Vector3.up;
+        _lastHit   = anyValid;
+        _lastPoint = anyValid ? best.point  : _lastEnd;
+        _lastNormal= anyValid ? best.normal: Vector3.up;
 
         info = new GroundInfo
         {
-            hit = anyValid,
-            point = _lastPoint,
-            normal = _lastNormal,
+            hit      = anyValid,
+            point    = _lastPoint,
+            normal   = _lastNormal,
             distance = anyValid ? best.distance : _castDistance,
             collider = anyValid ? best.collider : null
         };
         return info.hit;
     }
 
-    private bool IsValidSlope(in Vector3 normal)
+    private bool IsSlopeValid(in Vector3 normal)
     {
-        if (_maxGroundAngle >= 89.99f) return true;
+        if (_maxGroundAngle >= 89.99f) return true; // desactivado
         float angle = Vector3.Angle(normal, Vector3.up);
         return angle <= _maxGroundAngle;
     }
@@ -106,25 +116,22 @@ public sealed class GroundCheckRuntime : MonoBehaviour
     {
         if (!_drawGizmos) return;
 
-        // Dibujamos usando la última consulta si existe; si no, usamos el estado actual del transform.
-        var tf = transform;
-        var origin = (_lastOrigin == Vector3.zero) ? tf.position + _originOffset : _lastOrigin;
-        var end = (_lastEnd == Vector3.zero) ? origin + Vector3.down * _castDistance : _lastEnd;
+        // Si aún no hicimos ningún check, dibujamos con el estado actual.
+        Vector3 origin = (_lastOrigin == Vector3.zero) ? transform.position + _originOffset : _lastOrigin;
+        Vector3 end    = (_lastEnd    == Vector3.zero) ? origin + Vector3.down * _castDistance : _lastEnd;
+        float radius   = _lastRadius > 0f ? _lastRadius : _footRadius;
 
-        // Línea del cast
+        // Esfera de origen y línea del cast.
         Gizmos.color = _lastHit ? _hitColor : _missColor;
+        Gizmos.DrawWireSphere(origin, radius);
         Gizmos.DrawLine(origin, end);
 
-        // Esferas de inicio/fin
-        Gizmos.DrawWireSphere(origin, _footRadius);
-        Gizmos.DrawWireSphere(end, _footRadius);
-
-        // Punto/normal si hay hit
+        // Punto/normal si hay hit.
         if (_lastHit)
         {
-            Gizmos.DrawSphere(_lastPoint, 0.035f);
+            Gizmos.DrawSphere(_lastPoint, Mathf.Max(0.02f, radius * 0.15f));
             Gizmos.color = _normalColor;
-            Gizmos.DrawLine(_lastPoint, _lastPoint + _lastNormal * 0.35f);
+            Gizmos.DrawLine(_lastPoint, _lastPoint + _lastNormal * (radius * 1.5f));
         }
     }
 }
