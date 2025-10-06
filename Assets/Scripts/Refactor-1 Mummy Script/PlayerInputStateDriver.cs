@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using static PlayerEnum.PlayerStateId;
 using static PlayerEnum.PlayerSize;
@@ -13,18 +12,17 @@ using static PlayerEnum.PlayerSize;
 /// 4) Movimiento: Walk/Idle según deadzone.
 /// Todas las transiciones pasan por el Guard (TransitionRules + SizeRules).
 /// </summary>
-
 [DisallowMultipleComponent]
 [RequireComponent(typeof(StateMachinePlayer))]
 public class PlayerInputStateDriver : MonoBehaviour
 {
-    [Header("Tuning")]
-    [SerializeField, Min(0f)] private float _moveDeadZone = 0.1f;
+    [Header("Tuning")] [SerializeField, Min(0f)]
+    private float _moveDeadZone = 0.1f;
 
     private StateMachinePlayer _sm;
     private PlayerContext _ctx;
     private IPlayerInput _input;
-    
+
 
     public void Bind(PlayerContext ctx, StateMachinePlayer sm)
     {
@@ -45,9 +43,9 @@ public class PlayerInputStateDriver : MonoBehaviour
 
         var mv = _input.Move;
         bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
-        
+
         // 1) Ambiente: caída 
-        if (!_ctx.IsGrounded())
+        if (!_ctx.IsGrounded() && !_sm.IsCurrent(Swing))
         {
             _sm.ChangeState(Fall);
             return;
@@ -62,17 +60,19 @@ public class PlayerInputStateDriver : MonoBehaviour
         // 3) Space hold => Swing > Attract (según target frente)
         if (_input.IsSpaceHeld())
         {
-            /*if (_ctx.TryGetSwingTarget(out _)) // Small: el guard lo permite; otros tamaños lo bloquean
+            if (_sm.IsCurrent(Swing)) return;
+            
+            if (_ctx.TryGetSwingTarget(out _)) // Small: el guard lo permite; otros tamaños lo bloquean
             {
-                _sm.ChangeState(Swing); 
+                _sm.ChangeState(Swing);
                 return;
             }
 
-            if (_ctx.TryGetAttractTarget(out _)) // Normal: permitido; otros tamaños bloquean
-            {
-                _sm.ChangeState(Attract);
-                return;
-            }*/
+            //if (_ctx.TryGetAttractTarget(out _)) // Normal: permitido; otros tamaños bloquean
+            //{
+            //    _sm.ChangeState(Attract);
+            //    return;
+            //}
         }
 
         // 4) Edge: E / Q

@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -11,7 +12,8 @@ public sealed class PlayerContext
     public readonly PlayerModel Model;
     public readonly PlayerView View;
     public readonly IPlayerInput Input;
-
+    public readonly SwingHandler SwingHandler;
+    
     private readonly ICameraProvider _camProvider;
     private readonly MovementRuntime _movement;
     private readonly InteractionRuntime _interactions;
@@ -19,12 +21,15 @@ public sealed class PlayerContext
 
     public PlayerContext(
         Transform tf, Rigidbody rb,
+        SwingHandler swingHandler,
         ICameraProvider camProvider,
         PlayerModel model, PlayerView view,
         MovementRuntime movement, IPlayerInput input, InteractionRuntime interactionRuntime,
         GroundCheckRuntime ground)
     {
-        Tf = tf; Rb = rb; _camProvider = camProvider;
+        Tf = tf; Rb = rb;
+        SwingHandler = swingHandler;
+        _camProvider = camProvider;
         Model = model; View = view; _movement = movement; Input = input;
         _interactions = interactionRuntime; _ground = ground;
     }
@@ -52,4 +57,11 @@ public sealed class PlayerContext
         right = default;
         return _interactions != null && _interactions.TryGetPushTarget(Tf, out target, out left, out right);
     }
+    
+    public bool TryGetSwingTarget(out Rigidbody hook)
+    {
+        hook = null;
+        return _interactions != null && _interactions.TryGetSwingTarget(Tf, out hook);
+    }
+
 }

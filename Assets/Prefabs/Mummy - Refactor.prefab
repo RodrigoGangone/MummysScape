@@ -248,6 +248,7 @@ GameObject:
   - component: {fileID: 6352385872740916496}
   - component: {fileID: 2259937421141407715}
   - component: {fileID: 4263530151276915557}
+  - component: {fileID: 321015491591606409}
   m_Layer: 0
   m_Name: Mummy - Refactor
   m_TagString: PlayerFather
@@ -286,6 +287,7 @@ MonoBehaviour:
   _view: {fileID: 163754945814248792}
   _cameraProvider: {fileID: 0}
   _movement: {fileID: 2706546613065623957}
+  _swingHandler: {fileID: 0}
   _input: {fileID: 8671530515944238678}
   _headTimer: {fileID: 0}
   _interactions: {fileID: 6352385872740916496}
@@ -382,6 +384,9 @@ MonoBehaviour:
   _interactMask:
     serializedVersion: 2
     m_Bits: 16777216
+  halfExtents: {x: 20, y: 20, z: 20}
+  direction: {x: 0, y: 0, z: 0}
+  origin: {x: 0, y: 0, z: 0}
   _drawGizmos: 1
   _hitColor: {r: 0.2, g: 1, b: 0.2, a: 0.9}
   _missColor: {r: 1, g: 0.2, b: 0.2, a: 0.9}
@@ -435,3 +440,20 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0.5, z: 0}
+--- !u!114 &321015491591606409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7389072118055853021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 638bffa284ed48c4e9fcd32e629598e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minDistance: 0
+  maxDistance: 2
+  spring: 100
+  damper: 12
+  massScale: 50
