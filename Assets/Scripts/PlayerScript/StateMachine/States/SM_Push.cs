@@ -30,12 +30,18 @@ public class SM_Push : State
     {
         _view.PLAY_ANIM("Push", true);
         Debug.Log("OnEnter: SM_PUSH");
+        
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_MummyWalkPushBox);
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_MovingBox);
     }
 
     public override void OnExit()
     {
         _view.PLAY_ANIM("Push", false);
         Debug.Log("OnExit: SM_PUSH");
+        
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MummyWalkPushBox);
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MovingBox);
     }
 
     public override void OnUpdate()

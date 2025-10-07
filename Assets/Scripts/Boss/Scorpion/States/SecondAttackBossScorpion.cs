@@ -16,7 +16,7 @@ public class SecondAttackBossScorpion : State
 
     public override void OnEnter()
     {
-        _scorpion._anim.SetBool(SECOND_ATTACK_ANIM_SCORPION, true);
+        _scorpion._anim.SetBool(SECONDARY_ANIM_SCORPION, true);
 
         // Seleccionar los géiseres correspondientes a la etapa actual
         _currentStageGeysers = _scorpion.GetCurrentStageGeysers();
@@ -50,7 +50,7 @@ public class SecondAttackBossScorpion : State
     public override void OnExit()
     {
         Debug.Log("EXIT SECOND");
-        _scorpion._anim.SetBool(SECOND_ATTACK_ANIM_SCORPION, false);
+        _scorpion._anim.SetBool(SECONDARY_ANIM_SCORPION, false);
         _completedGeysersCount = 0;
     }
 

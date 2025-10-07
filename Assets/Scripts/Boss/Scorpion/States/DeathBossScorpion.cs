@@ -14,7 +14,7 @@ public class DeathBossScorpion : State
 
     public override void OnEnter()
     {
-        _scorpion._anim.SetTrigger(DEATH_ANIM_SCORPION);
+        _scorpion._anim.SetTrigger(DIE_ANIM_SCORPION);
 
         //_scorpion.viewScorpion.SetActive(false);
 

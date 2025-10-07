@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc6096dd5e57cfa42a758d81de4e184f, type: 3}
+  m_Name: Scorpion_Stone
+  m_EditorClassIdentifier: 
+  baseCooldown: 10
+  conditions:
+  - {fileID: 11400000, guid: a33c855517081094d8d8e52d326cfc73, type: 2}
+  stonePrefab: {fileID: 1363290591502303839, guid: 7220c0e4b7eb59c4aae2455f1a6045ad, type: 3}
+  launchSocketName: Target
+  localSpawnOffset: {x: 0, y: 1.5, z: 0.5}
+  baseFlightDuration: 1.1
+  arcHeight: 4
+  aimTime: 1.1
+  leadMultiplier: 1
+  impactScatterRadius: 0.6

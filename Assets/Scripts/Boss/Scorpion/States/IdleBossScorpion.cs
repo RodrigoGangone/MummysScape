@@ -23,7 +23,10 @@ public class IdleBossScorpion : State
     {
         if (_scorpion.levelManager._currentLevelState != LevelState.Playing) return;
 
-        _scorpion.viewScorpion.transform.LookAt(_scorpion.player.transform);
+        Vector3 targetPosition = _scorpion.player.transform.position;
+        targetPosition.y = _scorpion.viewScorpion.transform.position.y; // Igualamos altura para evitar inclinación
+
+        _scorpion.viewScorpion.transform.LookAt(targetPosition);
 
         SelectCurrentAttack();
 

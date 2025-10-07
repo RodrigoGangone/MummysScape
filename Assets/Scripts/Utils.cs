@@ -56,9 +56,11 @@ public static class Utils
     internal const string ENTRY_NAME_ANIM_SCORPION = "Entry";
     
     internal const string IDLE_ANIM_SCORPION = "isIdle";
-    internal const string FIRST_ATTACK_ANIM_SCORPION = "isFirstAttack";
-    internal const string SECOND_ATTACK_ANIM_SCORPION = "isSecondAttack";
-    internal const string DEATH_ANIM_SCORPION = "isDeath";
+    internal const string PRIMARY_ANIM_SCORPION = "isPrimary";
+    internal const string SECONDARY_ANIM_SCORPION = "isSecondary";
+    internal const string CHASE_ANIM_SCORPION = "isChase";
+    internal const string DAMAGED_ANIM_SCORPION = "isDamaged";
+    internal const string DIE_ANIM_SCORPION = "isDie";
 
     #endregion
 
@@ -98,6 +100,18 @@ public static class Utils
     public const string RIGHT_THRESHOLD = "_rightThreshold";
 
     #endregion
+
+    #endregion
+
+    #region Sounds
+
+    //Const para PlayerPref
+    internal const string MUSIC_VOLUME = "MusicVolume";
+    internal const string SFX_VOLUME = "SFXVolume";
+    
+    //Audio Mixer public vars
+    internal const string AUDIO_MIXER_MUSIC = "Music";
+    internal const string AUDIO_MIXER_SFX = "SFX";
 
     #endregion
 }

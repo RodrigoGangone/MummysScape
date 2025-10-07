@@ -13,13 +13,18 @@ public class SM_Shoot : State
 
     public override void OnEnter()
     {
-        _player._viewPlayer.PLAY_ANIM("Shoot", true);
+        if (_player.CurrentPlayerSize.Equals(PlayerSize.Normal))
+            _player._viewPlayer.PLAY_ANIM("ShootNormal", true);
+        else
+            _player._viewPlayer.PLAY_ANIM("ShootSmall", true);
+            
         _player._modelPlayer.RotatePreShoot();
     }
 
     public override void OnExit()
     {
-        _player._viewPlayer.PLAY_ANIM("Shoot", false);
+        _player._viewPlayer.PLAY_ANIM("ShootNormal", false);
+        _player._viewPlayer.PLAY_ANIM("ShootSmall", false);
     }
 
     public override void OnUpdate()

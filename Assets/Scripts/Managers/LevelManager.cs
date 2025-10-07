@@ -191,20 +191,18 @@ public class LevelManager : MonoBehaviour
     private void Win()
     {
         _isWin = true;
-
+        _canPause = false;
+        
         LevelManagerJson.AddNewLevel(SceneManager.GetActiveScene().buildIndex,
             _collectibleNumbers,
             0f);
 
         LevelManagerJson.SHOWPREFLEVELS();
-
-        _canPause = false;
     }
 
     private void Lose()
     {
         _isLose = true;
-
         _canPause = false;
     }
 }

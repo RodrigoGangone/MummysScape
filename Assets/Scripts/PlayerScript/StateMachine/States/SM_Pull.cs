@@ -21,8 +21,6 @@ public class SM_Pull : State
 
     public override void OnEnter()
     {
-        Debug.Log("ON ENTER PULL ");
-        
         _player._viewPlayer.PLAY_ANIM("Pull", true);
         _player._viewPlayer.bandageLineRenderer.enabled = true;
 
@@ -30,12 +28,12 @@ public class SM_Pull : State
         _lastCurrentBoxScript = _lastCurrentBoxTrans.GetComponent<PushPullObject>();
         
         _drawBandageCoroutine = _player.StartCoroutine(Bandage());
+        
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_MovingBox);
     }
 
     public override void OnExit()
     {
-        Debug.Log("ON EXIT PULL ");
-        
         _player.StopCoroutine(_drawBandageCoroutine);
         
         _time = 0;
@@ -50,6 +48,8 @@ public class SM_Pull : State
             UnwrapBox();
 
         _pullTime = 0;
+        
+        AudioManager.Instance.StopSFX(NameSounds.SFX_MovingBox);
     }
 
     public override void OnUpdate()
@@ -102,6 +102,7 @@ public class SM_Pull : State
         var boxScript = _lastCurrentBoxScript;
         if (boxScript != null)
         {
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_WrapBox);
             _isBandageDraw = true;
             boxScript.StartWrap();
         }
@@ -114,6 +115,7 @@ public class SM_Pull : State
         var boxScript = _lastCurrentBoxScript;
         if (boxScript != null)
         {
+            AudioManager.Instance.StopSFX(NameSounds.SFX_WrapBox);
             _isBandageDraw = false;
             boxScript.StartUnwrap();
         }
@@ -126,6 +128,7 @@ public class SM_Pull : State
         var boxScript = _lastCurrentBoxScript;
         if (boxScript != null)
         {
+            AudioManager.Instance.StopSFX(NameSounds.SFX_WrapBox);
             _isBandageDraw = false;
             boxScript.StartExplode();
         }

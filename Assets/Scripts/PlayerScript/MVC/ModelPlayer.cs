@@ -10,7 +10,7 @@ public class ModelPlayer
     Player _player;
     ControllerPlayer _controller;
     Rigidbody _rb;
-    
+
     //DAMAGE
 
     //DROP
@@ -120,7 +120,7 @@ public class ModelPlayer
         dropPosition = Vector3.zero;
         return false;
     }
-    
+
     private float horizontalHoldTime;
     private float verticalHoldTime;
     private const float rotationOnlyThreshold = 0.1f; // Tiempo requerido para comenzar a moverse
@@ -181,7 +181,7 @@ public class ModelPlayer
             _rb.velocity = new Vector3(0, _rb.velocity.y, 0);
         }
     }
-    
+
     public bool IsBoxCloseToPlayer(float maxDistance = 1.8f)
     {
         Vector3 playerPosition = _player.transform.position;
@@ -243,11 +243,23 @@ public class ModelPlayer
 
     public void Shoot()
     {
+        PlayShootRandomSound();
+
         if (_player.CurrentBandageStock > _player.MinBandageStock)
         {
             BulletFactory.Instance.GetObjectFromPool();
             CountBandage(-1);
         }
+    }
+
+    private void PlayShootRandomSound()
+    {
+        float randomValue = UnityEngine.Random.value;
+
+        if (randomValue < 0.5f)
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_BandageShoot1);
+        else
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_BandageShoot2);
     }
 
     public void RotatePreShoot()
@@ -491,6 +503,8 @@ public class ModelPlayer
     public bool CheckGround()
     {
         Debug.DrawRay(_player.transform.position, Vector3.down, Color.red, 0.1f);
+        Debug.Log("" +
+                  Physics.Raycast(_player.transform.position, Vector3.down, out _, 0.1f));
 
         return Physics.Raycast(_player.transform.position, Vector3.down, out _, 0.1f);
     }

@@ -1,7 +1,4 @@
-using TMPro.Examples;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class AnimationEventPlayer : MonoBehaviour
 {
@@ -30,17 +27,41 @@ public class AnimationEventPlayer : MonoBehaviour
         
         if (activeSmash)
         {
-            //TODO: Volver a agregar esto
-            //FindObjectOfType<CameraPos>().TriggerShake(); //Shake de camara casero xd
+            Camera.main?.GetComponent<CameraPathManager>().ShakeCamera(0.25f, 0.25f);
             
             if (_player.smashFX.isPlaying)
             {
                 _player.smashFX.Stop();
                 _player.smashFX.Clear();
             }
+            AudioManager.Instance.PlaySFX(RandomSmashSound());
             _player.smashFX.Play();
         }
         _player._modelPlayer.tackleSphereCollider.enabled = activeSmash;
+    }
+
+    private NameSounds RandomSmashSound()
+    {
+        int randomValue = Random.Range(0, 4);
+
+        switch (randomValue)
+        {
+            case 0:
+                return NameSounds.SFX_MummySmash_1;
+            case 1:
+                return NameSounds.SFX_MummySmash_2;
+            case 2:
+                return NameSounds.SFX_MummySmash_3; 
+            case 3:
+                return NameSounds.SFX_MummySmash_4;
+            default:
+                return NameSounds.SFX_MummySmash_1; 
+        }
+    }
+
+    public void EVENT_UI_BREAK_HOURGLASS()
+    {
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_BreakHourglass);
     }
 
     public void EVENT_ANIM_WIN()

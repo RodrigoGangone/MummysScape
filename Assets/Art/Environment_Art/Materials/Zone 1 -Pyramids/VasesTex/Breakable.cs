@@ -1,6 +1,3 @@
-using JetBrains.Annotations;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Breakable : MonoBehaviour
@@ -13,6 +10,8 @@ public class Breakable : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Bullet") || other.gameObject.CompareTag("PlayerFather"))
         {
+            AudioManager.Instance.PlaySFX(NameSounds.SFX_BreakJar);
+            
             Instantiate(_destroyeVersion, transform.position, transform.rotation);
 
             if (_droped)
