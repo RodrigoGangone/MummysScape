@@ -17,6 +17,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
     [SerializeField] private BossConfigSO config;
     [SerializeField] private Player player;
     [SerializeField] private Animator animator;
+    [SerializeField] private PlayerPrefsRegistry registry;
 
     [Header("FSM")]
     public StateMachinePlayer stateMachine;
@@ -83,6 +84,8 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
         stateMachine.ChangeState(Entry);
 
+        PlayerPrefsManager.BindRegistry(registry);
+        
         _goap = new GoapBrain();
         _stageIndex = 0;
     }
