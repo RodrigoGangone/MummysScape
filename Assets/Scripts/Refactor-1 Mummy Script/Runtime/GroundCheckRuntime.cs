@@ -12,22 +12,22 @@ using UnityEngine;
 public sealed class GroundCheckRuntime : MonoBehaviour
 {
     [Header("Layer")]
-    [Tooltip("Capas consideradas 'suelo' (ej: Floor).")]
+    [Tooltip("Capas consideradas 'suelo' (ej: Floor, Box, Interactable).")]
     [SerializeField] private LayerMask _groundMask = 0;
 
     [Header("Probe Geometry")]
     [Tooltip("Offset desde el pivot del player al centro de la sonda.")]
-    [SerializeField] private Vector3 _originOffset = new(0f, 0f, 0f);
+    [SerializeField] private Vector3 _originOffset = new(0f, -0.025f, 0f);
 
     [Tooltip("Radio de la esfera del pie para el SphereCast.")]
-    [Min(0f)][SerializeField] private float _footRadius = 0.22f;
+    [Min(0f)][SerializeField] private float _footRadius = 0.52f;
 
     [Tooltip("Alcance del SphereCast hacia abajo.")]
-    [Min(0f)][SerializeField] private float _castDistance = 0.35f;
+    [Min(0f)][SerializeField] private float _castDistance = 0f;
 
     [Header("Slope")]
     [Tooltip("Ángulo máximo (grados) para considerar 'suelo'. 90 = cualquier pendiente.")]
-    [Range(0f, 90f)][SerializeField] private float _maxGroundAngle = 90f;
+    [Range(0f, 90f)][SerializeField] private float _maxGroundAngle = 75f;
 
     [Header("Debug")]
     [SerializeField] private bool _drawGizmos = true;
