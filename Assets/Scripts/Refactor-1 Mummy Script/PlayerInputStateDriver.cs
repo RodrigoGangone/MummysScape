@@ -60,7 +60,7 @@ public class PlayerInputStateDriver : MonoBehaviour
         // 3) Space hold => Swing > Attract (según target frente)
         if (_input.IsSpaceHeld())
         {
-            if (_sm.IsCurrent(Swing)) return;
+            if (_sm.IsCurrent(Swing) || _sm.IsCurrent(Attract)) return;
             
             if (_ctx.TryGetSwingTarget(out _)) // Small: el guard lo permite; otros tamaños lo bloquean
             {
@@ -68,11 +68,11 @@ public class PlayerInputStateDriver : MonoBehaviour
                 return;
             }
 
-            //if (_ctx.TryGetAttractTarget(out _)) // Normal: permitido; otros tamaños bloquean
-            //{
-            //    _sm.ChangeState(Attract);
-            //    return;
-            //}
+            if (_ctx.TryGetAttractTarget(out _)) // Normal: permitido; otros tamaños bloquean
+            {
+                _sm.ChangeState(Attract);
+                return;
+            }
         }
 
         // 4) Edge: E / Q

@@ -38,8 +38,10 @@ public sealed class PlayerContext
     public float MoveSpeed => _movement.MoveSpeed;
     public float TurnSpeed => _movement.TurnSpeed;
     public bool IsGrounded() => _ground != null && _ground.IsGrounded(Tf);
+    public float AttractMinDistance => _interactions != null ? _interactions.AttractMinDistance : 1f;
 
-    /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>
+
+    /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>c
     public Vector3 CameraRelativeDir(float h, float v)
     {
         var cam = Cam;
@@ -56,6 +58,13 @@ public sealed class PlayerContext
         left = default;
         right = default;
         return _interactions != null && _interactions.TryGetPushTarget(Tf, out target, out left, out right);
+    }
+    
+    /// <summary>Conveniencia: Attract checker (LOS a 1..5u frente al player).</summary>
+    public bool TryGetAttractTarget(out BoxPushAttract target)
+    {
+        target = null;
+        return _interactions != null && _interactions.TryGetAttractTarget(Tf, out target);
     }
     
     public bool TryGetSwingTarget(out Rigidbody hook)

@@ -2,48 +2,53 @@ using UnityEngine;
 
 //// <summary>
 //// InteractionRuntime
-//// PushChecker: 2 raycast frontales a media altura, separados por _separation.
-//// - Devuelve true si AMBOS rayos golpean el MISMO objeto en la capa Interactable
-////   y dicho objeto (o su root) tiene BoxPushAttract.
-//// - OnDrawGizmos: cada rayo en VERDE si colisiona con capa Interactable, ROJO si no.
-//// - Todo tunable por Inspector (altura, separación, distancia y LayerMask).
+//// - PushChecker: 2 rayos frontales (ya existente).
+//// - SwingChecker: OverlapBox (ya existente).
+//// - AttractChecker: 1 raycast tipo Line-of-Sight a Y=1, rango [min,max], layer Interactable,
+////   requiere componente BoxPushAttract y que la caja esté grounded.
+////   Gizmos: VERDE si válido, ROJO si no.
 //// </summary>
 [DisallowMultipleComponent]
 public sealed class InteractionRuntime : MonoBehaviour
 {
-    [Header("Push Checker")] [SerializeField, Tooltip("Altura de los rayos respecto al pivot del player.")]
-    private float _heightY = 1.0f;
+    [Header("Push Checker")]
+    [SerializeField] private float _heightY = 1.0f;
+    [SerializeField] private float _distance = 1.0f;
+    [SerializeField] private float _separation = 0.5f;
+    [SerializeField] private LayerMask _interactMask;
 
-    [SerializeField, Tooltip("Distancia de los rayos hacia adelante.")]
-    private float _distance = 1.0f;
+    [Header("Swing Checker")]
+    [SerializeField] private Vector3 halfExtents = new(1, 1, 1);
+    [SerializeField] private Vector3 direction = Vector3.forward;
+    [SerializeField] private Vector3 origin;
 
-    [SerializeField, Tooltip("Separación total entre rayos (centro a centro).")]
-    private float _separation = 0.5f;
+    [Header("Attract Checker")]
+    [SerializeField, Tooltip("Altura del raycast de Attract (respecto al pivot).")]
+    private float _attractHeightY = 1.0f;
+    [SerializeField, Tooltip("Distancia mínima para Attract.")]
+    private float _attractMinDistance = 1.0f;
+    [SerializeField, Tooltip("Distancia máxima para Attract.")]
+    private float _attractMaxDistance = 5.0f;
+    
+    // propiedad para que los States lean el mismo valor
+    public float AttractMinDistance => _attractMinDistance;
 
-    [SerializeField, Tooltip("Capa Interactable (solo se castea contra este LayerMask).")]
-    private LayerMask _interactMask;
-
-    [Header("Swing Checker")] [SerializeField, Tooltip("")]
-    private Vector3 halfExtents = new(1, 1, 1);
-
-    [SerializeField, Tooltip("")] private Vector3 direction = Vector3.forward;
-
-    [SerializeField, Tooltip("")] private Vector3 origin;
-
-    [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
+    [Header("Debug")]
+    [SerializeField] private bool _drawGizmos = true;
     [SerializeField] private Color _hitColor = new(0.2f, 1f, 0.2f, 0.9f);
     [SerializeField] private Color _missColor = new(1f, 0.2f, 0.2f, 0.9f);
 
-    // cache último chequeo para gizmos
+    // cache push gizmos
     private Vector3 _oLeft, _oRight, _dLeft, _dRight;
     private bool _leftHitInteract, _rightHitInteract;
     private Vector3 _leftHitPoint, _rightHitPoint;
 
-    /// <summary>
-    /// Chequea si hay una caja empujable enfrente del player (doble rayo).
-    /// </summary>
-    public bool TryGetPushTarget(Transform playerTf, out BoxPushAttract target, out RaycastHit hitLeft,
-        out RaycastHit hitRight)
+    // cache attract gizmos
+    private Vector3 _aOrigin, _aEnd, _aHitPoint;
+    private bool _aEligible;
+
+    // -------------------- PUSH --------------------
+    public bool TryGetPushTarget(Transform playerTf, out BoxPushAttract target, out RaycastHit hitLeft, out RaycastHit hitRight)
     {
         target = null;
         hitLeft = default;
@@ -59,8 +64,7 @@ public sealed class InteractionRuntime : MonoBehaviour
         _dLeft = _dRight = fwd;
 
         bool lHit = Physics.Raycast(_oLeft, fwd, out hitLeft, _distance, _interactMask, QueryTriggerInteraction.Ignore);
-        bool rHit = Physics.Raycast(_oRight, fwd, out hitRight, _distance, _interactMask,
-            QueryTriggerInteraction.Ignore);
+        bool rHit = Physics.Raycast(_oRight, fwd, out hitRight, _distance, _interactMask, QueryTriggerInteraction.Ignore);
 
         _leftHitInteract = lHit;
         _rightHitInteract = rHit;
@@ -69,7 +73,6 @@ public sealed class InteractionRuntime : MonoBehaviour
 
         if (!(lHit && rHit)) return false;
 
-        // ¿Mismo objeto raíz y con BoxPushAttract?
         Transform a = hitLeft.collider.transform.root;
         Transform b = hitRight.collider.transform.root;
         if (a != b) return false;
@@ -77,14 +80,14 @@ public sealed class InteractionRuntime : MonoBehaviour
         target = a.GetComponentInChildren<BoxPushAttract>();
         if (target == null) return false;
 
-        // ⬇️ NO se puede empujar si la caja no está soportada por el suelo permitido
-        return target.IsGroundedForPush();
+        return target.IsGroundedForPushAttract();
     }
 
+    // -------------------- SWING --------------------
     public bool TryGetSwingTarget(Transform playerTf, out Rigidbody target)
     {
         target = null;
-        Vector3 center = playerTf.position + origin; // offset definido por inspector
+        Vector3 center = playerTf.position + origin;
         Collider[] hits = Physics.OverlapBox(center, halfExtents, playerTf.rotation, _interactMask);
 
         float minDist = float.MaxValue;
@@ -97,71 +100,85 @@ public sealed class InteractionRuntime : MonoBehaviour
             if (rb == null) continue;
 
             float dist = Vector3.Distance(playerTf.position, rb.position);
-            if (dist < minDist)
-            {
-                minDist = dist;
-                nearest = rb;
-            }
+            if (dist < minDist) { minDist = dist; nearest = rb; }
         }
-
         if (nearest == null) return false;
-
-        Debug.Log("TrySwing - true");
-
         target = nearest;
         return true;
     }
+
+    // -------------------- ATTRACT --------------------
+    /// <summary>
+    /// Raycast tipo LOS frente al player (Y=1) en rango [min,max] contra Interactable.
+    /// Requiere BoxPushAttract y que la caja esté grounded para atraer.
+    /// </summary>
+    public bool TryGetAttractTarget(Transform playerTf, out BoxPushAttract target)
+    {
+        target = null;
+
+        Vector3 fwd = playerTf.forward;
+        _aOrigin = playerTf.position + Vector3.up * _attractHeightY;
+        _aEnd = _aOrigin + fwd * _attractMaxDistance;
+
+        bool hit = Physics.Raycast(_aOrigin, fwd, out RaycastHit h, _attractMaxDistance, _interactMask, QueryTriggerInteraction.Ignore);
+        _aHitPoint = hit ? h.point : _aEnd;
+
+        if (!hit) { _aEligible = false; return false; }
+
+        const float EPS = 0.001f;
+        // 🔴 No permitir adquisición si está en la distancia mínima o por debajo
+        if (h.distance <= (_attractMinDistance + EPS)) { _aEligible = false; return false; }
+
+        Transform root = h.collider.transform.root;
+        target = root.GetComponentInChildren<BoxPushAttract>();
+        if (target == null) { _aEligible = false; return false; }
+
+        _aEligible = target.IsGroundedForPushAttract();
+        return _aEligible;
+    }
+
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
         if (!_drawGizmos) return;
 
-        Transform playerTf = transform;
-
-        // --- Área de detección ---
-        Vector3 center = playerTf.position + origin;
-        Quaternion rot = playerTf.rotation;
+        // SWING area (ya estaba)
+        Transform tf = transform;
+        Vector3 center = tf.position + origin;
+        Quaternion rot = tf.rotation;
 
         Collider[] hits = Physics.OverlapBox(center, halfExtents, rot, _interactMask);
+        bool anyHook = false;
+        foreach (var hit in hits) { if (hit.CompareTag("Hook")) { anyHook = true; break; } }
 
-        Rigidbody nearest = null;
-        float minDist = float.MaxValue;
-
-        foreach (var hit in hits)
-        {
-            if (!hit.CompareTag("Hook")) continue;
-            var rb = hit.attachedRigidbody;
-            if (rb == null) continue;
-
-            float dist = Vector3.Distance(playerTf.position, rb.position);
-            if (dist < minDist)
-            {
-                minDist = dist;
-                nearest = rb;
-            }
-        }
-
-        // Dibuja el área
-        Gizmos.color = nearest ? _hitColor : _missColor;
+        Gizmos.color = anyHook ? _hitColor : _missColor;
         Gizmos.matrix = Matrix4x4.TRS(center, rot, Vector3.one);
         Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2);
+        Gizmos.matrix = Matrix4x4.identity;
     }
 #endif
-
 
     private void OnDrawGizmos()
     {
         if (!_drawGizmos) return;
 
-        // Left
+        // PUSH rays
         Gizmos.color = _leftHitInteract ? _hitColor : _missColor;
         Gizmos.DrawLine(_oLeft, _oLeft + _dLeft * _distance);
         Gizmos.DrawSphere(_leftHitPoint, 0.03f);
 
-        // Right
         Gizmos.color = _rightHitInteract ? _hitColor : _missColor;
         Gizmos.DrawLine(_oRight, _oRight + _dRight * _distance);
         Gizmos.DrawSphere(_rightHitPoint, 0.03f);
+
+        // ATTRACT LOS
+        Gizmos.color = _aEligible ? _hitColor : _missColor;
+        Gizmos.DrawLine(_aOrigin, _aEnd);
+        Gizmos.DrawSphere(_aHitPoint, 0.03f);
+
+        // marca de distancia mínima
+        var minMark = _aOrigin + ( (_aEnd - _aOrigin).normalized * _attractMinDistance );
+        Gizmos.DrawWireSphere(minMark, 0.05f);
     }
 }
