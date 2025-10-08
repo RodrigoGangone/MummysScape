@@ -357,9 +357,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _groundMask:
     serializedVersion: 2
-    m_Bits: 32768
-  _originOffset: {x: 0, y: 0, z: 0}
-  _footRadius: 0.2
+    m_Bits: 17858560
+  _originOffset: {x: 0, y: -0.05, z: 0}
+  _footRadius: 0.52
   _castDistance: 0.4
   _maxGroundAngle: 90
   _drawGizmos: 1
@@ -452,8 +452,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 638bffa284ed48c4e9fcd32e629598e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minDistance: 0
-  maxDistance: 2
-  spring: 100
-  damper: 12
-  massScale: 50
+  minDistance: 1.25
+  maxDistance: 2.25
+  spring: 50
+  damper: 18
+  massScale: 150

@@ -17,7 +17,7 @@ public sealed class GroundCheckRuntime : MonoBehaviour
 
     [Header("Probe Geometry")]
     [Tooltip("Offset desde el pivot del player al centro de la sonda.")]
-    [SerializeField] private Vector3 _originOffset = new Vector3(0f, 0f, 0f);
+    [SerializeField] private Vector3 _originOffset = new(0f, 0f, 0f);
 
     [Tooltip("Radio de la esfera del pie para el SphereCast.")]
     [Min(0f)][SerializeField] private float _footRadius = 0.22f;

@@ -4,11 +4,11 @@ public class SwingHandler : MonoBehaviour
 {
     public SpringJoint SpringJoint { get; private set; }
 
-    [SerializeField, Range(0f, 5f)] private float minDistance;
-    [SerializeField, Range(0f, 5f)] private float maxDistance;
-    [SerializeField, Range(0f, 200f)] private float spring;
-    [SerializeField, Range(0f, 30f)] private float damper;
-    [SerializeField, Range(0f, 300f)] private float massScale;
+    [SerializeField, Range(0f, 5f)] private float minDistance = 1.25f;
+    [SerializeField, Range(0f, 5f)] private float maxDistance = 2.50f;
+    [SerializeField, Range(0f, 200f)] private float spring = 50f;
+    [SerializeField, Range(0f, 30f)] private float damper = 18f;
+    [SerializeField, Range(0f, 300f)] private float massScale = 150f;
     
     public void SetSpring(bool enable)
     {
