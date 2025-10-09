@@ -38,7 +38,11 @@ public sealed class PlayerContext
     public float MoveSpeed => _movement.MoveSpeed;
     public float TurnSpeed => _movement.TurnSpeed;
     public bool IsGrounded() => _ground != null && _ground.IsGrounded(Tf);
-    public float AttractMinDistance => _interactions != null ? _interactions.AttractMinDistance : 1f;
+    public float AttractMinDistance => _interactions ? _interactions.AttractMinDistance : 1f;
+    public float AttractMaxDistance => _interactions ? _interactions.AttractMaxDistance : 5f;
+    public AnimationCurve AttractSpeedCurve => _interactions ? _interactions.AttractSpeedCurve : AnimationCurve.Linear(0,1,1,1);
+    public float AttractSpeedBase => _interactions ? _interactions.AttractSpeedBase : 1f;
+
 
 
     /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>c

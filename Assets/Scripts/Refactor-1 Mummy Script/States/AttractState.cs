@@ -13,7 +13,8 @@ public sealed class AttractState : State
     private readonly PlayerContext _ctx;
     private BoxPushAttract _box;
 
-    private float _pullSpeed;
+    // Piso de velocidad para evitar “quedarse corto” si la curva vale ~0 lejos.
+    private const float MIN_PULL_SPEED_FLOOR = 0.05f;
     private const float ROT_LERP = 1f;
 
     public AttractState(PlayerContext ctx) => _ctx = ctx;
@@ -26,8 +27,6 @@ public sealed class AttractState : State
             StateMachine.ChangeState(PlayerStateId.Idle);
             return;
         }
-
-        _pullSpeed = Mathf.Max(0.1f, _ctx.MoveSpeed * 0.8f);
         _box.SetPushAttractMode(true);
     }
 
@@ -40,7 +39,6 @@ public sealed class AttractState : State
 
     public override void OnUpdate()
     {
-        _pullSpeed = Mathf.Max(0.1f, _ctx.MoveSpeed * 0.8f);
     }
 
     public override void OnFixedUpdate()
@@ -61,39 +59,45 @@ public sealed class AttractState : State
             return;
         }
 
+       
         Vector3 playerPos = _ctx.Tf.position;
         Vector3 boxPos    = _box.transform.position;
 
-        // Distancia HORIZONTAL real a la superficie del collider de la caja
-        float min = _ctx.AttractMinDistance;
-        float horizDist = _box.HorizontalDistanceTo(playerPos);
+        // Distancia horizontal REAL a la superficie de la caja
+        float min    = _ctx.AttractMinDistance;
+        float max    = _ctx.AttractMaxDistance;
+        float distXZ = _box.HorizontalDistanceTo(playerPos);
 
-        // ✅ Salir si ya estamos en / por debajo del mínimo
-        if (horizDist <= min)
+        // Salida si ya llegó al mínimo
+        if (distXZ <= min)
         {
-            StateMachine.ChangeState(PlayerStateId.Idle);
+            StateMachine.ChangeState(PlayerEnum.PlayerStateId.Idle);
             return;
         }
 
-        // Dirección de atracción (centro caja -> player) en XZ
-        Vector3 toPlayer = new(playerPos.x - boxPos.x, 0f, playerPos.z - boxPos.z);
-        Vector3 dirPull = toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : Vector3.zero;
+        // Normalización 0..1 (0 en min, 1 en max)
+        float t01 = Mathf.InverseLerp(min, max, Mathf.Clamp(distXZ, min, max));
 
-        // Paso máximo por frame
-        float maxStep = _pullSpeed * Time.fixedDeltaTime;
+        // Velocidad por curva * base * MoveSpeed del size actual
+        float curveMul = Mathf.Max(0f, _ctx.AttractSpeedCurve.Evaluate(t01));
+        float pullSpeed = Mathf.Max(MIN_PULL_SPEED_FLOOR, _ctx.MoveSpeed * _ctx.AttractSpeedBase * curveMul);
 
-        // ✅ Clampeo: nunca mover más de (distancia_actual - min)
-        float allowed = Mathf.Max(0f, horizDist - min);
-        float step = Mathf.Min(maxStep, allowed);
+        // Dirección caja -> player (plano XZ) + clamp para no "pasarse" del mínimo
+        Vector3 toPlayer = new Vector3(playerPos.x - boxPos.x, 0f, playerPos.z - boxPos.z);
+        Vector3 dirPull  = toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : Vector3.zero;
+
+        float maxStep = pullSpeed * Time.fixedDeltaTime;
+        float allowed = Mathf.Max(0f, distXZ - min);
+        float step    = Mathf.Min(maxStep, allowed);
 
         if (step > 0f) _box.MoveBy(dirPull * step);
 
-        // Rotación suave mirando hacia el centro horizontal de la caja
-        Vector3 toBox = new(boxPos.x - playerPos.x, 0f, boxPos.z - playerPos.z);
+        // Rotación suave del player mirando al centro de la caja (horizontal)
+        Vector3 toBox = -dirPull; // player -> caja
         if (toBox.sqrMagnitude > 0.0001f)
         {
-            Quaternion targetRot = Quaternion.LookRotation(toBox.normalized, Vector3.up);
-            Quaternion smooth = Quaternion.Slerp(_ctx.Rb.rotation, targetRot, _ctx.TurnSpeed * ROT_LERP * Time.fixedDeltaTime);
+            var targetRot = Quaternion.LookRotation(toBox, Vector3.up);
+            var smooth    = Quaternion.Slerp(_ctx.Rb.rotation, targetRot, _ctx.TurnSpeed * ROT_LERP * Time.fixedDeltaTime);
             _ctx.Rb.MoveRotation(smooth);
         }
     }

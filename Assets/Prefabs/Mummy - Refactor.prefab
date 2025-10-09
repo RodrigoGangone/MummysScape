@@ -358,10 +358,46 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _heightY: 1
   _distance: 1
-  _separation: 0.5
+  _separation: 0.25
   _interactMask:
     serializedVersion: 2
     m_Bits: 16777216
+  _attractMinDistance: 1
+  _attractMaxDistance: 10
+  _attractSpeedAC:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 3.749891
+      outSlope: 3.749891
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.2670321
+      value: 1.0013412
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: -0.0018298533
+      outSlope: -0.0018298533
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 1
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _attractSpeedBase: 1
   halfExtents: {x: 20, y: 20, z: 20}
   direction: {x: 0, y: 0, z: 0}
   origin: {x: 0, y: 0, z: 0}

@@ -16,22 +16,23 @@ public sealed class InteractionRuntime : MonoBehaviour
     [SerializeField] private float _distance = 1.0f;
     [SerializeField] private float _separation = 0.5f;
     [SerializeField] private LayerMask _interactMask;
+    
+    [Header("Attract Checker")]
+    [SerializeField] private float _attractMinDistance = 1.0f;
+    [SerializeField] private float _attractMaxDistance = 5.0f;
+    [SerializeField] private AnimationCurve _attractSpeedAC = AnimationCurve.Linear(0, 1, 1, 1);
+    [SerializeField, Min(0f)] private float _attractSpeedBase = 1.0f;
 
     [Header("Swing Checker")]
     [SerializeField] private Vector3 halfExtents = new(1, 1, 1);
     [SerializeField] private Vector3 direction = Vector3.forward;
     [SerializeField] private Vector3 origin;
-
-    [Header("Attract Checker")]
-    [SerializeField, Tooltip("Altura del raycast de Attract (respecto al pivot).")]
-    private float _attractHeightY = 1.0f;
-    [SerializeField, Tooltip("Distancia mínima para Attract.")]
-    private float _attractMinDistance = 1.0f;
-    [SerializeField, Tooltip("Distancia máxima para Attract.")]
-    private float _attractMaxDistance = 5.0f;
     
-    // propiedad para que los States lean el mismo valor
-    public float AttractMinDistance => _attractMinDistance;
+    // propiedad para que los States lean el mismo valor (exponen datos, no lógica)
+    public float AttractMinDistance  => _attractMinDistance;
+    public float AttractMaxDistance  => _attractMaxDistance;
+    public AnimationCurve AttractSpeedCurve => _attractSpeedAC;
+    public float AttractSpeedBase    => _attractSpeedBase;
 
     [Header("Debug")]
     [SerializeField] private bool _drawGizmos = true;
@@ -47,6 +48,7 @@ public sealed class InteractionRuntime : MonoBehaviour
     private Vector3 _aOrigin, _aEnd, _aHitPoint;
     private bool _aEligible;
 
+    
     // -------------------- PUSH --------------------
     public bool TryGetPushTarget(Transform playerTf, out BoxPushAttract target, out RaycastHit hitLeft, out RaycastHit hitRight)
     {
@@ -117,7 +119,7 @@ public sealed class InteractionRuntime : MonoBehaviour
         target = null;
 
         Vector3 fwd = playerTf.forward;
-        _aOrigin = playerTf.position + Vector3.up * _attractHeightY;
+        _aOrigin = playerTf.position + Vector3.up * _heightY;
         _aEnd = _aOrigin + fwd * _attractMaxDistance;
 
         bool hit = Physics.Raycast(_aOrigin, fwd, out RaycastHit h, _attractMaxDistance, _interactMask, QueryTriggerInteraction.Ignore);
