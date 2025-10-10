@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 8941640229141648409}
   - component: {fileID: 6001942381404430019}
   - component: {fileID: 1268324369937355837}
-  - component: {fileID: 3403084432950399401}
   m_Layer: 24
   m_Name: PS_Wind2
   m_TagString: Untagged
@@ -4956,19 +4955,3 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
---- !u!114 &3403084432950399401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1694305683090404975}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d16fbbefb020e446ad75e1c89c1a60a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ps: {fileID: 6001942381404430019}
-  cam: {fileID: 0}
-  yawOnly: 0
-  keepEmitterZ: 1
