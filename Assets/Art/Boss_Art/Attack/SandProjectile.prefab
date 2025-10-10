@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5520136426073762142}
   - component: {fileID: 4423927287976063613}
   - component: {fileID: 8665660748634575366}
-  m_Layer: 0
+  m_Layer: 24
   m_Name: Trail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -286,9 +286,9 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     startSize:
       serializedVersion: 2
-      minMaxState: 0
-      scalar: 2
-      minScalar: 1
+      minMaxState: 3
+      scalar: 1.5
+      minScalar: 0.5
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -339,7 +339,7 @@ ParticleSystem:
         m_RotationOrder: 4
     startSizeY:
       serializedVersion: 2
-      minMaxState: 0
+      minMaxState: 3
       scalar: 1
       minScalar: 1
       maxCurve:
@@ -392,7 +392,7 @@ ParticleSystem:
         m_RotationOrder: 4
     startSizeZ:
       serializedVersion: 2
-      minMaxState: 0
+      minMaxState: 3
       scalar: 1
       minScalar: 1
       maxCurve:
@@ -664,7 +664,7 @@ ParticleSystem:
   ShapeModule:
     serializedVersion: 6
     enabled: 1
-    type: 6
+    type: 0
     angle: 25
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
@@ -923,7 +923,7 @@ ParticleSystem:
     rateOverDistance:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 2
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -4839,7 +4839,7 @@ GameObject:
   - component: {fileID: 1109620967871414591}
   - component: {fileID: 3557907077372110507}
   - component: {fileID: 6672018623652062146}
-  m_Layer: 0
+  m_Layer: 24
   m_Name: Projectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5699,7 +5699,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 30
+      scalar: 5
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -9668,7 +9668,7 @@ GameObject:
   - component: {fileID: 2926694772216371865}
   - component: {fileID: 6929789064338496939}
   - component: {fileID: 8735789123552623488}
-  m_Layer: 0
+  m_Layer: 24
   m_Name: Splashes
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14557,7 +14557,7 @@ GameObject:
   - component: {fileID: 1644969086973348127}
   - component: {fileID: 8185250443006934400}
   - component: {fileID: 3115995922344872641}
-  m_Layer: 0
+  m_Layer: 24
   m_Name: SandProjectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15152,7 +15152,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 1000000
+    maxNumParticles: 1000
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
