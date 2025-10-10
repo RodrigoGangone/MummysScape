@@ -60,6 +60,7 @@ public sealed class PlayerController : MonoBehaviour
         _sm.AddState(PlayerStateId.Idle,  new IdleState(_ctx));
         _sm.AddState(PlayerStateId.Walk,  new WalkState(_ctx));
         _sm.AddState(PlayerStateId.Fall, new FallState(_ctx));
+        _sm.AddState(PlayerStateId.Aim, new AimState(_ctx));
         _sm.AddState(PlayerStateId.Shoot, new ShootState(_ctx));
         _sm.AddState(PlayerStateId.Smash, new SmashState(_ctx));
         _sm.AddState(PlayerStateId.DropBandage, new DropBandageState(_ctx, _bandagePickupPrefab));

@@ -76,9 +76,16 @@ public class PlayerInputStateDriver : MonoBehaviour
         }
 
         // 4) Edge: E / Q
-        if (_input.ConsumeShootDown())
+        if (_input.ConsumeAimHeld())
         {
-            if (_sm.ChangeState(Shoot)) return;
+            if (_input.ConsumeShootDown())
+            {
+                _sm.ChangeState(Shoot); 
+                return;
+            }
+            
+            if (_sm.IsCurrent(Aim)) return;
+            if (_sm.ChangeState(Aim)) return;
         }
 
         if (_input.ConsumeDropDown())

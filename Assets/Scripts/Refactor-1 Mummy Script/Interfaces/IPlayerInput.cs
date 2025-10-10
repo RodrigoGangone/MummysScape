@@ -10,7 +10,8 @@ public interface IPlayerInput
     Vector2 Move { get; }                   // WASD / Stick (X,Z)
     
     // OnPress
-    bool ConsumeShootDown();                // E
+    bool ConsumeAimHeld();                // E
+    bool ConsumeShootDown();
     bool ConsumeDropDown();                 // Q
     bool ConsumeSpaceDown();                // Space (inicio del hold) - por si queremos detectar arranque
     

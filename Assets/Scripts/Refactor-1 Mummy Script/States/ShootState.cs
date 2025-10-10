@@ -15,10 +15,10 @@ public sealed class ShootState : State
         Debug.Log("Shoot!");
         
         // Si no hay vendas vuelvo a idle, sino las consumo
-        if (!_ctx.Model.TryConsumeBandage())
-        {
-            Debug.Log("Shoot! PERO SIN VENDAS");
-        }
+        //if (!_ctx.Model.TryConsumeBandage())
+        //{
+        //    Debug.Log("Shoot! PERO SIN VENDAS");
+        //}
         
         /*
         // TODO: tu raycast/proyectil real
