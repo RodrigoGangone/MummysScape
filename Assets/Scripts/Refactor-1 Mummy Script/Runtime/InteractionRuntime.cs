@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -35,16 +36,17 @@ public sealed class InteractionRuntime : MonoBehaviour
     
     [SerializeField] private LayerMask _aimCollisionMask = ~0; // configurá Ground/Environment
     [SerializeField, Range(0, 30)] private float _maxDistance;
-    [SerializeField, Range(0, 30)] private float _launchSpeed;
-    [SerializeField, Range(0, 30)] private int _simMaxSteps;
-    [SerializeField, Range(0.005f, 0.25f)] private float _projectileRadius = 0.05f;
-    [SerializeField, Range(0.005f, 0.05f)] private float _simDt = 0.02f; // 50 Hz
-
+    [SerializeField, Range(0, 30)] private float _arcHeight;
+    [SerializeField, Range(0, 200)] private int _simMaxSteps;
+    [SerializeField] private GameObject projectilePrefab;
+    
     // propiedad para que los States lean el mismo valor (exponen datos, no lógica)
     public float AttractMinDistance => _attractMinDistance;
     public float AttractMaxDistance => _attractMaxDistance;
     public AnimationCurve AttractSpeedCurve => _attractSpeedAC;
     public float AttractSpeedBase => _attractSpeedBase;
+    
+    public GameObject ProjectilePrefab => projectilePrefab;
 
     [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
     [SerializeField] private Color _hitColor = new(0.2f, 1f, 0.2f, 0.9f);
@@ -172,93 +174,58 @@ public sealed class InteractionRuntime : MonoBehaviour
 
     // -------------------- SHOOT --------------------
     
-// NUEVA FIRMA: devuelve bool + out point/normal
-public bool TryGetAim(Transform playertf, out Vector3 hitPoint)
-{
-    hitPoint = default;
-
-    // 1) Punto de salida del proyectil (boquilla / mano)
-    Vector3 startPos = playertf.position + Vector3.up * 1.0f;
-
-    // 2) Target “deseado” desde cámara (solo guía de dirección)
-    Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-    Vector3 desired;
-    if (Physics.Raycast(mouseRay, out RaycastHit camHit, 100f, ~0, QueryTriggerInteraction.Ignore))
-        desired = camHit.point;
-    else
-        desired = mouseRay.GetPoint(_maxDistance);
-
-    // 3) Dirección horizontal limitada por rango
-    Vector3 toDesired = desired - startPos;
-    Vector3 dirXZ = new Vector3(toDesired.x, 0f, toDesired.z);
-    if (dirXZ.sqrMagnitude > 0.0001f)
-        dirXZ = dirXZ.normalized;
-    else
-        dirXZ = playertf.forward;
-
-    float g = 9.81f;
-    float v = _launchSpeed;
-
-    // 4) Ángulo de tiro (intento resolver a objetivo; si no, fijo 35°)
-    float distance = new Vector2(toDesired.x, toDesired.z).magnitude;
-    float height   = toDesired.y;
-    float angleRad = 35f * Mathf.Deg2Rad;
-
-    float underRoot = v*v*v*v - g * (g * distance * distance + 2f * height * v * v);
-    if (underRoot >= 0f && distance > 0.01f)
+    public bool TryGetAim(Transform playertf, out Vector3 hitPoint)
     {
-        underRoot = Mathf.Max(underRoot, 0f);
-        float tanTheta = Mathf.Clamp((v*v - Mathf.Sqrt(underRoot)) / (g * distance), -10f, 10f);
-        angleRad = Mathf.Atan(tanTheta);
-    }
+        hitPoint = default;
+        SimpleShootData.Path = null; // limpiar siempre
 
-    // 5) Velocidad inicial (descompuesta)
-    Vector3 vel = dirXZ * (v * Mathf.Cos(angleRad)) + Vector3.up * (v * Mathf.Sin(angleRad));
+        // 1) Origen
+        Vector3 start = playertf.position + Vector3.up * 1.0f;
 
-    // 6) Integración por pasos y detección de impacto
-    Vector3 prev = startPos;
-    float traveled = 0f;
+        // 2) Punto “deseado” desde cámara (guía)
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Vector3 desired = Physics.Raycast(ray, out RaycastHit camHit, 100f, ~0, QueryTriggerInteraction.Ignore)
+            ? camHit.point
+            : ray.GetPoint(_maxDistance);
 
-    for (int i = 0; i < _simMaxSteps; i++)
-    {
-        // Avanzar física simple
-        vel += Vector3.down * g * _simDt;
-        Vector3 next = prev + vel * _simDt;
+        // 3) Dirección horizontal
+        Vector3 toDesired = desired - start;
+        Vector3 dirXZ = new Vector3(toDesired.x, 0f, toDesired.z);
+        float distXZ = dirXZ.magnitude;
+        if (distXZ > 1e-3f) dirXZ /= distXZ; else { dirXZ = playertf.forward; distXZ = 1f; }
 
-        // Colisión: SphereCast fino para no atravesar cosas delgadas
-        bool hit;
-        RaycastHit h;
-        if (_projectileRadius > 0.005f)
-            hit = Physics.SphereCast(prev, _projectileRadius, (next - prev).normalized,
-                                     out h, (next - prev).magnitude, _aimCollisionMask,
-                                     QueryTriggerInteraction.Ignore);
-        else
-            hit = Physics.Linecast(prev, next, out h, _aimCollisionMask, QueryTriggerInteraction.Ignore);
+        // 4) Parámetros del arco “plantilla”
+        float L      = Mathf.Min(_maxDistance, distXZ);
+        float height = toDesired.y;
+        int   steps  = Mathf.Max(6, _simMaxSteps);
 
-        if (hit)
+        // 5) Muestreo y colisión por segmentos + bake del path
+        var points = new List<Vector3>(steps + 1);
+        Vector3 prev = start;
+        points.Add(prev);
+
+        for (int i = 1; i <= steps; i++)
         {
-            hitPoint  = h.point;
-            // Trazo de debug
-            Debug.DrawLine(prev, h.point, Color.yellow);
-            return true;
+            float s = i / (float)steps;                 // 0..1
+            Vector3 flat = start + dirXZ * (L * s);     // avance horizontal
+            float y = Mathf.Lerp(0f, height, s) + 4f * _arcHeight * s * (1f - s); // apex en s=0.5
+            Vector3 p = new Vector3(flat.x, start.y + y, flat.z);
+
+            if (Physics.Linecast(prev, p, out RaycastHit h, _aimCollisionMask, QueryTriggerInteraction.Ignore))
+            {
+                hitPoint = h.point;
+                points.Add(hitPoint);          
+                SimpleShootData.Path = points; 
+                return true;
+            }
+
+            points.Add(p);
+            prev = p;
         }
 
-        // Trazo de debug para seguir la curva
-        Debug.DrawLine(prev, next, Color.yellow);
-
-        traveled += (next - prev).magnitude;
-
-        // 7) Cortes por rango: si excede 20u, no marcamos nada
-        // (usa ambos: recorrido real y distancia desde el origen)
-        if (traveled > _maxDistance || (next - startPos).magnitude > _maxDistance)
-            break;
-
-        prev = next;
+        // No golpeó nada => no hay Aim válido
+        return false;
     }
-
-    // No golpeó nada en rango
-    return false;
-}
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()

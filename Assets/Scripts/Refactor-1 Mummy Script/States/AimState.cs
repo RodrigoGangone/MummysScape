@@ -1,39 +1,33 @@
 using UnityEngine;
-using static PlayerEnum;
 
 public class AimState : State
 {
     private readonly PlayerContext _ctx;
-    private GameObject _decal;
+    private readonly GameObject _decal;
     public AimState(PlayerContext ctx)
     {
         _ctx = ctx;
         _decal = _ctx.View.Decal;
     }
-
-    public override void OnEnter()
-    {
-        Debug.Log("Entering AimState 🎯");
-    }
     
+    public override void OnEnter() => SimpleShootData.Path = null;
+
     public override void OnUpdate()
     {
         if (_ctx.TryGetAim(out var pos))
         {
             SetDecalVisible(true);
-            SetDecal(pos);
+            SetDecal(pos); 
         }
         else
             SetDecalVisible(false);
     }
+
     
     public override void OnFixedUpdate()
     {
     }
-    public override void OnExit()
-    {
-        SetDecalVisible(false);
-    }
+    public override void OnExit() => SetDecalVisible(false);
     
     private void SetDecalVisible(bool visible)
     {

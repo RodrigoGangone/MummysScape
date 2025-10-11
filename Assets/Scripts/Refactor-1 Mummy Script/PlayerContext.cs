@@ -42,7 +42,7 @@ public sealed class PlayerContext
     public float AttractMaxDistance => _interactions ? _interactions.AttractMaxDistance : 5f;
     public AnimationCurve AttractSpeedCurve => _interactions ? _interactions.AttractSpeedCurve : AnimationCurve.Linear(0,1,1,1);
     public float AttractSpeedBase => _interactions ? _interactions.AttractSpeedBase : 1f;
-
+    public GameObject ProjectilePrefab => _interactions.ProjectilePrefab;
 
 
     /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>c
