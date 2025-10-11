@@ -20,9 +20,9 @@ public sealed class CapsuleBySizeRuntime : MonoBehaviour
     }
 
     [Header("Presets por tamaño")]
-    [SerializeField] private CapsulePreset _normal = new() { center = new(0f, 0.5f, 0f), radius = 0.5f, height = 2f };
-    [SerializeField] private CapsulePreset _small  = new() { center = new(0f, 0.15f,0f), radius = 0.5f, height = 1.25f };
-    [SerializeField] private CapsulePreset _head   = new() { center = new(0f, 0f,  0f), radius = 0.5f, height = 1f };
+    [SerializeField] private CapsulePreset _normal = new() { center = new(0f, 1f, 0f), radius = 0.5f, height = 2f };
+    [SerializeField] private CapsulePreset _small  = new() { center = new(0f, 0.62f,0f), radius = 0.5f, height = 1.25f };
+    [SerializeField] private CapsulePreset _head   = new() { center = new(0f, 0.5f,  0f), radius = 0.5f, height = 1f };
 
     private CapsuleCollider _capsule;
     private PlayerModel _model;
