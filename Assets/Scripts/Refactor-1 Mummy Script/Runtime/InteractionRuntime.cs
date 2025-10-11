@@ -29,8 +29,8 @@ public sealed class InteractionRuntime : MonoBehaviour
 
     [Header("Swing Checker")] 
     
-    [SerializeField] private Vector3 halfExtents = new(1, 1, 1);
-    [SerializeField] private Vector3 origin;
+    [SerializeField] private Vector3 halfExtents = new(5, 5, 7);
+    [SerializeField] private Vector3 origin = new(0, 5, 7);
 
     [Header("Shoot Checker")]
     
