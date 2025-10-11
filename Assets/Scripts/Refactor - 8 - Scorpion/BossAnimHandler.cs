@@ -26,4 +26,6 @@ public class BossAnimHandler : MonoBehaviour
     }
     
     public void AE_Skill_Ended() => _bossActor.NotifySkillEnded();
+
+    public void AE_Die() => Destroy(_bossActor.gameObject);
 }

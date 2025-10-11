@@ -71,6 +71,17 @@ MonoBehaviour:
   playerMask:
     serializedVersion: 2
     m_Bits: 256
+  wallMask:
+    serializedVersion: 2
+    m_Bits: 1050624
+  wallRayPadding: 0.02
+  useSphereCastBetweenFrames: 1
+  sphereCastRadiusFactor: 0.9
+  pushForce: 12
+  upwardFactor: 0.2
+  pushForceMode: 1
+  stunDuration: 0.5
+  view: {fileID: 5552687867696558099}
 --- !u!1001 &1977651769330294912
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -131,5 +142,10 @@ PrefabInstance:
 --- !u!4 &983505889058187679 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1644969086973348127, guid: 9e8d34479e1b77544824befb3c616d13, type: 3}
+  m_PrefabInstance: {fileID: 1977651769330294912}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &5552687867696558099 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6232168230089543827, guid: 9e8d34479e1b77544824befb3c616d13, type: 3}
   m_PrefabInstance: {fileID: 1977651769330294912}
   m_PrefabAsset: {fileID: 0}

@@ -15,7 +15,7 @@ public class Bullet : MonoBehaviour
 
     void OnEnable()
     {
-        _target = GameObject.Find("Target");
+        _target = GameObject.Find("Target - Mummy");
         _player = FindObjectOfType<Player>();
 
         _rb.rotation = _target.transform.rotation;
