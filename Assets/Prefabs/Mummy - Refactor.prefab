@@ -1,5 +1,67 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &679783790632970578
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5879846647280632364}
+  m_Layer: 0
+  m_Name: Mummy_Head
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &5879846647280632364
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 679783790632970578}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5864962739761171907}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2149625819112906330
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6803716298754636010}
+  m_Layer: 0
+  m_Name: Mummy_Normal
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6803716298754636010
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2149625819112906330}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5864962739761171907}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2289761483506466186
 GameObject:
   m_ObjectHideFlags: 0
@@ -117,6 +179,9 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2926641144897302187}
+  - {fileID: 6803716298754636010}
+  - {fileID: 4218448809033323665}
+  - {fileID: 5879846647280632364}
   m_Father: {fileID: 6578946205384916507}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5306474037201331103
@@ -209,6 +274,37 @@ MonoBehaviour:
   _headTimerFill: {fileID: 0}
   _spriteHead: {fileID: 0}
   _spriteNormalOrSmall: {fileID: 0}
+--- !u!1 &4272034360019826322
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4218448809033323665}
+  m_Layer: 0
+  m_Name: Mummy_Small
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &4218448809033323665
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4272034360019826322}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5864962739761171907}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7389072118055853021
 GameObject:
   m_ObjectHideFlags: 0
@@ -225,6 +321,8 @@ GameObject:
   - component: {fileID: 2706546613065623957}
   - component: {fileID: 4394623111969123832}
   - component: {fileID: 6352385872740916496}
+  - component: {fileID: 6175992681972326499}
+  - component: {fileID: 7410182693108136691}
   - component: {fileID: 2259937421141407715}
   - component: {fileID: 4263530151276915557}
   - component: {fileID: 321015491591606409}
@@ -272,6 +370,8 @@ MonoBehaviour:
   _interactions: {fileID: 6352385872740916496}
   _ground: {fileID: 4394623111969123832}
   _bandagePickupPrefab: {fileID: 0}
+  _sizeVisual: {fileID: 6175992681972326499}
+  _capsuleBySize: {fileID: 7410182693108136691}
 --- !u!114 &7865088277389257799
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -411,6 +511,45 @@ MonoBehaviour:
   _drawGizmos: 1
   _hitColor: {r: 0.2, g: 1, b: 0.2, a: 0.9}
   _missColor: {r: 1, g: 0.2, b: 0.2, a: 0.9}
+--- !u!114 &6175992681972326499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7389072118055853021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af43e0673bad05040b89169d101c79fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _meshNormal: {fileID: 2149625819112906330}
+  _meshSmall: {fileID: 4272034360019826322}
+  _meshHead: {fileID: 679783790632970578}
+--- !u!114 &7410182693108136691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7389072118055853021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26a44985647dbeb4d9bba7ba23e2b437, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _normal:
+    center: {x: 0, y: 0.5, z: 0}
+    radius: 0.5
+    height: 2
+  _small:
+    center: {x: 0, y: 0.15, z: 0}
+    radius: 0.5
+    height: 1.25
+  _head:
+    center: {x: 0, y: 0, z: 0}
+    radius: 0.5
+    height: 1
 --- !u!54 &2259937421141407715
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -458,9 +597,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
-  m_Height: 1
+  m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!114 &321015491591606409
 MonoBehaviour:
   m_ObjectHideFlags: 0

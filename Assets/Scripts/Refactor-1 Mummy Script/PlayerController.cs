@@ -23,6 +23,10 @@ public sealed class PlayerController : MonoBehaviour
     [SerializeField] private InteractionRuntime _interactions;
     [SerializeField] private GroundCheckRuntime _ground;
     [SerializeField] private GameObject _bandagePickupPrefab; // opcional
+    
+    [Header("Size Runtime")]
+    [SerializeField] private PlayerSizeVisual _sizeVisual;
+    [SerializeField] private CapsuleBySizeRuntime _capsuleBySize;
 
     private StateMachinePlayer _sm;
     private PlayerInputStateDriver _inputDriver;
@@ -50,6 +54,8 @@ public sealed class PlayerController : MonoBehaviour
         _model.OnSizeChanged += size => _view?.SetHeadTimerSprite(size == PlayerSize.Head);
 
         _headTimer?.Bind(_model);
+        _sizeVisual?.Bind(_model);
+        _capsuleBySize?.Bind(_model);
 
         _ground = GetComponent<GroundCheckRuntime>();
         
