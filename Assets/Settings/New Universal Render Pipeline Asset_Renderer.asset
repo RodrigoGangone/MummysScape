@@ -1,28 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8418030101206873507
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d04af8d5437e4841b7341d3f420d2ed, type: 3}
-  m_Name: OutlineRendererFeature
-  m_EditorClassIdentifier: 
-  m_Active: 0
-  settings:
-    showInSceneView: 1
-    _event: 300
-    layerMask:
-      serializedVersion: 2
-      m_Bits: 4096
-    overrideMaterial: {fileID: 2100000, guid: e2f23cffea5ae2f428d56d0ea34ef37d, type: 2}
-    overrideMaterialPass: 4
-    colorTargetDestinationID: _OutlineTexture
-    blitMaterial: {fileID: 2100000, guid: 3d798354e0939c947ae35cd547ac6dfb, type: 2}
 --- !u!114 &-4803469571571075521
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,6 +84,42 @@ MonoBehaviour:
       restoreCamera: 1
       offset: {x: 0, y: 0, z: 0, w: 0}
       cameraFieldOfView: 31
+--- !u!114 &-3689436661576960844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cacd61eb76393df459a59d3b4db3c3f0, type: 3}
+  m_Name: ScreenSpaceOutlines
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  renderPassEvent: 300
+  outlinesLayerMask:
+    serializedVersion: 2
+    m_Bits: 8387551
+  viewSpaceNormalsTextureSettings:
+    colorFormat: 0
+    depthBufferBits: 0
+    filterMode: 0
+    backgroundColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineSettings:
+    thickness: 0.5
+    blend: 0.861
+    depthThreshold: 0
+    depthSmoothWidth: 0.118
+    robertsCrossMultiplier: 0.044
+    depthAttenuation: 0.03
+    depthRelativeScale: 1.46
+    normalsThreshold: 1.789
+    normalSensitivity: 1.63
+    useDepth: 1
+    useNormals: 1
+  viewSpaceNormalsShader: {fileID: 4800000, guid: 775b53d4895325e43aaed5125b9e4aa8, type: 3}
+  outlineShader: {fileID: 4800000, guid: 23c1990c35fb0de41b1af4b9b4993899, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -123,12 +136,11 @@ MonoBehaviour:
     debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7, type: 3}
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
-  - {fileID: 7645089793207919771}
   - {fileID: -4638665247088934075}
   - {fileID: -4803469571571075521}
-  - {fileID: -8418030101206873507}
   - {fileID: 2106055577804241245}
-  m_RendererFeatureMap: 9b641f58a9d0186a458350d38826a0bf3fb61be1dfa556bd5dca043d39262d8b5d7940c063363a1d
+  - {fileID: -3689436661576960844}
+  m_RendererFeatureMap: 458350d38826a0bf3fb61be1dfa556bd5d7940c063363a1db4f4665de77ccccc
   m_UseNativeRenderPass: 1
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -153,7 +165,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   m_TransparentLayerMask:
     serializedVersion: 2
-    m_Bits: 8388607
+    m_Bits: 4294967295
   m_DefaultStencilState:
     overrideStencilState: 0
     stencilReference: 0
@@ -190,7 +202,7 @@ MonoBehaviour:
       normalBlend: 0
   m_CopyDepthPS: {fileID: 4800000, guid: d6dae50ee9e1bfa4db75f19f99355220, type: 3}
   m_DBufferClear: {fileID: 4800000, guid: f056d8bd2a1c7e44e9729144b4c70395, type: 3}
---- !u!114 &7645089793207919771
+--- !u!114 &8282673771809102829
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -199,11 +211,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d613f08f173d4dd895bb07b3230baa9, type: 3}
-  m_Name: FullScreenPassRendererFeature
+  m_Script: {fileID: 11500000, guid: 344da6d9533c5e74991608b7368b9604, type: 3}
+  m_Name: ScreenSpaceOutlines
   m_EditorClassIdentifier: 
-  m_Active: 0
-  passMaterial: {fileID: 2100000, guid: b7cf6afea5c4d2f41a5625276009a006, type: 2}
-  injectionPoint: 450
-  requirements: 6
-  passIndex: 0
+  m_Active: 1
+  renderPassEvent: 220
+  outlinesLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  viewSpaceNormalsTextureSettings:
+    colorFormat: 0
+    depthBufferBits: 2
+    backgroundColor: {r: 0, g: 0, b: 0, a: 1}
