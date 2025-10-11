@@ -1,4 +1,6 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 /// <summary>
@@ -11,11 +13,14 @@ public sealed class PlayerView : MonoBehaviour
     [SerializeField] private Animator _anim;
     [SerializeField] private ParticleSystem _shootFX;
     [SerializeField] private ParticleSystem _smashFX;
-
+    [SerializeField] private GameObject _decal;
+    
     [Header("UI (opcional)")]
     [SerializeField] private Image _headTimerFill; 
     [SerializeField] private Sprite _spriteHead;
     [SerializeField] private Sprite _spriteNormalOrSmall;
+
+    public GameObject Decal => _decal;
 
     public void SetMoveSpeedVisual(float normalized)
     {

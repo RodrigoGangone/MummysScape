@@ -77,4 +77,9 @@ public sealed class PlayerContext
         return _interactions != null && _interactions.TryGetSwingTarget(Tf, out hook);
     }
 
+    public bool TryGetAim(out Vector3 pos)
+    {
+        pos = default;
+        return _interactions != null && _interactions.TryGetAim(Tf, out pos);
+    }
 }
