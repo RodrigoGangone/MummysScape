@@ -205,6 +205,7 @@ MonoBehaviour:
   _anim: {fileID: 6364997378442541290}
   _shootFX: {fileID: 0}
   _smashFX: {fileID: 0}
+  _decal: {fileID: 0}
   _headTimerFill: {fileID: 0}
   _spriteHead: {fileID: 0}
   _spriteNormalOrSmall: {fileID: 0}
@@ -398,9 +399,15 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _attractSpeedBase: 1
-  halfExtents: {x: 20, y: 20, z: 20}
-  direction: {x: 0, y: 0, z: 0}
-  origin: {x: 0, y: 0, z: 0}
+  halfExtents: {x: 5, y: 5, z: 7}
+  origin: {x: 0, y: 5, z: 7}
+  _aimCollisionMask:
+    serializedVersion: 2
+    m_Bits: 34816
+  _maxDistance: 30
+  _arcHeight: 1
+  _simMaxSteps: 30
+  projectilePrefab: {fileID: 4244213049846939078, guid: 011b58be85439664b81e66da92352330, type: 3}
   _drawGizmos: 1
   _hitColor: {r: 0.2, g: 1, b: 0.2, a: 0.9}
   _missColor: {r: 1, g: 0.2, b: 0.2, a: 0.9}
@@ -451,9 +458,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
-  m_Height: 2
+  m_Height: 1
   m_Direction: 1
-  m_Center: {x: 0, y: 0.5, z: 0}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &321015491591606409
 MonoBehaviour:
   m_ObjectHideFlags: 0
