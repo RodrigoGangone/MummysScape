@@ -153,7 +153,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         return _runtimePrimarySkill != null && _runtimePrimarySkill.TryExecute(wm, this, _time);
     }
 
-    public bool TryUseSkillB()
+    private bool TryUseSkillB()
     {
         Debug.Log("TryExecuteB");
         var wm = BuildWorldModel();
