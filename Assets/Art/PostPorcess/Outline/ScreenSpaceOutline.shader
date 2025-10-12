@@ -21,13 +21,13 @@ Shader "Hidden/ScreenSpaceOutline"
         _UseDepth("Use Depth", Float) = 1
         _UseNormals("Use Normals", Float) = 1
     }
+   
     SubShader
     {
-        Tags { "RenderType"="Opaque" "Queue"="Transparent" "RenderPipeline"="UniversalRenderPipeline" }
+        // Tags eliminados para evitar conflictos en un blit de post-proceso.
         Pass
         {
             Name "ScreenSpaceOutline"
-            Tags { "LightMode"="UniversalForward" } // se llama con Blit
 
             ZWrite Off
             ZTest Always
@@ -57,21 +57,29 @@ Shader "Hidden/ScreenSpaceOutline"
             float  _RobertsCrossMultiplier;
             float  _DepthAttenuation;
             float  _DepthRelativeScale;
-
+            
             // Normal params
             float  _NormalsThreshold;
             float  _NormalSensitivity;
-
+            
             float  _UseDepth;
             float  _UseNormals;
 
-            struct Attributes { float4 positionOS: POSITION; float2 uv: TEXCOORD0; };
+            struct Attributes { float4 positionOS: POSITION; uint vertexID : SV_VertexID; };
             struct Varyings   { float4 positionCS: SV_POSITION; float2 uv: TEXCOORD0; };
 
-            Varyings vert (Attributes IN){
+            // #############################################################################
+            // ##############               CORRECCIÓN APLICADA AQUÍ              ##############
+            // #############################################################################
+            // El vertex shader fue reemplazado por el estándar para un "blit" a pantalla 
+            // completa en URP. El anterior usaba TransformObjectToHClip, que es para 
+            // renderizar geometría de objetos, no un efecto de post-proceso.
+            
+            Varyings vert(Attributes IN)
+            {
                 Varyings OUT;
-                OUT.positionCS = TransformObjectToHClip(IN.positionOS.xyz);
-                OUT.uv = IN.uv;
+                OUT.positionCS = GetFullScreenTriangleVertexPosition(IN.vertexID);
+                OUT.uv = GetFullScreenTriangleTexCoord(IN.vertexID);
                 return OUT;
             }
 
@@ -82,19 +90,17 @@ Shader "Hidden/ScreenSpaceOutline"
                 float3 n01 = SAMPLE_TEXTURE2D(_SceneViewSpaceNormals, sampler_SceneViewSpaceNormals, uv).xyz;
                 float3 nVS = normalize(n01 * 2.0 - 1.0);
                 float ndotv01 = saturate(abs(nVS.z)); // 1 frente, 0 canto
-                float oneMinus = 1.0 - ndotv01;       // 0..1 (canto)
+                float oneMinus = 1.0 - ndotv01; // 0..1 (canto)
                 return (_UseDepth > 0.5) ? (1.0 + oneMinus) : 1.0;
             }
 
             // --- Roberts Cross en profundidad (gradiente absoluto) ---
             inline float RobertsDepth(float2 uv, float2 texel, float thickness){
                 float2 d = texel * thickness;
-
                 float zTR = EyeDepth(SampleSceneDepth(uv + d));
                 float zBL = EyeDepth(SampleSceneDepth(uv - d));
                 float zTL = EyeDepth(SampleSceneDepth(uv + float2(-d.x, d.y)));
                 float zBR = EyeDepth(SampleSceneDepth(uv + float2( d.x,-d.y)));
-
                 float g1 = zTR - zBL;
                 float g2 = zTL - zBR;
                 float gradSq = g1*g1 + g2*g2;
@@ -104,12 +110,10 @@ Shader "Hidden/ScreenSpaceOutline"
             // --- Roberts Cross en normales VS ---
             inline float RobertsNormals(float2 uv, float2 texel, float thickness){
                 float2 d = texel * thickness;
-
                 float3 nTR = SAMPLE_TEXTURE2D(_SceneViewSpaceNormals, sampler_SceneViewSpaceNormals, uv + d).xyz * 2.0 - 1.0;
                 float3 nBL = SAMPLE_TEXTURE2D(_SceneViewSpaceNormals, sampler_SceneViewSpaceNormals, uv - d).xyz * 2.0 - 1.0;
                 float3 nTL = SAMPLE_TEXTURE2D(_SceneViewSpaceNormals, sampler_SceneViewSpaceNormals, uv + float2(-d.x, d.y)).xyz * 2.0 - 1.0;
                 float3 nBR = SAMPLE_TEXTURE2D(_SceneViewSpaceNormals, sampler_SceneViewSpaceNormals, uv + float2( d.x,-d.y)).xyz * 2.0 - 1.0;
-
                 float3 g1 = nTR - nBL;
                 float3 g2 = nTL - nBR;
                 float gradSq = dot(g1,g1) + dot(g2,g2);
@@ -119,31 +123,19 @@ Shader "Hidden/ScreenSpaceOutline"
             half4 frag (Varyings IN) : SV_Target
             {
                 float2 texel = 1.0 / _ScreenParams.xy;
-
                 half4 src = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv);
-
                 float angleFactor = AngleFactorAtUV(IN.uv);
-
+                
                 // --- Profundidad ---
                 float depthMask = 0.0;
                 if (_UseDepth > 0.5)
                 {
                     float depthGrad = RobertsDepth(IN.uv, texel, _Thickness);
-
-                    // z local para terminos dependientes de distancia
-                    float zC = EyeDepth(SampleSceneDepth(IN.uv));
-
-                    // Atenuación por distancia (reduce “relleno” lejos)
-                    float distAtt = 1.0 / (1.0 + zC * _DepthAttenuation);
-
-                    // Componente relativa (divide por z local)
-                    float relTerm = (_DepthRelativeScale > 0.0) ? (depthGrad / max(zC, 1e-4)) * _DepthRelativeScale : 0.0;
-
-                    // Edge final con multiplicadores
+                    float zC = EyeDepth(SampleSceneDepth(IN.uv)); // z local para terminos dependientes de distancia
+                    float distAtt = 1.0 / (1.0 + zC * _DepthAttenuation); // Atenuación por distancia (reduce “relleno” lejos)
+                    float relTerm = (_DepthRelativeScale > 0.0) ? (depthGrad / max(zC, 1e-4)) * _DepthRelativeScale : 0.0; // Componente relativa (divide por z local)
                     float depthEdge = (depthGrad * distAtt + relTerm) * _RobertsCrossMultiplier;
-
-                    // Umbral con suavizado y relajado por ángulo
-                    float t0 = _DepthThreshold * angleFactor;
+                    float t0 = _DepthThreshold * angleFactor; // Umbral con suavizado y relajado por ángulo
                     float t1 = t0 + _DepthSmoothWidth;
                     depthMask = smoothstep(t0, t1, depthEdge);
                 }
@@ -165,10 +157,9 @@ Shader "Hidden/ScreenSpaceOutline"
                 float aTL = SAMPLE_TEXTURE2D(_SceneViewSpaceNormals, sampler_SceneViewSpaceNormals, IN.uv + float2(-d.x, d.y)).a;
                 float aBR = SAMPLE_TEXTURE2D(_SceneViewSpaceNormals, sampler_SceneViewSpaceNormals, IN.uv + float2( d.x,-d.y)).a;
                 float coverage = saturate(max(max(max(max(aC, aTR), aBL), aTL), aBR));
-
+                
                 // Combine solo depth/normals
                 float mask = max(depthMask, normalsMask) * coverage;
-
                 half3 outRgb = lerp(src.rgb, _OutlineColor.rgb, mask * _Blend);
                 return half4(outRgb, src.a);
             }

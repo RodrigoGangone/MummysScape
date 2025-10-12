@@ -8,7 +8,8 @@ Shader "Hidden/ViewSpaceNormalsShader"
         {
             Name "NormalsVS"
             // Va a usarse como overrideMaterial
-            Tags { "LightMode"="UniversalForward" }
+            Tags { "LightMode"="SRPDefaultUnlit" }
+           
             ZWrite Off
             Cull Back
             ZTest LEqual
@@ -34,10 +35,8 @@ Shader "Hidden/ViewSpaceNormalsShader"
             Varyings vert (Attributes IN)
             {
                 Varyings OUT;
-
                 //directo a clip desde object
                 OUT.positionCS = TransformObjectToHClip(IN.positionOS.xyz);
-
                 // Normal OS -> WS -> VS
                 float3 nWS = TransformObjectToWorldNormal(IN.normalOS);
                 float3 nVS = mul((float3x3)UNITY_MATRIX_V, nWS);
