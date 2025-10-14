@@ -44,10 +44,29 @@ public class PlayerInputStateDriver : MonoBehaviour
         var mv = _input.Move;
         bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
 
-        // 1) Ambiente: caída 
-        if (!_ctx.IsGrounded() && !_sm.IsCurrent(Swing))
+        // 1) Ambiente: caída/swing 
+        if (!_ctx.IsGrounded())
         {
-            _sm.ChangeState(Fall);
+            // Si ya estoy en Swing: lo mantengo mientras se sostenga Space.
+            if (_sm.IsCurrent(Swing))
+            {
+                if (!_input.IsSpaceHeld())
+                {
+                    _sm.ChangeState(Fall);
+                }
+                return; // No procesar otros estados en el aire.
+            }
+
+            // Permitir entrar a Swing desde Fall (con Space hold y target válido).
+            if (_input.IsSpaceHeld() && _ctx.TryGetSwingTarget(out _))
+            {
+                _sm.ChangeState(Swing);
+                return;
+            }
+
+            // Caso contrario: caer.
+            if (!_sm.IsCurrent(Fall))
+                _sm.ChangeState(Fall);
             return;
         }
 

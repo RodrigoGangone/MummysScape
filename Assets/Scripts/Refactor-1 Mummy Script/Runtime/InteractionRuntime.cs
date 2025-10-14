@@ -30,6 +30,7 @@ public sealed class InteractionRuntime : MonoBehaviour
     [Header("Swing Checker")] 
     
     [SerializeField] private Vector3 halfExtents = new(5, 5, 7);
+    [Tooltip("Offset LOCAL respecto al pivot del player (se transforma con su rotación).")]
     [SerializeField] private Vector3 origin = new(0, 5, 7);
 
     [Header("Shoot Checker")]
@@ -104,7 +105,10 @@ public sealed class InteractionRuntime : MonoBehaviour
     public bool TryGetSwingTarget(Transform playerTf, out Rigidbody target)
     {
         target = null;
-        Vector3 center = playerTf.position + origin;
+
+        // centro local del player
+        Vector3 center = playerTf.TransformPoint(origin);
+        // usa rotacion del player
         Collider[] hits = Physics.OverlapBox(center, halfExtents, playerTf.rotation, _interactMask);
 
         float minDist = float.MaxValue;
@@ -113,7 +117,7 @@ public sealed class InteractionRuntime : MonoBehaviour
         foreach (var hit in hits)
         {
             if (!hit.CompareTag("Hook")) continue;
-            Rigidbody rb = hit.attachedRigidbody;
+            var rb = hit.attachedRigidbody;
             if (rb == null) continue;
 
             float dist = Vector3.Distance(playerTf.position, rb.position);
@@ -232,20 +236,15 @@ public sealed class InteractionRuntime : MonoBehaviour
     {
         if (!_drawGizmos) return;
 
-        // SWING area (ya estaba)
         Transform tf = transform;
-        Vector3 center = tf.position + origin;
+        Vector3 center = tf.TransformPoint(origin);
         Quaternion rot = tf.rotation;
 
         Collider[] hits = Physics.OverlapBox(center, halfExtents, rot, _interactMask);
         bool anyHook = false;
         foreach (var hit in hits)
         {
-            if (hit.CompareTag("Hook"))
-            {
-                anyHook = true;
-                break;
-            }
+            if (hit.CompareTag("Hook")) { anyHook = true; break; }
         }
 
         Gizmos.color = anyHook ? _hitColor : _missColor;

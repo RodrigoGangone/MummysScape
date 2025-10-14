@@ -19,7 +19,16 @@ public sealed class PlayerView : MonoBehaviour
     [SerializeField] private Image _headTimerFill; 
     [SerializeField] private Sprite _spriteHead;
     [SerializeField] private Sprite _spriteNormalOrSmall;
+    
+    [Header("Swing Visual")]
+    [Tooltip("LineRenderer usado para dibujar la cuerda del hook.")]
+    [SerializeField] private LineRenderer _swingLine;
+    [Tooltip("Punto de salida visual de la cuerda. Si es null se usa el transform del player.")]
+    [SerializeField] private Transform _swingLineStart;
 
+    private Transform _swingLineEnd;   // hook (se asigna en SwingState)
+    private bool _swingLineActive;
+    
     public GameObject Decal => _decal;
 
     public void SetMoveSpeedVisual(float normalized)
@@ -49,5 +58,45 @@ public sealed class PlayerView : MonoBehaviour
     public void UpdateHeadTimer01(float n01)
     {
         if (_headTimerFill) _headTimerFill.fillAmount = Mathf.Clamp01(n01);
+    }
+    
+    
+    /// <summary>
+    /// Activa/Desactiva la cuerda del swing. Al activar, se pasa el transform del hook.
+    /// </summary>
+    public void SetSwingLineActive(bool active, Transform hookEnd = null)
+    {
+        _swingLineActive = active;
+        _swingLineEnd = hookEnd;
+
+        if (_swingLine)
+        {
+            _swingLine.enabled = active;
+            if (active)
+            {
+                _swingLine.positionCount = 2;
+                _swingLine.useWorldSpace = true;
+                RefreshSwingLineNow();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Refresca la posición de la cuerda (player -> hook). Llamado en LateUpdate para quedar al final del frame.
+    /// </summary>
+    private void RefreshSwingLineNow()
+    {
+        if (!_swingLineActive || !_swingLine || !_swingLineEnd) return;
+
+        var start = _swingLineStart ? _swingLineStart.position : transform.position;
+        var end   = _swingLineEnd.position;
+
+        _swingLine.SetPosition(0, start);
+        _swingLine.SetPosition(1, end);
+    }
+
+    private void LateUpdate()
+    {
+        if (_swingLineActive) RefreshSwingLineNow();
     }
 }
