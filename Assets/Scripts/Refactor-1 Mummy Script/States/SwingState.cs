@@ -2,40 +2,36 @@ using UnityEngine;
 
 /// <summary>
 /// SwingState
-/// - Activa/desactiva el spring al hook y la cuerda visual (LineRenderer en PlayerView).
-/// - Permite control de movimiento/rotación mientras se hace swing, pero al 25% de la
-///   velocidad/turning del size actual (50% menor que Walk/size).
-/// - Mantiene el update visual de velocidad acorde.
+/// - Conecta el spring al hook real (sin frames con ancla en (0,0,0)).
+/// - Movimiento por fuerzas: input proyectado al plano tangencial del cable (AddForce Acceleration).
+/// - Clamp de velocidad tangencial + brake cuando no hay input.
+/// - Rotación suave mirando la dirección de la velocidad tangencial.
 /// </summary>
 public class SwingState : State
 {
     private readonly PlayerContext _ctx;
     private Transform _hookTf;
 
-    // 50% menos => 50% del valor base
-    private const float SwingMultiplier = 0.50f;
-
     public SwingState(PlayerContext ctx) => _ctx = ctx;
 
     public override void OnEnter()
     {
-        Debug.Log("SwingState - OnEnter");
-
+        Debug.Log("SwingState - Enter");
+        // Buscar hook válido, si no hay salimos (evita joints mal configurados).
         if (_ctx.TryGetSwingTarget(out var hookRb))
         {
             _hookTf = hookRb.transform;
 
-            // Física
-            _ctx.SwingHandler.SetSpring(true);
-            _ctx.SwingHandler.SpringJoint.connectedBody = hookRb;
+            // Punto de enganche en mundo: si tu hook tiene un child "Anchor", úsalo.
+            Vector3 worldHookPoint = hookRb.worldCenterOfMass;
+            _ctx.SwingHandler.Attach(_ctx.Rb, hookRb, worldHookPoint);
 
-            // Visual (cuerda)
+            // Visual
             _ctx.View?.SetSwingLineActive(true, _hookTf);
         }
         else
         {
-            _ctx.SwingHandler.SetSpring(false);
-            _ctx.View?.SetSwingLineActive(false);
+            StateMachine.ChangeState(PlayerEnum.PlayerStateId.Fall);
         }
     }
 
@@ -43,33 +39,47 @@ public class SwingState : State
 
     public override void OnFixedUpdate()
     {
-        // Movimiento relativo a cámara con control reducido (25%).
+        var rb = _ctx.Rb;
+        var joint = _ctx.SwingHandler.SpringJoint;
+        if (joint == null) return;
+
         Vector2 mv = _ctx.Input.Move;
-        Vector3 dir = _ctx.CameraRelativeDir(mv.x, mv.y);
-        if (!(dir.sqrMagnitude > 0.0001f))
+        bool hasInput = mv.sqrMagnitude > 0.0001f;
+
+        // Dirección de input en mundo relativa a cámara
+        Vector3 wishDir = _ctx.CameraRelativeDir(mv.x, mv.y);
+
+        // Proyección al plano tangencial
+        Vector3 ropeDir = _ctx.SwingHandler.GetRopeDirWorld(rb);
+        Vector3 tanDir = Vector3.ProjectOnPlane(wishDir, ropeDir).normalized;
+
+        // Fuerza tangencial con input (aceleración independiente de la masa)
+        if (hasInput && tanDir.sqrMagnitude > 0f)
+            rb.AddForce(tanDir * _ctx.SwingHandler.TangentialAccel, ForceMode.Acceleration);
+        else
+            _ctx.SwingHandler.HandlePassiveReturn(rb, Time.fixedDeltaTime); // <<< cambio clave
+
+        // Clamp para evitar “boost infinito”
+        _ctx.SwingHandler.ClampTangentialSpeed(rb);
+
+        // Mirar según la velocidad tangencial (opcional)
+        Vector3 v = rb.velocity;
+        Vector3 vTan = v - Vector3.Project(v, ropeDir);
+        Vector3 face = new Vector3(vTan.x, 0f, vTan.z);
+        if (face.sqrMagnitude > 0.001f)
         {
-            _ctx.View?.SetMoveSpeedVisual(0f);
-            return;
+            Quaternion target = Quaternion.LookRotation(face.normalized, Vector3.up);
+            rb.MoveRotation(Quaternion.Slerp(rb.rotation, target, 12f * Time.fixedDeltaTime));
         }
 
-        float move = _ctx.MoveSpeed * SwingMultiplier;
-        float turn = _ctx.TurnSpeed * SwingMultiplier;
-
-        Vector3 targetPos = _ctx.Rb.position + dir * (move * Time.fixedDeltaTime);
-        _ctx.Rb.MovePosition(targetPos);
-
-        Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
-        Quaternion smoothRot = Quaternion.Slerp(_ctx.Rb.rotation, targetRot, turn * Time.fixedDeltaTime);
-        _ctx.Rb.MoveRotation(smoothRot);
-
-        // Normalizo visualmente a 0.25
-        _ctx.View?.SetMoveSpeedVisual(SwingMultiplier);
+        // UI velocidad (opcional)
+        float n = Mathf.Clamp01(vTan.magnitude / Mathf.Max(0.01f, _ctx.SwingHandler.MaxTangentialSpeed));
+        _ctx.View?.SetMoveSpeedVisual(n);
     }
 
     public override void OnExit()
     {
-        Debug.Log("SwingState - OnExit");
-        _ctx.SwingHandler.SetSpring(false);
+        _ctx.SwingHandler.Detach();
         _ctx.View?.SetSwingLineActive(false);
         _hookTf = null;
     }

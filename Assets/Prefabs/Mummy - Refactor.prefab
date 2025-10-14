@@ -261,7 +261,7 @@ GameObject:
   - component: {fileID: 5864962739761171907}
   - component: {fileID: 163754945814248792}
   - component: {fileID: 6364997378442541290}
-  - component: {fileID: 5410825639262243543}
+  - component: {fileID: 6743598973724631453}
   m_Layer: 0
   m_Name: View
   m_TagString: Untagged
@@ -303,10 +303,11 @@ MonoBehaviour:
   _shootFX: {fileID: 0}
   _smashFX: {fileID: 0}
   _decal: {fileID: 0}
+  _rangeIndicator: {fileID: 0}
   _headTimerFill: {fileID: 0}
   _spriteHead: {fileID: 0}
   _spriteNormalOrSmall: {fileID: 0}
-  _swingLine: {fileID: 5410825639262243543}
+  _swingLine: {fileID: 6743598973724631453}
   _swingLineStart: {fileID: 6578946205384916507}
 --- !u!95 &6364997378442541290
 Animator:
@@ -329,7 +330,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!120 &5410825639262243543
+--- !u!120 &6743598973724631453
 LineRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
@@ -734,10 +735,11 @@ MonoBehaviour:
   _aimCollisionMask:
     serializedVersion: 2
     m_Bits: 34816
-  _maxDistance: 30
+  projectilePrefab: {fileID: 4244213049846939078, guid: 011b58be85439664b81e66da92352330, type: 3}
+  _aimMaxDistance: 0
+  _maxAimHeight: 0
   _arcHeight: 1
   _simMaxSteps: 30
-  projectilePrefab: {fileID: 4244213049846939078, guid: 011b58be85439664b81e66da92352330, type: 3}
   _drawGizmos: 1
   _hitColor: {r: 0.2, g: 1, b: 0.2, a: 0.9}
   _missColor: {r: 1, g: 0.2, b: 0.2, a: 0.9}
@@ -842,11 +844,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 638bffa284ed48c4e9fcd32e629598e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minDistance: 1.25
-  maxDistance: 2.25
-  spring: 50
-  damper: 18
-  massScale: 150
+  _minDistance: 2.25
+  _maxDistance: 2.5
+  _spring: 30
+  _damper: 16
+  _massScale: 100
+  _maxTangentialSpeed: 6
+  _tangentialAcceleration: 10
+  _useGravityAssist: 1
+  _gravityAssist: 2
+  _tangentialBrake: 5
 --- !u!1 &8165472457341092244
 GameObject:
   m_ObjectHideFlags: 0
