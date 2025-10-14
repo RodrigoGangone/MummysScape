@@ -14,6 +14,7 @@ public sealed class PlayerView : MonoBehaviour
     [SerializeField] private ParticleSystem _shootFX;
     [SerializeField] private ParticleSystem _smashFX;
     [SerializeField] private GameObject _decal;
+    [SerializeField] private GameObject _rangeIndicator;
     
     [Header("UI (opcional)")]
     [SerializeField] private Image _headTimerFill; 
@@ -21,6 +22,7 @@ public sealed class PlayerView : MonoBehaviour
     [SerializeField] private Sprite _spriteNormalOrSmall;
 
     public GameObject Decal => _decal;
+    public GameObject RangeIndicator => _rangeIndicator;
 
     public void SetMoveSpeedVisual(float normalized)
     {

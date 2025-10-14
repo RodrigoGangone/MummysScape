@@ -43,6 +43,7 @@ public sealed class PlayerContext
     public AnimationCurve AttractSpeedCurve => _interactions ? _interactions.AttractSpeedCurve : AnimationCurve.Linear(0,1,1,1);
     public float AttractSpeedBase => _interactions ? _interactions.AttractSpeedBase : 1f;
     public GameObject ProjectilePrefab => _interactions.ProjectilePrefab;
+    public float AimMaxDistance => _interactions.AimMaxDistance; // <--- NUEVA LÍNEA (para acceder al rango)
 
 
     /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>c
@@ -77,9 +78,10 @@ public sealed class PlayerContext
         return _interactions != null && _interactions.TryGetSwingTarget(Tf, out hook);
     }
 
-    public bool TryGetAim(out Vector3 pos)
+    public bool TryGetAim(out Vector3 pos, out Vector3 norm)
     {
         pos = default;
-        return _interactions != null && _interactions.TryGetAim(Tf, out pos);
+        norm = default;
+        return _interactions != null && _interactions.TryGetAim(Tf, out pos, out norm);
     }
 }

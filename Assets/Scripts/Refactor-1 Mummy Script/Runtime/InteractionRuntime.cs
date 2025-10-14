@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -13,39 +14,38 @@ using UnityEngine.Serialization;
 [DisallowMultipleComponent]
 public sealed class InteractionRuntime : MonoBehaviour
 {
-    [Header("Push Checker")]
-    
+    [Header("Push Checker")] 
     [SerializeField] private float _heightY = 1.0f;
     [SerializeField] private float _distance = 1.0f;
     [SerializeField] private float _separation = 0.5f;
     [SerializeField] private LayerMask _interactMask;
 
     [Header("Attract Checker")] 
-    
     [SerializeField] private float _attractMinDistance = 1.0f;
     [SerializeField] private float _attractMaxDistance = 5.0f;
     [SerializeField] private AnimationCurve _attractSpeedAC = AnimationCurve.Linear(0, 1, 1, 1);
+    
     [SerializeField, Min(0f)] private float _attractSpeedBase = 1.0f;
 
     [Header("Swing Checker")] 
-    
-    [SerializeField] private Vector3 halfExtents = new(5, 5, 7);
+    [SerializeField]private Vector3 halfExtents = new(5, 5, 7);
     [SerializeField] private Vector3 origin = new(0, 5, 7);
 
-    [Header("Shoot Checker")]
-    
-    [SerializeField] private LayerMask _aimCollisionMask = ~0; // configurá Ground/Environment
-    [SerializeField, Range(0, 30)] private float _maxDistance;
+    [Header("Shoot Checker")] 
+    [SerializeField] private LayerMask _aimCollisionMask = ~0;
+    [SerializeField] private GameObject projectilePrefab;
+
+    [SerializeField, Range(0, 30)] private float _aimMaxDistance;
+    [SerializeField, Range(-5, 5)] private float _maxAimHeight;
     [SerializeField, Range(0, 30)] private float _arcHeight;
     [SerializeField, Range(0, 200)] private int _simMaxSteps;
-    [SerializeField] private GameObject projectilePrefab;
     
     // propiedad para que los States lean el mismo valor (exponen datos, no lógica)
     public float AttractMinDistance => _attractMinDistance;
     public float AttractMaxDistance => _attractMaxDistance;
     public AnimationCurve AttractSpeedCurve => _attractSpeedAC;
     public float AttractSpeedBase => _attractSpeedBase;
-    
+    public float AimMaxDistance => _aimMaxDistance;
     public GameObject ProjectilePrefab => projectilePrefab;
 
     [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
@@ -172,50 +172,64 @@ public sealed class InteractionRuntime : MonoBehaviour
         return _aEligible;
     }
 
-    // -------------------- SHOOT --------------------
-    
-    public bool TryGetAim(Transform playertf, out Vector3 hitPoint)
+    // -------------------- AIM --------------------
+
+    public bool TryGetAim(Transform playertf, out Vector3 hitPoint, out Vector3 hitNormal)
     {
         hitPoint = default;
-        SimpleShootData.Path = null; // limpiar siempre
+        hitNormal = Vector3.up;
+        SimpleShootData.Path = null;
 
-        // 1) Origen
+        // 1) Origen del disparo
         Vector3 start = playertf.position + Vector3.up * 1.0f;
 
-        // 2) Punto “deseado” desde cámara (guía)
+        // 2) Punto “deseado” desde la cámara (guía)
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Vector3 desired = Physics.Raycast(ray, out RaycastHit camHit, 100f, ~0, QueryTriggerInteraction.Ignore)
-            ? camHit.point
-            : ray.GetPoint(_maxDistance);
+        Vector3 desired =
+            Physics.Raycast(ray, out RaycastHit camHit, 200f, _aimCollisionMask, QueryTriggerInteraction.Ignore)
+                ? camHit.point
+                : ray.GetPoint(200f);
 
-        // 3) Dirección horizontal
+        // 3) Dirección y distancia horizontal al punto deseado
         Vector3 toDesired = desired - start;
         Vector3 dirXZ = new Vector3(toDesired.x, 0f, toDesired.z);
         float distXZ = dirXZ.magnitude;
-        if (distXZ > 1e-3f) dirXZ /= distXZ; else { dirXZ = playertf.forward; distXZ = 1f; }
 
+        if (distXZ > _aimMaxDistance)
+            return false;
+
+        if (distXZ > 1e-3f) 
+            dirXZ.Normalize();
+        else 
+            dirXZ = playertf.forward;
+        
         // 4) Parámetros del arco “plantilla”
-        float L      = Mathf.Min(_maxDistance, distXZ);
+        float L = distXZ;
         float height = toDesired.y;
-        int   steps  = Mathf.Max(6, _simMaxSteps);
 
-        // 5) Muestreo y colisión por segmentos + bake del path
+        // Limita la altura del punto de destino para que no supere nuestro máximo.
+        height = Mathf.Min(height, _maxAimHeight);
+
+        int steps = Mathf.Max(6, _simMaxSteps);
+
+        // 5) Muestreo y colisión por segmentos (sin cambios)
         var points = new List<Vector3>(steps + 1);
         Vector3 prev = start;
         points.Add(prev);
 
         for (int i = 1; i <= steps; i++)
         {
-            float s = i / (float)steps;                 // 0..1
-            Vector3 flat = start + dirXZ * (L * s);     // avance horizontal
-            float y = Mathf.Lerp(0f, height, s) + 4f * _arcHeight * s * (1f - s); // apex en s=0.5
+            float s = i / (float)steps;
+            Vector3 flat = start + dirXZ * (L * s);
+            float y = Mathf.Lerp(0f, height, s) + 4f * _arcHeight * s * (1f - s);
             Vector3 p = new Vector3(flat.x, start.y + y, flat.z);
 
             if (Physics.Linecast(prev, p, out RaycastHit h, _aimCollisionMask, QueryTriggerInteraction.Ignore))
             {
                 hitPoint = h.point;
-                points.Add(hitPoint);          
-                SimpleShootData.Path = points; 
+                hitNormal = h.normal;
+                points.Add(hitPoint);
+                SimpleShootData.Path = points;
                 return true;
             }
 
@@ -223,7 +237,8 @@ public sealed class InteractionRuntime : MonoBehaviour
             prev = p;
         }
 
-        // No golpeó nada => no hay Aim válido
+        SimpleShootData.Path = points;
+        hitPoint = points[points.Count - 1];
         return false;
     }
 
@@ -276,5 +291,27 @@ public sealed class InteractionRuntime : MonoBehaviour
         // marca de distancia mínima
         var minMark = _aOrigin + ((_aEnd - _aOrigin).normalized * _attractMinDistance);
         Gizmos.DrawWireSphere(minMark, 0.05f);
+
+        
+        //AIM
+
+        // 1. DIBUJAR RANGO MÁXIMO (CÍRCULO)
+        Handles.color = new Color(0.1f, 0.7f, 1f, 0.5f);
+        Handles.DrawWireDisc(transform.position, Vector3.up, _aimMaxDistance);
+
+        // 2. DIBUJAR TRAYECTORIA Y PUNTO DE IMPACTO
+        if (SimpleShootData.Path != null && SimpleShootData.Path.Count > 1)
+        {
+            Gizmos.color = _hitColor;
+            for (int i = 0; i < SimpleShootData.Path.Count - 1; i++)
+            {
+                Gizmos.DrawLine(SimpleShootData.Path[i], SimpleShootData.Path[i + 1]);
+            }
+
+            // Dibuja el punto de impacto final
+            Vector3 impactPoint = SimpleShootData.Path[SimpleShootData.Path.Count - 1];
+            Gizmos.color = _hitColor;
+            Gizmos.DrawSphere(impactPoint, 0.25f);
+        }
     }
 }
