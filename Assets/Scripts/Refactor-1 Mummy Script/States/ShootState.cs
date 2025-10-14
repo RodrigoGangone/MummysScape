@@ -22,7 +22,7 @@ public sealed class ShootState : State
 
         var go = Object.Instantiate(_projectile, start, rot);
 
-        go.GetComponent<BandageProjectile>().Play(path, 10);
+        go.GetComponent<BandageProjectile>().Play(path, 30);
     }
 
 

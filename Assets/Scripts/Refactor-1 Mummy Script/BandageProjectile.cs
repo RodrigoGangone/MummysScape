@@ -13,6 +13,7 @@ public class BandageProjectile : MonoBehaviour
             while (transform.position != target)
             {
                 transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+                transform.LookAt(target);
                 yield return null;
             }
         }
