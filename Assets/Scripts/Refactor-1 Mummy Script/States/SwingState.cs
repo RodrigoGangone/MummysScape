@@ -4,7 +4,7 @@ using UnityEngine;
 /// SwingState
 /// - Activa/desactiva el spring al hook y la cuerda visual (LineRenderer en PlayerView).
 /// - Permite control de movimiento/rotación mientras se hace swing, pero al 25% de la
-///   velocidad/turning del size actual (75% menor que Walk/size).
+///   velocidad/turning del size actual (50% menor que Walk/size).
 /// - Mantiene el update visual de velocidad acorde.
 /// </summary>
 public class SwingState : State
@@ -12,8 +12,8 @@ public class SwingState : State
     private readonly PlayerContext _ctx;
     private Transform _hookTf;
 
-    // 75% menos => 25% del valor base
-    private const float SwingMultiplier = 0.25f;
+    // 50% menos => 50% del valor base
+    private const float SwingMultiplier = 0.50f;
 
     public SwingState(PlayerContext ctx) => _ctx = ctx;
 

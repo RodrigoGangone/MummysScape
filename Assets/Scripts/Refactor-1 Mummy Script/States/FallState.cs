@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// FallState
-/// - Control aéreo y rotación reducidos al 25% (75% menor) respecto del size actual.
+/// - Control aéreo y rotación reducidos al 50% (50% menor) respecto del size actual.
 /// - No anula gravedad: sólo suma un desplazamiento horizontal limitado y orienta suavemente.
 /// - Mantiene feedback visual de velocidad acorde al control disponible.
 /// </summary>
@@ -10,8 +10,8 @@ public class FallState : State
 {
     private readonly PlayerContext _ctx;
 
-    // 75% menos => 25% del valor base
-    private const float AirMultiplier = 0.25f;
+    // 50% menos => 50% del valor base
+    private const float AirMultiplier = 0.50f;
 
     public FallState(PlayerContext ctx) => _ctx = ctx;
 
