@@ -13,7 +13,9 @@ AnimatorState:
   m_Transitions:
   - {fileID: -5131303872567224068}
   - {fileID: 248510803509200358}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: -830671032282449977}
+  - {fileID: 263729180004533529}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -68,7 +70,8 @@ AnimatorState:
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 6755671115843693862}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: -6603687404894994584}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -83,6 +86,20 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!114 &-6603687404894994584
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: BS_Entry
+  triggerTime: 0.8
 --- !u!1101 &-6377857070148427707
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -139,6 +156,20 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &-3466737070433625319
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: BS_SkillEnd
+  triggerTime: 0.8
 --- !u!1109 &-3141187139442619439
 AnimatorTransition:
   m_ObjectHideFlags: 1
@@ -164,7 +195,8 @@ AnimatorState:
   m_Speed: 0.25
   m_CycleOffset: 0
   m_Transitions: []
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: 1811674831651672678}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -179,6 +211,34 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!114 &-1233891470001152301
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: BS_Entry
+  triggerTime: 0.875
+--- !u!114 &-830671032282449977
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: BS_PrimaryLaunch
+  triggerTime: 0.6
 --- !u!91 &9100000
 AnimatorController:
   m_ObjectHideFlags: 0
@@ -253,6 +313,34 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &263729180004533529
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: BS_SkillEnd
+  triggerTime: 0.8
+--- !u!114 &1811674831651672678
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: BS_Die
+  triggerTime: 0.8
 --- !u!1101 &2557595308798366711
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -358,7 +446,9 @@ AnimatorState:
   m_Transitions:
   - {fileID: -8528642511208444991}
   - {fileID: -6377857070148427707}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: 7772720325728094673}
+  - {fileID: -3466737070433625319}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -420,6 +510,20 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &7772720325728094673
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: BS_SecondaryLaunch
+  triggerTime: 0.4
 --- !u!1101 &8142170730184155737
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
