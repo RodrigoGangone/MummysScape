@@ -7,54 +7,8 @@ public class UIBandageManager : MonoBehaviour
     [SerializeField] private BandageController bandageOneController;
 
     [SerializeField] private BandageController bandageTwoController;
-
-
-    //debug
-    public int _currentBandages = 2;
-
-    private void OnDisable()
-    {
-        GameEventManager.Instance.playerEvents.OnBandageCount.Unregister<int>(UpdateBandageCount);
-    }
-
-    private void Start()
-    {
-        //debug 
-        GameEventManager.Instance.playerEvents.OnBandageCount.Register<int>(UpdateBandageCount);
-        GameEventManager.Instance.playerEvents.OnBandageCount.Raise(_currentBandages);
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            if (_currentBandages > 0)
-            {
-                _currentBandages--;
-                GameEventManager.Instance.playerEvents.OnBandageCount.Raise(_currentBandages);
-                Debug.Log("++");
-                //UpdateBandageCount(_currentBandages);
-            }
-        }
-
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            if (_currentBandages < 2)
-            {
-                _currentBandages++;
-                GameEventManager.Instance.playerEvents.OnBandageCount.Raise(_currentBandages);
-                Debug.Log("--");
-                //UpdateBandageCount(_currentBandages);
-            }
-        }
-    }
-
-    /// <summary>
-    /// El método principal para actualizar la UI.
-    /// Llámalo desde tu script de Player cada vez que la cantidad de vendas cambie.
-    /// </summary>
-    /// <param name="currentBandageCount">La cantidad actual de vendas (0, 1, o 2).</param>
-    public void UpdateBandageCount(int currentBandageCount)
+    
+    private void UpdateBandageCount(int currentBandageCount)
     {
         // Usamos un switch para que la lógica sea súper clara.
         switch (currentBandageCount)
@@ -89,4 +43,8 @@ public class UIBandageManager : MonoBehaviour
 
     [ContextMenu("Test: Set Count to 2")]
     private void TestSetCountToTwo() => UpdateBandageCount(2);
+    
+    private void OnEnable() => GameEventManager.Instance.playerEvents.OnBandageCount.Register<int>(UpdateBandageCount);
+    private void OnDisable() => GameEventManager.Instance.playerEvents.OnBandageCount.Unregister<int>(UpdateBandageCount);
+
 }

@@ -83582,6 +83582,57 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 182332734284622658, guid: ebe4e5d10dbd797449a0a994feca3487, type: 3}
   m_Mode: 0
+--- !u!1 &1537839705
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1537839707}
+  - component: {fileID: 1537839706}
+  m_Layer: 0
+  m_Name: GameEventManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1537839706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1537839705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e677a5f13d590134a86333401df2b8da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bossEvents:
+    OnBossDeath: {fileID: 0}
+    OnStageChanged: {fileID: 0}
+  playerEvents:
+    OnBandageCount: {fileID: 11400000, guid: c16a33d0f4dfdda45a2e4cfd4e388b71, type: 2}
+    OnDeath: {fileID: 0}
+    OnRespawn: {fileID: 0}
+--- !u!4 &1537839707
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1537839705}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.3081748, y: 13.803526, z: 1.5035677}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1546636650
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -88538,7 +88589,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 466187389293970183, guid: 7bd627ddee556c440a3d556c8e231e71, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5196650215281373347, guid: 7bd627ddee556c440a3d556c8e231e71, type: 3}
       propertyPath: _mummyUI
@@ -97964,6 +98015,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 1.110223e-18
       objectReference: {fileID: 0}
+    - target: {fileID: 2344862306842074826, guid: e252dab61b1a3f2468057b4301eacb09, type: 3}
+      propertyPath: groundMask.m_Bits
+      value: 1083393
+      objectReference: {fileID: 0}
     - target: {fileID: 2510217531220542060, guid: e252dab61b1a3f2468057b4301eacb09, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.000000333786
@@ -106868,7 +106923,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1131867531602732613, guid: d006febb7ed7e4b469b27eb5e280f65d, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8614338360326837718, guid: d006febb7ed7e4b469b27eb5e280f65d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -118389,3 +118444,4 @@ SceneRoots:
   - {fileID: 1922392858}
   - {fileID: 2050787995}
   - {fileID: 251051758}
+  - {fileID: 1537839707}

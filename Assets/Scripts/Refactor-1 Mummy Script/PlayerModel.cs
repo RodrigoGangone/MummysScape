@@ -15,12 +15,13 @@ public sealed class PlayerModel
     public int Bandages { get; private set; }
     public PlayerSize Size => MapSize(Bandages);
 
-    public event Action<int,int> OnBandagesChanged;
+    public event Action<int> OnBandagesChanged;
     public event Action<PlayerSize> OnSizeChanged;
 
     public PlayerModel()
     {
         Bandages = Clamp(MaxBandages, MinBandages, MaxBandages);
+        GameEventManager.Instance.playerEvents.OnBandageCount.Raise(Bandages);
     }
 
     public bool TryConsumeBandage(int amount = 1)
@@ -46,8 +47,8 @@ public sealed class PlayerModel
 
         Bandages = clamped;
         var newSize = MapSize(Bandages);
-
-        OnBandagesChanged?.Invoke(oldBand, Bandages);
+        
+        GameEventManager.Instance.playerEvents.OnBandageCount.Raise(Bandages);
         if (newSize != oldSize) OnSizeChanged?.Invoke(newSize);
     }
 
