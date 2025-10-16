@@ -1,11 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 #if UNITY_EDITOR
-using UnityEditor;
-using UnityEngine;
-
 [CustomEditor(typeof(GameEvent))]
 public class CustomGameEvent : Editor
 {
@@ -20,22 +16,39 @@ public class CustomGameEvent : Editor
 
         if (Application.isPlaying)
         {
-            if (gameEvent.Listeners.Count == 0)
+            int total = gameEvent.NoParamListeners.Count + gameEvent.ParamListeners.Count;
+
+            if (total == 0)
             {
                 EditorGUILayout.LabelField("   (no listeners)");
             }
             else
             {
-                foreach (var listener in gameEvent.Listeners)
+                if (gameEvent.NoParamListeners.Count > 0)
                 {
-                    if (listener != null)
-                        EditorGUILayout.LabelField($" - {listener.Target} → {listener.Method.Name}");
+                    EditorGUILayout.LabelField("Without Parameters:", EditorStyles.boldLabel);
+                    foreach (var listener in gameEvent.NoParamListeners)
+                    {
+                        if (listener != null)
+                            EditorGUILayout.LabelField($" • {listener.Target} → {listener.Method.Name}");
+                    }
+                }
+
+                if (gameEvent.ParamListeners.Count > 0)
+                {
+                    EditorGUILayout.Space(4);
+                    EditorGUILayout.LabelField("With Parameters:", EditorStyles.boldLabel);
+                    foreach (var listener in gameEvent.ParamListeners)
+                    {
+                        if (listener != null)
+                            EditorGUILayout.LabelField($" • {listener.Target} → {listener.Method.Name}");
+                    }
                 }
             }
         }
         else
         {
-            EditorGUILayout.HelpBox("Run the game to see subscribers.", MessageType.Info);
+            EditorGUILayout.HelpBox("Run the game to see current subscribers.", MessageType.Info);
         }
     }
 }
