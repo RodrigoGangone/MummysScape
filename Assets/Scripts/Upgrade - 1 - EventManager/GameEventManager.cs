@@ -17,9 +17,9 @@ public class GameEventManager : MonoBehaviour
     [Serializable]
     public struct PlayerEvents
     {
-        public GameEvent OnPlayerDamaged;
-        public GameEvent OnPlayerDeath;
-        public GameEvent OnPlayerRespawn;
+        public GameEvent OnBandageCount;
+        public GameEvent OnDeath;
+        public GameEvent OnRespawn;
     }
 
     [Header("Boss Events")] 

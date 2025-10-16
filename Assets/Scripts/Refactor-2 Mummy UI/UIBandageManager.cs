@@ -4,21 +4,24 @@ using UnityEngine;
 public class UIBandageManager : MonoBehaviour
 {
     // Desde el Inspector, arrastra aquí tus dos objetos de la UI.
-    [SerializeField]
-    private BandageController bandageOneController; 
+    [SerializeField] private BandageController bandageOneController;
 
-    [SerializeField]
-    private BandageController bandageTwoController;
-    
-    
-    
+    [SerializeField] private BandageController bandageTwoController;
+
+
     //debug
     public int _currentBandages = 2;
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.playerEvents.OnBandageCount.Unregister<int>(UpdateBandageCount);
+    }
 
     private void Start()
     {
         //debug 
-        UpdateBandageCount(_currentBandages);
+        GameEventManager.Instance.playerEvents.OnBandageCount.Register<int>(UpdateBandageCount);
+        GameEventManager.Instance.playerEvents.OnBandageCount.Raise(_currentBandages);
     }
 
     private void Update()
@@ -28,15 +31,20 @@ public class UIBandageManager : MonoBehaviour
             if (_currentBandages > 0)
             {
                 _currentBandages--;
-                UpdateBandageCount(_currentBandages);
+                GameEventManager.Instance.playerEvents.OnBandageCount.Raise(_currentBandages);
+                Debug.Log("++");
+                //UpdateBandageCount(_currentBandages);
             }
         }
+
         if (Input.GetKeyDown(KeyCode.K))
         {
             if (_currentBandages < 2)
             {
                 _currentBandages++;
-                UpdateBandageCount(_currentBandages);
+                GameEventManager.Instance.playerEvents.OnBandageCount.Raise(_currentBandages);
+                Debug.Log("--");
+                //UpdateBandageCount(_currentBandages);
             }
         }
     }
@@ -75,7 +83,7 @@ public class UIBandageManager : MonoBehaviour
     // --- Métodos de prueba para usar desde el Inspector ---
     [ContextMenu("Test: Set Count to 0")]
     private void TestSetCountToZero() => UpdateBandageCount(0);
-    
+
     [ContextMenu("Test: Set Count to 1")]
     private void TestSetCountToOne() => UpdateBandageCount(1);
 
