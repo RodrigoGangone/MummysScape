@@ -155,7 +155,7 @@ public class Player : MonoBehaviour
         levelManager.OnPlayerWin += Win;
         levelManager.OnPlayerDeath += Death;
 
-        GameEventManager.Instance.playerEvents.OnPlayerDeath.RegisterEvent(Death);
+        //GameEventManager.Instance.playerEvents.OnPlayerDeath.RegisterEvent(Death);
     }
 
     private void Start()

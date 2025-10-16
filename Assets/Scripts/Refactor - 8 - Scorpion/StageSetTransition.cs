@@ -97,13 +97,20 @@ public class StageSetTransition : MonoBehaviour
     }
 
     /// <summary>
-    /// Si el boss muere, opcionalmente bajamos y apagamos el actual.
+    /// Al morir el boss: AVANZAR al siguiente stage (victoria).
+    /// Si no hay siguiente configurado, no hace nada (evita bajar/apagar).
     /// </summary>
     private void OnBossDeath()
     {
-        // Podés dejarlo así o hacer una última bajada y apagado:
-        if (IsValidIndex(currentStageIndex))
-            StartTransition(currentStageIndex, -1); // -1 => sin entrante, solo bajar y apagar.
+        int next = currentStageIndex + 1;
+        if (IsValidIndex(next))
+        {
+            TransitionTo(next);
+        }
+        else
+        {
+            Debug.LogWarning("[StageSetTransition] BossDeath: no hay un siguiente stage (plataforma de victoria) configurado.");
+        }
     }
 
     /// <summary>
@@ -128,10 +135,10 @@ public class StageSetTransition : MonoBehaviour
             return;
         }
 
-        // Si nextIndex es inválido, solo bajar y apagar el actual (por si querés un “fin de secuencia”)
+        // Si nextIndex es inválido, NO bajes ni apagues: simplemente no hagas nada.
         if (!IsValidIndex(nextIndex))
         {
-            StartTransition(currentStageIndex, -1);
+            Debug.LogWarning("[StageSetTransition] TransitionTo: índice de destino inválido, se ignora la transición.");
             return;
         }
 

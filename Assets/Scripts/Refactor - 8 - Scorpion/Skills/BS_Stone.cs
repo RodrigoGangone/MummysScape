@@ -14,7 +14,7 @@ public class BS_Stone : BossSkillSO
     [Tooltip("Duración base del vuelo (se divide por el speedMultiplier del stage).")]
     [Min(0.05f)] [SerializeField] private float baseFlightDuration = 1.1f;
     [SerializeField] private float arcHeight = 4f;
-
+    
     [Header("Predicción")]
     [Tooltip("Tiempo usado para predecir la posición futura del player (no cambia con el stage).")]
     [Min(0.05f)] [SerializeField] private float aimTime = 1.1f;

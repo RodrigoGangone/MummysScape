@@ -18,7 +18,6 @@ public sealed class BossActor : MonoBehaviour, IBossContext
     [SerializeField] private Player player;
     [SerializeField] private Animator animator;
     [SerializeField] private PlayerPrefsRegistry registry;
-
     [Header("FSM")]
     public StateMachinePlayer stateMachine;
 
@@ -29,7 +28,6 @@ public sealed class BossActor : MonoBehaviour, IBossContext
     // IBossContext
     public Transform Transform => transform;
     public Animator Animator => animator;
-    public GameObject GameObject => gameObject;
     public Player Player => player;
     public int CurrentStageIndex => _stageIndex;
     public BossConfigSO Config => config;
@@ -84,7 +82,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
         stateMachine.ChangeState(Entry);
 
-        PlayerPrefsManager.BindRegistry(registry);
+        //PlayerPrefsManager.BindRegistry(registry);
         
         _goap = new GoapBrain();
         _stageIndex = 0;
@@ -155,7 +153,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         return _runtimePrimarySkill != null && _runtimePrimarySkill.TryExecute(wm, this, _time);
     }
 
-    public bool TryUseSkillB()
+    private bool TryUseSkillB()
     {
         Debug.Log("TryExecuteB");
         var wm = BuildWorldModel();
@@ -169,7 +167,7 @@ public sealed class BossActor : MonoBehaviour, IBossContext
     /// <summary>
     /// Puente simbólico → tu FSM. Mapea el intent string a tus estados reales.
     /// </summary>
-    public void TriggerFsm(string intentOrEvent)
+    private void TriggerFsm(string intentOrEvent)
     {
         switch (intentOrEvent)
         {
