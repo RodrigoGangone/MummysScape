@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Serialization;
+using static PlayerEnum;
 
 public class QuicksandOLD : MonoBehaviour
 {

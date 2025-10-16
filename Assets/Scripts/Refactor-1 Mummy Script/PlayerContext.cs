@@ -1,0 +1,87 @@
+using Unity.VisualScripting;
+using UnityEngine;
+
+/// <summary>
+/// PlayerContext
+/// Reúne refs estables y proveedores dinámicos para que los States no dependan de públicos.
+/// </summary>
+public sealed class PlayerContext
+{
+    public readonly Transform Tf;
+    public readonly Rigidbody Rb;
+    public readonly PlayerModel Model;
+    public readonly PlayerView View;
+    public readonly IPlayerInput Input;
+    public readonly SwingHandler SwingHandler;
+    
+    private readonly ICameraProvider _camProvider;
+    private readonly MovementRuntime _movement;
+    private readonly InteractionRuntime _interactions;
+    private readonly GroundCheckRuntime _ground;
+
+    public PlayerContext(
+        Transform tf, Rigidbody rb,
+        SwingHandler swingHandler,
+        ICameraProvider camProvider,
+        PlayerModel model, PlayerView view,
+        MovementRuntime movement, IPlayerInput input, InteractionRuntime interactionRuntime,
+        GroundCheckRuntime ground)
+    {
+        Tf = tf; Rb = rb;
+        SwingHandler = swingHandler;
+        _camProvider = camProvider;
+        Model = model; View = view; _movement = movement; Input = input;
+        _interactions = interactionRuntime; _ground = ground;
+    }
+
+    private Camera Cam => _camProvider?.Current ?? Camera.main;
+    public float MoveSpeed => _movement.MoveSpeed;
+    public float TurnSpeed => _movement.TurnSpeed;
+    public bool IsGrounded() => _ground != null && _ground.IsGrounded(Tf);
+    public float AttractMinDistance => _interactions ? _interactions.AttractMinDistance : 1f;
+    public float AttractMaxDistance => _interactions ? _interactions.AttractMaxDistance : 5f;
+    public AnimationCurve AttractSpeedCurve => _interactions ? _interactions.AttractSpeedCurve : AnimationCurve.Linear(0,1,1,1);
+    public float AttractSpeedBase => _interactions ? _interactions.AttractSpeedBase : 1f;
+    public GameObject ProjectilePrefab => _interactions.ProjectilePrefab;
+    public float AimMaxDistance => _interactions.AimMaxDistance; // <--- NUEVA LÍNEA (para acceder al rango)
+
+
+    /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>c
+    public Vector3 CameraRelativeDir(float h, float v)
+    {
+        var cam = Cam;
+        Vector3 fwd = cam ? cam.transform.forward : Vector3.forward;
+        Vector3 right = cam ? cam.transform.right   : Vector3.right;
+        fwd.y = 0f; right.y = 0f; fwd.Normalize(); right.Normalize();
+        return (fwd * v + right * h).normalized;
+    }
+    
+    /// <summary>Conveniencia: corre el PushChecker de InteractionRuntime.</summary>
+    public bool TryGetPushTarget(out BoxPushAttract target, out RaycastHit left, out RaycastHit right)
+    {
+        target = null;
+        left = default;
+        right = default;
+        return _interactions != null && _interactions.TryGetPushTarget(Tf, out target, out left, out right);
+    }
+    
+    /// <summary>Conveniencia: Attract checker (LOS a 1..5u frente al player).</summary>
+    public bool TryGetAttractTarget(out BoxPushAttract target)
+    {
+        target = null;
+        return _interactions != null && _interactions.TryGetAttractTarget(Tf, out target);
+    }
+    
+    public bool TryGetSwingTarget(out Rigidbody hook)
+    {
+        hook = null;
+        return _interactions != null && _interactions.TryGetSwingTarget(Tf, out hook);
+    }
+
+    public bool TryGetAim(out Vector3 pos, out Vector3 norm)
+    {
+        pos = default;
+        norm = default;
+        return _interactions != null && _interactions.TryGetAim(Tf, out pos, out norm);
+    }
+}
