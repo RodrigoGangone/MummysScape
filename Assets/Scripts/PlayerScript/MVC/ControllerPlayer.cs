@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using static Utils;
 using Debug = UnityEngine.Debug;
+using static PlayerEnum;
 
 public class ControllerPlayer
 {

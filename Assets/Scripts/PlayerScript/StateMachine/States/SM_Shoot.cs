@@ -1,4 +1,5 @@
 using UnityEngine;
+using static PlayerEnum;
 
 public class SM_Shoot : State
 {

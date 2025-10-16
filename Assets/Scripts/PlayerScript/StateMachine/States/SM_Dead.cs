@@ -1,3 +1,4 @@
+using static PlayerEnum;
 
 public class SM_Dead : State
 {
