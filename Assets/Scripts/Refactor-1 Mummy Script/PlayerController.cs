@@ -44,14 +44,16 @@ public sealed class PlayerController : MonoBehaviour
         _swingHandler = GetComponent<SwingHandler>();
         _inputDriver = GetComponent<PlayerInputStateDriver>();
 
-        // Model con 2 vendas (Normal)
-        _model = new PlayerModel();
+        // PlayerEvents
+        var pe = GameEventManager.Instance.playerEvents;
+        // Model + Inyeccion de player events
+        _model = new PlayerModel(pe.OnBandagesCountChanged, pe.OnSizeChanged);
 
         // MovementRuntime escucha Size del Model
         _movement.Bind(_model);
 
         // View opcional: actualizar sprite del reloj cuando cambie el Size
-        _model.OnSizeChanged += size => _view?.SetHeadTimerSprite(size == PlayerSize.Head);
+        //_model.OnSizeChanged += size => _view?.SetHeadTimerSprite(size == PlayerSize.Head);
 
         _headTimer?.Bind(_model);
         _sizeVisual?.Bind(_model);
@@ -78,6 +80,10 @@ public sealed class PlayerController : MonoBehaviour
         _sm.SetGuard(new PlayerTransitionGuard(_ctx));  // Guard central (usa TransitionRules + SizeRules)
         _inputDriver.Bind(_ctx, _sm);   // Driver que convierte inputs a estados
         _sm.ChangeState(PlayerStateId.Idle); // Estado inicial
+        
+        //Eventos iniciales
+        pe.OnBandagesCountChanged.Raise(_model.Bandages);
+        pe.OnSizeChanged.Raise(_model.Size);
     }
     
     // Intenta sumar 'amount' vendas al Model (retorna false si ya estás en el máximo).

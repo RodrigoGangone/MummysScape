@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GameEventManager : MonoBehaviour
 {
@@ -17,7 +18,8 @@ public class GameEventManager : MonoBehaviour
     [Serializable]
     public struct PlayerEvents
     {
-        public GameEvent OnBandageCount;
+        public GameEvent OnBandagesCountChanged;
+        public GameEvent OnSizeChanged;
         public GameEvent OnDeath;
         public GameEvent OnRespawn;
     }

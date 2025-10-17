@@ -3,25 +3,34 @@ using UnityEngine;
 
 public class UIBandageManager : MonoBehaviour
 {
-    // Desde el Inspector, arrastra aquí tus dos objetos de la UI.
+    [Header("Controladores de Vendas")]
     [SerializeField] private BandageController bandageOneController;
-
     [SerializeField] private BandageController bandageTwoController;
+    
+    [Header("Controlador del Reloj de Arena")]
+    [SerializeField] private HourglassController hourglassController;
 
-
+    private int _previousBandageCount = -1;// <-- LÍNEA NUEVA (para detectar cambios)
     //debug
     public int _currentBandages = 2;
 
     private void OnDisable()
     {
-        GameEventManager.Instance.playerEvents.OnBandageCount.Unregister<int>(UpdateBandageCount);
+        GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Unregister<int>(UpdateBandageCount);
+    }
+
+    private void Awake()
+    {
+        // forzamos el reloj al estado inicial antes del primer frame >>>
+        hourglassController.SnapByBandageCount(_currentBandages);
+        // También seteamos el estado visual de las vendas para arrancar consistente.
+        _previousBandageCount = _currentBandages; // evita transiciones al primer UpdateBandageCount
     }
 
     private void Start()
     {
-        //debug 
-        GameEventManager.Instance.playerEvents.OnBandageCount.Register<int>(UpdateBandageCount);
-        GameEventManager.Instance.playerEvents.OnBandageCount.Raise(_currentBandages);
+        GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Register<int>(UpdateBandageCount);
+        GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Raise(_currentBandages);
     }
 
     private void Update()
@@ -31,9 +40,8 @@ public class UIBandageManager : MonoBehaviour
             if (_currentBandages > 0)
             {
                 _currentBandages--;
-                GameEventManager.Instance.playerEvents.OnBandageCount.Raise(_currentBandages);
+                GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Raise(_currentBandages);
                 Debug.Log("++");
-                //UpdateBandageCount(_currentBandages);
             }
         }
 
@@ -42,9 +50,8 @@ public class UIBandageManager : MonoBehaviour
             if (_currentBandages < 2)
             {
                 _currentBandages++;
-                GameEventManager.Instance.playerEvents.OnBandageCount.Raise(_currentBandages);
+                GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Raise(_currentBandages);
                 Debug.Log("--");
-                //UpdateBandageCount(_currentBandages);
             }
         }
     }
@@ -56,6 +63,19 @@ public class UIBandageManager : MonoBehaviour
     /// <param name="currentBandageCount">La cantidad actual de vendas (0, 1, o 2).</param>
     public void UpdateBandageCount(int currentBandageCount)
     {
+        if (currentBandageCount == 0 && _previousBandageCount > 0)
+        {
+            hourglassController.StartCountdown();
+        }
+        // Si acabamos de obtener una venda (saliendo de 0), reinicia el reloj.
+        else if (currentBandageCount > 0 && _previousBandageCount == 0)
+        {
+            hourglassController.ResetAndFill();
+        }
+        
+        // Al final, actualizamos el contador previo.
+        _previousBandageCount = currentBandageCount;
+        
         // Usamos un switch para que la lógica sea súper clara.
         switch (currentBandageCount)
         {

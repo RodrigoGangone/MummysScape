@@ -1,26 +1,31 @@
+using static PlayerEnum;
+
 /// <summary>
 /// PlayerModel
 /// Vida = cantidad de vendas (0..2). El tamaño (Size) se deriva:
 /// 2 => Normal, 1 => Small, 0 => Head.
-/// Emite OnBandagesChanged(old,current) y OnSizeChanged(newSize).
+/// Ya NO expone Actions; en su lugar dispara GameEvents inyectados:
+/// - OnBandagesCountChanged (int newCount)
+/// - OnSizeChanged (PlayerSize newSize)
 /// </summary>
-
-using System;
-using static PlayerEnum;
 public sealed class PlayerModel
 {
     private const int MinBandages = 0;
-    private const int MaxBandages = 2 ;
+    private const int MaxBandages = 2;
+
+    private readonly GameEvent _onBandagesCountChanged;
+    private readonly GameEvent _onSizeChanged;
 
     public int Bandages { get; private set; }
     public PlayerSize Size => MapSize(Bandages);
 
-    public event Action<int,int> OnBandagesChanged;
-    public event Action<PlayerSize> OnSizeChanged;
-
-    public PlayerModel()
+    public PlayerModel(GameEvent onBandagesCountChanged, GameEvent onSizeChanged)
     {
-        Bandages = Clamp(MaxBandages, MinBandages, MaxBandages);
+        _onBandagesCountChanged = onBandagesCountChanged;
+        _onSizeChanged          = onSizeChanged;
+
+        Bandages = Clamp(MaxBandages, MinBandages, MaxBandages); // Arranca en 2
+        // No hacemos Raise acá: el Controller hará un "bootstrap" inicial
     }
 
     public bool TryConsumeBandage(int amount = 1)
@@ -47,8 +52,12 @@ public sealed class PlayerModel
         Bandages = clamped;
         var newSize = MapSize(Bandages);
 
-        OnBandagesChanged?.Invoke(oldBand, Bandages);
-        if (newSize != oldSize) OnSizeChanged?.Invoke(newSize);
+        // 1) Disparo cambio de cantidad SIEMPRE que cambie
+        _onBandagesCountChanged?.Raise(Bandages);
+
+        // 2) Disparo cambio de Size solo si realmente cambió
+        if (newSize != oldSize)
+            _onSizeChanged?.Raise(newSize);
     }
 
     private static int Clamp(int v, int min, int max) => v < min ? min : (v > max ? max : v);

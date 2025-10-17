@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: HourglasBandage 1
-  m_Shader: {fileID: -6465566751694194690, guid: 99f95c312168ab649ae29190627284a2, type: 3}
+  m_Name: HourglassSandBottom
+  m_Shader: {fileID: -6465566751694194690, guid: 0a2e816426657c74396e906cbfb0e26d, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -37,20 +37,15 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _EdgeScale: 1.5
-    - _Explode: 0
-    - _IsUIBandage: 1
-    - _MaxOffset: 2
-    - _MinOffset: 1
-    - _Offset: 0
+    - _Fill: 0.7380793
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Scale: 0.5
+    - _Up_Down: 0
     m_Colors:
-    - _ColorA: {r: 1, g: 1, b: 1, a: 0}
-    - _ColorB: {r: 1, g: 0.8110068, b: 0, a: 0}
+    - _SideColor: {r: 0.3762622, g: 0, b: 0.597202, a: 1}
+    - _TopColor: {r: 0.8018868, g: 0.23829654, b: 0.6701103, a: 1}
   m_BuildTextureStacks: []
---- !u!114 &2401317192550765399
+--- !u!114 &5773306661410826300
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

@@ -3,9 +3,8 @@ using static PlayerEnum;
 
 /// <summary>
 /// PlayerSizeVisual
-/// Responsabilidad: conmutar entre 3 mallas (Normal/Small/Head) según PlayerModel.Size.
-/// Se suscribe a OnSizeChanged y garantiza 1 sola malla activa.
-/// No conoce reglas de juego ni física: solo visual.
+/// Conmuta mallas según Size. Inicializa con el Size del Model y luego
+/// escucha el GameEvent OnSizeChanged para reaccionar a cambios.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class PlayerSizeVisual : MonoBehaviour
@@ -19,22 +18,27 @@ public sealed class PlayerSizeVisual : MonoBehaviour
 
     public void Bind(PlayerModel model)
     {
-        if (_model != null) _model.OnSizeChanged -= Apply;
         _model = model;
         Apply(_model.Size);
-        _model.OnSizeChanged += Apply;
     }
-
-    private void OnDestroy()
-    {
-        if (_model != null) _model.OnSizeChanged -= Apply;
-    }
-
+    
     private void Apply(PlayerSize size)
     {
         if (_meshNormal) _meshNormal.SetActive(size == PlayerSize.Normal);
         if (_meshSmall)  _meshSmall .SetActive(size == PlayerSize.Small);
         if (_meshHead)   _meshHead  .SetActive(size == PlayerSize.Head);
+    }
+    
+    private void OnEnable()
+    {
+        GameEventManager.Instance.playerEvents.OnSizeChanged
+            .Register<PlayerSize>(Apply);
+    }
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.playerEvents.OnSizeChanged
+            .Unregister<PlayerSize>(Apply);
     }
 
 #if UNITY_EDITOR
