@@ -24,11 +24,20 @@ public class GameEventManager : MonoBehaviour
         public GameEvent OnRespawn;
     }
 
+    [Serializable]
+    public struct LevelEvents
+    {
+        public GameEvent OnPickedGem;
+    }
+    
     [Header("Boss Events")] 
     [SerializeField] public BossEvents bossEvents;
 
     [Header("Player Events")] 
     [SerializeField] public PlayerEvents playerEvents;
+    
+    [Header("Level Events")] 
+    [SerializeField] public LevelEvents levelEvents;
 
     private void Awake()
     {
