@@ -28,7 +28,7 @@ public class GemController : MonoBehaviour
         string key = MakeGemKey(gemNum);
 
         // Guardar como booleano
-        PlayerPrefsManager.Set(key, 1);
+        PlayerPrefsManager.Set(key, gemNum);
 
         // total por escena (opcional)
         string totalKey = MakeSceneTotalKey();
