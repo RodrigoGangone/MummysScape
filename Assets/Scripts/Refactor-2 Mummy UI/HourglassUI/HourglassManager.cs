@@ -1,29 +1,25 @@
 using UnityEngine;
 
 /// <summary>
-/// HourglassController
-/// Controla el fill de los dos MeshRenderers (top/bottom) del reloj de arena usando el mismo valor _Fill:
-/// - Material TOP (HourglassSandTop): Fill=1 es lleno, Fill=0 es vacío.
-/// - Material BOTTOM (HourglassSandBottom): Fill=0 es lleno, Fill=1 es vacío.
-/// El controller interpreta "_fillTop" como "cuánto está lleno el TOP" y se lo pasa a ambos renderers.
+/// HourglassManager
+/// Administra el reloj de arena utilizando dos MeshRenderers (TOP/BOTTOM) con el mismo _Fill:
+/// - Material TOP (HourglassSandTop): Fill=1 lleno / Fill=0 vacío.
+/// - Material BOTTOM (HourglassSandBottom): Fill=0 lleno / Fill=1 vacío.
 /// Se suscribe a GameEventManager.playerEvents.OnBandagesCountChanged:
 ///   • bandages > 0  → ResetAndFill()  (TOP se llena; BOTTOM se vacía)
 ///   • bandages == 0 → StartCountdown() (TOP se vacía; BOTTOM se llena)
-/// Métodos públicos:
-///   • StartCountdown(): anima TOP 1→0 en _countdownDuration
-///   • ResetAndFill():  anima TOP 0→1 en _resetDuration
-/// Usa MaterialPropertyBlock para no instanciar materiales.
+/// No instancia materiales (usa MaterialPropertyBlock).
 /// </summary>
 [DisallowMultipleComponent]
 [DefaultExecutionOrder(-100)]
-public sealed class HourglassController : MonoBehaviour
+public sealed class HourglassManager : MonoBehaviour
 {
     [Header("Renderers (asignar materiales correctos)")]
-    [SerializeField] private MeshRenderer _topLiquidRenderer;    // Material: HourglassSandTop (IsBottomSand = false)
-    [SerializeField] private MeshRenderer _bottomLiquidRenderer; // Material: HourglassSandBottom (IsBottomSand = true)
+    [SerializeField] private MeshRenderer _topLiquidRenderer;    // HourglassSandTop (IsBottomSand = false)
+    [SerializeField] private MeshRenderer _bottomLiquidRenderer; // HourglassSandBottom (IsBottomSand = true)
 
     [Header("Duraciones (segundos)")]
-    [Min(0f)] [SerializeField] private float _countdownDuration = 10f; // TOP 1→0
+    [Min(0f)] [SerializeField] private float _countdownDuration = 10f;  // TOP 1→0
     [Min(0f)] [SerializeField] private float _resetDuration     = 0.75f; // TOP 0→1
 
     [Header("Curvas")]
@@ -35,7 +31,7 @@ public sealed class HourglassController : MonoBehaviour
     private MaterialPropertyBlock _topMPB;
     private MaterialPropertyBlock _botMPB;
 
-    // Valor que mandamos al shader: "cuánto está lleno el TOP" [0..1]
+    // "Cuánto está lleno el TOP" [0..1]; el BOTTOM interpreta a la inversa.
     private float _fillTop = 1f;
 
     // Animación
@@ -43,7 +39,7 @@ public sealed class HourglassController : MonoBehaviour
     private float _from, _to, _elapsed, _duration;
     private AnimationCurve _curve;
 
-    // Eventos
+    // Evento
     private bool _bootstrapped;
     private int  _lastBandages = -1;
 
@@ -54,8 +50,7 @@ public sealed class HourglassController : MonoBehaviour
 
         var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
         if (evt != null) evt.Register<int>(OnBandagesChanged);
-
-        // Importante: NO seteamos un estado por defecto aquí; esperamos el primer Raise.
+        // No seteamos estado por defecto: esperamos el primer Raise del sistema de jugador.
     }
 
     private void OnDisable()
@@ -66,6 +61,20 @@ public sealed class HourglassController : MonoBehaviour
 
     private void Update()
     {
+        // J => cero vendas (empezar countdown visual)
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
+            if (evt != null) evt.Raise(0);
+        }
+
+        // K => al menos una venda (reset visual)
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
+            if (evt != null) evt.Raise(1);
+        }
+       
         if (!_animating) return;
 
         _elapsed += Time.deltaTime;
@@ -91,9 +100,9 @@ public sealed class HourglassController : MonoBehaviour
             return;
         }
 
-        if (count == 0 && _lastBandages > 0)         // perdió todas → empezar countdown
+        if (count == 0 && _lastBandages > 0)         // perdió todas
             StartCountdown();
-        else if (count > 0 && _lastBandages == 0)     // volvió a tener → resetear
+        else if (count > 0 && _lastBandages == 0)     // volvió a tener
             ResetAndFill();
 
         _lastBandages = count;
@@ -105,16 +114,10 @@ public sealed class HourglassController : MonoBehaviour
     /// <summary>Llena el slot superior (TOP 0→1) y vacía el inferior.</summary>
     public void ResetAndFill()   => BeginAnim(_fillTop, 1f, _resetDuration, _resetCurve);
 
-    /// <summary>Estado instantáneo según # de vendas (sin animar).</summary>
-    public void SnapByBandageCount(int bandages)
-    {
-        // bandages > 0 ⇒ TOP debe estar lleno ⇒ _fillTop = 1
-        // bandages == 0 ⇒ TOP vacío ⇒ _fillTop = 0
-        ApplyFill(bandages > 0 ? 1f : 0f);
-    }
+    /// <summary>Fija el estado inmediato según # de vendas (sin animación).</summary>
+    public void SnapByBandageCount(int bandages) => ApplyFill(bandages > 0 ? 1f : 0f);
 
-    // Internos --------------------------------------------------------------
-
+    // -------- internos --------
     private void BeginAnim(float from, float to, float duration, AnimationCurve curve)
     {
         _from = Mathf.Clamp01(from);
@@ -134,13 +137,13 @@ public sealed class HourglassController : MonoBehaviour
         if (_topLiquidRenderer)
         {
             _topLiquidRenderer.GetPropertyBlock(_topMPB);
-            _topMPB.SetFloat(FillID, _fillTop);      // TOP: 1 lleno / 0 vacío
+            _topMPB.SetFloat(FillID, _fillTop);
             _topLiquidRenderer.SetPropertyBlock(_topMPB);
         }
         if (_bottomLiquidRenderer)
         {
             _bottomLiquidRenderer.GetPropertyBlock(_botMPB);
-            _botMPB.SetFloat(FillID, _fillTop);      // BOTTOM: 1 vacío / 0 lleno (mismo valor, interpretación opuesta)
+            _botMPB.SetFloat(FillID, _fillTop);
             _bottomLiquidRenderer.SetPropertyBlock(_botMPB);
         }
     }
