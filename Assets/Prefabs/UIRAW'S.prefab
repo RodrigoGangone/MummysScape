@@ -68,8 +68,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _topLiquidRenderer: {fileID: 5465009528416264905}
   _bottomLiquidRenderer: {fileID: 6200669773989290168}
-  _transitionDuration: 5
-  _curve:
+  _countdownDuration: 10
+  _resetDuration: 0.75
+  _countdownCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _resetCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -185,6 +210,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2290437281628168850, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
+      propertyPath: m_Name
+      value: sandTop_low
+      objectReference: {fileID: 0}
+    - target: {fileID: 2290437281628168850, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
       propertyPath: m_Layer
       value: 22
       objectReference: {fileID: 0}
@@ -199,6 +228,10 @@ PrefabInstance:
     - target: {fileID: 3022970915576177239, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3672270827488816506, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
+      propertyPath: m_Name
+      value: sandBottom_low
       objectReference: {fileID: 0}
     - target: {fileID: 3672270827488816506, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
       propertyPath: m_Layer
@@ -223,11 +256,11 @@ PrefabInstance:
     - target: {fileID: 5661741854747961281, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: c0ce66d7f78b9d64b8b049d3170f3ee5, type: 2}
+      objectReference: {fileID: 2100000, guid: c9d7868ac02e8db4498d76c5b2a06fe9, type: 2}
     - target: {fileID: 6001087463457875376, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: c0ce66d7f78b9d64b8b049d3170f3ee5, type: 2}
+      objectReference: {fileID: 2100000, guid: 76f14d787a46c434e9d56da121843b1e, type: 2}
     - target: {fileID: 6079311978427088694, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
       propertyPath: m_CullingMask.m_Bits
       value: 4194304
