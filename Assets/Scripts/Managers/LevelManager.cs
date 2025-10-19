@@ -72,35 +72,35 @@ public class LevelManager : MonoBehaviour
 
         _currentTimeDeath = _maxTimeDeath;
     }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape) && !UIManager.PauseCharging && _canPause)
-        {
-            if (_currentLevelState == LevelState.Playing)
-                OnPause?.Invoke();
-            else
-                OnPlaying?.Invoke();
-        }
-
-        if (!_isWin && !_isLose && !isBusy)
-        {
-            if (_player.CurrentPlayerSize == PlayerSize.Head && _deathTimerCoroutine == null)
-            {
-                _deathTimerCoroutine = StartCoroutine(DeathTimerCoroutine());
-                DeathTimer.Invoke();
-            }
-            else if (_player.CurrentPlayerSize != PlayerSize.Head && _deathTimerCoroutine != null)
-            {
-                StopCoroutine(_deathTimerCoroutine);
-                _deathTimerCoroutine = null;
-
-                StartCoroutine(ResetDeathTimer());
-            }
-        }
-    }
-
-    //TODO: ACA DEBERIAMOS UNIFICAR ESTE METODO CON EL VALIDATEGEMS DEL UI MANAGER, SON DOS METODOS QUE REALIZAN CASI
+    //
+    //private void Update()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.Escape) && !UIManager.PauseCharging && _canPause)
+    //    {
+    //        if (_currentLevelState == LevelState.Playing)
+    //            OnPause?.Invoke();
+    //        else
+    //            OnPlaying?.Invoke();
+    //    }
+    //
+    //    if (!_isWin && !_isLose && !isBusy)
+    //    {
+    //        if (_player.CurrentPlayerSize == PlayerSize.Head && _deathTimerCoroutine == null)
+    //        {
+    //            _deathTimerCoroutine = StartCoroutine(DeathTimerCoroutine());
+    //            DeathTimer.Invoke();
+    //        }
+    //        else if (_player.CurrentPlayerSize != PlayerSize.Head && _deathTimerCoroutine != null)
+    //        {
+    //            StopCoroutine(_deathTimerCoroutine);
+    //            _deathTimerCoroutine = null;
+    //
+    //            StartCoroutine(ResetDeathTimer());
+    //        }
+    //    }
+    //}
+    //
+    ////TODO: ACA DEBERIAMOS UNIFICAR ESTE METODO CON EL VALIDATEGEMS DEL UI MANAGER, SON DOS METODOS QUE REALIZAN CASI
     //TODO: LA MISMA ACCION, POR LO TANTO DEBERIAN ESTAR UNIFICADOS [EN UN FUTURO SE PODRIA UTILIZAR PARA MANTENER LAS
     //TODO: PLATAFORMAS QUE ACTIVE CON ANTERIORIDAD]
     private void ValidateCollectibleInScene()

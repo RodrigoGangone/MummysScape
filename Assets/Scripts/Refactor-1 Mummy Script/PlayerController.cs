@@ -75,7 +75,8 @@ public sealed class PlayerController : MonoBehaviour
         _sm.AddState(PlayerStateId.Push, new PushState(_ctx));
         _sm.AddState(PlayerStateId.Attract, new AttractState(_ctx));
         _sm.AddState(PlayerStateId.Swing, new SwingState(_ctx));
-        //_sm.AddState(PlayerStateId.Dead, new DeadState(_ctx));
+        _sm.AddState(PlayerStateId.Dead, new DeadState(_ctx));
+        _sm.AddState(PlayerStateId.Win, new WinState(_ctx));
         
         _sm.SetGuard(new PlayerTransitionGuard(_ctx));  // Guard central (usa TransitionRules + SizeRules)
         _inputDriver.Bind(_ctx, _sm);   // Driver que convierte inputs a estados

@@ -11,9 +11,9 @@ public class SizeRules
 {
     public static bool Can(PlayerSize s, PlayerStateId  a) => s switch
     {
-        Normal => a is Idle or Walk or Aim or Shoot or DropBandage or Push or Attract or Fall or Dead,
-        Small  => a is Idle or Walk or Aim or Shoot or DropBandage or Swing or Fall or Dead,
-        Head   => a is Idle or Walk or Smash or Fall or Dead,
+        Normal => a is Idle or Walk or Aim or Shoot or DropBandage or Push or Attract or Fall or Dead or Win,
+        Small  => a is Idle or Walk or Aim or Shoot or DropBandage or Swing or Fall or Dead or Win,
+        Head   => a is Idle or Walk or Smash or Fall or Dead or Win,
         _ => false
     };
 }
