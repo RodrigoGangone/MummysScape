@@ -8,5 +8,5 @@
 public static class PlayerEnum
 {
     public enum PlayerSize { Normal, Small, Head }
-    public enum PlayerStateId { Idle, Walk, Fall, Aim, Shoot, Smash, DropBandage, Push, Attract, Swing, Dead }
+    public enum PlayerStateId { Idle, Walk, Fall, Aim, Shoot, Smash, DropBandage, Push, Attract, Swing, Dead, Win }
 }
