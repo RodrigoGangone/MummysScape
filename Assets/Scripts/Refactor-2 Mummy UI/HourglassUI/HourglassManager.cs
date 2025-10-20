@@ -2,29 +2,49 @@ using UnityEngine;
 
 /// <summary>
 /// HourglassManager
-/// Administra el reloj de arena utilizando dos MeshRenderers (TOP/BOTTOM) con el mismo _Fill:
-/// - Material TOP (HourglassSandTop): Fill=1 lleno / Fill=0 vacío.
-/// - Material BOTTOM (HourglassSandBottom): Fill=0 lleno / Fill=1 vacío.
-/// Se suscribe a GameEventManager.playerEvents.OnBandagesCountChanged:
-///   • bandages > 0  → ResetAndFill()  (TOP se llena; BOTTOM se vacía)
-///   • bandages == 0 → StartCountdown() (TOP se vacía; BOTTOM se llena)
-/// No instancia materiales (usa MaterialPropertyBlock).
+/// Administra el reloj de arena (TOP/BOTTOM comparten _Fill; cada material lo interpreta distinto).
+/// Se suscribe a OnBandagesCountChanged para iniciar countdown (0 vendas) o resetear (>0 vendas).
+/// Incluye atajos de debug (J/K) y un efecto de "latidos" que solo corre durante el countdown,
+/// acelerando a medida que el tiempo restante se agota.
 /// </summary>
 [DisallowMultipleComponent]
 [DefaultExecutionOrder(-100)]
 public sealed class HourglassManager : MonoBehaviour
 {
     [Header("Renderers (asignar materiales correctos)")]
-    [SerializeField] private MeshRenderer _topLiquidRenderer;    // HourglassSandTop (IsBottomSand = false)
-    [SerializeField] private MeshRenderer _bottomLiquidRenderer; // HourglassSandBottom (IsBottomSand = true)
+    [SerializeField] private MeshRenderer _topLiquidRenderer;    
+    [SerializeField] private MeshRenderer _bottomLiquidRenderer; 
 
     [Header("Duraciones (segundos)")]
-    [Min(0f)] [SerializeField] private float _countdownDuration = 10f;  // TOP 1→0
-    [Min(0f)] [SerializeField] private float _resetDuration     = 0.75f; // TOP 0→1
+    [Min(0f)] [SerializeField] private float _countdownDuration = 30f;   
+    [Min(0f)] [SerializeField] private float _resetDuration     = 0.75f; 
 
     [Header("Curvas")]
     [SerializeField] private AnimationCurve _countdownCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     [SerializeField] private AnimationCurve _resetCurve     = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+    [Header("Debug / Test (opcional)")]
+    [SerializeField] private bool _enableDebugKeys = true;
+    [SerializeField] private KeyCode _keyNoBandages   = KeyCode.J; // Raise(0)
+    [SerializeField] private KeyCode _keySomeBandages = KeyCode.K; // Raise(1)
+
+    [Header("Heartbeat (solo durante countdown)")]
+    [SerializeField] private Transform _heartbeatTarget;     // GO a escalar
+    [SerializeField, Min(0.01f)] private float _pulseScale = 0.25f;
+    [SerializeField, Min(0.01f)] private float _pulseDuration = 0.5f;
+    [Tooltip("Intervalo inicial (lento) → final (rápido) a lo largo del countdown")]
+    [SerializeField, Min(0.01f)] private float _beatIntervalStart = 1f;
+    [SerializeField, Min(0.01f)] private float _beatIntervalEnd   = 0.5f;
+    [SerializeField] private AnimationCurve _pulseCurve =
+        new(
+            new Keyframe(0f, 0f, 0f, 0f),
+            new Keyframe(0.25f, 1f, 0f, 0f),
+            new Keyframe(0.5f, 0.5f, 0f, 0f),
+            new Keyframe(0.75f,  0.75f, 0f, 0f),
+            new Keyframe(1f, 0f, 0f, 0f)
+        );
+    
+    
 
     private static readonly int FillID = Shader.PropertyToID("_Fill");
 
@@ -34,14 +54,22 @@ public sealed class HourglassManager : MonoBehaviour
     // "Cuánto está lleno el TOP" [0..1]; el BOTTOM interpreta a la inversa.
     private float _fillTop = 1f;
 
-    // Animación
+    // Animación de arena
     private bool _animating;
+    private bool _isCountdown; // true si la animación en curso es countdown (no reset)
     private float _from, _to, _elapsed, _duration;
     private AnimationCurve _curve;
 
     // Evento
     private bool _bootstrapped;
     private int  _lastBandages = -1;
+
+    // Heartbeat runtime
+    private Vector3 _baseScale;
+    private bool _hasBaseScale;
+    private float _beatTimer;
+    private bool _pulsing;
+    private float _pulseTimer;
 
     private void Awake()
     {
@@ -50,44 +78,51 @@ public sealed class HourglassManager : MonoBehaviour
 
         var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
         if (evt != null) evt.Register<int>(OnBandagesChanged);
-        // No seteamos estado por defecto: esperamos el primer Raise del sistema de jugador.
+        // Esperamos el primer Raise del sistema de jugador para definir el estado inicial.
     }
 
     private void OnDisable()
     {
         var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
         if (evt != null) evt.Unregister<int>(OnBandagesChanged);
+        StopHeartbeat(); // por seguridad
     }
 
     private void Update()
     {
-        // J => cero vendas (empezar countdown visual)
-        if (Input.GetKeyDown(KeyCode.J))
+        // Debug keys
+        if (_enableDebugKeys)
         {
-            var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
-            if (evt != null) evt.Raise(0);
+            if (Input.GetKeyDown(_keyNoBandages))   SafeRaiseBandages(0);
+            if (Input.GetKeyDown(_keySomeBandages)) SafeRaiseBandages(1);
         }
 
-        // K => al menos una venda (reset visual)
-        if (Input.GetKeyDown(KeyCode.K))
+        // Animación de arena
+        if (_animating)
         {
-            var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
-            if (evt != null) evt.Raise(1);
+            _elapsed += Time.deltaTime;
+            float progress = _duration <= 0f ? 1f : Mathf.Clamp01(_elapsed / _duration);
+            float shaped   = (_curve != null) ? _curve.Evaluate(progress) : progress;
+
+            ApplyFill(Mathf.LerpUnclamped(_from, _to, shaped));
+
+            // Heartbeat: solo cuando es countdown
+            if (_isCountdown) UpdateHeartbeat(progress);
+
+            if (progress >= 1f - Mathf.Epsilon)
+            {
+                _animating = false;
+                ApplyFill(_to);
+                StopHeartbeat();
+            }
         }
-       
-        if (!_animating) return;
+    }
 
-        _elapsed += Time.deltaTime;
-        float n = _duration <= 0f ? 1f : Mathf.Clamp01(_elapsed / _duration);
-        float k = (_curve != null) ? _curve.Evaluate(n) : n;
-
-        ApplyFill(Mathf.LerpUnclamped(_from, _to, k));
-
-        if (n >= 1f - Mathf.Epsilon)
-        {
-            _animating = false;
-            ApplyFill(_to); // snap final
-        }
+    // -------------------- Eventos --------------------
+    private static void SafeRaiseBandages(int value)
+    {
+        var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
+        if (evt != null) evt.Raise(value);
     }
 
     private void OnBandagesChanged(int count)
@@ -102,22 +137,39 @@ public sealed class HourglassManager : MonoBehaviour
 
         if (count == 0 && _lastBandages > 0)         // perdió todas
             StartCountdown();
-        else if (count > 0 && _lastBandages == 0)     // volvió a tener
+        else if (count > 0 && _lastBandages == 0)    // volvió a tener
             ResetAndFill();
 
         _lastBandages = count;
     }
 
+    // -------------------- API pública --------------------
     /// <summary>Vacía el slot superior (TOP 1→0) y llena el inferior.</summary>
-    public void StartCountdown() => BeginAnim(_fillTop, 0f, _countdownDuration, _countdownCurve);
+    public void StartCountdown()
+    {
+        _isCountdown = true;
+        BeginAnim(_fillTop, 0f, _countdownDuration, _countdownCurve);
+        ResetHeartbeatState(); // arranca el latido limpio
+    }
 
     /// <summary>Llena el slot superior (TOP 0→1) y vacía el inferior.</summary>
-    public void ResetAndFill()   => BeginAnim(_fillTop, 1f, _resetDuration, _resetCurve);
+    public void ResetAndFill()
+    {
+        _isCountdown = false;
+        BeginAnim(_fillTop, 1f, _resetDuration, _resetCurve);
+        StopHeartbeat();
+    }
 
     /// <summary>Fija el estado inmediato según # de vendas (sin animación).</summary>
-    public void SnapByBandageCount(int bandages) => ApplyFill(bandages > 0 ? 1f : 0f);
+    public void SnapByBandageCount(int bandages)
+    {
+        _isCountdown = false;
+        _animating = false;
+        StopHeartbeat();
+        ApplyFill(bandages > 0 ? 1f : 0f);
+    }
 
-    // -------- internos --------
+    // -------------------- Internos: animación arena --------------------
     private void BeginAnim(float from, float to, float duration, AnimationCurve curve)
     {
         _from = Mathf.Clamp01(from);
@@ -146,5 +198,69 @@ public sealed class HourglassManager : MonoBehaviour
             _botMPB.SetFloat(FillID, _fillTop);
             _bottomLiquidRenderer.SetPropertyBlock(_botMPB);
         }
+    }
+
+    // -------------------- Internos: heartbeat --------------------
+    private void UpdateHeartbeat(float countdownProgress01)
+    {
+        if (_heartbeatTarget == null) return;
+
+        if (!_hasBaseScale)
+        {
+            _baseScale = _heartbeatTarget.localScale;
+            _hasBaseScale = true;
+        }
+
+        // Intervalo actual según progreso (0 = inicio lento, 1 = final rápido)
+        float interval = Mathf.Lerp(_beatIntervalStart, _beatIntervalEnd, countdownProgress01);
+
+        // Disparo de nuevo latido
+        _beatTimer += Time.deltaTime;
+        if (_beatTimer >= interval)
+        {
+            _beatTimer = 0f;
+            _pulsing = true;
+            _pulseTimer = 0f;
+        }
+
+        // Si estamos en pulso, aplicar envelope
+        if (_pulsing)
+        {
+            _pulseTimer += Time.deltaTime;
+            float n = Mathf.Clamp01(_pulseTimer / _pulseDuration);
+            float env = (_pulseCurve != null) ? _pulseCurve.Evaluate(n) : 1f; // pico
+            float scaleFactor = 1f + (_pulseScale * env);
+
+            _heartbeatTarget.localScale = _baseScale * scaleFactor;
+
+            if (n >= 1f)
+            {
+                _pulsing = false;
+                _heartbeatTarget.localScale = _baseScale; // volver a base tras el golpe
+            }
+        }
+    }
+
+    private void ResetHeartbeatState()
+    {
+        if (_heartbeatTarget == null) return;
+        if (!_hasBaseScale)
+        {
+            _baseScale = _heartbeatTarget.localScale;
+            _hasBaseScale = true;
+        }
+        _beatTimer = 0f;
+        _pulsing = false;
+        _pulseTimer = 0f;
+        _heartbeatTarget.localScale = _baseScale;
+    }
+
+    private void StopHeartbeat()
+    {
+        if (_heartbeatTarget == null) return;
+        if (_hasBaseScale) _heartbeatTarget.localScale = _baseScale;
+        _pulsing = false;
+        _beatTimer = 0f;
+        _pulseTimer = 0f;
     }
 }
