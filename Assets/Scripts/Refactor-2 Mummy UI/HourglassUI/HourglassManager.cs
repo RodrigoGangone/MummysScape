@@ -44,7 +44,15 @@ public sealed class HourglassManager : MonoBehaviour
             new Keyframe(1f, 0f, 0f, 0f)
         );
     
-    
+    [Header("FX Arena (solo durante countdown)")]
+    [Tooltip("GameObject que contiene los ParticleSystem de arena cayendo.")]
+    [SerializeField] private GameObject _sandFxRoot;
+    [Tooltip("Si está activo, habilita/deshabilita el GameObject raíz de FX al iniciar/terminar el countdown.")]
+    [SerializeField] private bool _toggleFxGameObject = true;
+    [Tooltip("Si está activo, limpia las partículas al detenerlas.")]
+    [SerializeField] private bool _clearFxOnStop = true;
+    // FX cache
+    private ParticleSystem[] _sandFxSystems;
 
     private static readonly int FillID = Shader.PropertyToID("_Fill");
 
@@ -79,6 +87,9 @@ public sealed class HourglassManager : MonoBehaviour
         var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
         if (evt != null) evt.Register<int>(OnBandagesChanged);
         // Esperamos el primer Raise del sistema de jugador para definir el estado inicial.
+        
+        // Cachea los ParticleSystems si hay root asignado
+        CacheSandFx();
     }
 
     private void OnDisable()
@@ -150,6 +161,7 @@ public sealed class HourglassManager : MonoBehaviour
         _isCountdown = true;
         BeginAnim(_fillTop, 0f, _countdownDuration, _countdownCurve);
         ResetHeartbeatState(); // arranca el latido limpio
+        StartSandFx();
     }
 
     /// <summary>Llena el slot superior (TOP 0→1) y vacía el inferior.</summary>
@@ -158,6 +170,7 @@ public sealed class HourglassManager : MonoBehaviour
         _isCountdown = false;
         BeginAnim(_fillTop, 1f, _resetDuration, _resetCurve);
         StopHeartbeat();
+        StopSandFx();
     }
 
     /// <summary>Fija el estado inmediato según # de vendas (sin animación).</summary>
@@ -166,6 +179,7 @@ public sealed class HourglassManager : MonoBehaviour
         _isCountdown = false;
         _animating = false;
         StopHeartbeat();
+        StopSandFx();
         ApplyFill(bandages > 0 ? 1f : 0f);
     }
 
@@ -262,5 +276,53 @@ public sealed class HourglassManager : MonoBehaviour
         _pulsing = false;
         _beatTimer = 0f;
         _pulseTimer = 0f;
+    }
+    
+    // -------------------- Internos: FX arena --------------------
+    private void CacheSandFx()
+    {
+        if (_sandFxRoot == null) { _sandFxSystems = null; return; }
+        _sandFxSystems = _sandFxRoot.GetComponentsInChildren<ParticleSystem>(true);
+    }
+
+    private void StartSandFx()
+    {
+        if (_sandFxRoot == null) return;
+
+        if (_sandFxSystems == null || _sandFxSystems.Length == 0)
+            CacheSandFx();
+
+        if (_toggleFxGameObject && !_sandFxRoot.activeSelf)
+            _sandFxRoot.SetActive(true);
+
+        if (_sandFxSystems != null)
+        {
+            foreach (var ps in _sandFxSystems)
+            {
+                if (ps == null) continue;
+                ps.Play(true);
+            }
+        }
+    }
+
+    private void StopSandFx()
+    {
+        if (_sandFxRoot == null) return;
+
+        if (_sandFxSystems == null || _sandFxSystems.Length == 0)
+            CacheSandFx();
+
+        if (_sandFxSystems != null)
+        {
+            foreach (var ps in _sandFxSystems)
+            {
+                if (ps == null) continue;
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                if (_clearFxOnStop) ps.Clear(true);
+            }
+        }
+
+        if (_toggleFxGameObject && _sandFxRoot.activeSelf)
+            _sandFxRoot.SetActive(false);
     }
 }
