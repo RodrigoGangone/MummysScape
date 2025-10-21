@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -18,10 +19,6 @@ public sealed class HourglassManager : MonoBehaviour
     [Header("Duraciones (segundos)")]
     [Min(0f)] [SerializeField] private float _countdownDuration = 30f;   
     [Min(0f)] [SerializeField] private float _resetDuration     = 0.75f; 
-
-    [Header("Curvas")]
-    [SerializeField] private AnimationCurve _countdownCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-    [SerializeField] private AnimationCurve _resetCurve     = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     [Header("Debug / Test (opcional)")]
     [SerializeField] private bool _enableDebugKeys = true;
@@ -51,8 +48,15 @@ public sealed class HourglassManager : MonoBehaviour
     [SerializeField] private bool _toggleFxGameObject = true;
     [Tooltip("Si está activo, limpia las partículas al detenerlas.")]
     [SerializeField] private bool _clearFxOnStop = true;
+
+    [Header("Animator")] 
+    [SerializeField] private Animator _animator;
+    
     // FX cache
     private ParticleSystem[] _sandFxSystems;
+    
+    // Control de invocación al finalizar countdown (evitar doble llamada)
+    private bool _countdownEndInvoked;
 
     private static readonly int FillID = Shader.PropertyToID("_Fill");
 
@@ -83,20 +87,24 @@ public sealed class HourglassManager : MonoBehaviour
     {
         _topMPB = new MaterialPropertyBlock();
         _botMPB = new MaterialPropertyBlock();
-
-        var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
-        if (evt != null) evt.Register<int>(OnBandagesChanged);
-        // Esperamos el primer Raise del sistema de jugador para definir el estado inicial.
         
         // Cachea los ParticleSystems si hay root asignado
         CacheSandFx();
     }
 
+    private void OnEnable()
+    {
+        GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Register<int>(OnBandagesChanged);
+        GameEventManager.Instance.levelEvents.OnHourglassDeath.Register(OnCountDownEnded);
+    }
+
     private void OnDisable()
     {
-        var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
-        if (evt != null) evt.Unregister<int>(OnBandagesChanged);
-        StopHeartbeat(); // por seguridad
+        GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Unregister<int>(OnBandagesChanged);
+        GameEventManager.Instance.levelEvents.OnHourglassDeath.Unregister(OnCountDownEnded);
+        
+        StopHeartbeat();
+        StopSandFx();
     }
 
     private void Update()
@@ -125,6 +133,14 @@ public sealed class HourglassManager : MonoBehaviour
                 _animating = false;
                 ApplyFill(_to);
                 StopHeartbeat();
+                StopSandFx();
+                
+                // Llamar una única vez al finalizar la cuenta atrás
+                if (_isCountdown && !_countdownEndInvoked)
+                {
+                    _countdownEndInvoked = true;
+                    GameEventManager.Instance.levelEvents.OnHourglassDeath.Raise();
+                }
             }
         }
     }
@@ -153,43 +169,52 @@ public sealed class HourglassManager : MonoBehaviour
 
         _lastBandages = count;
     }
+    
+    private void OnCountDownEnded()
+    {
+        //activar animacion trigger del animator
+        _animator.SetTrigger("Death");
+        //sonido de rotura hourglass
+    }
 
     // -------------------- API pública --------------------
     /// <summary>Vacía el slot superior (TOP 1→0) y llena el inferior.</summary>
-    public void StartCountdown()
+    private void StartCountdown()
     {
         _isCountdown = true;
-        BeginAnim(_fillTop, 0f, _countdownDuration, _countdownCurve);
+        _countdownEndInvoked = false;
+        BeginAnim(_fillTop, 0f, _countdownDuration);
         ResetHeartbeatState(); // arranca el latido limpio
         StartSandFx();
     }
 
     /// <summary>Llena el slot superior (TOP 0→1) y vacía el inferior.</summary>
-    public void ResetAndFill()
+    private void ResetAndFill()
     {
         _isCountdown = false;
-        BeginAnim(_fillTop, 1f, _resetDuration, _resetCurve);
+        BeginAnim(_fillTop, 1f, _resetDuration);
         StopHeartbeat();
         StopSandFx();
     }
 
     /// <summary>Fija el estado inmediato según # de vendas (sin animación).</summary>
-    public void SnapByBandageCount(int bandages)
+    private void SnapByBandageCount(int bandages)
     {
         _isCountdown = false;
         _animating = false;
         StopHeartbeat();
         StopSandFx();
         ApplyFill(bandages > 0 ? 1f : 0f);
+        _countdownEndInvoked = false;
     }
 
     // -------------------- Internos: animación arena --------------------
-    private void BeginAnim(float from, float to, float duration, AnimationCurve curve)
+    private void BeginAnim(float from, float to, float duration)
     {
         _from = Mathf.Clamp01(from);
         _to = Mathf.Clamp01(to);
         _duration = Mathf.Max(0f, duration);
-        _curve = curve ?? AnimationCurve.Linear(0, 0, 1, 1);
+        _curve = AnimationCurve.Linear(0, 0, 1, 1);
         _elapsed = 0f;
         _animating = _duration > 0f;
 

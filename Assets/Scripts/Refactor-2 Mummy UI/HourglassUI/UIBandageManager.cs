@@ -23,7 +23,7 @@ public sealed class UIBandageManager : MonoBehaviour
         if (evt != null) evt.Unregister<int>(UpdateBandageCount);
     }
 
-    public void UpdateBandageCount(int currentBandageCount)
+    private void UpdateBandageCount(int currentBandageCount)
     {
         switch (currentBandageCount)
         {

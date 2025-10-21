@@ -28,6 +28,7 @@ public class GameEventManager : MonoBehaviour
         public GameEvent OnResume;
         public GameEvent OnRespawn;
         public GameEvent OnPickedGem;
+        public GameEvent OnHourglassDeath;
     }
 
     [Header("Boss Events")] [SerializeField]

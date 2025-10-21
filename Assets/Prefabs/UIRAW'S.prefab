@@ -66,56 +66,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _topLiquidRenderer: {fileID: 5465009528416264905}
   _bottomLiquidRenderer: {fileID: 6200669773989290168}
-  _countdownDuration: 30
+  _countdownDuration: 5
   _resetDuration: 0.75
-  _countdownCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  _resetCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   _enableDebugKeys: 1
   _keyNoBandages: 106
   _keySomeBandages: 107
@@ -178,6 +130,7 @@ MonoBehaviour:
   _sandFxRoot: {fileID: 5853045662238334215}
   _toggleFxGameObject: 1
   _clearFxOnStop: 1
+  _animator: {fileID: 5494184503842378241}
 --- !u!114 &6465450270072123490
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -245,7 +198,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1714927635744566316, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -268,6 +222,11 @@ MeshRenderer:
 --- !u!23 &5465009528416264905 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 5661741854747961281, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
+  m_PrefabInstance: {fileID: 379728496170550536}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &5494184503842378241 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5294635280621229833, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
   m_PrefabInstance: {fileID: 379728496170550536}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &5853045662238334215 stripped
