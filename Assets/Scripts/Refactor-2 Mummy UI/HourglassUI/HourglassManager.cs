@@ -2,12 +2,13 @@ using UnityEngine;
 
 /// <summary>
 /// HourglassManager (refactor breve y claro)
-/// - Administra el Fill de TOP/BOTTOM (ambos comparten _Fill; cada material lo interpreta distinto).
+/// - Administra el Fill de TOP/BOTTOM (_Fill).
 /// - Responde a OnBandagesCountChanged: 0 → inicia countdown | >0 → resetea/llena.
-/// - Al terminar el countdown hace Raise de OnHourglassDeath (se mantiene).
-/// - Lanza anim "Death" y FX de explosión en OnCountDownEnded (suscripto).
-/// - FX de arena: solo Play / Pause / Reset. Los GameObjects ya están activos en la escena.
-/// - Latidos durante el countdown: escala breve con frecuencia que acelera hacia el final.
+/// - Al finalizar el countdown hace Raise de OnHourglassDeath (se mantiene).
+/// - Lanza anim "Death" y FX de explosión en OnCountDownEnded.
+/// - FX de arena: solo Play / Pause / Reset (GOs activos en escena).
+/// - Latidos durante el countdown.
+/// - _baseSand visible SOLO en countdown; líquidos visibles salvo tras OnCountDownEnded.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class HourglassManager : MonoBehaviour
@@ -15,7 +16,7 @@ public sealed class HourglassManager : MonoBehaviour
     [Header("Renderers")]
     [SerializeField] MeshRenderer _topLiquidRenderer;
     [SerializeField] MeshRenderer _bottomLiquidRenderer;
-    
+
     [Header("BaseLiquid")]
     [SerializeField] GameObject _baseSand;
 
@@ -51,7 +52,6 @@ public sealed class HourglassManager : MonoBehaviour
     bool _isAnimating, _isCountdown, _endRaised;
     float _from, _to, _t, _dur, _fillTop = 1f;
 
-    // bootstrap del primer valor de vendas
     bool _bootstrapped; int _lastBandages = -1;
 
     // heartbeat runtime
@@ -64,6 +64,10 @@ public sealed class HourglassManager : MonoBehaviour
         _mpbTop = new MaterialPropertyBlock();
         _mpbBot = new MaterialPropertyBlock();
         CacheSandFx();
+
+        // Estado visual por defecto: líquidos visibles, baseSand oculta
+        SetLiquidsVisible(true);
+        SetBaseSandActive(false);
     }
 
     void OnEnable()
@@ -101,9 +105,14 @@ public sealed class HourglassManager : MonoBehaviour
             HeartbeatStop();
             FxReset();
 
+            // Se terminó la animación actual
             if (_isCountdown && !_endRaised)
             {
                 _endRaised = true;
+
+                // Como ya no estamos en countdown, ocultamos baseSand aquí también
+                SetBaseSandActive(false);
+
                 GameEventManager.Instance.levelEvents.OnHourglassDeath.Raise();
             }
         }
@@ -130,14 +139,24 @@ public sealed class HourglassManager : MonoBehaviour
     {
         _animator.SetTrigger("Death");
         ExplosionPlay();
-        // SFX rotura: acá si hace falta
+
+        // Al finalizar: ocultar líquidos y baseSand
+        SetLiquidsVisible(false);
+        SetBaseSandActive(false);
+
+        // SFX rotura: si aplica
     }
 
-    // ---------------- Estados públicos (llamados internos) ----------------
+    // ---------------- Estados ----------------
     void StartCountdown()
     {
         _isCountdown = true;
         _endRaised = false;
+
+        // Visuales para countdown
+        SetLiquidsVisible(true);
+        SetBaseSandActive(true);
+
         BeginAnim(_fillTop, 0f, _countdownDuration);
         HeartbeatReset();
         ExplosionReset();
@@ -147,6 +166,11 @@ public sealed class HourglassManager : MonoBehaviour
     void ResetAndFill()
     {
         _isCountdown = false;
+
+        // Visuales fuera de countdown: líquidos visibles, baseSand oculta
+        SetLiquidsVisible(true);
+        SetBaseSandActive(false);
+
         BeginAnim(_fillTop, 1f, _resetDuration);
         HeartbeatStop();
         FxReset();
@@ -156,6 +180,11 @@ public sealed class HourglassManager : MonoBehaviour
     {
         _isCountdown = false;
         _isAnimating = false;
+
+        // Visuales fuera de countdown en snap inicial
+        SetLiquidsVisible(true);
+        SetBaseSandActive(false);
+
         HeartbeatStop();
         FxReset();
         ApplyFill(bandages > 0 ? 1f : 0f);
@@ -265,5 +294,17 @@ public sealed class HourglassManager : MonoBehaviour
     {
         if (_endExplosionFx == null) return;
         _endExplosionFx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+    }
+
+    // ---------------- Helpers visuales ----------------
+    void SetBaseSandActive(bool active)
+    {
+        if (_baseSand && _baseSand.activeSelf != active) _baseSand.SetActive(active);
+    }
+
+    void SetLiquidsVisible(bool visible)
+    {
+        if (_topLiquidRenderer)    _topLiquidRenderer.enabled    = visible;
+        if (_bottomLiquidRenderer) _bottomLiquidRenderer.enabled = visible;
     }
 }
