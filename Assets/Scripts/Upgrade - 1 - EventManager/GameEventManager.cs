@@ -24,8 +24,7 @@ public class GameEventManager : MonoBehaviour
     {
         public GameEvent OnWin;
         public GameEvent OnDeath;
-        public GameEvent OnPause;
-        public GameEvent OnResume;
+        public GameEvent OnPauseChanged; // bool: true = pausa, false = resume
         public GameEvent OnRespawn;
         public GameEvent OnPickedGem;
         public GameEvent OnHourglassDeath;
