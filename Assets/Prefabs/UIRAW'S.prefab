@@ -66,11 +66,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _topLiquidRenderer: {fileID: 5465009528416264905}
   _bottomLiquidRenderer: {fileID: 6200669773989290168}
+  _baseSand: {fileID: 7150859067356582928}
   _countdownDuration: 5
   _resetDuration: 0.75
-  _enableDebugKeys: 1
-  _keyNoBandages: 106
-  _keySomeBandages: 107
   _heartbeatTarget: {fileID: 981333591771181449}
   _pulseScale: 0.25
   _pulseDuration: 0.5
@@ -128,8 +126,6 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _sandFxRoot: {fileID: 5853045662238334215}
-  _toggleFxGameObject: 1
-  _clearFxOnStop: 1
   _endExplosionFx: {fileID: 704861201191213807}
   _animator: {fileID: 5494184503842378241}
 --- !u!114 &6465450270072123490
@@ -5075,6 +5071,11 @@ GameObject:
 --- !u!23 &6200669773989290168 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 6001087463457875376, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
+  m_PrefabInstance: {fileID: 379728496170550536}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &7150859067356582928 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7384185270871871768, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
   m_PrefabInstance: {fileID: 379728496170550536}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &7657041240526765586 stripped
