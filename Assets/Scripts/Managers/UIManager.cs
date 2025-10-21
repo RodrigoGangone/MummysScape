@@ -57,26 +57,26 @@ public class UIManager : MonoBehaviour
     {
         GameEventManager.Instance.levelEvents.OnWin.Register(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Register(Lose);
-        GameEventManager.Instance.levelEvents.OnPause.Register(Pause);
-        GameEventManager.Instance.levelEvents.OnResume.Register(Resume);
-        //GameEventManager.Instance.levelEvents.OnRespawn.Register();
+
+        // ÚNICO evento de pausa:
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(HandlePauseChanged);
     }
 
     private void OnDisable()
     {
         GameEventManager.Instance.levelEvents.OnWin.Unregister(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Lose);
-        GameEventManager.Instance.levelEvents.OnPause.Unregister(Pause);
-        GameEventManager.Instance.levelEvents.OnResume.Unregister(Resume);
-        //GameEventManager.Instance.levelEvents.OnRespawn.Register();
+
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(HandlePauseChanged);
     }
+
 
     private void Start()
     {
         StartCoroutine(FadeOut());
 
         //Buttons OnClick
-        AddButtonProps(_btnResume, GameEventManager.Instance.levelEvents.OnResume.Raise);
+        AddButtonProps(_btnResume, () => GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false));
         AddButtonProps(_btnRetry, RetryLevel);
         AddButtonProps(_btnOptions, ShowOptionsPanel);
         AddButtonProps(_btnExit, GoToMainMenu);
@@ -98,15 +98,17 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && !_pauseCharging)
-        {
-            if (_isPaused)
-                GameEventManager.Instance.levelEvents.OnResume.Raise();
-            else
-                GameEventManager.Instance.levelEvents.OnPause.Raise();
-        }
+        if (Input.GetKeyDown(KeyCode.Escape))
+            Toggle();
     }
 
+    private void Toggle()
+    {
+        if (_pauseCharging) return;
+
+        bool willPause = !_isPaused;
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(willPause);
+    }
     
     private void AddButtonProps(Button button, Action mainAction, params Action[] additionalActions)
     {
@@ -125,31 +127,33 @@ public class UIManager : MonoBehaviour
             }
         });
     }
-
-    private void Pause()
+    
+    private void HandlePauseChanged(bool paused)
     {
-        if (_isPaused) return;
-        _isPaused = true;
+        if (_isPaused == paused) return;
+        _isPaused = paused;
 
-        StartCoroutine(LoadPauseBandage());
+        if (paused)
+        {
+            // Estado PAUSE
+            _optionsPanel.SetActive(false);
+            _WinPanel.SetActive(false);
+            _LosePanel.SetActive(false);
+            _NextLvlPanel.SetActive(false);
 
-        _optionsPanel.SetActive(false);
-        _WinPanel.SetActive(false);
-        _LosePanel.SetActive(false);
-        _NextLvlPanel.SetActive(false);
+            StartCoroutine(LoadPauseBandage());   // tu animación + blur
+            // Al final del bandage, el panel se activa si corresponde (como ya hacías)
+        }
+        else
+        {
+            // Estado RESUME
+            _pausePanel.SetActive(false);
+            _optionsPanel.SetActive(false);
+
+            StartCoroutine(LoadPauseBandage());
+        }
     }
-
-    private void Resume()
-    {
-        if (!_isPaused) return;
-        _isPaused = false;
-        
-        _pausePanel.SetActive(false);
-        _optionsPanel.SetActive(false);
-
-        StartCoroutine(LoadPauseBandage());
-    }
-
+    
     private IEnumerator LoadPauseBandage()
     {
         _pauseCharging = true;
@@ -179,8 +183,12 @@ public class UIManager : MonoBehaviour
         _pauseMaterial.SetFloat(PAUSE_FILL, endValue); // Asegurar que se complete la transición
     }
 
-    private void GoToMainMenu() => SceneManager.LoadScene(0);
-
+    private void GoToMainMenu()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false);
+        SceneManager.LoadScene(0);
+    }
+    
     private void ShowNextLvlPanel()
     {
         _NextLvlPanel.SetActive(true);
@@ -211,7 +219,12 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void RetryLevel() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    private void RetryLevel()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    
     private void ShowOptionsPanel() => _optionsPanel.SetActive(true);
 
     private IEnumerator FadeIn(Action onFadeComplete)
