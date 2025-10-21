@@ -48,6 +48,9 @@ public sealed class HourglassManager : MonoBehaviour
     [SerializeField] private bool _toggleFxGameObject = true;
     [Tooltip("Si está activo, limpia las partículas al detenerlas.")]
     [SerializeField] private bool _clearFxOnStop = true;
+    
+    [Tooltip("Asigna aquí FXHourglassSandExplosion (ParticleSystem).")]
+    [SerializeField] private ParticleSystem _endExplosionFx;
 
     [Header("Animator")] 
     [SerializeField] private Animator _animator;
@@ -174,6 +177,8 @@ public sealed class HourglassManager : MonoBehaviour
     {
         //activar animacion trigger del animator
         _animator.SetTrigger("Death");
+        //Fx explosion de arena
+        PlayEndExplosion();
         //sonido de rotura hourglass
     }
 
@@ -185,6 +190,9 @@ public sealed class HourglassManager : MonoBehaviour
         _countdownEndInvoked = false;
         BeginAnim(_fillTop, 0f, _countdownDuration);
         ResetHeartbeatState(); // arranca el latido limpio
+        
+        // Dejar la explosión lista para volver a reproducirse si reusás el reloj
+        ResetEndExplosion();
         StartSandFx();
     }
 
@@ -349,5 +357,22 @@ public sealed class HourglassManager : MonoBehaviour
 
         if (_toggleFxGameObject && _sandFxRoot.activeSelf)
             _sandFxRoot.SetActive(false);
+    }
+    
+    private void PlayEndExplosion()
+    {
+        if (_endExplosionFx == null) return;
+
+        // Garantiza re-play aunque ya haya terminado antes
+        _endExplosionFx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        _endExplosionFx.Play(true);
+    }
+
+    private void ResetEndExplosion()
+    {
+        if (_endExplosionFx == null) return;
+        // Dejarla reseteada para el próximo countdown
+        _endExplosionFx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        // No llamamos Play aquí; solo preparamos.
     }
 }
