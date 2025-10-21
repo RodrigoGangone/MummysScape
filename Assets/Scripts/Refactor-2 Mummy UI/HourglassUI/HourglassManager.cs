@@ -1,378 +1,269 @@
-using System;
 using UnityEngine;
 
 /// <summary>
-/// HourglassManager
-/// Administra el reloj de arena (TOP/BOTTOM comparten _Fill; cada material lo interpreta distinto).
-/// Se suscribe a OnBandagesCountChanged para iniciar countdown (0 vendas) o resetear (>0 vendas).
-/// Incluye atajos de debug (J/K) y un efecto de "latidos" que solo corre durante el countdown,
-/// acelerando a medida que el tiempo restante se agota.
+/// HourglassManager (refactor breve y claro)
+/// - Administra el Fill de TOP/BOTTOM (ambos comparten _Fill; cada material lo interpreta distinto).
+/// - Responde a OnBandagesCountChanged: 0 → inicia countdown | >0 → resetea/llena.
+/// - Al terminar el countdown hace Raise de OnHourglassDeath (se mantiene).
+/// - Lanza anim "Death" y FX de explosión en OnCountDownEnded (suscripto).
+/// - FX de arena: solo Play / Pause / Reset. Los GameObjects ya están activos en la escena.
+/// - Latidos durante el countdown: escala breve con frecuencia que acelera hacia el final.
 /// </summary>
 [DisallowMultipleComponent]
-[DefaultExecutionOrder(-100)]
 public sealed class HourglassManager : MonoBehaviour
 {
-    [Header("Renderers (asignar materiales correctos)")]
-    [SerializeField] private MeshRenderer _topLiquidRenderer;    
-    [SerializeField] private MeshRenderer _bottomLiquidRenderer; 
-
-    [Header("Duraciones (segundos)")]
-    [Min(0f)] [SerializeField] private float _countdownDuration = 30f;   
-    [Min(0f)] [SerializeField] private float _resetDuration     = 0.75f; 
-
-    [Header("Debug / Test (opcional)")]
-    [SerializeField] private bool _enableDebugKeys = true;
-    [SerializeField] private KeyCode _keyNoBandages   = KeyCode.J; // Raise(0)
-    [SerializeField] private KeyCode _keySomeBandages = KeyCode.K; // Raise(1)
-
-    [Header("Heartbeat (solo durante countdown)")]
-    [SerializeField] private Transform _heartbeatTarget;     // GO a escalar
-    [SerializeField, Min(0.01f)] private float _pulseScale = 0.25f;
-    [SerializeField, Min(0.01f)] private float _pulseDuration = 0.5f;
-    [Tooltip("Intervalo inicial (lento) → final (rápido) a lo largo del countdown")]
-    [SerializeField, Min(0.01f)] private float _beatIntervalStart = 1f;
-    [SerializeField, Min(0.01f)] private float _beatIntervalEnd   = 0.5f;
-    [SerializeField] private AnimationCurve _pulseCurve =
-        new(
-            new Keyframe(0f, 0f, 0f, 0f),
-            new Keyframe(0.25f, 1f, 0f, 0f),
-            new Keyframe(0.5f, 0.5f, 0f, 0f),
-            new Keyframe(0.75f,  0.75f, 0f, 0f),
-            new Keyframe(1f, 0f, 0f, 0f)
-        );
+    [Header("Renderers")]
+    [SerializeField] MeshRenderer _topLiquidRenderer;
+    [SerializeField] MeshRenderer _bottomLiquidRenderer;
     
-    [Header("FX Arena (solo durante countdown)")]
-    [Tooltip("GameObject que contiene los ParticleSystem de arena cayendo.")]
-    [SerializeField] private GameObject _sandFxRoot;
-    [Tooltip("Si está activo, habilita/deshabilita el GameObject raíz de FX al iniciar/terminar el countdown.")]
-    [SerializeField] private bool _toggleFxGameObject = true;
-    [Tooltip("Si está activo, limpia las partículas al detenerlas.")]
-    [SerializeField] private bool _clearFxOnStop = true;
-    
-    [Tooltip("Asigna aquí FXHourglassSandExplosion (ParticleSystem).")]
-    [SerializeField] private ParticleSystem _endExplosionFx;
+    [Header("BaseLiquid")]
+    [SerializeField] GameObject _baseSand;
 
-    [Header("Animator")] 
-    [SerializeField] private Animator _animator;
-    
-    // FX cache
-    private ParticleSystem[] _sandFxSystems;
-    
-    // Control de invocación al finalizar countdown (evitar doble llamada)
-    private bool _countdownEndInvoked;
+    [Header("Tiempos (s)")]
+    [Min(0f)][SerializeField] float _countdownDuration = 30f;
+    [Min(0f)][SerializeField] float _resetDuration     = 0.75f;
 
-    private static readonly int FillID = Shader.PropertyToID("_Fill");
+    [Header("Heartbeat (solo countdown)")]
+    [SerializeField] Transform _heartbeatTarget;
+    [Min(0.01f)][SerializeField] float _pulseScale = 0.25f;
+    [Min(0.01f)][SerializeField] float _pulseDuration = 0.5f;
+    [Tooltip("Inicio lento → final rápido a lo largo del countdown")]
+    [Min(0.01f)][SerializeField] float _beatIntervalStart = 1f;
+    [Min(0.01f)][SerializeField] float _beatIntervalEnd   = 0.5f;
+    [SerializeField] AnimationCurve _pulseCurve =
+        new(new Keyframe(0f,0f), new Keyframe(0.25f,1f), new Keyframe(0.5f,0.5f), new Keyframe(0.75f,0.75f), new Keyframe(1f,0f));
 
-    private MaterialPropertyBlock _topMPB;
-    private MaterialPropertyBlock _botMPB;
+    [Header("FX Arena (solo countdown)")]
+    [Tooltip("Raíz con los ParticleSystem de arena cayendo (GO activo en escena).")]
+    [SerializeField] GameObject _sandFxRoot;
 
-    // "Cuánto está lleno el TOP" [0..1]; el BOTTOM interpreta a la inversa.
-    private float _fillTop = 1f;
+    [Header("FX Final")]
+    [Tooltip("FXHourglassSandExplosion (one-shot, no loopeable).")]
+    [SerializeField] ParticleSystem _endExplosionFx;
 
-    // Animación de arena
-    private bool _animating;
-    private bool _isCountdown; // true si la animación en curso es countdown (no reset)
-    private float _from, _to, _elapsed, _duration;
-    private AnimationCurve _curve;
+    [Header("Animaciones")]
+    [SerializeField] Animator _animator;
 
-    // Evento
-    private bool _bootstrapped;
-    private int  _lastBandages = -1;
+    // --- Internos ---
+    static readonly int FillID = Shader.PropertyToID("_Fill");
+    MaterialPropertyBlock _mpbTop, _mpbBot;
+    ParticleSystem[] _sandFx;
+    bool _isAnimating, _isCountdown, _endRaised;
+    float _from, _to, _t, _dur, _fillTop = 1f;
 
-    // Heartbeat runtime
-    private Vector3 _baseScale;
-    private bool _hasBaseScale;
-    private float _beatTimer;
-    private bool _pulsing;
-    private float _pulseTimer;
+    // bootstrap del primer valor de vendas
+    bool _bootstrapped; int _lastBandages = -1;
 
-    private void Awake()
+    // heartbeat runtime
+    Vector3 _baseScale; bool _hasBaseScale;
+    float _beatTimer, _pulseTimer; bool _pulsing;
+
+    // ---------------- Ciclo de vida ----------------
+    void Awake()
     {
-        _topMPB = new MaterialPropertyBlock();
-        _botMPB = new MaterialPropertyBlock();
-        
-        // Cachea los ParticleSystems si hay root asignado
+        _mpbTop = new MaterialPropertyBlock();
+        _mpbBot = new MaterialPropertyBlock();
         CacheSandFx();
     }
 
-    private void OnEnable()
+    void OnEnable()
     {
         GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Register<int>(OnBandagesChanged);
         GameEventManager.Instance.levelEvents.OnHourglassDeath.Register(OnCountDownEnded);
     }
 
-    private void OnDisable()
+    void OnDisable()
     {
         GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Unregister<int>(OnBandagesChanged);
         GameEventManager.Instance.levelEvents.OnHourglassDeath.Unregister(OnCountDownEnded);
-        
-        StopHeartbeat();
-        StopSandFx();
+        HeartbeatStop();
+        FxReset();
     }
 
-    private void Update()
+    void Update()
     {
-        // Debug keys
-        if (_enableDebugKeys)
+        // DEBUG: teclas directas (TODO: quitar cuando no se usen)
+        if (Input.GetKeyDown(KeyCode.J)) GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Raise(0);
+        if (Input.GetKeyDown(KeyCode.K)) GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Raise(1);
+
+        if (!_isAnimating) return;
+
+        _t += Time.deltaTime;
+        float p = _dur <= 0f ? 1f : Mathf.Clamp01(_t / _dur);
+
+        ApplyFill(Mathf.LerpUnclamped(_from, _to, p));
+        if (_isCountdown) HeartbeatTick(p);
+
+        if (p >= 1f - Mathf.Epsilon)
         {
-            if (Input.GetKeyDown(_keyNoBandages))   SafeRaiseBandages(0);
-            if (Input.GetKeyDown(_keySomeBandages)) SafeRaiseBandages(1);
-        }
+            _isAnimating = false;
+            ApplyFill(_to);
+            HeartbeatStop();
+            FxReset();
 
-        // Animación de arena
-        if (_animating)
-        {
-            _elapsed += Time.deltaTime;
-            float progress = _duration <= 0f ? 1f : Mathf.Clamp01(_elapsed / _duration);
-            float shaped   = (_curve != null) ? _curve.Evaluate(progress) : progress;
-
-            ApplyFill(Mathf.LerpUnclamped(_from, _to, shaped));
-
-            // Heartbeat: solo cuando es countdown
-            if (_isCountdown) UpdateHeartbeat(progress);
-
-            if (progress >= 1f - Mathf.Epsilon)
+            if (_isCountdown && !_endRaised)
             {
-                _animating = false;
-                ApplyFill(_to);
-                StopHeartbeat();
-                StopSandFx();
-                
-                // Llamar una única vez al finalizar la cuenta atrás
-                if (_isCountdown && !_countdownEndInvoked)
-                {
-                    _countdownEndInvoked = true;
-                    GameEventManager.Instance.levelEvents.OnHourglassDeath.Raise();
-                }
+                _endRaised = true;
+                GameEventManager.Instance.levelEvents.OnHourglassDeath.Raise();
             }
         }
     }
 
-    // -------------------- Eventos --------------------
-    private static void SafeRaiseBandages(int value)
-    {
-        var evt = GameEventManager.Instance.playerEvents.OnBandagesCountChanged;
-        if (evt != null) evt.Raise(value);
-    }
-
-    private void OnBandagesChanged(int count)
+    // ---------------- Eventos ----------------
+    void OnBandagesChanged(int count)
     {
         if (!_bootstrapped)
         {
             _bootstrapped = true;
             _lastBandages = count;
-            SnapByBandageCount(count);
+            SnapByBandages(count);
             return;
         }
 
-        if (count == 0 && _lastBandages > 0)         // perdió todas
-            StartCountdown();
-        else if (count > 0 && _lastBandages == 0)    // volvió a tener
-            ResetAndFill();
+        if (count == 0 && _lastBandages > 0) StartCountdown();
+        else if (count > 0 && _lastBandages == 0) ResetAndFill();
 
         _lastBandages = count;
     }
-    
-    private void OnCountDownEnded()
+
+    void OnCountDownEnded()
     {
-        //activar animacion trigger del animator
         _animator.SetTrigger("Death");
-        //Fx explosion de arena
-        PlayEndExplosion();
-        //sonido de rotura hourglass
+        ExplosionPlay();
+        // SFX rotura: acá si hace falta
     }
 
-    // -------------------- API pública --------------------
-    /// <summary>Vacía el slot superior (TOP 1→0) y llena el inferior.</summary>
-    private void StartCountdown()
+    // ---------------- Estados públicos (llamados internos) ----------------
+    void StartCountdown()
     {
         _isCountdown = true;
-        _countdownEndInvoked = false;
+        _endRaised = false;
         BeginAnim(_fillTop, 0f, _countdownDuration);
-        ResetHeartbeatState(); // arranca el latido limpio
-        
-        // Dejar la explosión lista para volver a reproducirse si reusás el reloj
-        ResetEndExplosion();
-        StartSandFx();
+        HeartbeatReset();
+        ExplosionReset();
+        FxPlay();
     }
 
-    /// <summary>Llena el slot superior (TOP 0→1) y vacía el inferior.</summary>
-    private void ResetAndFill()
+    void ResetAndFill()
     {
         _isCountdown = false;
         BeginAnim(_fillTop, 1f, _resetDuration);
-        StopHeartbeat();
-        StopSandFx();
+        HeartbeatStop();
+        FxReset();
     }
 
-    /// <summary>Fija el estado inmediato según # de vendas (sin animación).</summary>
-    private void SnapByBandageCount(int bandages)
+    void SnapByBandages(int bandages)
     {
         _isCountdown = false;
-        _animating = false;
-        StopHeartbeat();
-        StopSandFx();
+        _isAnimating = false;
+        HeartbeatStop();
+        FxReset();
         ApplyFill(bandages > 0 ? 1f : 0f);
-        _countdownEndInvoked = false;
+        _endRaised = false;
     }
 
-    // -------------------- Internos: animación arena --------------------
-    private void BeginAnim(float from, float to, float duration)
+    // ---------------- Arena (anim Fill) ----------------
+    void BeginAnim(float from, float to, float duration)
     {
         _from = Mathf.Clamp01(from);
-        _to = Mathf.Clamp01(to);
-        _duration = Mathf.Max(0f, duration);
-        _curve = AnimationCurve.Linear(0, 0, 1, 1);
-        _elapsed = 0f;
-        _animating = _duration > 0f;
-
-        if (!_animating) ApplyFill(_to);
+        _to   = Mathf.Clamp01(to);
+        _dur  = Mathf.Max(0f, duration);
+        _t    = 0f;
+        _isAnimating = _dur > 0f;
+        if (!_isAnimating) ApplyFill(_to);
     }
 
-    private void ApplyFill(float topFill01)
+    void ApplyFill(float topFill01)
     {
         _fillTop = Mathf.Clamp01(topFill01);
-
         if (_topLiquidRenderer)
         {
-            _topLiquidRenderer.GetPropertyBlock(_topMPB);
-            _topMPB.SetFloat(FillID, _fillTop);
-            _topLiquidRenderer.SetPropertyBlock(_topMPB);
+            _topLiquidRenderer.GetPropertyBlock(_mpbTop);
+            _mpbTop.SetFloat(FillID, _fillTop);
+            _topLiquidRenderer.SetPropertyBlock(_mpbTop);
         }
         if (_bottomLiquidRenderer)
         {
-            _bottomLiquidRenderer.GetPropertyBlock(_botMPB);
-            _botMPB.SetFloat(FillID, _fillTop);
-            _bottomLiquidRenderer.SetPropertyBlock(_botMPB);
+            _bottomLiquidRenderer.GetPropertyBlock(_mpbBot);
+            _mpbBot.SetFloat(FillID, _fillTop);
+            _bottomLiquidRenderer.SetPropertyBlock(_mpbBot);
         }
     }
 
-    // -------------------- Internos: heartbeat --------------------
-    private void UpdateHeartbeat(float countdownProgress01)
+    // ---------------- Heartbeat ----------------
+    void HeartbeatTick(float countdownProgress01)
     {
         if (_heartbeatTarget == null) return;
 
-        if (!_hasBaseScale)
-        {
-            _baseScale = _heartbeatTarget.localScale;
-            _hasBaseScale = true;
-        }
-
-        // Intervalo actual según progreso (0 = inicio lento, 1 = final rápido)
+        if (!_hasBaseScale) { _baseScale = _heartbeatTarget.localScale; _hasBaseScale = true; }
         float interval = Mathf.Lerp(_beatIntervalStart, _beatIntervalEnd, countdownProgress01);
 
-        // Disparo de nuevo latido
         _beatTimer += Time.deltaTime;
-        if (_beatTimer >= interval)
-        {
-            _beatTimer = 0f;
-            _pulsing = true;
-            _pulseTimer = 0f;
-        }
+        if (_beatTimer >= interval) { _beatTimer = 0f; _pulsing = true; _pulseTimer = 0f; }
 
-        // Si estamos en pulso, aplicar envelope
         if (_pulsing)
         {
             _pulseTimer += Time.deltaTime;
-            float n = Mathf.Clamp01(_pulseTimer / _pulseDuration);
-            float env = (_pulseCurve != null) ? _pulseCurve.Evaluate(n) : 1f; // pico
-            float scaleFactor = 1f + (_pulseScale * env);
-
-            _heartbeatTarget.localScale = _baseScale * scaleFactor;
-
-            if (n >= 1f)
-            {
-                _pulsing = false;
-                _heartbeatTarget.localScale = _baseScale; // volver a base tras el golpe
-            }
+            float n   = Mathf.Clamp01(_pulseTimer / _pulseDuration);
+            float env = _pulseCurve != null ? _pulseCurve.Evaluate(n) : 1f;
+            _heartbeatTarget.localScale = _baseScale * (1f + _pulseScale * env);
+            if (n >= 1f) { _pulsing = false; _heartbeatTarget.localScale = _baseScale; }
         }
     }
 
-    private void ResetHeartbeatState()
+    void HeartbeatReset()
     {
         if (_heartbeatTarget == null) return;
-        if (!_hasBaseScale)
-        {
-            _baseScale = _heartbeatTarget.localScale;
-            _hasBaseScale = true;
-        }
-        _beatTimer = 0f;
-        _pulsing = false;
-        _pulseTimer = 0f;
+        if (!_hasBaseScale) { _baseScale = _heartbeatTarget.localScale; _hasBaseScale = true; }
+        _beatTimer = 0f; _pulseTimer = 0f; _pulsing = false;
         _heartbeatTarget.localScale = _baseScale;
     }
 
-    private void StopHeartbeat()
+    void HeartbeatStop()
     {
         if (_heartbeatTarget == null) return;
         if (_hasBaseScale) _heartbeatTarget.localScale = _baseScale;
-        _pulsing = false;
-        _beatTimer = 0f;
-        _pulseTimer = 0f;
-    }
-    
-    // -------------------- Internos: FX arena --------------------
-    private void CacheSandFx()
-    {
-        if (_sandFxRoot == null) { _sandFxSystems = null; return; }
-        _sandFxSystems = _sandFxRoot.GetComponentsInChildren<ParticleSystem>(true);
+        _beatTimer = 0f; _pulseTimer = 0f; _pulsing = false;
     }
 
-    private void StartSandFx()
+    // ---------------- FX Arena: Play / Pause / Reset ----------------
+    void CacheSandFx()
+    {
+        _sandFx = (_sandFxRoot == null) ? null : _sandFxRoot.GetComponentsInChildren<ParticleSystem>(true);
+    }
+
+    void FxPlay()
     {
         if (_sandFxRoot == null) return;
+        if (_sandFx == null || _sandFx.Length == 0) CacheSandFx();
+        if (_sandFx == null) return;
 
-        if (_sandFxSystems == null || _sandFxSystems.Length == 0)
-            CacheSandFx();
-
-        if (_toggleFxGameObject && !_sandFxRoot.activeSelf)
-            _sandFxRoot.SetActive(true);
-
-        if (_sandFxSystems != null)
-        {
-            foreach (var ps in _sandFxSystems)
-            {
-                if (ps == null) continue;
-                ps.Play(true);
-            }
-        }
+        foreach (var ps in _sandFx) if (ps) ps.Play(true);
     }
 
-    private void StopSandFx()
+    void FxPause()
     {
-        if (_sandFxRoot == null) return;
-
-        if (_sandFxSystems == null || _sandFxSystems.Length == 0)
-            CacheSandFx();
-
-        if (_sandFxSystems != null)
-        {
-            foreach (var ps in _sandFxSystems)
-            {
-                if (ps == null) continue;
-                ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-                if (_clearFxOnStop) ps.Clear(true);
-            }
-        }
-
-        if (_toggleFxGameObject && _sandFxRoot.activeSelf)
-            _sandFxRoot.SetActive(false);
+        if (_sandFx == null) return;
+        foreach (var ps in _sandFx) if (ps) ps.Pause(true);
     }
-    
-    private void PlayEndExplosion()
+
+    void FxReset()
+    {
+        if (_sandFx == null) return;
+        foreach (var ps in _sandFx) if (ps) ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+    }
+
+    // ---------------- FX Final (Explosión) ----------------
+    void ExplosionPlay()
     {
         if (_endExplosionFx == null) return;
-
-        // Garantiza re-play aunque ya haya terminado antes
         _endExplosionFx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         _endExplosionFx.Play(true);
     }
 
-    private void ResetEndExplosion()
+    void ExplosionReset()
     {
         if (_endExplosionFx == null) return;
-        // Dejarla reseteada para el próximo countdown
         _endExplosionFx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-        // No llamamos Play aquí; solo preparamos.
     }
 }
