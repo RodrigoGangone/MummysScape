@@ -3,42 +3,50 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// GameEvent flexible que permite disparar eventos con o sin parámetro.
+/// GameEvent – versión corregida de registro tipado
 /// </summary>
 [CreateAssetMenu(menuName = "Events/GameEvent")]
 public class GameEvent : ScriptableObject
 {
-    private readonly List<Action> _noParamListeners = new();
-    private readonly List<Action<object>> _paramListeners = new();
-    
+    private readonly List<Action> _noParam = new();
+    private readonly List<Action<object>> _param = new();
+
+    // Mapa para poder desuscribir correctamente Action<T>
+    private readonly Dictionary<Delegate, Action<object>> _typedMap = new();
+
     public void Register(Action listener)
     {
-        if (!_noParamListeners.Contains(listener))
-            _noParamListeners.Add(listener);
+        if (!_noParam.Contains(listener)) _noParam.Add(listener);
     }
-    public void Unregister(Action listener) => _noParamListeners.Remove(listener);
-    public void Raise() => _noParamListeners.ForEach(e => e?.Invoke());
+    public void Unregister(Action listener) => _noParam.Remove(listener);
+    public void Raise() { for (int i = 0; i < _noParam.Count; i++) _noParam[i]?.Invoke(); }
 
     public void Register<T>(Action<T> listener)
     {
-        // Evita duplicados si ya se registró el mismo método
-        if (!_paramListeners.Exists(a => a.Method == listener.Method && a.Target == listener.Target))
-            _paramListeners.Add(Wrapper);
-
-        // Wrapper para convertir Action<T> en Action<object>
-        void Wrapper(object obj)
+        if (_typedMap.ContainsKey(listener)) return;
+        Action<object> wrapper = (obj) =>
         {
             if (obj is T t) listener(t);
             else Debug.LogWarning($"[GameEvent] Tipo incompatible en Raise(): {obj?.GetType().Name} → {typeof(T).Name}");
+        };
+        _typedMap[listener] = wrapper;
+        _param.Add(wrapper);
+    }
+
+    public void Unregister<T>(Action<T> listener)
+    {
+        if (_typedMap.TryGetValue(listener, out var wrapper))
+        {
+            _param.Remove(wrapper);
+            _typedMap.Remove(listener);
         }
     }
-    
-    public void Unregister<T>(Action<T> listener) => _paramListeners.RemoveAll(a => a.Method == listener.Method 
-                                                                                                   && a.Target == listener.Target);
-    
-    public void Raise(object value) => _paramListeners.ForEach(e => e?.Invoke(value));
 
-    // --- Debug ---
-    public IReadOnlyList<Action> NoParamListeners => _noParamListeners;
-    public IReadOnlyList<Action<object>> ParamListeners => _paramListeners;
+    public void Raise(object value)
+    {
+        for (int i = 0; i < _param.Count; i++) _param[i]?.Invoke(value);
+    }
+
+    public IReadOnlyList<Action> NoParamListeners => _noParam;
+    public IReadOnlyList<Action<object>> ParamListeners => _param;
 }

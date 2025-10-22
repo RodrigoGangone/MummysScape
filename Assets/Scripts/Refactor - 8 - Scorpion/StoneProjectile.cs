@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
-using Unity.Mathematics;
-using Unity.VisualScripting;
+using static PauseUtils;
 using UnityEngine;
 
 /// <summary>
@@ -11,7 +10,7 @@ using UnityEngine;
 /// - Respeta ocultamiento: no golpea a través de paredes (wallMask).
 /// - Stun simple: deshabilita el script Player por un tiempo y lo vuelve a habilitar.
 /// </summary>
-public class StoneProjectile : MonoBehaviour
+public class StoneProjectile : MonoBehaviour, IPausable
 {
     [Header("Detección")]
     [SerializeField] private float hitRadius = 0.6f;
@@ -34,7 +33,8 @@ public class StoneProjectile : MonoBehaviour
     [SerializeField] private GameObject view;
     [SerializeField] private GameObject fxImpact;
 
-    private event Action<Vector3> OnHit; 
+    private bool _paused;
+    private event Action<Vector3> OnHit;
     // Bézier y tiempo
     private Vector3 p0, p1, p2;
     private float duration;
@@ -46,10 +46,6 @@ public class StoneProjectile : MonoBehaviour
     // Estado
     private bool _hit;
     private Vector3 _lastPos;
-
-    private void OnEnable() => OnHit += SpawnFX;
-
-    private void OnDisable() => OnHit -= SpawnFX;
 
     public void Initialize(Vector3 start, Vector3 control, Vector3 end, float dur, IBossContext bossCtx)
     {
@@ -66,7 +62,7 @@ public class StoneProjectile : MonoBehaviour
 
     void Update()
     {
-        if (_hit) return;
+        if (_paused || _hit) return;
 
         t += Time.deltaTime / duration;
         float u = Mathf.Clamp01(t);
@@ -191,15 +187,27 @@ public class StoneProjectile : MonoBehaviour
         return rb != null ? rb.worldCenterOfMass : col.bounds.center;
     }
 
-    IEnumerator SimpleStun(Player player, float seconds)
+    private IEnumerator SimpleStun(Player player, float seconds)
     {
         player.enabled = false;
-        yield return new WaitForSeconds(seconds);
-        
+        yield return WaitForSecondsPausable(seconds, () => _paused);
         player.enabled = true;
-        
         Destroy(gameObject);
     }
 
     void SpawnFX(Vector3 pos) => Instantiate(fxImpact, pos, Quaternion.identity);
+    
+    public void OnPauseChanged(bool paused) => _paused = paused;
+
+    private void OnEnable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+        OnHit += SpawnFX;
+    }
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+        OnHit -= SpawnFX;
+    }
 }

@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static PauseUtils;
 
 [RequireComponent(typeof(Rigidbody))]
-public class BandageProjectile : MonoBehaviour
+public class BandageProjectile : MonoBehaviour, IPausable
 {
     private Rigidbody _rb;
+    private bool _paused;
 
     private void Awake()
     {
@@ -20,6 +22,8 @@ public class BandageProjectile : MonoBehaviour
         {
             while (Vector3.Distance(_rb.position, target) > 0.1f)
             {
+                if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
+
                 var newPosition = Vector3.MoveTowards(_rb.position, target, speed * Time.fixedDeltaTime);
                 _rb.MovePosition(newPosition);
                 
@@ -36,6 +40,10 @@ public class BandageProjectile : MonoBehaviour
         
         _rb.useGravity = true;
     }
+    
+    public void OnPauseChanged(bool paused) => _paused = paused;
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }
 
 public static class SimpleShootData

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static PlayerEnum;
 
-public class Quicksand : MonoBehaviour
+public class Quicksand : MonoBehaviour, IPausable
 {
     private Player _player;
     private LevelManager _levelManager;
@@ -16,6 +16,7 @@ public class Quicksand : MonoBehaviour
 
     private bool _inQuicksand;
     private float _timeToDeath;
+    private bool _paused;
 
 
     private void Start()
@@ -28,7 +29,7 @@ public class Quicksand : MonoBehaviour
 
     private void Update()
     {
-        if (!_inQuicksand) return;
+        if (!_inQuicksand || _paused) return;
 
         _timeToDeath += Time.deltaTime;
 
@@ -60,4 +61,28 @@ public class Quicksand : MonoBehaviour
         Instantiate(_sinkFX, _player.transform.position, _player.transform.rotation);
         enabled = false;
     }
+
+    public void OnPauseChanged(bool paused)
+    {
+        _paused = paused;
+        
+        if (!_sinkFX) return;
+        
+        var fx = _sinkFX.GetComponent<ParticleSystem>();
+        
+        if (!fx) return;
+        
+        switch (paused)
+        {
+            case true when fx.isPlaying:
+                fx.Pause();
+                break;
+            case false when !fx.isPlaying:
+                fx.Play();
+                break;
+        }
+    }
+    
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }
