@@ -11,7 +11,7 @@ using UnityEngine;
 /// - _baseSand visible SOLO en countdown; líquidos visibles salvo tras OnCountDownEnded.
 /// </summary>
 [DisallowMultipleComponent]
-public sealed class HourglassManager : Pausable
+public sealed class HourglassManager : MonoBehaviour, IPausable
 {
     [Header("Renderers")]
     [SerializeField] MeshRenderer _topLiquidRenderer;
@@ -58,6 +58,8 @@ public sealed class HourglassManager : Pausable
     Vector3 _baseScale; bool _hasBaseScale;
     float _beatTimer, _pulseTimer; bool _pulsing;
 
+    private bool _paused;
+
     // ---------------- Ciclo de vida ----------------
     void Awake()
     {
@@ -72,29 +74,28 @@ public sealed class HourglassManager : Pausable
 
     void OnEnable()
     {
-        base.OnEnable();
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Register<int>(OnBandagesChanged);
         GameEventManager.Instance.levelEvents.OnHourglassDeath.Register(OnCountDownEnded);
     }
 
     void OnDisable()
     {
-        base.OnDisable();
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Unregister<int>(OnBandagesChanged);
         GameEventManager.Instance.levelEvents.OnHourglassDeath.Unregister(OnCountDownEnded);
         HeartbeatStop();
         FxReset();
     }
 
-    public override void OnPauseChanged(bool paused) { }
-
+    public void OnPauseChanged(bool paused) => _paused = paused;
     void Update()
     {
         // DEBUG: teclas directas (TODO: quitar cuando no se usen)
         if (Input.GetKeyDown(KeyCode.J)) GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Raise(0);
         if (Input.GetKeyDown(KeyCode.K)) GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Raise(1);
 
-        if (!_isAnimating || Paused) return;
+        if (!_isAnimating || _paused) return;
 
         _t += Time.deltaTime;
         float p = _dur <= 0f ? 1f : Mathf.Clamp01(_t / _dur);

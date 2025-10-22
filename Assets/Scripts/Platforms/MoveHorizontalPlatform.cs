@@ -1,23 +1,23 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static Utils;
+using static PauseUtils;
 
-public class MoveHorizontalPlatform : Pausable
+public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 {
     [Header("PLAY ON AWAKE")] 
     [SerializeField] private bool isMoving;
 
     [Header("SPEED")] 
-    [SerializeField] private float speed = 1;
+    [SerializeField] private float speed = 1f;
     [SerializeField] private float stopTime = 0.5f;
 
     [Header("WAYPOINTS")] 
     [SerializeField] private Transform[] waypoints;
 
     [Header("EFFECTS")] 
-    [SerializeField] private float moundEmergenceSpeed = 1;
+    [SerializeField] private float moundEmergenceSpeed = 1f;
     [SerializeField] private Transform sandMoundForward;
     [SerializeField] private Transform[] sandMoundForwardWaypoints;
     [SerializeField] private Transform sandMoundBackward;
@@ -35,8 +35,12 @@ public class MoveHorizontalPlatform : Pausable
     private int _currentWaypointIndex = 0;
 
     private AudioSource platformAudio;
-    private bool _localPaused; // pausa interna (en stopTime)
 
+    // ⏸️ pausa global
+    private bool _paused;
+    // ⏱️ pausa local (espera entre waypoints)
+    private bool _holdAtWaypoint;
+    
     private void Start()
     {
         platformMaterials = GetMaterialsFromChildren();
@@ -51,7 +55,7 @@ public class MoveHorizontalPlatform : Pausable
 
         if (sandMoundForward && sandMoundBackward)
         {
-            sandMoundForward.position = sandMoundForwardWaypoints[0].position;
+            sandMoundForward.position  = sandMoundForwardWaypoints[0].position;
             sandMoundBackward.position = sandMoundBackwardWaypoints[0].position;
         }
 
@@ -60,7 +64,7 @@ public class MoveHorizontalPlatform : Pausable
 
     private void Update()
     {
-        if (Paused) return; // ⛔ pausa global
+        if (_paused) return; // pausa global
 
         if (isMovingToFirstWaypoint)
             MoveToFirstWaypoint();
@@ -86,7 +90,7 @@ public class MoveHorizontalPlatform : Pausable
 
     private void MoveTowardsWaypoint()
     {
-        if (_localPaused) // pausa local interna de la plataforma
+        if (_holdAtWaypoint)
         {
             if (sandMoundForward && sandMoundBackward)
                 ResetSandMoundPositions();
@@ -107,10 +111,10 @@ public class MoveHorizontalPlatform : Pausable
 
     private IEnumerator PauseAtWaypoint()
     {
-        _localPaused = true;
-        yield return WaitForSecondsPausable(stopTime); // ⏸️ usa la pausa global
+        _holdAtWaypoint = true;
+        yield return WaitForSecondsPausable(stopTime, () => _paused); // respeta pausa global
         _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
-        _localPaused = false;
+        _holdAtWaypoint = false;
     }
 
     public void StartAction()
@@ -173,9 +177,9 @@ public class MoveHorizontalPlatform : Pausable
 
     private IEnumerator GlowEffect(float duration)
     {
-        StartCoroutine(IncreaseIntensity(duration / 2));
-        yield return WaitForSecondsPausable(duration / 2);
-        StartCoroutine(DecreaseIntensity(duration / 2));
+        StartCoroutine(IncreaseIntensity(duration / 2f));
+        yield return WaitForSecondsPausable(duration / 2f, () => _paused);
+        StartCoroutine(DecreaseIntensity(duration / 2f));
     }
 
     private IEnumerator IncreaseIntensity(float duration)
@@ -183,7 +187,7 @@ public class MoveHorizontalPlatform : Pausable
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            if (Paused) { yield return WaitWhilePaused(); continue; }
+            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
 
             elapsed += Time.deltaTime;
             float current = Mathf.Lerp(0f, glowIntensity, elapsed / duration);
@@ -198,7 +202,7 @@ public class MoveHorizontalPlatform : Pausable
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            if (Paused) { yield return WaitWhilePaused(); continue; }
+            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
 
             elapsed += Time.deltaTime;
             float current = Mathf.Lerp(glowIntensity, 0f, elapsed / duration);
@@ -210,32 +214,38 @@ public class MoveHorizontalPlatform : Pausable
 
     private void HandleAudio()
     {
-        if (isMoving && !_localPaused && !Paused)
+        if (isMoving && !_holdAtWaypoint && !_paused)
         {
             StartCoroutine(AudioManager.Instance.FollowTransform(platformAudio, transform, -1));
-            if (!platformAudio.isPlaying)
-                platformAudio.Play();
+            if (!platformAudio.isPlaying) platformAudio.Play();
         }
         else
         {
-            if (platformAudio.isPlaying)
-                platformAudio.Pause();
+            if (platformAudio.isPlaying) platformAudio.Pause();
         }
     }
 
-    public override void OnPauseChanged(bool paused)
+    // ===== IPausable =====
+    public void OnPauseChanged(bool paused)
     {
+        _paused = paused;
+
         foreach (var ps in sandMoundForwardParticles)
             if (paused && ps.isPlaying) ps.Pause();
-            else if (!paused && !ps.isPlaying) ps.Play();
+            else if (!paused && !ps.isPlaying && isMoving) ps.Play();
 
         foreach (var ps in sandMoundBackwardParticles)
             if (paused && ps.isPlaying) ps.Pause();
-            else if (!paused && !ps.isPlaying) ps.Play();
+            else if (!paused && !ps.isPlaying && isMoving) ps.Play();
 
-        if (paused && platformAudio.isPlaying)
-            platformAudio.Pause();
-        else if (!paused && !platformAudio.isPlaying && isMoving)
-            platformAudio.Play();
+        if (platformAudio != null)
+        {
+            if (paused && platformAudio.isPlaying) platformAudio.Pause();
+            else if (!paused && !platformAudio.isPlaying && isMoving) platformAudio.Play();
+        }
     }
+
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static PauseUtils;
 
 /// <summary>
 /// Controla el swap de tandas/escenas por "stages".
@@ -13,41 +14,45 @@ using UnityEngine;
 /// - Cada empty debe estar en su altura base (por ej. y = 0) al iniciar.
 /// </summary>
 [DisallowMultipleComponent]
-public class StageSetTransition : Pausable
+public class StageSetTransition : MonoBehaviour, IPausable
 {
     [Header("Stage Roots (empties contenedores)")]
     [Tooltip("Un Transform por stage, en orden. Cada uno agrupa los assets de ese stage.")]
-    [SerializeField] private List<Transform> stageRoots = new();
+    [SerializeField]
+    private List<Transform> stageRoots = new();
 
     [Header("Enganche opcional con el Boss")]
     [Tooltip("Si lo asignás, se suscribe a OnStageChanged / OnDeath del BossActor.")]
-    [SerializeField] private BossActor bossActor; // opcional
+    [SerializeField]
+    private BossActor bossActor; // opcional
 
     [Header("Animación")]
     [Tooltip("Altura hacia donde baja el grupo saliente (relativa a su posición base).")]
-    [SerializeField] private float downOffsetY = -10f;
+    [SerializeField]
+    private float downOffsetY = -10f;
 
-    [Tooltip("Duración de la bajada del grupo saliente (segundos).")]
-    [SerializeField] private float downDuration = 0.6f;
+    [Tooltip("Duración de la bajada del grupo saliente (segundos).")] [SerializeField]
+    private float downDuration = 0.6f;
 
-    [Tooltip("Duración de la subida del grupo entrante (segundos).")]
-    [SerializeField] private float upDuration = 0.8f;
+    [Tooltip("Duración de la subida del grupo entrante (segundos).")] [SerializeField]
+    private float upDuration = 0.8f;
 
-    [Tooltip("Curva de easing para la bajada.")]
-    [SerializeField] private AnimationCurve easeDown = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [Tooltip("Curva de easing para la bajada.")] [SerializeField]
+    private AnimationCurve easeDown = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-    [Tooltip("Curva de easing para la subida.")]
-    [SerializeField] private AnimationCurve easeUp = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [Tooltip("Curva de easing para la subida.")] [SerializeField]
+    private AnimationCurve easeUp = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-    [Tooltip("Si es true, se anima la 'localPosition'. Si es false, se usa 'position' (mundo).")]
-    [SerializeField] private bool useLocalPosition = true;
+    [Tooltip("Si es true, se anima la 'localPosition'. Si es false, se usa 'position' (mundo).")] [SerializeField]
+    private bool useLocalPosition = true;
 
-    [Header("Estado")]
-    [SerializeField] private int currentStageIndex = 0;
+    [Header("Estado")] [SerializeField] private int currentStageIndex = 0;
 
     // Cache de posiciones base de cada root
     private Dictionary<Transform, Vector3> _basePos = new();
     private Coroutine _transitionCR;
+
+    private bool _paused;
 
     private void Awake()
     {
@@ -72,23 +77,18 @@ public class StageSetTransition : Pausable
 
     private void OnEnable()
     {
-        if (bossActor != null)
-        {
-            bossActor.OnStageChanged += OnBossStageChanged;
-            bossActor.OnDeath += OnBossDeath;
-        }
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+
+        bossActor.OnStageChanged += OnBossStageChanged;
+        bossActor.OnDeath += OnBossDeath;
     }
 
     private void OnDisable()
     {
-        if (bossActor != null)
-        {
-            bossActor.OnStageChanged -= OnBossStageChanged;
-            bossActor.OnDeath -= OnBossDeath;
-        }
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+        bossActor.OnStageChanged -= OnBossStageChanged;
+        bossActor.OnDeath -= OnBossDeath;
     }
-
-    public override void OnPauseChanged(bool paused) { }
 
     /// <summary>
     /// Llamado por BossActor.OnStageChanged (si está asignado).
@@ -111,7 +111,8 @@ public class StageSetTransition : Pausable
         }
         else
         {
-            Debug.LogWarning("[StageSetTransition] BossDeath: no hay un siguiente stage (plataforma de victoria) configurado.");
+            Debug.LogWarning(
+                "[StageSetTransition] BossDeath: no hay un siguiente stage (plataforma de victoria) configurado.");
         }
     }
 
@@ -180,13 +181,13 @@ public class StageSetTransition : Pausable
     private IEnumerator TransitionSequence(int fromIndex, int toIndex)
     {
         var fromRoot = IsValidIndex(fromIndex) ? stageRoots[fromIndex] : null;
-        var toRoot   = IsValidIndex(toIndex)   ? stageRoots[toIndex]   : null;
+        var toRoot = IsValidIndex(toIndex) ? stageRoots[toIndex] : null;
 
         // 1) BAJAR y APAGAR el saliente
         if (fromRoot != null && _basePos.TryGetValue(fromRoot, out var fromBase))
         {
             Vector3 fromStart = GetPos(fromRoot);
-            Vector3 fromEnd   = new Vector3(fromBase.x, fromBase.y + downOffsetY, fromBase.z);
+            Vector3 fromEnd = new Vector3(fromBase.x, fromBase.y + downOffsetY, fromBase.z);
 
             // Si por alguna razón el start no es la base, animamos desde donde esté hacia el end.
             yield return AnimatePos(fromRoot, fromStart, fromEnd, downDuration, easeDown);
@@ -219,8 +220,12 @@ public class StageSetTransition : Pausable
 
         while (time < duration)
         {
-            if (Paused) { yield return WaitWhilePaused(); continue; }
-            
+            if (_paused)
+            {
+                yield return WaitWhilePaused(() => _paused);
+                continue;
+            }
+
             time += Time.deltaTime;
             float t01 = Mathf.Clamp01(time / duration);
             float k = curve != null ? curve.Evaluate(t01) : t01;
@@ -242,6 +247,8 @@ public class StageSetTransition : Pausable
         else t.position = p;
     }
 
+    public void OnPauseChanged(bool paused) => _paused = paused;
+
     // Gizmos simples para visualizar posiciones base y “down”
     private void OnDrawGizmosSelected()
     {
@@ -252,7 +259,9 @@ public class StageSetTransition : Pausable
         {
             if (t == null) continue;
 
-            var baseP = Application.isPlaying && _basePos.ContainsKey(t) ? _basePos[t] : (useLocalPosition ? t.localPosition : t.position);
+            var baseP = Application.isPlaying && _basePos.ContainsKey(t)
+                ? _basePos[t]
+                : (useLocalPosition ? t.localPosition : t.position);
             var worldBase = useLocalPosition ? t.parent != null ? t.parent.TransformPoint(baseP) : baseP : baseP;
 
             // Base

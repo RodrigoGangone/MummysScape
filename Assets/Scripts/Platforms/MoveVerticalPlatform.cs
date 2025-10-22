@@ -2,8 +2,9 @@ using System.Collections;
 using System.Linq;
 using UnityEngine;
 using static Utils;
+using static PauseUtils;
 
-public class MoveVerticalPlatform : Pausable
+public class MoveVerticalPlatform : MonoBehaviour, IPausable
 {
     [Header("PLAY ON AWAKE")] 
     [SerializeField] private bool isMoving;
@@ -25,7 +26,7 @@ public class MoveVerticalPlatform : Pausable
     private Material[] platformMaterials;
 
     // Pausa interna (local)
-    private bool _localPaused;
+    private bool _paused;
     private bool _isMovingToFirstWaypoint;
     private int _currentWaypointIndex = 0;
     private AudioSource _platformAudio;
@@ -47,7 +48,7 @@ public class MoveVerticalPlatform : Pausable
 
     private void Update()
     {
-        if (Paused) return; // 🔸 pausa global
+        if (_paused) return;
 
         if (_isMovingToFirstWaypoint)
             MoveToFirstWaypoint();
@@ -72,7 +73,7 @@ public class MoveVerticalPlatform : Pausable
 
     private void MoveTowardsWaypoint()
     {
-        if (_localPaused)
+        if (_paused)
         {
             if (sandMoundsParticle && sandMoundsParticle.isPlaying)
                 sandMoundsParticle.Stop();
@@ -92,12 +93,12 @@ public class MoveVerticalPlatform : Pausable
 
     private IEnumerator PauseAtWaypoint()
     {
-        _localPaused = true;
+        _paused = true;
 
-        yield return WaitForSecondsPausable(stopTime); // ⏸️ pausa global respetada
+        yield return WaitForSecondsPausable(stopTime, () => _paused); // ⏸️ pausa global respetada
 
         _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
-        _localPaused = false;
+        _paused = false;
     }
 
     public void StartAction()
@@ -130,7 +131,7 @@ public class MoveVerticalPlatform : Pausable
     private IEnumerator GlowEffect(float duration)
     {
         StartCoroutine(IncreaseIntensity(duration / 2));
-        yield return WaitForSecondsPausable(duration / 2);
+        yield return WaitForSecondsPausable(duration / 2, () => _paused);
         StartCoroutine(DecreaseIntensity(duration / 2));
     }
 
@@ -139,7 +140,7 @@ public class MoveVerticalPlatform : Pausable
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            if (Paused) { yield return WaitWhilePaused(); continue; }
+            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
 
             elapsed += Time.deltaTime;
             float current = Mathf.Lerp(0f, glowIntensity, elapsed / duration);
@@ -156,7 +157,7 @@ public class MoveVerticalPlatform : Pausable
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            if (Paused) { yield return WaitWhilePaused(); continue; }
+            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
 
             elapsed += Time.deltaTime;
             float current = Mathf.Lerp(glowIntensity, 0f, elapsed / duration);
@@ -170,7 +171,7 @@ public class MoveVerticalPlatform : Pausable
 
     private void HandleAudio()
     {
-        if (isMoving && !_localPaused && !Paused)
+        if (isMoving && !_paused && !_paused)
         {
             StartCoroutine(AudioManager.Instance.FollowTransform(_platformAudio, transform, -1));
             if (!_platformAudio.isPlaying)
@@ -184,8 +185,10 @@ public class MoveVerticalPlatform : Pausable
     }
 
     // 🔸 Integración con el sistema global de pausa
-    public override void OnPauseChanged(bool paused)
+    public void OnPauseChanged(bool paused)
     {
+        _paused = paused;
+        
         if (sandMoundsParticle)
         {
             if (paused && sandMoundsParticle.isPlaying)
@@ -199,4 +202,7 @@ public class MoveVerticalPlatform : Pausable
         else if (!paused && !_platformAudio.isPlaying && isMoving)
             _platformAudio.Play();
     }
+    
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }

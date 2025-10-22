@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static PlayerEnum;
 
-public class Quicksand : Pausable
+public class Quicksand : MonoBehaviour, IPausable
 {
     private Player _player;
     private LevelManager _levelManager;
@@ -16,6 +16,7 @@ public class Quicksand : Pausable
 
     private bool _inQuicksand;
     private float _timeToDeath;
+    private bool _paused;
 
 
     private void Start()
@@ -28,7 +29,7 @@ public class Quicksand : Pausable
 
     private void Update()
     {
-        if (!_inQuicksand || Paused) return;
+        if (!_inQuicksand || _paused) return;
 
         _timeToDeath += Time.deltaTime;
 
@@ -61,8 +62,10 @@ public class Quicksand : Pausable
         enabled = false;
     }
 
-    public override void OnPauseChanged(bool paused)
+    public void OnPauseChanged(bool paused)
     {
+        _paused = paused;
+        
         if (!_sinkFX) return;
         
         var fx = _sinkFX.GetComponent<ParticleSystem>();
@@ -79,4 +82,7 @@ public class Quicksand : Pausable
                 break;
         }
     }
+    
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }

@@ -14,7 +14,7 @@ using static PlayerEnum.PlayerSize;
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(StateMachinePlayer))]
-public class PlayerInputStateDriver : Pausable
+public class PlayerInputStateDriver : MonoBehaviour, IPausable
 {
     [Header("Tuning")] [SerializeField, Min(0f)]
     private float _moveDeadZone = 0.1f;
@@ -22,8 +22,8 @@ public class PlayerInputStateDriver : Pausable
     private StateMachinePlayer _sm;
     private PlayerContext _ctx;
     private IPlayerInput _input;
-
-
+    private bool _paused;
+    
     public void Bind(PlayerContext ctx, StateMachinePlayer sm)
     {
         _ctx = ctx;
@@ -39,7 +39,7 @@ public class PlayerInputStateDriver : Pausable
     //TODO: ver que hacer con los "if" previos a pasar de state,ya que provocan entrar al state 1 vez por frame.
     private void Update()
     {
-        if (_ctx == null || _sm == null || _input == null || Paused) return;
+        if (_ctx == null || _sm == null || _input == null || _paused) return;
 
         var mv = _input.Move;
         bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
@@ -124,8 +124,8 @@ public class PlayerInputStateDriver : Pausable
         else _sm.ChangeState(Idle);
     }
 
-    public override void OnPauseChanged(bool paused)
-    {
-        
-    }
+    public void OnPauseChanged(bool paused) => _paused = paused;
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+
 }

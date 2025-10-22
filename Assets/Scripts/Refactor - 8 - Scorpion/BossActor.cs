@@ -10,20 +10,21 @@ using System;
 /// - Construye WorldModel (distancia, LOS, stage, config) y consulta al GOAP para decidir la intención.
 /// </summary>
 [DisallowMultipleComponent]
-public sealed class BossActor : Pausable, IBossContext
+public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 {
-    [Header("Config & Refs")]
-    [SerializeField] private BossConfigSO config;
+    [Header("Config & Refs")] [SerializeField]
+    private BossConfigSO config;
+
     [SerializeField] private Player player;
     [SerializeField] private Animator animator;
     [SerializeField] private PlayerPrefsRegistry registry;
-    [Header("FSM")]
-    public StateMachinePlayer stateMachine;
+    [Header("FSM")] public StateMachinePlayer stateMachine;
 
-    [Header("Percepción")] [Tooltip("Layers que bloquean la visión y largo del LoS")]
-    [SerializeField] private LayerMask losObstacleMask;
+    [Header("Percepción")] [Tooltip("Layers que bloquean la visión y largo del LoS")] [SerializeField]
+    private LayerMask losObstacleMask;
+
     [SerializeField] private float losRayHeight = 1.5f;
-    
+
     // IBossContext
     public Transform Transform => transform;
     public Animator Animator => animator;
@@ -33,10 +34,10 @@ public sealed class BossActor : Pausable, IBossContext
 
     // Runtime
     private GoapBrain _goap;
-    private int _stageIndex;          // 0..N-1
-    private float _time;              // cache Time.time
-    private string _lastIntent = "";  // para evitar spam de triggers
-    
+    private int _stageIndex; // 0..N-1
+    private float _time; // cache Time.time
+    private string _lastIntent = ""; // para evitar spam de triggers
+
     private BossSkillSO _runtimePrimarySkill;
     private BossSkillSO _runtimeSecondarySkill;
 
@@ -57,7 +58,8 @@ public sealed class BossActor : Pausable, IBossContext
 
     public Func<bool> OnPrimarySkill;
     public Func<bool> OnSecondarySkill;
-    
+    private bool _paused;
+
     // Eventos opcionales
     public event Action<int> OnStageChanged;
     public event Action OnDeath;
@@ -70,7 +72,7 @@ public sealed class BossActor : Pausable, IBossContext
 
         _runtimePrimarySkill = config.PrimarySkill != null ? Instantiate(config.PrimarySkill) : null;
         _runtimeSecondarySkill = config.SecondarySkill != null ? Instantiate(config.SecondarySkill) : null;
-        
+
         stateMachine.AddState(Entry, new BS_Entry(this));
         stateMachine.AddState(Idle, new BS_Idle(this));
         stateMachine.AddState(Chase, new BS_Chase(this));
@@ -82,14 +84,14 @@ public sealed class BossActor : Pausable, IBossContext
         stateMachine.ChangeState(Entry);
 
         //PlayerPrefsManager.BindRegistry(registry);
-        
+
         _goap = new GoapBrain();
         _stageIndex = 0;
     }
 
     private void Update()
     {
-        if (Paused) return; // ⏸️ pausa global detiene toda la lógica
+        if (_paused) return; // ⏸️ pausa global detiene toda la lógica
 
         _time = Time.time;
         if (player == null || config == null || config.StageCount == 0) return;
@@ -136,7 +138,8 @@ public sealed class BossActor : Pausable, IBossContext
         if (dist <= Mathf.Epsilon) return true;
         dir /= dist;
 
-        return !Physics.Raycast(from + Vector3.up * losRayHeight, dir, dist, losObstacleMask, QueryTriggerInteraction.Ignore);
+        return !Physics.Raycast(from + Vector3.up * losRayHeight, dir, dist, losObstacleMask,
+            QueryTriggerInteraction.Ignore);
     }
 
     private WorldModel BuildWorldModel()
@@ -161,7 +164,6 @@ public sealed class BossActor : Pausable, IBossContext
         return _runtimeSecondarySkill != null && _runtimeSecondarySkill.TryExecute(wm, this, _time);
     }
 
-
     #endregion
 
 
@@ -172,25 +174,42 @@ public sealed class BossActor : Pausable, IBossContext
     {
         switch (intentOrEvent)
         {
-            case "Entry":  stateMachine.ChangeState(Entry); break;
-            case "Idle":   stateMachine.ChangeState(Idle); break;
-            case "Chase":  stateMachine.ChangeState(Chase); break;
-            case "Damaged":  stateMachine.ChangeState(Damaged); break;
-            case "Primary": stateMachine.ChangeState(Primary); break;
-            case "Secondary": stateMachine.ChangeState(Secondary); break;
-            case "Die":    stateMachine.ChangeState(Die); break;
-            default:       Debug.LogWarning($"[BossActor] Intent desconocido: {intentOrEvent}"); break;
+            case "Entry":
+                stateMachine.ChangeState(Entry);
+                break;
+            case "Idle":
+                stateMachine.ChangeState(Idle);
+                break;
+            case "Chase":
+                stateMachine.ChangeState(Chase);
+                break;
+            case "Damaged":
+                stateMachine.ChangeState(Damaged);
+                break;
+            case "Primary":
+                stateMachine.ChangeState(Primary);
+                break;
+            case "Secondary":
+                stateMachine.ChangeState(Secondary);
+                break;
+            case "Die":
+                stateMachine.ChangeState(Die);
+                break;
+            default:
+                Debug.LogWarning($"[BossActor] Intent desconocido: {intentOrEvent}");
+                break;
         }
+
         _lastIntent = intentOrEvent; // ← sincroniza el “recuerdo” del planner con la FSM
     }
 
     private void OnEnable()
     {
-        base.OnEnable();
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         
         OnPrimarySkill += TryUseSkillA;
         OnSecondarySkill += TryUseSkillB;
-        
+
         OnDamaged += NotifyDamaged;
         OnDamaged += AdvanceStage;
 
@@ -199,20 +218,31 @@ public sealed class BossActor : Pausable, IBossContext
 
     private void OnDisable()
     {
-        base.OnDisable();
-        
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+
         OnDamaged -= NotifyDamaged;
         OnDamaged -= AdvanceStage;
-        
+
         OnDeath -= NotifyDie;
     }
-
-    public override void OnPauseChanged(bool paused)
+    
+    public void OnPauseChanged(bool paused)
     {
-        animator.enabled    = !paused;
+        _paused = paused;
+        
+        animator.enabled = !paused;
         stateMachine.enabled = !paused;
         _goap.Paused = paused;
     }
 }
 
-public enum BossCommonState { Entry, Idle, Chase, Damaged, Primary, Secondary, Die }
+public enum BossCommonState
+{
+    Entry,
+    Idle,
+    Chase,
+    Damaged,
+    Primary,
+    Secondary,
+    Die
+}

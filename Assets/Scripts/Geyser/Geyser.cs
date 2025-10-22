@@ -3,8 +3,9 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 using static PlayerEnum;
+using static PauseUtils;
 
-public class Geyser : Pausable
+public class Geyser : MonoBehaviour, IPausable
 {
     private Player _player;
 
@@ -17,7 +18,7 @@ public class Geyser : Pausable
     [SerializeField] private Transform _invisiblePlatform;
     [SerializeField] private Transform _triggerTransform;
 
-    private bool _isPaused;
+    private bool _isPausedPos;
     private bool _upInvisiblePlatform;
     public bool _isIntenseModeActive;
 
@@ -37,6 +38,7 @@ public class Geyser : Pausable
     private int _currentWaypointIndex;
 
     [Header("WAYPOINTS")] [SerializeField] private ParticleSystem _preUp1, _preUp2;
+    private bool _paused;
 
     private void Start()
     {
@@ -49,7 +51,7 @@ public class Geyser : Pausable
 
     private void Update()
     {
-        if (_isPaused) return; // ✅ se corta toda la lógica continua
+        if (_paused) return; // ✅ se corta toda la lógica continua
 
         if (_currentGeyserType == GeyserType.Basic)
             MoveTowardsWaypoint();
@@ -63,7 +65,7 @@ public class Geyser : Pausable
 
     private void MoveTowardsWaypoint()
     {
-        if (_isPaused)
+        if (_paused)
         {
             return;
         }
@@ -87,25 +89,25 @@ public class Geyser : Pausable
 
     private IEnumerator PauseAtWaypoint()
     {
-        _isPaused = true;
+        _isPausedPos = true;
 
         if (_currentWaypointIndex == 0)
         {
             // ⬇️ reemplazás por WaitForSecondsPausable
-            yield return WaitForSecondsPausable(stopTimeBase / 2);
+            yield return WaitForSecondsPausable(stopTimeBase / 2,() => _paused);
             _preUp1.Play();
             _preUp2.Play();
-            yield return WaitForSecondsPausable(stopTimeBase / 2);
+            yield return WaitForSecondsPausable(stopTimeBase / 2,() => _paused);
         }
         else
         {
-            yield return WaitForSecondsPausable(stopTimeTop);
+            yield return WaitForSecondsPausable(stopTimeTop,() => _paused);
             _preUp1.Stop();
             _preUp2.Stop();
         }
 
         _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
-        _isPaused = false;
+        _isPausedPos = false;
     }
 
 
@@ -133,7 +135,7 @@ public class Geyser : Pausable
     {
         while (Vector3.Distance(_viewIntense.position, waypoints[1].position) > 0.01f)
         {
-            if (Paused) { yield return WaitWhilePaused(); continue; }
+            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
 
             _viewIntense.position = Vector3.MoveTowards(
                 _viewIntense.position, waypoints[1].position, intenseSpeed * Time.deltaTime);
@@ -144,11 +146,11 @@ public class Geyser : Pausable
             yield return null;
         }
 
-        yield return WaitForSecondsPausable(stoptimeTopIntense);
+        yield return WaitForSecondsPausable(stoptimeTopIntense,() => _paused);
 
         while (Vector3.Distance(_viewIntense.position, waypoints[0].position) > 0.01f)
         {
-            if (Paused) { yield return WaitWhilePaused(); continue; }
+            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
 
             _viewIntense.position = Vector3.MoveTowards(_viewIntense.position, waypoints[0].position,
                 intenseSpeed * Time.deltaTime);
@@ -185,9 +187,9 @@ public class Geyser : Pausable
         _invisiblePlatform.position = waypoints[0].position;
     }
 
-    public override void OnPauseChanged(bool paused)
+    public void OnPauseChanged(bool paused)
     {
-        _isPaused = paused;
+        _paused = paused;
 
         // Partículas → Pausa/Resume si estaban activas
         if (_preUp1)
@@ -202,7 +204,9 @@ public class Geyser : Pausable
             else if (!paused && !_preUp2.isPlaying) _preUp2.Play();
         }
     }
-
+    
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }
 
 enum GeyserType

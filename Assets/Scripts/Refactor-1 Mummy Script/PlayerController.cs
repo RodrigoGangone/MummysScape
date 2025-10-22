@@ -11,7 +11,7 @@ using static PlayerEnum;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputStateDriver))]
 [RequireComponent(typeof(GroundCheckRuntime))]
-public sealed class PlayerController : Pausable
+public sealed class PlayerController : MonoBehaviour, IPausable
 {
     [Header("Refs (Scene/Prefab)")] [SerializeField]
     private PlayerView _view;
@@ -101,9 +101,12 @@ public sealed class PlayerController : Pausable
     // Invocado por HeadTimer al expirar (UnityEvent): mata al player.</summary>
     public void Kill() => _sm.ChangeState(PlayerStateId.Dead);
 
-    public override void OnPauseChanged(bool paused)
+    public void OnPauseChanged(bool paused)
     {
         _rb.isKinematic = paused;
         _sm.enabled = !paused;
     }
+    
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }

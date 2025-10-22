@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static PauseUtils;
 
-public class GeyserPointProvider : Pausable
+public class GeyserPointProvider : MonoBehaviour, IPausable
 {
     [Tooltip("Geysers en escena. Se usarán sus transforms como destinos.")]
     public List<Geyser> geysers = new();
@@ -27,6 +28,8 @@ public class GeyserPointProvider : Pausable
     // Recomendado: tolerancia al llegar al objetivo
     [SerializeField, Min(0.001f)] private float arrivalThreshold = 0.05f;
 
+    private bool _paused;
+    
     private ParticleSystem Acquire(ParticleSystem prefab)
     {
         for (int i = 0; i < _pool.Count; i++)
@@ -105,7 +108,7 @@ public class GeyserPointProvider : Pausable
         while (remaining > 0)
         {
             // Si está pausado: pausar todas las partículas, esperar y reanudar
-            if (Paused)
+            if (_paused)
             {
                 for (int i = 0; i < actives.Count; i++)
                 {
@@ -114,7 +117,7 @@ public class GeyserPointProvider : Pausable
                 }
 
                 // Espera hasta que se libere la pausa global
-                yield return WaitWhilePaused();
+                yield return WaitWhilePaused(() => _paused);
 
                 // Reanudar emisión
                 for (int i = 0; i < actives.Count; i++)
@@ -153,6 +156,11 @@ public class GeyserPointProvider : Pausable
         onArrived?.Invoke();
     }
     
+    public void OnPauseChanged(bool paused) => _paused = paused;
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+
+    
     private void OnDrawGizmos()
     {
         if (!drawDebug || _lastTargets == null || _lastOrigin == null) return;
@@ -176,10 +184,5 @@ public class GeyserPointProvider : Pausable
             Gizmos.DrawLine(_lastOrigin.position, t.position);
             Gizmos.DrawSphere(t.position, 0.1f);
         }
-    }
-
-    public override void OnPauseChanged(bool paused)
-    {
-        
     }
 }
