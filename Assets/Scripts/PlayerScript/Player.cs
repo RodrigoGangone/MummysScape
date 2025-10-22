@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
+using static PlayerEnum;
 
 public class Player : MonoBehaviour
 {
@@ -333,7 +334,7 @@ public class Player : MonoBehaviour
 
         #endregion
 
-        #region Evitar Drop cerca de Wall
+        #region Evitar DropBandage cerca de Wall
 
         if (GizmoWallDrop)
         {
@@ -499,12 +500,12 @@ public class Player : MonoBehaviour
     }
 }
 
-public enum PlayerSize
-{
-    Normal,
-    Small,
-    Head
-}
+//public enum PlayerSize
+//{
+//    Normal,
+//    Small,
+//    Head
+//}
 
 public enum PlayerState
 {

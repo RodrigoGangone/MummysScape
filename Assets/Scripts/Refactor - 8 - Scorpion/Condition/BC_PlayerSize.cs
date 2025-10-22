@@ -1,8 +1,9 @@
 using System;
 using UnityEngine;
+using static PlayerEnum;
 
 
-    /// <summary> Habilita la skill solo con un Size en especifico. </summary>
+/// <summary> Habilita la skill solo con un Size en especifico. </summary>
     [CreateAssetMenu(menuName = "Boss/Conditions/Player Size")]
     public sealed class BC_PlayerSize : SkillConditionSO
     {

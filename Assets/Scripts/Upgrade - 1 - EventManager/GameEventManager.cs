@@ -7,19 +7,19 @@ public class GameEventManager : MonoBehaviour
 {
     public static GameEventManager Instance;
     
-    [System.Serializable]
+    [Serializable]
     public struct BossEvents
     {
-        public GameEvent OnBossDeath;
         public GameEvent OnStageChanged;
+        public GameEvent OnDeath;
     }
 
-    [System.Serializable]
+    [Serializable]
     public struct PlayerEvents
     {
-        public GameEvent OnPlayerDamaged;
-        public GameEvent OnPlayerDeath;
-        public GameEvent OnPlayerRespawn;
+        public GameEvent OnBandageCount;
+        public GameEvent OnDeath;
+        public GameEvent OnRespawn;
     }
 
     [Header("Boss Events")] 
@@ -40,6 +40,4 @@ public class GameEventManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-
-    
 }

@@ -4,6 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using static Utils;
 using Object = UnityEngine.Object;
+using static PlayerEnum;
 
 public class ModelPlayer
 {
