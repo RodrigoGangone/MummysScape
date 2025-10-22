@@ -11,21 +11,23 @@ using static PlayerEnum;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputStateDriver))]
 [RequireComponent(typeof(GroundCheckRuntime))]
-public sealed class PlayerController : MonoBehaviour
+public sealed class PlayerController : Pausable
 {
-    [Header("Refs (Scene/Prefab)")]
-    [SerializeField] private PlayerView _view;
+    [Header("Refs (Scene/Prefab)")] [SerializeField]
+    private PlayerView _view;
+
     [SerializeField] private CameraProvider _cameraProvider;
     [SerializeField] private MovementRuntime _movement;
     [SerializeField] private SwingHandler _swingHandler;
-    [SerializeField] private PlayerInputReaderLegacy _input;  // podés cambiar por el de New Input System
-    [SerializeField] private HeadTimerController _headTimer;  // opcional (puede estar en UI)
+    [SerializeField] private PlayerInputReaderLegacy _input; // podés cambiar por el de New Input System
+    [SerializeField] private HeadTimerController _headTimer; // opcional (puede estar en UI)
     [SerializeField] private InteractionRuntime _interactions;
     [SerializeField] private GroundCheckRuntime _ground;
     [SerializeField] private GameObject _bandagePickupPrefab; // opcional
-    
-    [Header("Size Runtime")]
-    [SerializeField] private PlayerSizeVisual _sizeVisual;
+
+    [Header("Size Runtime")] [SerializeField]
+    private PlayerSizeVisual _sizeVisual;
+
     [SerializeField] private CapsuleBySizeRuntime _capsuleBySize;
 
     private StateMachinePlayer _sm;
@@ -60,13 +62,14 @@ public sealed class PlayerController : MonoBehaviour
         _capsuleBySize?.Bind(_model);
 
         _ground = GetComponent<GroundCheckRuntime>();
-        
+
         // Contexto compartido por States
-        _ctx = new PlayerContext(transform, _rb, _swingHandler, _cameraProvider, _model, _view, _movement, _input, _interactions, _ground);
+        _ctx = new PlayerContext(transform, _rb, _swingHandler, _cameraProvider, _model, _view, _movement, _input,
+            _interactions, _ground);
 
         // Estados (tu API AddState / ChangeState)
-        _sm.AddState(PlayerStateId.Idle,  new IdleState(_ctx));
-        _sm.AddState(PlayerStateId.Walk,  new WalkState(_ctx));
+        _sm.AddState(PlayerStateId.Idle, new IdleState(_ctx));
+        _sm.AddState(PlayerStateId.Walk, new WalkState(_ctx));
         _sm.AddState(PlayerStateId.Fall, new FallState(_ctx));
         _sm.AddState(PlayerStateId.Aim, new AimState(_ctx));
         _sm.AddState(PlayerStateId.Shoot, new ShootState(_ctx));
@@ -77,16 +80,16 @@ public sealed class PlayerController : MonoBehaviour
         _sm.AddState(PlayerStateId.Swing, new SwingState(_ctx));
         _sm.AddState(PlayerStateId.Dead, new DeadState(_ctx));
         _sm.AddState(PlayerStateId.Win, new WinState(_ctx));
-        
-        _sm.SetGuard(new PlayerTransitionGuard(_ctx));  // Guard central (usa TransitionRules + SizeRules)
-        _inputDriver.Bind(_ctx, _sm);   // Driver que convierte inputs a estados
+
+        _sm.SetGuard(new PlayerTransitionGuard(_ctx)); // Guard central (usa TransitionRules + SizeRules)
+        _inputDriver.Bind(_ctx, _sm); // Driver que convierte inputs a estados
         _sm.ChangeState(PlayerStateId.Idle); // Estado inicial
-        
+
         //Eventos iniciales
         pe.OnBandagesCountChanged.Raise(_model.Bandages);
         pe.OnSizeChanged.Raise(_model.Size);
     }
-    
+
     // Intenta sumar 'amount' vendas al Model (retorna false si ya estás en el máximo).
     public bool TryCollectBandage(int amount)
     {
@@ -94,7 +97,13 @@ public sealed class PlayerController : MonoBehaviour
         _model.AddBandages(amount);
         return _model.Bandages > before;
     }
-    
+
     // Invocado por HeadTimer al expirar (UnityEvent): mata al player.</summary>
     public void Kill() => _sm.ChangeState(PlayerStateId.Dead);
+
+    public override void OnPauseChanged(bool paused)
+    {
+        _rb.isKinematic = paused;
+        _sm.enabled = !paused;
+    }
 }

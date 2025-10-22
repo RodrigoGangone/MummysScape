@@ -14,12 +14,14 @@ public sealed class GoapBrain
         public const string Secondary = "Secondary";
         public const string Idle      = "Idle";
     }
+    
+    internal bool Paused;
 
     // GoapBrain.DecideNextIntent
     public string DecideNextIntent(in WorldModel wm, IBossContext ctx, BossSkillSO runtimePrimary, BossSkillSO runtimeSecondary)
     {
         // Si el contexto no es un BossActor, no hay decisión posible.
-        if (ctx is not BossActor boss) return Intent.None;
+        if (ctx is not BossActor boss || Paused) return Intent.None;
 
         //Priorizamos la muerte del Boss por sobre todas las cosas
         if (boss.IsDie)          return Intent.Die;

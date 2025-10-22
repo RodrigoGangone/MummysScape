@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class GeyserPointProvider : MonoBehaviour
+public class GeyserPointProvider : Pausable
 {
     [Tooltip("Geysers en escena. Se usarán sus transforms como destinos.")]
     public List<Geyser> geysers = new();
@@ -104,6 +104,30 @@ public class GeyserPointProvider : MonoBehaviour
 
         while (remaining > 0)
         {
+            // Si está pausado: pausar todas las partículas, esperar y reanudar
+            if (Paused)
+            {
+                for (int i = 0; i < actives.Count; i++)
+                {
+                    var ps = actives[i].ps;
+                    if (ps != null && ps.isPlaying) ps.Pause();
+                }
+
+                // Espera hasta que se libere la pausa global
+                yield return WaitWhilePaused();
+
+                // Reanudar emisión
+                for (int i = 0; i < actives.Count; i++)
+                {
+                    var ps = actives[i].ps;
+                    if (ps != null && !ps.isPlaying) ps.Play();
+                }
+
+                // Continuar siguiente frame ya reanudado
+                yield return null;
+                continue;
+            }
+
             for (int i = 0; i < actives.Count; i++)
             {
                 if (done[i]) continue;
@@ -111,8 +135,8 @@ public class GeyserPointProvider : MonoBehaviour
                 var (ps, target) = actives[i];
                 if (ps == null || target == null) { done[i] = true; remaining--; continue; }
 
-                var cur = ps.transform.position;
-                var dst = target.position;
+                var cur  = ps.transform.position;
+                var dst  = target.position;
                 var next = Vector3.MoveTowards(cur, dst, speed * Time.deltaTime);
                 ps.transform.position = next;
 
@@ -152,5 +176,10 @@ public class GeyserPointProvider : MonoBehaviour
             Gizmos.DrawLine(_lastOrigin.position, t.position);
             Gizmos.DrawSphere(t.position, 0.1f);
         }
+    }
+
+    public override void OnPauseChanged(bool paused)
+    {
+        
     }
 }

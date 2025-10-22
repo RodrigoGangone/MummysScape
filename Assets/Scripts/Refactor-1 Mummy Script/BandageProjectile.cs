@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public class BandageProjectile : MonoBehaviour
+public class BandageProjectile : Pausable
 {
     private Rigidbody _rb;
 
@@ -20,6 +20,8 @@ public class BandageProjectile : MonoBehaviour
         {
             while (Vector3.Distance(_rb.position, target) > 0.1f)
             {
+                if (Paused) { yield return WaitWhilePaused(); continue; }
+
                 var newPosition = Vector3.MoveTowards(_rb.position, target, speed * Time.fixedDeltaTime);
                 _rb.MovePosition(newPosition);
                 
@@ -36,6 +38,8 @@ public class BandageProjectile : MonoBehaviour
         
         _rb.useGravity = true;
     }
+
+    public override void OnPauseChanged(bool paused) { }
 }
 
 public static class SimpleShootData

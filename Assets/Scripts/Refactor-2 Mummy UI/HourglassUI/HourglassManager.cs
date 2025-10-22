@@ -11,7 +11,7 @@ using UnityEngine;
 /// - _baseSand visible SOLO en countdown; líquidos visibles salvo tras OnCountDownEnded.
 /// </summary>
 [DisallowMultipleComponent]
-public sealed class HourglassManager : MonoBehaviour
+public sealed class HourglassManager : Pausable
 {
     [Header("Renderers")]
     [SerializeField] MeshRenderer _topLiquidRenderer;
@@ -72,17 +72,21 @@ public sealed class HourglassManager : MonoBehaviour
 
     void OnEnable()
     {
+        base.OnEnable();
         GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Register<int>(OnBandagesChanged);
         GameEventManager.Instance.levelEvents.OnHourglassDeath.Register(OnCountDownEnded);
     }
 
     void OnDisable()
     {
+        base.OnDisable();
         GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Unregister<int>(OnBandagesChanged);
         GameEventManager.Instance.levelEvents.OnHourglassDeath.Unregister(OnCountDownEnded);
         HeartbeatStop();
         FxReset();
     }
+
+    public override void OnPauseChanged(bool paused) { }
 
     void Update()
     {
@@ -90,7 +94,7 @@ public sealed class HourglassManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.J)) GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Raise(0);
         if (Input.GetKeyDown(KeyCode.K)) GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Raise(1);
 
-        if (!_isAnimating) return;
+        if (!_isAnimating || Paused) return;
 
         _t += Time.deltaTime;
         float p = _dur <= 0f ? 1f : Mathf.Clamp01(_t / _dur);

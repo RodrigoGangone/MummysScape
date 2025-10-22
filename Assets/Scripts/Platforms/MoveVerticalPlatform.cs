@@ -1,33 +1,34 @@
 using System.Collections;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Serialization;
 using static Utils;
 
-public class MoveVerticalPlatform : MonoBehaviour
+public class MoveVerticalPlatform : Pausable
 {
-    [Header("PLAY ON AWAKE")] [SerializeField]
-    private bool isMoving;
+    [Header("PLAY ON AWAKE")] 
+    [SerializeField] private bool isMoving;
 
-    [Header("SPEED")] public float speed = 1;
-    public float stopTime = 0.5f;
+    [Header("SPEED")] 
+    [SerializeField] private float speed = 1;
+    [SerializeField] private float stopTime = 0.5f;
 
-    [Header("WAYPOINTS")] [SerializeField] private Transform[] waypoints; // Lista puntos a los que se mueve la platform
+    [Header("WAYPOINTS")] 
+    [SerializeField] private Transform[] waypoints;
 
-    [Header("EFFECTS")] [SerializeField] private ParticleSystem sandMoundsParticle;
-
+    [Header("EFFECTS")] 
+    [SerializeField] private ParticleSystem sandMoundsParticle;
     [SerializeField] private ParticleSystem activationParticles;
+
     [SerializeField] private float glowDuration = 2f;
     [SerializeField] private float glowIntensity = 0.15f;
+
     private Material[] platformMaterials;
 
-    private bool isPaused;
-    private bool isMovingToFirstWaypoint;
-
+    // Pausa interna (local)
+    private bool _localPaused;
+    private bool _isMovingToFirstWaypoint;
     private int _currentWaypointIndex = 0;
-    
-    private AudioSource platformAudio;
-
+    private AudioSource _platformAudio;
 
     private void Start()
     {
@@ -35,142 +36,116 @@ public class MoveVerticalPlatform : MonoBehaviour
 
         if (waypoints.Length > 0 && isMoving)
         {
-            // Si la plataforma no está en la posicion del primer waypoint
             if (Vector3.Distance(transform.position, waypoints[0].position) == 0)
-                isMovingToFirstWaypoint = true;
+                _isMovingToFirstWaypoint = true;
             else
                 transform.position = waypoints[0].position;
         }
-        
-        // Reserva un AudioSource desde el pool al inicio
-        platformAudio = AudioManager.Instance.GetClipByName(NameSounds.SFX_MovingPlatform);
+
+        _platformAudio = AudioManager.Instance.GetClipByName(NameSounds.SFX_MovingPlatform);
     }
 
     private void Update()
     {
-        if (isMovingToFirstWaypoint)
-        {
+        if (Paused) return; // 🔸 pausa global
+
+        if (_isMovingToFirstWaypoint)
             MoveToFirstWaypoint();
-        }
         else if (isMoving && waypoints.Length > 0)
-        {
             MoveTowardsWaypoint();
-        }
-        
+
         HandleAudio();
     }
 
     private void MoveToFirstWaypoint()
     {
-        // Mueve la plataforma hacia el primer waypoint
         Transform firstWaypoint = waypoints[0];
         float step = speed * Time.deltaTime;
-
         transform.position = Vector3.MoveTowards(transform.position, firstWaypoint.position, step);
 
-        // Si la plataforma ha alcanzado el primer waypoint
         if (Vector3.Distance(transform.position, firstWaypoint.position) <= 0.001f)
         {
-            isMovingToFirstWaypoint = false;
-            _currentWaypointIndex = 1; // Empieza a moverse hacia el segundo waypoint
+            _isMovingToFirstWaypoint = false;
+            _currentWaypointIndex = 1;
         }
     }
 
     private void MoveTowardsWaypoint()
     {
-        if (isPaused)
-            sandMoundsParticle.Stop();
-        else
+        if (_localPaused)
         {
-            if (!sandMoundsParticle.isPlaying) sandMoundsParticle.Play();
-
-            // Calcula la direcc y mueve la plataform hacia el waypoint actual
-            Transform targetWaypoint = waypoints[_currentWaypointIndex];
-            float step = speed * Time.deltaTime;
-
-            transform.position = Vector3.MoveTowards(transform.position, targetWaypoint.position, step);
-
-            // Pausa al llegar a un punto
-            if (Vector3.Distance(transform.position, targetWaypoint.position) <= 0.001f)
-            {
-                StartCoroutine(PauseAtWaypoint());
-            }
+            if (sandMoundsParticle && sandMoundsParticle.isPlaying)
+                sandMoundsParticle.Stop();
+            return;
         }
+
+        if (sandMoundsParticle && !sandMoundsParticle.isPlaying)
+            sandMoundsParticle.Play();
+
+        Transform target = waypoints[_currentWaypointIndex];
+        float step = speed * Time.deltaTime;
+        transform.position = Vector3.MoveTowards(transform.position, target.position, step);
+
+        if (Vector3.Distance(transform.position, target.position) <= 0.001f)
+            StartCoroutine(PauseAtWaypoint());
     }
 
     private IEnumerator PauseAtWaypoint()
     {
-        // Avanza al siguiente waypoint
-        isPaused = true;
+        _localPaused = true;
 
-        yield return new WaitForSeconds(stopTime);
+        yield return WaitForSecondsPausable(stopTime); // ⏸️ pausa global respetada
 
         _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
-
-        isPaused = false;
+        _localPaused = false;
     }
 
     public void StartAction()
     {
         isMoving = !isMoving;
-        activationParticles.Play();
-        StartCoroutine((GlowEffect(glowDuration)));
+        activationParticles?.Play();
+        StartCoroutine(GlowEffect(glowDuration));
     }
 
     public void ReturnToPrevious()
     {
-        if (_currentWaypointIndex > 0)
-            _currentWaypointIndex--;
-        else
-            _currentWaypointIndex++;
+        _currentWaypointIndex = _currentWaypointIndex > 0 ? _currentWaypointIndex - 1 : _currentWaypointIndex + 1;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag(PLAYER_TAG))
-        {
+        if (other.CompareTag(PLAYER_TAG))
             other.transform.SetParent(transform);
-        }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.CompareTag(PLAYER_TAG))
-        {
+        if (other.CompareTag(PLAYER_TAG))
             other.transform.SetParent(null);
-        }
     }
 
-    private Material[] GetMaterialsFromChildren()
-    {
-        return GetComponentsInChildren<Renderer>()
-            .SelectMany(renderer => renderer.materials)
-            .ToArray();
-    }
+    private Material[] GetMaterialsFromChildren() =>
+        GetComponentsInChildren<Renderer>().SelectMany(r => r.materials).ToArray();
 
     private IEnumerator GlowEffect(float duration)
     {
         StartCoroutine(IncreaseIntensity(duration / 2));
-        yield return new WaitForSeconds(duration / 2);
+        yield return WaitForSecondsPausable(duration / 2);
         StartCoroutine(DecreaseIntensity(duration / 2));
     }
 
     private IEnumerator IncreaseIntensity(float duration)
     {
-        float elapsedTime = 0f;
-
-        while (elapsedTime < duration)
+        float elapsed = 0f;
+        while (elapsed < duration)
         {
-            elapsedTime += Time.deltaTime;
-            float currentIntensity = Mathf.Lerp(0f, glowIntensity, elapsedTime / duration);
+            if (Paused) { yield return WaitWhilePaused(); continue; }
 
-            foreach (Material mat in platformMaterials)
-            {
-                if (mat.HasProperty("_GlowIntensity"))
-                {
-                    mat.SetFloat("_GlowIntensity", currentIntensity);
-                }
-            }
+            elapsed += Time.deltaTime;
+            float current = Mathf.Lerp(0f, glowIntensity, elapsed / duration);
+
+            foreach (var mat in platformMaterials)
+                if (mat.HasProperty("_GlowIntensity")) mat.SetFloat("_GlowIntensity", current);
 
             yield return null;
         }
@@ -178,43 +153,50 @@ public class MoveVerticalPlatform : MonoBehaviour
 
     private IEnumerator DecreaseIntensity(float duration)
     {
-        float elapsedTime = 0f;
-
-        while (elapsedTime < duration)
+        float elapsed = 0f;
+        while (elapsed < duration)
         {
-            elapsedTime += Time.deltaTime;
-            float currentIntensity = Mathf.Lerp(glowIntensity, 0f, elapsedTime / duration);
+            if (Paused) { yield return WaitWhilePaused(); continue; }
 
-            foreach (Material mat in platformMaterials)
-            {
-                if (mat.HasProperty("_GlowIntensity"))
-                {
-                    mat.SetFloat("_GlowIntensity", currentIntensity);
-                }
-            }
+            elapsed += Time.deltaTime;
+            float current = Mathf.Lerp(glowIntensity, 0f, elapsed / duration);
+
+            foreach (var mat in platformMaterials)
+                if (mat.HasProperty("_GlowIntensity")) mat.SetFloat("_GlowIntensity", current);
 
             yield return null;
         }
     }
-    
+
     private void HandleAudio()
     {
-        if (isMoving && !isPaused)
+        if (isMoving && !_localPaused && !Paused)
         {
-            StartCoroutine(AudioManager.Instance.FollowTransform(platformAudio, transform, -1));
-            if (!platformAudio.isPlaying)
-            {
-                Debug.Log("HANDLE AUDIO: PLAY");
-                platformAudio.Play(); // Reanuda el audio si estaba pausado
-            }
+            StartCoroutine(AudioManager.Instance.FollowTransform(_platformAudio, transform, -1));
+            if (!_platformAudio.isPlaying)
+                _platformAudio.Play();
         }
         else
         {
-            if (platformAudio.isPlaying)
-            {
-                Debug.Log("HANDLE AUDIO: PAUSE");
-                platformAudio.Pause(); // Pausa el audio si no se está moviendo
-            }
+            if (_platformAudio.isPlaying)
+                _platformAudio.Pause();
         }
+    }
+
+    // 🔸 Integración con el sistema global de pausa
+    public override void OnPauseChanged(bool paused)
+    {
+        if (sandMoundsParticle)
+        {
+            if (paused && sandMoundsParticle.isPlaying)
+                sandMoundsParticle.Pause();
+            else if (!paused && !sandMoundsParticle.isPlaying && isMoving)
+                sandMoundsParticle.Play();
+        }
+
+        if (paused && _platformAudio.isPlaying)
+            _platformAudio.Pause();
+        else if (!paused && !_platformAudio.isPlaying && isMoving)
+            _platformAudio.Play();
     }
 }

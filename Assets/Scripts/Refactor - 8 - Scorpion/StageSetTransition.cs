@@ -13,7 +13,7 @@ using UnityEngine;
 /// - Cada empty debe estar en su altura base (por ej. y = 0) al iniciar.
 /// </summary>
 [DisallowMultipleComponent]
-public class StageSetTransition : MonoBehaviour
+public class StageSetTransition : Pausable
 {
     [Header("Stage Roots (empties contenedores)")]
     [Tooltip("Un Transform por stage, en orden. Cada uno agrupa los assets de ese stage.")]
@@ -87,6 +87,8 @@ public class StageSetTransition : MonoBehaviour
             bossActor.OnDeath -= OnBossDeath;
         }
     }
+
+    public override void OnPauseChanged(bool paused) { }
 
     /// <summary>
     /// Llamado por BossActor.OnStageChanged (si está asignado).
@@ -217,6 +219,8 @@ public class StageSetTransition : MonoBehaviour
 
         while (time < duration)
         {
+            if (Paused) { yield return WaitWhilePaused(); continue; }
+            
             time += Time.deltaTime;
             float t01 = Mathf.Clamp01(time / duration);
             float k = curve != null ? curve.Evaluate(t01) : t01;

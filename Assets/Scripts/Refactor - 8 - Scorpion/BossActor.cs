@@ -1,7 +1,6 @@
 using UnityEngine;
 using static BossCommonState;
 using System;
-using UnityEngine.Events;
 
 /// <summary>
 /// Actor genérico del Jefe. Integra Config por Stages, GOAP, y tu FSM existente.
@@ -11,7 +10,7 @@ using UnityEngine.Events;
 /// - Construye WorldModel (distancia, LOS, stage, config) y consulta al GOAP para decidir la intención.
 /// </summary>
 [DisallowMultipleComponent]
-public sealed class BossActor : MonoBehaviour, IBossContext
+public sealed class BossActor : Pausable, IBossContext
 {
     [Header("Config & Refs")]
     [SerializeField] private BossConfigSO config;
@@ -90,6 +89,8 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     private void Update()
     {
+        if (Paused) return; // ⏸️ pausa global detiene toda la lógica
+
         _time = Time.time;
         if (player == null || config == null || config.StageCount == 0) return;
 
@@ -185,6 +186,8 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     private void OnEnable()
     {
+        base.OnEnable();
+        
         OnPrimarySkill += TryUseSkillA;
         OnSecondarySkill += TryUseSkillB;
         
@@ -196,10 +199,19 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     private void OnDisable()
     {
+        base.OnDisable();
+        
         OnDamaged -= NotifyDamaged;
         OnDamaged -= AdvanceStage;
         
         OnDeath -= NotifyDie;
+    }
+
+    public override void OnPauseChanged(bool paused)
+    {
+        animator.enabled    = !paused;
+        stateMachine.enabled = !paused;
+        _goap.Paused = paused;
     }
 }
 

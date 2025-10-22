@@ -11,7 +11,7 @@ using UnityEngine;
 /// - Respeta ocultamiento: no golpea a través de paredes (wallMask).
 /// - Stun simple: deshabilita el script Player por un tiempo y lo vuelve a habilitar.
 /// </summary>
-public class StoneProjectile : MonoBehaviour
+public class StoneProjectile : Pausable
 {
     [Header("Detección")]
     [SerializeField] private float hitRadius = 0.6f;
@@ -47,9 +47,22 @@ public class StoneProjectile : MonoBehaviour
     private bool _hit;
     private Vector3 _lastPos;
 
-    private void OnEnable() => OnHit += SpawnFX;
+    private void OnEnable()
+    {
+        base.OnEnable();
+        OnHit += SpawnFX;
+    }
 
-    private void OnDisable() => OnHit -= SpawnFX;
+    private void OnDisable()
+    {
+        base.OnDisable();
+        OnHit -= SpawnFX;
+    }
+
+    public override void OnPauseChanged(bool paused)
+    {
+        
+    }
 
     public void Initialize(Vector3 start, Vector3 control, Vector3 end, float dur, IBossContext bossCtx)
     {
@@ -66,7 +79,7 @@ public class StoneProjectile : MonoBehaviour
 
     void Update()
     {
-        if (_hit) return;
+        if (Paused || _hit) return;
 
         t += Time.deltaTime / duration;
         float u = Mathf.Clamp01(t);
@@ -191,13 +204,11 @@ public class StoneProjectile : MonoBehaviour
         return rb != null ? rb.worldCenterOfMass : col.bounds.center;
     }
 
-    IEnumerator SimpleStun(Player player, float seconds)
+    private IEnumerator SimpleStun(Player player, float seconds)
     {
         player.enabled = false;
-        yield return new WaitForSeconds(seconds);
-        
+        yield return WaitForSecondsPausable(seconds);
         player.enabled = true;
-        
         Destroy(gameObject);
     }
 
