@@ -26,20 +26,15 @@ public class UIGemManager : MonoBehaviour
 
     private void Start()
     {
-        // Sync inicial: 1 = tomada, 0 = no tomada (según PlayerPrefs)
         for (int i = 1; i <= _gems.Length; i++)
         {
-            bool picked = PlayerPrefsManager.Get(GemController.MakeGemKey(i), 0) != 0;
+            bool picked = Save.WasGemPicked(i);
             SetGemUI(i, picked);
         }
     }
 
-    private void OnGemPicked(int gemNum)
-    {
-        // UI al tomar => 0
-        SetGemUI(gemNum, true);
-    }
-
+    void OnGemPicked(int gemNum) => SetGemUI(gemNum, true); // en UI al tomar: 0
+    
     private void SetGemUI(int gemNum, bool picked)
     {
         var r = GetRendererByGemNum(gemNum);

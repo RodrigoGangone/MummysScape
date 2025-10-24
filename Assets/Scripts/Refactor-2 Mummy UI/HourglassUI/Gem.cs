@@ -8,9 +8,8 @@ public class Gem : MonoBehaviour
 
     private void Start()
     {
-        var key = GemController.MakeGemKey(gemNum);
-        bool picked = PlayerPrefsManager.Get(key, 0) != 0;
-
+        bool picked = Save.WasGemPicked(gemNum);
+        
         var rend = GetComponentInChildren<Renderer>();
 
         if (rend && rend.material.HasProperty(IsPickedProp))
@@ -19,7 +18,7 @@ public class Gem : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (_alreadyPicked) return;                  // guard contra múltiples colisiones
+        if (_alreadyPicked) return; // guard contra múltiples colisiones
         if (!other.CompareTag("PlayerFather")) return;
 
         _alreadyPicked = true;
