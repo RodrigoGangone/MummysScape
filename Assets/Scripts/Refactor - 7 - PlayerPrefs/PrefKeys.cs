@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine.SceneManagement;
 using static PrefFamily;
 
-public enum PrefFamily { Gems, GemTotals, LevelCompleted, Time, VolumeSound, VolumeFX }
+//
 
-// Volúmenes tipados (agregá o quitá los que uses)
+public enum PrefFamily { Gems, GemTotals, LevelCompleted, Time, VolumeSound, VolumeFX }
 public enum VolumeSoundId { Music, UI, Voice, Ambient }
-public enum VolumeFxId    { Sfx, UI, Impacts, Footsteps }
+public enum VolumeFxId    { Sfx, UI }
 public enum TimeId { Best, Last, Total } // agrega los que necesites
 
 public static class PrefKeys
@@ -17,14 +18,23 @@ public static class PrefKeys
         { Gems,           "gem." },
         { GemTotals,      "gemTotal." },
         { LevelCompleted, "level.completed." },
-        { Time,           "time." },
+      //{ Time,           "time." },
         { VolumeSound,    "volume.sound." },
         { VolumeFX,       "volume.fx." },
     };
 
-    static string Scene => SceneManager.GetActiveScene().name;
+    static string Scene
+    {
+        get
+        {
+            // Usamos el 'path' de la escena activa y extraemos su nombre de archivo
+            // Esto es más robusto que '.name'
+            var path = SceneManager.GetActiveScene().path;
+            return string.IsNullOrEmpty(path) ? "" : Path.GetFileNameWithoutExtension(path);
+        }
+    }
+    
     static string Slug<TEnum>(TEnum e) where TEnum : Enum => e.ToString().ToLowerInvariant();
-
     // --- Gems / Level ---
     public static string Gem(int gemNum, string scene = null)
         => $"{Prefix[Gems]}{gemNum}.{(scene ?? Scene)}";
@@ -39,6 +49,6 @@ public static class PrefKeys
     public static string VolumeFxKey(VolumeFxId id)
         => $"{Prefix[VolumeFX]}{Slug(id)}";
 
-    public static string TimeKey(TimeId id) => $"{Prefix[Time]}{id.ToString().ToLowerInvariant()}";
+    //public static string TimeKey(TimeId id) => $"{Prefix[Time]}{id.ToString().ToLowerInvariant()}";
 
 }

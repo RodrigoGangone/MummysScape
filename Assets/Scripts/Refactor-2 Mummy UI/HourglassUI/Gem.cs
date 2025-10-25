@@ -1,39 +1,46 @@
+using System;
 using UnityEngine;
+// 'using static Save;' ya no es necesario aquí
+// si prefieres, puedes mantenerlo y llamar a 'MarkGemPicked(gemNum)'
+// en lugar de 'Save.MarkGemPicked(gemNum)'
 
 public class Gem : MonoBehaviour
 {
     [SerializeField] private int gemNum;
     private static readonly int IsPickedProp = Shader.PropertyToID("_IsPicked");
-    private bool _alreadyPicked;
 
+    private Renderer Renderer => GetComponentInChildren<Renderer>();
+    
     private void Start()
     {
-        bool picked = Save.WasGemPicked(gemNum);
-        
-        var rend = GetComponentInChildren<Renderer>();
-
-        if (rend && rend.material.HasProperty(IsPickedProp))
-            rend.material.SetFloat(IsPickedProp, picked ? 0 : 1f);
+        // Comprueba si ya fue recogida (usando el sistema de guardado)
+        // y actualiza el shader
+        if (Renderer && Renderer.material.HasProperty(IsPickedProp))
+        {
+            bool alreadyPicked = Save.WasGemPicked(gemNum);
+            Renderer.material.SetFloat(IsPickedProp, alreadyPicked ? 0 : 1f);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (_alreadyPicked) return; // guard contra múltiples colisiones
         if (!other.CompareTag("PlayerFather")) return;
 
-        _alreadyPicked = true;
-        var col = GetComponent<Collider>();
-        if (col) col.enabled = false;
+        // --- LÓGICA CORREGIDA ---
+        
+        // 1. Llama al guardado DIRECTAMENTE.
+        //    (Usa el gemNum de ESTE script)
+        Save.MarkGemPicked(gemNum);
 
-        // Feedback visual en escena: al tomar => 1
-        var rend = GetComponentInChildren<Renderer>();
-        if (rend && rend.material.HasProperty(IsPickedProp))
-            rend.material.SetFloat(IsPickedProp, 1f);
-
-        // Emitir el evento UNA VEZ
+        // 2. Notifica a otros sistemas (como la UI) que la gema fue recogida.
         GameEventManager.Instance.levelEvents.OnPickedGem.Raise(gemNum);
-
-        // Si querés ocultarla físicamente:
+        
+        // 3. Desactiva este objeto gema.
         gameObject.SetActive(false);
     }
+    
+    // --- ELIMINADO ---
+    // Ya no necesitamos que la gema se suscriba a su propio evento.
+    // private void OnEnable() => ...
+    // private void OnDisable() => ...
 }

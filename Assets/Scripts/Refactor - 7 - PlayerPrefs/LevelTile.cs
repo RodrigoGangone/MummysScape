@@ -5,42 +5,57 @@ using UnityEngine.SceneManagement;
 public class LevelTile : MonoBehaviour
 {
     [SerializeField] private int buildIndex;
-    [SerializeField] private GameObject[] gemIcons = new GameObject[3]; // orden 1,2,3
-    [SerializeField] private string playerTag = "PlayerFather";
-    [SerializeField] private KeyCode activateKey = KeyCode.X;
+    [SerializeField] private bool isFirstLevel = false; // <-- AÑADE ESTO
+    [SerializeField] private GameObject[] gemIcons = new GameObject[3];
 
     bool _playerInside;
 
     void Start()
     {
-        // Si no está desbloqueado, apago el cubo y listo
-        if (!Save.IsLevelUnlockedByIndex(buildIndex))
+        // --- LÓGICA DE DESBLOQUEO MODIFICADA ---
+        bool isUnlocked;
+        
+        if (isFirstLevel)
+        {
+            // El primer nivel siempre está desbloqueado
+            isUnlocked = true;
+        }
+        else
+        {
+            // Para otros niveles, comprueba si el ANTERIOR (índice - 1) fue completado
+            int previousLevelIndex = buildIndex - 1;
+            isUnlocked = Save.IsLevelCompleted(previousLevelIndex);
+        }
+        // --- FIN DE LA MODIFICACIÓN ---
+
+        if (!isUnlocked)
         {
             gameObject.SetActive(false);
             return;
         }
 
+        // Si llegó hasta aquí, es porque está desbloqueado
         // Arranca sin mostrar gemas (se muestran al entrar)
         SetAllGems(false);
     }
 
     void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag(playerTag)) return;
+        if (!other.CompareTag("PlayerFather")) return;
         _playerInside = true;
-        RefreshGems(); // muestra el estado real de las gemas 1..3 en este nivel
+        RefreshGems();
     }
 
     void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag(playerTag)) return;
+        if (!other.CompareTag("PlayerFather")) return;
         _playerInside = false;
-        SetAllGems(false); // al salir, oculto las gemas
+        SetAllGems(false);
     }
 
     void Update()
     {
-        if (_playerInside && Input.GetKeyDown(activateKey))
+        if (_playerInside && Input.GetKeyDown(KeyCode.X))
             SceneManager.LoadScene(buildIndex);
     }
 
@@ -52,8 +67,9 @@ public class LevelTile : MonoBehaviour
             if (!g) continue;
 
             int gemNum = i + 1;
+            // Usamos el 'buildIndex' de este tile para saber qué gemas mostrar
             bool picked = Save.WasGemPickedInLevel(gemNum, buildIndex);
-            g.SetActive(picked); // ON si esa gema fue obtenida, OFF si no
+            g.SetActive(picked);
         }
     }
 
