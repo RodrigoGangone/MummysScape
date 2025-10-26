@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -9,132 +8,114 @@ using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
-    //Esentials
-    private Player _player;
-    private LevelManager levelManager;
-
     [SerializeField] private Animator _mummyUI;
 
     [Header("UI PAUSE")] 
-    [SerializeField] private GameObject _pausePanel;
-    [SerializeField] private GameObject _optionsPanel;
     
+    [SerializeField] private GameObject _pausePanel;
+    [SerializeField] private Material _pauseMaterial;
+    
+    [SerializeField] private GameObject _optionsPanel;
+
     [SerializeField] private Button _btnResume;
     [SerializeField] private Button _btnRetry;
     [SerializeField] private Button _btnOptions;
     [SerializeField] private Button _btnExit;
     
-    [SerializeField] private Material _pauseMaterial;
+    private bool _isPaused;
+    private bool _pauseCharging;
     private const string PAUSE_FILL = "_Power";
-
-    public static bool PauseCharging;
-
-    [Header("UI WIN")] [SerializeField] private GameObject _WinPanel;
+    
+    [Header("UI WIN")] 
+    
+    [SerializeField] private GameObject _WinPanel;
     [SerializeField] private Button _btnRetryW;
     [SerializeField] private Button _btnMainMenuW;
     [SerializeField] private Button _btnNextLvlW;
 
-    [Header("UI LOSE")] [SerializeField] private GameObject _LosePanel;
+    [Header("UI LOSE")] 
+    
+    [SerializeField] private GameObject _LosePanel;
     [SerializeField] private Button _btnRetryL;
     [SerializeField] private Button _btnMainMenuL;
 
-    [Header("UI NEXT LVL")] // Panel con animacion de momia y carga asincronica de nivel
-    [SerializeField]
-    private GameObject _NextLvlPanel;
-
-    private int _currentTip;
-    [SerializeField] private Image _tips;
-    [SerializeField] private List<Sprite> _tipsNextLevel = new();
+    [Header("UI NEXT LVL")]
+    
+    [SerializeField] private GameObject _NextLvlPanel;
 
     private float _fakeTimer = 5f;
 
-    [Header("FADE")] [SerializeField] private Image fadeImage;
-
-    [Header("HOUR GLASS")] [SerializeField]
-    private Material _hourglassBandage01;
-
-    [SerializeField] private Material _hourglassBandage02;
-    [SerializeField] private Animator _hourglassAnimator;
-    [SerializeField] private Transform _hourglassScale;
-
-    private Vector3 _hourglassOriginalScale;
-
-    private float _frecuencyHourglassScale;
-    private float _timeHourglassScale;
-    private float _waitTimeBeat = 3f;
-
-    private Coroutine _beatCoroutineHandler;
-    private Coroutine _beatCoroutine;
-
-    [SerializeField] private Material _sandTimer01;
-    [SerializeField] private Material _sandTimer02;
-
-    [SerializeField] private Material _gemMaterial01;
-    [SerializeField] private Material _gemMaterial02;
-    [SerializeField] private Material _gemMaterial03;
-
-    private float targetOffset1;
-    private float targetOffset2;
-    private float targetOffset3;
-
-    private float _targetOffset1;
-    private float _targetOffset2;
-    private float _targetOffset3;
-
+    [Header("FADE")] 
+    
+    [SerializeField] private Image fadeImage;
     private float _fillSpeed = 1f;
-
     private DepthOfField _blur;
     private Volume _postProcess;
 
-    void Start()
+
+    private void OnEnable()
     {
-        _player = FindObjectOfType<Player>();
-        levelManager = FindObjectOfType<LevelManager>();
+        GameEventManager.Instance.levelEvents.OnWin.Register(Win);
+        GameEventManager.Instance.levelEvents.OnDeath.Register(Lose);
 
-        _player.SizeModify += UpdateTargetOffsets;
+        // ÚNICO evento de pausa:
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(HandlePauseChanged);
+    }
 
-        levelManager.OnPlaying += ResumeGame;
-        levelManager.OnPause += PauseGame;
+    private void OnDisable()
+    {
+        GameEventManager.Instance.levelEvents.OnWin.Unregister(Win);
+        GameEventManager.Instance.levelEvents.OnDeath.Unregister(Lose);
 
-        levelManager.DeathTimer += () =>
-        {
-            if (_beatCoroutineHandler != null) return;
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(HandlePauseChanged);
+    }
 
-            _waitTimeBeat = 3f;
-            _beatCoroutineHandler = StartCoroutine(HourglassBeatHandler());
-        };
 
-        levelManager.AddCollectible += UISetCollectibleCount;
+    private void Start()
+    {
+        StartCoroutine(FadeOut());
 
         //Buttons OnClick
-        AddButtonProps(_btnResume,levelManager.OnPlaying.Invoke);
+        AddButtonProps(_btnResume, () => GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false));
         AddButtonProps(_btnRetry, RetryLevel);
         AddButtonProps(_btnOptions, ShowOptionsPanel);
         AddButtonProps(_btnExit, GoToMainMenu);
-        
+
         AddButtonProps(_btnNextLvlW, ShowNextLvlPanel);
         AddButtonProps(_btnRetryW, RetryLevel);
         AddButtonProps(_btnMainMenuW, GoToMainMenu);
-        
+
         AddButtonProps(_btnRetryL, RetryLevel);
         AddButtonProps(_btnMainMenuL, GoToMainMenu);
 
-        _pauseMaterial.SetFloat(PAUSE_FILL, 0f); // Asegurar que se complete la transición
+        _pauseMaterial.SetFloat(PAUSE_FILL, 0f);
 
         _postProcess = FindObjectOfType<Volume>();
+        if (_postProcess != null)
+            _postProcess.profile.TryGet(out _blur);
+    }
 
-        _hourglassOriginalScale = _hourglassScale.transform.localScale;
 
-        ValidateGems();
-        UpdateTargetOffsets(); // Inicializar valores correctos
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            Toggle();
+    }
+
+    private void Toggle()
+    {
+        if (_pauseCharging) return;
+
+        bool willPause = !_isPaused;
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(willPause);
     }
     
     private void AddButtonProps(Button button, Action mainAction, params Action[] additionalActions)
     {
         button.onClick.AddListener(() =>
         {
-            AudioManager.Instance.PlaySFX(NameSounds.SFX_Click);
-        
+            //AudioManager.Instance.PlaySFX(NameSounds.SFX_Click);
+
             //Accion principal
             mainAction?.Invoke();
 
@@ -147,119 +128,54 @@ public class UIManager : MonoBehaviour
         });
     }
     
-    IEnumerator HourglassBeatHandler()
+    private void HandlePauseChanged(bool paused)
     {
-        while (true)
+        if (_isPaused == paused) return;
+        _isPaused = paused;
+
+        if (paused)
         {
-            if (levelManager.isBusy || levelManager._currentLevelState.Equals(LevelState.Pause) ||
-                _player._stateMachinePlayer.getCurrentState().Equals(Utils.STATE_DEAD) ||
-                _player._stateMachinePlayer.getCurrentState().Equals(Utils.STATE_WIN))
-            {
-                AudioManager.Instance.StopSFX(NameSounds.SFX_HeartBeat_1);
-                AudioManager.Instance.StopSFX(NameSounds.SFX_HeartBeat_2);
-                yield return null;
-                continue;
-            }
+            // Estado PAUSE
+            _optionsPanel.SetActive(false);
+            _WinPanel.SetActive(false);
+            _LosePanel.SetActive(false);
+            _NextLvlPanel.SetActive(false);
 
-            AudioManager.Instance.PlaySFX(NameSounds.SFX_HeartBeat_1);
-            yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
-            
-            AudioManager.Instance.PlaySFX(NameSounds.SFX_HeartBeat_2);
-            yield return _beatCoroutine = StartCoroutine(Beat(1.1f, 0.1f));
+            StartCoroutine(LoadPauseBandage());   // tu animación + blur
+            // Al final del bandage, el panel se activa si corresponde (como ya hacías)
+        }
+        else
+        {
+            // Estado RESUME
+            _pausePanel.SetActive(false);
+            _optionsPanel.SetActive(false);
 
-            yield return new WaitForSeconds(_waitTimeBeat);
-
-            _waitTimeBeat *= 0.9f;
+            StartCoroutine(LoadPauseBandage());
         }
     }
-
-    IEnumerator Beat(float targetScale, float duration)
-    {
-        float elapsed = 0f;
-        Vector3 initialScale = _hourglassOriginalScale;
-        Vector3 targetScaleVector = new Vector3(targetScale, targetScale, targetScale);
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float progress = elapsed / duration;
-
-            _hourglassScale.localScale =
-                Vector3.Lerp(initialScale, targetScaleVector, Mathf.SmoothStep(0f, 1f, progress));
-
-            yield return null;
-        }
-
-        elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float progress = elapsed / duration;
-
-            _hourglassScale.localScale =
-                Vector3.Lerp(targetScaleVector, initialScale, Mathf.SmoothStep(0f, 1f, progress));
-
-            yield return null;
-        }
-
-        _hourglassScale.localScale = _hourglassOriginalScale;
-    }
-
-    private void Update()
-    {
-        UISetTimerDeath(levelManager._currentTimeDeath,
-            levelManager._maxTimeDeath); //TODO: ESTO DEBERIA ESTAR SEPARADO DEL LEVEL MANAGER
-
-
-        UpdateMaterialOffsets(); //TODO: ESTO SE DEBERIA DETENER CUANDO LAS VENDAS ESTAN LLENAS
-    }
-
-    // Método para pausar el juego y activar el PausePanel
-    private void PauseGame()
-    {
-        StartCoroutine(LoadPauseBandage());
-
-        Debug.Log("PAUSED");
-
-        _optionsPanel.SetActive(false);
-        _WinPanel.SetActive(false);
-        _LosePanel.SetActive(false);
-        _NextLvlPanel.SetActive(false);
-    }
-
-    private void ResumeGame()
-    {
-        _pausePanel.SetActive(false);
-        _optionsPanel.SetActive(false);
-
-        StartCoroutine(LoadPauseBandage());
-    }
-
+    
     private IEnumerator LoadPauseBandage()
     {
-        PauseCharging = true;
+        _pauseCharging = true;
 
         if (_postProcess.profile.TryGet(out _blur))
             _blur.active = !_blur.active;
 
-        float startValue = _pauseMaterial.GetFloat(PAUSE_FILL); // Obtener el valor actual del material
-        float endValue = (startValue == 1f) ? 0f : 1f; // Determinar si debe ir a 1 o a 0
-        float elapsed = 0f;
-
-        //TODO: LLEVAR ESTA CORRUTINA ABAJO DEL WHILE DESPUES DE ENTREGAR AL BUILD EL 10/10
-
+        var startValue = _pauseMaterial.GetFloat(PAUSE_FILL); // Obtener el valor actual del material
+        var endValue = (startValue == 1f) ? 0f : 1f; // Determinar si debe ir a 1 o a 0
+        var elapsed = 0f;
+        
         while (elapsed < 0.5f)
         {
             elapsed += Time.deltaTime;
 
-            float currentValue = Mathf.Lerp(startValue, endValue, elapsed / 0.5f);
+            var currentValue = Mathf.Lerp(startValue, endValue, elapsed / 0.5f);
 
             _pauseMaterial.SetFloat(PAUSE_FILL, currentValue); // Ajusta según la propiedad de tu shader
             yield return null;
         }
 
-        PauseCharging = false;
+        _pauseCharging = false;
 
         if (endValue == 1f)
             _pausePanel.SetActive(true);
@@ -269,73 +185,10 @@ public class UIManager : MonoBehaviour
 
     private void GoToMainMenu()
     {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false);
         SceneManager.LoadScene(0);
     }
-
-    private void UISetTimerDeath(float currentTimer, float maxtime)
-    {
-        _targetOffset3 = Mathf.Clamp01(currentTimer / maxtime);
-
-        if (currentTimer <= 0)
-            _hourglassAnimator.SetBool("isDeath", true);
-    }
-
-    private void UpdateTargetOffsets()
-    {
-        int currentBandage = _player.CurrentBandageStock;
-
-        _targetOffset1 = currentBandage;
-        _targetOffset2 = currentBandage;
-
-        if (currentBandage > 0)
-        {
-            if (_beatCoroutineHandler != null)
-            {
-                StopCoroutine(_beatCoroutineHandler);
-                _beatCoroutineHandler = null;
-            }
-
-            if (_beatCoroutine != null)
-            {
-                StopCoroutine(_beatCoroutine);
-                _beatCoroutine = null;
-            }
-
-            _hourglassScale.localScale = _hourglassOriginalScale; // Restablecer tamaño original
-        }
-    }
-
-    private void UpdateMaterialOffsets()
-    {
-        _hourglassBandage01.SetFloat("_Offset",
-            Mathf.MoveTowards(_hourglassBandage01.GetFloat("_Offset"), _targetOffset1, _fillSpeed * Time.deltaTime));
-        _hourglassBandage02.SetFloat("_Offset",
-            Mathf.MoveTowards(_hourglassBandage02.GetFloat("_Offset"), _targetOffset2, _fillSpeed * Time.deltaTime));
-
-        if (levelManager._currentLevelState == LevelState.Pause) return;
-
-        _sandTimer01.SetFloat("_Fill",
-            Mathf.MoveTowards(_sandTimer01.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
-        _sandTimer02.SetFloat("_Fill",
-            Mathf.MoveTowards(_sandTimer02.GetFloat("_Fill"), _targetOffset3, _fillSpeed * Time.deltaTime));
-    }
-
-    private void UISetCollectibleCount(CollectibleNumber num)
-    {
-        switch (num)
-        {
-            case CollectibleNumber.One:
-                _gemMaterial01.SetFloat("_IsPicked", 1);
-                break;
-            case CollectibleNumber.Two:
-                _gemMaterial02.SetFloat("_IsPicked", 1);
-                break;
-            case CollectibleNumber.Three:
-                _gemMaterial03.SetFloat("_IsPicked", 1);
-                break;
-        }
-    }
-
+    
     private void ShowNextLvlPanel()
     {
         _NextLvlPanel.SetActive(true);
@@ -343,40 +196,10 @@ public class UIManager : MonoBehaviour
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _pausePanel.SetActive(false);
-        
-        //Muetro Tips con FakeDelay
-        StartCoroutine(ShowTipsAndLoadNextScene());
+
+        StartCoroutine(LoadNextSceneAsync());
     }
-
-    private IEnumerator ShowTipsAndLoadNextScene()
-    {
-        yield return ShowTips();
-
-        yield return LoadNextSceneAsync();
-    }
-
-    private IEnumerator ShowTips()
-    {
-        if (!_NextLvlPanel.activeSelf) _NextLvlPanel.SetActive(true);
-        if (_WinPanel.activeSelf) _WinPanel.SetActive(false);
-        if (_LosePanel.activeSelf) _LosePanel.SetActive(false);
-        if (_pausePanel.activeSelf) _pausePanel.SetActive(false);
-
-        //TODO: CAMBIAR POR PLAYER PREFS PARA QUE NO MUESTRE SIEMPRE EL MISMO TIP
-
-        int _currentTip = PlayerPrefs.GetInt("currentTip", 0);
-
-        _tips.sprite = _tipsNextLevel[_currentTip];
-        _tips.SetNativeSize();
-
-        _currentTip = (_currentTip + 1) % _tipsNextLevel.Count;
-
-        PlayerPrefs.SetInt("currentTip", _currentTip);
-        PlayerPrefs.Save();
-
-        yield return new WaitForSeconds(_fakeTimer);
-    }
-
+    
     private IEnumerator LoadNextSceneAsync()
     {
         int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
@@ -398,39 +221,11 @@ public class UIManager : MonoBehaviour
 
     private void RetryLevel()
     {
-        StartCoroutine(RetryLevelWithDelay());
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
-
-    private void ShowOptionsPanel()
-    {
-        _optionsPanel.SetActive(true);
-    }
-
-    private IEnumerator RetryLevelWithDelay()
-    {
-        yield return StartCoroutine(ShowTips());
-
-        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-        SceneManager.LoadScene(currentSceneIndex);
-    }
-
-    private void ValidateGems()
-    {
-        _gemMaterial01.SetFloat("_IsPicked", 0);
-        _gemMaterial02.SetFloat("_IsPicked", 0);
-        _gemMaterial03.SetFloat("_IsPicked", 0);
-
-        foreach (var level in LevelManagerJson.Levels)
-        {
-            if (level.level.Equals(SceneManager.GetActiveScene().buildIndex))
-            {
-                foreach (var collectible in level.collectibleNumbers)
-                {
-                    UISetCollectibleCount(collectible);
-                }
-            }
-        }
-    }
+    
+    private void ShowOptionsPanel() => _optionsPanel.SetActive(true);
 
     private IEnumerator FadeIn(Action onFadeComplete)
     {
@@ -482,9 +277,9 @@ public class UIManager : MonoBehaviour
 
             _WinPanel.SetActive(true);
             _mummyUI.SetTrigger("isWin");
-            
-            AudioManager.Instance.PlayMusic(NameSounds.Music_Win);
-            AudioManager.Instance.MuteAllActiveSFX();
+
+            //AudioManager.Instance.PlayMusic(NameSounds.Music_Win);
+            //AudioManager.Instance.MuteAllActiveSFX();
         }));
     }
 
@@ -494,14 +289,9 @@ public class UIManager : MonoBehaviour
         {
             _LosePanel.SetActive(true);
             _mummyUI.SetTrigger("isLose");
-            
-            AudioManager.Instance.PlayMusic(NameSounds.Music_Lose);
-            AudioManager.Instance.MuteAllActiveSFX();
-        }));
-    }
 
-    private void OnEnable()
-    {
-        StartCoroutine(FadeOut());
+            //AudioManager.Instance.PlayMusic(NameSounds.Music_Lose);
+            //AudioManager.Instance.MuteAllActiveSFX();
+        }));
     }
 }

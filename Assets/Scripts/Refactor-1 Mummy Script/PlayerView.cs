@@ -7,7 +7,7 @@ using UnityEngine.UI;
 /// PlayerView
 /// Solo visual: Animator/FX/UI. Sin reglas de juego.
 /// </summary>
-public sealed class PlayerView : MonoBehaviour
+public sealed class PlayerView : MonoBehaviour, IPausable
 {
     [Header("Anim & FX")]
     [SerializeField] private Animator _anim;
@@ -101,4 +101,8 @@ public sealed class PlayerView : MonoBehaviour
     {
         if (_swingLineActive) RefreshSwingLineNow();
     }
+
+    public void OnPauseChanged(bool paused) => _anim.enabled = !paused;
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }

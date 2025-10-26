@@ -1,12 +1,10 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameEventManager : MonoBehaviour
 {
     public static GameEventManager Instance;
-    
+
     [Serializable]
     public struct BossEvents
     {
@@ -17,16 +15,29 @@ public class GameEventManager : MonoBehaviour
     [Serializable]
     public struct PlayerEvents
     {
-        public GameEvent OnBandageCount;
-        public GameEvent OnDeath;
-        public GameEvent OnRespawn;
+        public GameEvent OnBandagesCountChanged;
+        public GameEvent OnSizeChanged;
     }
 
-    [Header("Boss Events")] 
-    [SerializeField] public BossEvents bossEvents;
+    [Serializable]
+    public struct LevelEvents
+    {
+        public GameEvent OnWin;
+        public GameEvent OnDeath;
+        public GameEvent OnPauseChanged; // bool: true = pausa, false = resume
+        public GameEvent OnRespawn;
+        public GameEvent OnPickedGem;
+        public GameEvent OnHourglassDeath;
+    }
 
-    [Header("Player Events")] 
-    [SerializeField] public PlayerEvents playerEvents;
+    [Header("Boss Events")] [SerializeField]
+    public BossEvents bossEvents;
+
+    [Header("Player Events")] [SerializeField]
+    public PlayerEvents playerEvents;
+
+    [Header("Level Events")] [SerializeField]
+    public LevelEvents levelEvents;
 
     private void Awake()
     {

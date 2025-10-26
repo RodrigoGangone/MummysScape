@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: LiquidUP
-  m_Shader: {fileID: -6465566751694194690, guid: 0a2e816426657c74396e906cbfb0e26d, type: 3}
+  m_Name: HourglassSand
+  m_Shader: {fileID: -6465566751694194690, guid: a7042549d922ece4aa5f0834c1054ce3, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -37,15 +37,15 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Fill: 1
+    - _Fill: 1.07
+    - _IsBottomSand: 0
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Up_Down: 1
     m_Colors:
     - _SideColor: {r: 0.3762622, g: 0, b: 0.597202, a: 1}
     - _TopColor: {r: 1, g: 0, b: 1, a: 1}
   m_BuildTextureStacks: []
---- !u!114 &5773306661410826300
+--- !u!114 &3882324138547623619
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

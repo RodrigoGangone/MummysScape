@@ -3,8 +3,9 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 using static PlayerEnum;
+using static PauseUtils;
 
-public class Geyser : MonoBehaviour
+public class Geyser : MonoBehaviour, IPausable
 {
     private Player _player;
 
@@ -17,7 +18,7 @@ public class Geyser : MonoBehaviour
     [SerializeField] private Transform _invisiblePlatform;
     [SerializeField] private Transform _triggerTransform;
 
-    private bool _isPaused;
+    private bool _isPausedPos;
     private bool _upInvisiblePlatform;
     public bool _isIntenseModeActive;
 
@@ -37,6 +38,7 @@ public class Geyser : MonoBehaviour
     private int _currentWaypointIndex;
 
     [Header("WAYPOINTS")] [SerializeField] private ParticleSystem _preUp1, _preUp2;
+    private bool _paused;
 
     private void Start()
     {
@@ -49,20 +51,21 @@ public class Geyser : MonoBehaviour
 
     private void Update()
     {
+        if (_paused) return; // ✅ se corta toda la lógica continua
+
         if (_currentGeyserType == GeyserType.Basic)
-        {
             MoveTowardsWaypoint();
-        }
 
         if (_upInvisiblePlatform)
             UpInvisiblePlatform(_currentGeyserType == GeyserType.Intense ? _viewIntense : _viewBasic);
     }
 
+
     #region Basic Mode => Common use
 
     private void MoveTowardsWaypoint()
     {
-        if (_isPaused)
+        if (_paused)
         {
             return;
         }
@@ -86,26 +89,27 @@ public class Geyser : MonoBehaviour
 
     private IEnumerator PauseAtWaypoint()
     {
-        _isPaused = true;
+        _isPausedPos = true;
 
         if (_currentWaypointIndex == 0)
         {
-            yield return new WaitForSeconds(stopTimeBase / 2);
+            // ⬇️ reemplazás por WaitForSecondsPausable
+            yield return WaitForSecondsPausable(stopTimeBase / 2,() => _paused);
             _preUp1.Play();
             _preUp2.Play();
-            yield return new WaitForSeconds(stopTimeBase / 2);
+            yield return WaitForSecondsPausable(stopTimeBase / 2,() => _paused);
         }
         else
         {
-            yield return new WaitForSeconds(stopTimeTop);
+            yield return WaitForSecondsPausable(stopTimeTop,() => _paused);
             _preUp1.Stop();
             _preUp2.Stop();
         }
 
         _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
-
-        _isPaused = false;
+        _isPausedPos = false;
     }
+
 
     private void UpInvisiblePlatform(Transform viewPos)
     {
@@ -131,8 +135,10 @@ public class Geyser : MonoBehaviour
     {
         while (Vector3.Distance(_viewIntense.position, waypoints[1].position) > 0.01f)
         {
-            _viewIntense.position = Vector3.MoveTowards(_viewIntense.position, waypoints[1].position,
-                intenseSpeed * Time.deltaTime);
+            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
+
+            _viewIntense.position = Vector3.MoveTowards(
+                _viewIntense.position, waypoints[1].position, intenseSpeed * Time.deltaTime);
             _triggerTransform.position = new Vector3(
                 _triggerTransform.position.x,
                 _viewIntense.position.y,
@@ -140,10 +146,12 @@ public class Geyser : MonoBehaviour
             yield return null;
         }
 
-        yield return new WaitForSeconds(stoptimeTopIntense);
+        yield return WaitForSecondsPausable(stoptimeTopIntense,() => _paused);
 
         while (Vector3.Distance(_viewIntense.position, waypoints[0].position) > 0.01f)
         {
+            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
+
             _viewIntense.position = Vector3.MoveTowards(_viewIntense.position, waypoints[0].position,
                 intenseSpeed * Time.deltaTime);
             _triggerTransform.position = new Vector3(
@@ -178,6 +186,27 @@ public class Geyser : MonoBehaviour
 
         _invisiblePlatform.position = waypoints[0].position;
     }
+
+    public void OnPauseChanged(bool paused)
+    {
+        _paused = paused;
+
+        // Partículas → Pausa/Resume si estaban activas
+        if (_preUp1)
+        {
+            if (paused && _preUp1.isPlaying) _preUp1.Pause();
+            else if (!paused && !_preUp1.isPlaying) _preUp1.Play();
+        }
+
+        if (_preUp2)
+        {
+            if (paused && _preUp2.isPlaying) _preUp2.Pause();
+            else if (!paused && !_preUp2.isPlaying) _preUp2.Play();
+        }
+    }
+    
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }
 
 enum GeyserType

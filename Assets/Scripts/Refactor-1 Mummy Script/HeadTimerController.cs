@@ -5,17 +5,16 @@ using static PlayerEnum;
 
 /// <summary>
 /// HeadTimerController
-/// Inicia un timer al entrar en Head; cancela al salir. Actualiza UI (Image Filled).
-/// Al expirar, invoca _onExpired (asigná "matar/resetear" a la momia).
+/// Inicia/cancela timer cuando el Size es Head. Escucha GameEvent OnSizeChanged.
+/// El PlayerController emite un bootstrap inicial para sincronizar la UI.
 /// </summary>
 public sealed class HeadTimerController : MonoBehaviour
 {
     [Header("Refs")]
-    [SerializeField] private PlayerModel _model;     // asignaló desde el Controller
-    [SerializeField] private TimerService _timers;   // en el mismo prefab o en escena
+    [SerializeField] private TimerService _timers;
 
     [Header("UI")]
-    [SerializeField] private Image _fill;            // Image Fill (radial/horizontal)
+    [SerializeField] private Image _fill;
     [SerializeField] private Sprite _spriteHead;
     [SerializeField] private Sprite _spriteNormalOrSmall;
 
@@ -27,26 +26,33 @@ public sealed class HeadTimerController : MonoBehaviour
 
     private TimerService.Handle _handle;
 
-    private void OnEnable()  { if (_model != null) { _model.OnSizeChanged += HandleSize; HandleSize(_model.Size); } }
-    private void OnDisable() { if (_model != null) _model.OnSizeChanged -= HandleSize; _timers?.Cancel(_handle); }
-
+    // (Opcional) Para aplicar estado inicial si el Controller no hace bootstrap:
     public void Bind(PlayerModel model)
     {
-        if (_model != null) _model.OnSizeChanged -= HandleSize;
-        _model = model;
-        if (isActiveAndEnabled && _model != null) { _model.OnSizeChanged += HandleSize; HandleSize(_model.Size); }
+        HandleSize(model.Size);
     }
-    
+
+    private void OnEnable()
+    {
+        GameEventManager.Instance.playerEvents.OnSizeChanged
+            .Register<PlayerSize>(HandleSize);
+    }
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.playerEvents.OnSizeChanged
+            .Unregister<PlayerSize>(HandleSize);
+        _timers?.Cancel(_handle);
+    }
+
     private void HandleSize(PlayerSize s)
     {
-        // Sprite según estado
         if (_fill)
         {
             _fill.sprite = s == PlayerSize.Head ? _spriteHead : _spriteNormalOrSmall;
             _fill.fillAmount = 1f;
         }
 
-        // Timer
         _timers?.Cancel(_handle);
         if (s == PlayerSize.Head)
         {

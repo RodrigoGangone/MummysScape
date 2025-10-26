@@ -1,44 +1,42 @@
 using UnityEngine;
 using static BossCommonState;
 using System;
-using UnityEngine.Playables;
-using static GameEventManager;
 
 /// <summary>
-/// Actor genérico del Jefe. Integra Config por Stages, GOAP, y FSM.
+/// Actor genérico del Jefe. Integra Config por Stages, GOAP, y tu FSM existente.
 /// - Implementa IBossContext para desacoplar Skills / GOAP de la clase concreta.
 /// - Avanza de Stage cuando colisiona con objetos "Box".
 /// - Cuando no quedan Stages, dispara "Die".
 /// - Construye WorldModel (distancia, LOS, stage, config) y consulta al GOAP para decidir la intención.
 /// </summary>
 [DisallowMultipleComponent]
-public sealed class BossActor : MonoBehaviour, IBossContext
+public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 {
-    [Header("Config & Refs")] 
-    [SerializeField] private BossConfigSO config;
+    [Header("Config & Refs")] [SerializeField]
+    private BossConfigSO config;
+
     [SerializeField] private Player player;
     [SerializeField] private Animator animator;
     [SerializeField] private PlayerPrefsRegistry registry;
-    
-    [Header("FSM")] 
-    public StateMachinePlayer stateMachine;
+    [Header("FSM")] public StateMachinePlayer stateMachine;
 
-    [Header("Percepción")] [Tooltip("Layers que bloquean la visión y largo del LoS")] 
-    [SerializeField] private LayerMask losObstacleMask;
+    [Header("Percepción")] [Tooltip("Layers que bloquean la visión y largo del LoS")] [SerializeField]
+    private LayerMask losObstacleMask;
+
     [SerializeField] private float losRayHeight = 1.5f;
 
     // IBossContext
-    public BossConfigSO Config => config;
-    public Player Player => player;
-    public Animator Animator => animator;
     public Transform Transform => transform;
+    public Animator Animator => animator;
+    public Player Player => player;
     public int CurrentStageIndex => _stageIndex;
+    public BossConfigSO Config => config;
 
     // Runtime
     private GoapBrain _goap;
     private int _stageIndex; // 0..N-1
     private float _time; // cache Time.time
-    private BossCommonState _lastIntent = None; // para evitar spam de triggers
+    private string _lastIntent = ""; // para evitar spam de triggers
 
     private BossSkillSO _runtimePrimarySkill;
     private BossSkillSO _runtimeSecondarySkill;
@@ -60,17 +58,15 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     public Func<bool> OnPrimarySkill;
     public Func<bool> OnSecondarySkill;
+    private bool _paused;
+
+    // Eventos opcionales
+    public event Action<int> OnStageChanged;
+    public event Action OnDeath;
+    public event Action OnDamaged;
 
     private void Awake()
     {
-        OnPrimarySkill += TryUseSkillA;
-        OnSecondarySkill += TryUseSkillB;
-
-        Instance.bossEvents.OnStageChanged.Register(AdvanceStage);
-        Instance.bossEvents.OnStageChanged.Register(NotifyDamaged);
-
-        Instance.bossEvents.OnDeath.Register(NotifyDie);
-        
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (stateMachine == null) stateMachine = gameObject.AddComponent<StateMachinePlayer>();
 
@@ -95,27 +91,29 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
     private void Update()
     {
+        if (_paused) return; // ⏸️ pausa global detiene toda la lógica
+
         _time = Time.time;
-        
         if (player == null || config == null || config.StageCount == 0) return;
 
         var wm = BuildWorldModel();
         var intent = _goap.DecideNextIntent(wm, this, _runtimePrimarySkill, _runtimeSecondarySkill);
 
         // Evitar “thrashing”: solo disparar si cambió
-        
-        if (intent == _lastIntent) return;
-        
-        _lastIntent = intent;
-        TriggerFsm(intent);
+        if (intent != _lastIntent)
+        {
+            _lastIntent = intent;
+            TriggerFsm(intent);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.layer != LayerMask.NameToLayer("Box")) return;
-        
-        AdvanceStage();
-        other.gameObject.SetActive(false);
+        if (other.gameObject.layer == LayerMask.NameToLayer("Box"))
+        {
+            OnDamaged?.Invoke();
+            other.gameObject.SetActive(false);
+        }
     }
 
     private void AdvanceStage()
@@ -126,11 +124,11 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         {
             // Sin más stages: muerte
             _stageIndex = config.StageCount;
-            Instance.bossEvents.OnDeath.Raise();
-            return; //enabled = false; 
+            OnDeath?.Invoke();
+            //enabled = false;
         }
-        
-        Instance.bossEvents.OnStageChanged.Raise(_stageIndex);
+        else
+            OnStageChanged?.Invoke(_stageIndex);
     }
 
     private bool HasLineOfSight(Vector3 from, Vector3 to)
@@ -149,43 +147,53 @@ public sealed class BossActor : MonoBehaviour, IBossContext
         bool los = HasLineOfSight(transform.position, player.transform.position);
         return new WorldModel(this, los);
     }
-    
-    private bool TryUseSkillA() => _runtimePrimarySkill != null && _runtimePrimarySkill.TryExecute(BuildWorldModel(), 
-                                                                                                    this, 
-                                                                                                       _time);
-    private bool TryUseSkillB() => _runtimeSecondarySkill != null && _runtimeSecondarySkill.TryExecute(BuildWorldModel(), 
-                                                                                                       this, 
-                                                                                                          _time);
+
+    #region Uso de Skills (llamados desde estados)
+
+    private bool TryUseSkillA()
+    {
+        Debug.Log("TryExecuteA");
+        var wm = BuildWorldModel();
+        return _runtimePrimarySkill != null && _runtimePrimarySkill.TryExecute(wm, this, _time);
+    }
+
+    private bool TryUseSkillB()
+    {
+        Debug.Log("TryExecuteB");
+        var wm = BuildWorldModel();
+        return _runtimeSecondarySkill != null && _runtimeSecondarySkill.TryExecute(wm, this, _time);
+    }
+
+    #endregion
+
 
     /// <summary>
     /// Puente simbólico → tu FSM. Mapea el intent string a tus estados reales.
     /// </summary>
-    private void TriggerFsm(BossCommonState intentOrEvent)
+    private void TriggerFsm(string intentOrEvent)
     {
         switch (intentOrEvent)
         {
-            case Entry:
+            case "Entry":
                 stateMachine.ChangeState(Entry);
                 break;
-            case Idle:
+            case "Idle":
                 stateMachine.ChangeState(Idle);
                 break;
-            case Chase:
+            case "Chase":
                 stateMachine.ChangeState(Chase);
                 break;
-            case Damaged:
+            case "Damaged":
                 stateMachine.ChangeState(Damaged);
                 break;
-            case Primary:
+            case "Primary":
                 stateMachine.ChangeState(Primary);
                 break;
-            case Secondary:
+            case "Secondary":
                 stateMachine.ChangeState(Secondary);
                 break;
-            case Die:
+            case "Die":
                 stateMachine.ChangeState(Die);
-                break;
-            case None:
                 break;
             default:
                 Debug.LogWarning($"[BossActor] Intent desconocido: {intentOrEvent}");
@@ -194,18 +202,42 @@ public sealed class BossActor : MonoBehaviour, IBossContext
 
         _lastIntent = intentOrEvent; // ← sincroniza el “recuerdo” del planner con la FSM
     }
+
+    private void OnEnable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+        
+        OnPrimarySkill += TryUseSkillA;
+        OnSecondarySkill += TryUseSkillB;
+
+        OnDamaged += NotifyDamaged;
+        OnDamaged += AdvanceStage;
+
+        OnDeath += NotifyDie;
+    }
+
     private void OnDisable()
     {
-        Instance.bossEvents.OnStageChanged.Unregister(AdvanceStage);
-        Instance.bossEvents.OnStageChanged.Unregister(NotifyDamaged);
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 
-        Instance.bossEvents.OnDeath.Unregister(NotifyDie);
+        OnDamaged -= NotifyDamaged;
+        OnDamaged -= AdvanceStage;
+
+        OnDeath -= NotifyDie;
+    }
+    
+    public void OnPauseChanged(bool paused)
+    {
+        _paused = paused;
+        
+        animator.enabled = !paused;
+        stateMachine.enabled = !paused;
+        _goap.Paused = paused;
     }
 }
 
 public enum BossCommonState
 {
-    None,
     Entry,
     Idle,
     Chase,
