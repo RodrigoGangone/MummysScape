@@ -1,30 +1,38 @@
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
+using static Save;
 using static Utils;
 
 public class Portal : MonoBehaviour
 {
-    private LevelManager _levelManager;
-
-    [SerializeField] private GameObject _portalFxOff;
-    [SerializeField] private GameObject _portalFxOn;
-
-
-    void Start()
+    [SerializeField] private GameObject portalFxOff;
+    [SerializeField] private GameObject portalFxOn;
+    
+    private void OnEnable()
     {
-        _levelManager = FindObjectOfType<LevelManager>();
-        _levelManager.OnPlayerWin += PassedLevelFX;
+        GameEventManager.Instance.levelEvents.OnWin.Register(PassedLevelFX);
+        GameEventManager.Instance.levelEvents.OnWin.Register<int>(CompleteLevel);
+    }
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.levelEvents.OnWin.Unregister(PassedLevelFX);
+        GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(CompleteLevel);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG)) return;
 
-        _levelManager.OnPlayerWin?.Invoke();
+        GameEventManager.Instance.levelEvents.OnWin.Raise(SceneManager.GetActiveScene().buildIndex);
     }
 
     private void PassedLevelFX()
     {
-        _portalFxOff.SetActive(false);
-        _portalFxOn.SetActive(true);
+        portalFxOff.SetActive(false);
+        portalFxOn.SetActive(true);
     }
 }

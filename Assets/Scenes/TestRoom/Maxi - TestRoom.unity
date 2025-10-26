@@ -8330,6 +8330,28 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 182332734284622658, guid: ebe4e5d10dbd797449a0a994feca3487, type: 3}
   m_Mode: 0
+--- !u!1 &108414376 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3610847831028506359, guid: 9b15510edd37cf744a6ef6c7353c7a20, type: 3}
+  m_PrefabInstance: {fileID: 940659242}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &108414379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 108414376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd0266ce581c44042b04c130192c1e19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  registriesToBind:
+  - {fileID: 11400000, guid: 43d364bd7f4318b4eaf699af7808c3c4, type: 2}
+  - {fileID: 11400000, guid: b1cf11d813341364e9fdb20598de4faa, type: 2}
+  - {fileID: 11400000, guid: ffbc7f1462a3ff14bae58b5688b6f46e, type: 2}
+  - {fileID: 11400000, guid: f127592d5385ebe4fbf2e7c415c133c0, type: 2}
 --- !u!43 &115433731
 Mesh:
   m_ObjectHideFlags: 0
@@ -43517,51 +43539,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1348547155499330812, guid: 7a44fe4bd97578b4fab725e2b27bb096, type: 3}
   m_PrefabInstance: {fileID: 708958947}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &710122786
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 710122787}
-  - component: {fileID: 710122788}
-  m_Layer: 0
-  m_Name: GemController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &710122787
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 710122786}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.2551208, y: 10.821079, z: 2.1188188}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &710122788
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 710122786}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5570a3de12482449872f8f09cd641db, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gemRegistry: {fileID: 11400000, guid: 43d364bd7f4318b4eaf699af7808c3c4, type: 2}
 --- !u!43 &714477363
 Mesh:
   m_ObjectHideFlags: 0
@@ -55597,7 +55574,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3610847831028506359, guid: 9b15510edd37cf744a6ef6c7353c7a20, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 108414379}
   m_SourcePrefab: {fileID: 100100000, guid: 9b15510edd37cf744a6ef6c7353c7a20, type: 3}
 --- !u!1001 &944646129
 PrefabInstance:
@@ -58765,6 +58745,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: NewCollectible (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 6791006727711090789, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
+      propertyPath: gemNum
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 7046223648165401898, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.96
@@ -58805,33 +58789,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 8145237407993154169, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3810646370837806047, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 985800514}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
---- !u!1 &985800513 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3810646370837806047, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
-  m_PrefabInstance: {fileID: 985800512}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &985800514
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 985800513}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0cba0a11a1e1b143b691e9d3ee5ec75, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gemNum: 3
 --- !u!43 &989170868
 Mesh:
   m_ObjectHideFlags: 0
@@ -74293,6 +74255,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: NewCollectible
       objectReference: {fileID: 0}
+    - target: {fileID: 6791006727711090789, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
+      propertyPath: gemNum
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7046223648165401898, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.775971
@@ -74333,33 +74299,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 8145237407993154169, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3810646370837806047, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1349840504}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
---- !u!1 &1349840503 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3810646370837806047, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
-  m_PrefabInstance: {fileID: 1349840502}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1349840504
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1349840503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0cba0a11a1e1b143b691e9d3ee5ec75, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gemNum: 1
 --- !u!1001 &1352643239
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -111376,33 +111320,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 8145237407993154169, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3810646370837806047, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2012954492}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
---- !u!1 &2012954491 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3810646370837806047, guid: ba87e348dcac2074db9262c6fadd5fc4, type: 3}
-  m_PrefabInstance: {fileID: 2012954490}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &2012954492
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2012954491}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0cba0a11a1e1b143b691e9d3ee5ec75, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gemNum: 2
 --- !u!1001 &2016078443
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -118732,7 +118654,6 @@ SceneRoots:
   - {fileID: 1922392858}
   - {fileID: 2050787995}
   - {fileID: 251051758}
-  - {fileID: 710122787}
   - {fileID: 940659242}
   - {fileID: 1349840502}
   - {fileID: 2012954490}
