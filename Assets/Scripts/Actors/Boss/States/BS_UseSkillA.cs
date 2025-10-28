@@ -24,7 +24,7 @@ public sealed class BS_UseSkillA : State
         if (!_actor.IsExecutingSkill) return;
 
         var t = _actor.Transform;
-        var p = _actor.Player.transform.position;
+        var p = _actor.Player.Tf.position;
         p.y = t.position.y;
         t.LookAt(p);
     }

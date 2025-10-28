@@ -8,5 +8,5 @@ using static PlayerEnum;
     public sealed class BC_PlayerSize : SkillConditionSO
     {
         [SerializeField] private PlayerSize[] allowedSizes;
-        public override bool Evaluate(in WorldModel wm, IBossContext ctx) => Array.IndexOf(allowedSizes, ctx.Player.CurrentPlayerSize) >= 0;
+        public override bool Evaluate(in WorldModel wm, IBossContext ctx) => Array.IndexOf(allowedSizes, ctx.Player.Model.Size) >= 0;
     }

@@ -6,11 +6,11 @@ public class Bandage : MonoBehaviour
     {
         if (!collision.gameObject.CompareTag("PlayerFather")) return;
         
-        var playerRef = collision.gameObject.GetComponentInParent<Player>().GetComponentInParent<Player>(); 
-        if (playerRef.CurrentBandageStock >= playerRef.MinBandageStock &&
-            playerRef.CurrentBandageStock < playerRef.MaxBandageStock)
+        var playerModel = collision.gameObject.GetComponentInParent<PlayerController>().Ctx.Model; 
+        if (playerModel.Bandages >= playerModel.MinBandagesValue &&
+            playerModel.Bandages < playerModel.MaxBandagesValue)
         {
-            playerRef._modelPlayer.CountBandage(1);
+            playerModel.AddBandages();
             Destroy(gameObject);
         }
     }

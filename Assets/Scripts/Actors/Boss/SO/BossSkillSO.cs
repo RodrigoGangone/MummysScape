@@ -9,7 +9,7 @@ using UnityEngine;
 public interface IBossContext
 {
     Transform Transform { get; }
-    Player Player { get; }
+    PlayerContext Player { get; }
     int CurrentStageIndex { get; }
     BossConfigSO Config { get; }
 }
@@ -29,7 +29,7 @@ public readonly struct WorldModel
     public WorldModel(IBossContext ctx, bool hasLOS)
     {
         BossPos = ctx.Transform.position;
-        PlayerPos = ctx.Player.transform.position;
+        PlayerPos = ctx.Player.Tf.position;
         DistanceBP = Vector3.Distance(BossPos, PlayerPos);
         HasLineOfSight = hasLOS;
         StageIndex = ctx.CurrentStageIndex;

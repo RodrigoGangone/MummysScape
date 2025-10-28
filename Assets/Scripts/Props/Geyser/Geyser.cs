@@ -7,7 +7,7 @@ using static PauseUtils;
 
 public class Geyser : MonoBehaviour, IPausable
 {
-    private Player _player;
+    private PlayerContext _playerContext;
 
     [FormerlySerializedAs("geyserType")] [SerializeField]
     GeyserType _currentGeyserType;
@@ -42,7 +42,7 @@ public class Geyser : MonoBehaviour, IPausable
 
     private void Start()
     {
-        _player = FindObjectOfType<Player>();
+        _playerContext = FindObjectOfType<PlayerController>().Ctx;
 
         Transform selectedView = _currentGeyserType == GeyserType.Intense ? _viewIntense : _viewBasic;
         _viewIntense.gameObject.SetActive(selectedView == _viewIntense);
@@ -173,9 +173,9 @@ public class Geyser : MonoBehaviour, IPausable
         player.transform.SetParent(_invisiblePlatform);
         _upInvisiblePlatform = true;
 
-        if (_player.CurrentPlayerSize != PlayerSize.Head)
+        if (_playerContext.Model.Size != PlayerSize.Head)
         {
-            _player._modelPlayer.CountBandage(-_player.CurrentBandageStock);
+            _playerContext.Model.TryConsumeBandage(-_playerContext.Model.Bandages);
         }
     }
 

@@ -37,6 +37,8 @@ public sealed class PlayerController : MonoBehaviour, IPausable
     private PlayerModel _model;
     private PlayerContext _ctx;
 
+    public PlayerContext Ctx => _ctx;
+
     private void Awake()
     {
         _sm = GetComponent<StateMachinePlayer>();
@@ -66,7 +68,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable
 
         // Contexto compartido por States
         _ctx = new PlayerContext(transform, _rb, _swingHandler, _cameraProvider, _model, _view, _movement, _input,
-            _interactions, _ground);
+            _interactions, _ground, _sm);
 
         // Estados (tu API AddState / ChangeState)
         _sm.AddState(PlayerStateId.Idle, new IdleState(_ctx));

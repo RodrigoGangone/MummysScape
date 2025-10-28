@@ -13,6 +13,7 @@ public sealed class PlayerContext
     public readonly PlayerView View;
     public readonly IPlayerInput Input;
     public readonly SwingHandler SwingHandler;
+    public readonly StateMachinePlayer StateMachine;
     
     private readonly ICameraProvider _camProvider;
     private readonly MovementRuntime _movement;
@@ -25,13 +26,15 @@ public sealed class PlayerContext
         ICameraProvider camProvider,
         PlayerModel model, PlayerView view,
         MovementRuntime movement, IPlayerInput input, InteractionRuntime interactionRuntime,
-        GroundCheckRuntime ground)
+        GroundCheckRuntime ground, StateMachinePlayer sm)
     {
         Tf = tf; Rb = rb;
         SwingHandler = swingHandler;
         _camProvider = camProvider;
         Model = model; View = view; _movement = movement; Input = input;
-        _interactions = interactionRuntime; _ground = ground;
+        _interactions = interactionRuntime;
+        _ground = ground;
+        StateMachine = sm;
     }
 
     private Camera Cam => _camProvider?.Current ?? Camera.main;

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
@@ -12,6 +13,12 @@ using static Utils;
 
 public class MainMenu : MonoBehaviour
 {
+    
+    //TODO: FALTA IMPLEMENTAR NUEVO SELECTOR DE NIVELES 
+    //TODO: FALTA IMPLEMENTAR NUEVO SELECTOR DE NIVELES 
+    //TODO: FALTA IMPLEMENTAR NUEVO SELECTOR DE NIVELES 
+    //TODO: FALTA IMPLEMENTAR NUEVO SELECTOR DE NIVELES 
+
     [Header("PANEL MAIN MENU")] [SerializeField]
     private GameObject _mainMenuPanel;
 
@@ -51,7 +58,9 @@ public class MainMenu : MonoBehaviour
         _frameRateSpinner.AddOptions(FrameRateText);
         _frameRateSpinner.onValueChanged.AddListener(delegate { OnDropdownValueChanged(_frameRateSpinner); });
         
-        AddButtonProps(_btnDeletePrefs, LevelManagerJson.DeteleLevels, CheckEnabledLevels);
+        //TODO: FALTA IMPLEMENTAR NUEVO SELECTOR DE NIVELES 
+        
+        //AddButtonProps(_btnDeletePrefs, LevelManagerJson.DeteleLevels, CheckEnabledLevels);
         AddButtonProps(_btnBackToMain, ShowMain);
 
         SetLevelsInButtons();
@@ -83,8 +92,11 @@ public class MainMenu : MonoBehaviour
         if (_postProcess.profile.TryGet(out _blur))
             _blur.active = !_blur.active;
 
+        
+        //TODO: FALTA IMPLEMENTAR NUEVO SELECTOR DE NIVELES 
+
         //Check niveles
-        CheckEnabledLevels();
+        //CheckEnabledLevels();
 
         //Check Options [FPS]
         CheckOptions();

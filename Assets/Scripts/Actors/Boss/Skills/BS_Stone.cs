@@ -37,8 +37,8 @@ public class BS_Stone : BossSkillSO
 
         // --- 2) Predicción de impacto (desacoplada del tiempo de vuelo) ---
         var player = ctx.Player;
-        Vector3 playerPos = player.transform.position;
-        Rigidbody playerRb = player.GetComponent<Rigidbody>();
+        Vector3 playerPos = player.Tf.position;
+        Rigidbody playerRb = player.Rb;
         Vector3 playerVel = playerRb != null ? playerRb.velocity : Vector3.zero;
 
         float leadTime = Mathf.Max(0.0f, leadMultiplier * aimTime);

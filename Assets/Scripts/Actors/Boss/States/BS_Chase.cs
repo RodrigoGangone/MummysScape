@@ -12,7 +12,7 @@ public class BS_Chase : State
     public override void OnUpdate()
     {
         var t = _actor.Transform;
-        Vector3 target = _actor.Player.transform.position;
+        Vector3 target = _actor.Player.Tf.position;
         target.y = t.position.y;
         var dir = (target - t.position).normalized;
         var speed = 3f * (_actor.Config.GetStage(_actor.CurrentStageIndex)?.speedMultiplier ?? 1f);

@@ -11,7 +11,7 @@ public sealed class BS_Entry : State
     public override void OnUpdate()
     {
         var t = _actor.Transform;
-        var p = _actor.Player.transform.position;
+        var p = _actor.Player.Tf.position;
         p.y = t.position.y;
         t.LookAt(p);
     }

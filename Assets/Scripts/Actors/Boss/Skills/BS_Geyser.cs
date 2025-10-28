@@ -37,7 +37,7 @@ public class BS_Geyser : BossSkillSO
                 radius *= stageCfg.speedMultiplier;
         }
 
-        Vector3 playerPos = ctx.Player.transform.position;
+        Vector3 playerPos = ctx.Player.Tf.position;
 
         // 1) Detectar geysers cercanos
         List<Geyser> selection =

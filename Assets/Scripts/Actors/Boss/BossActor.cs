@@ -15,7 +15,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     [Header("Config & Refs")] [SerializeField]
     private BossConfigSO config;
 
-    [SerializeField] private Player player;
+    [SerializeField] private PlayerContext player;
     [SerializeField] private Animator animator;
     [SerializeField] private PlayerPrefsRegistry registry;
     [Header("FSM")] public StateMachinePlayer stateMachine;
@@ -28,7 +28,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     // IBossContext
     public Transform Transform => transform;
     public Animator Animator => animator;
-    public Player Player => player;
+    public PlayerContext Player => player;
     public int CurrentStageIndex => _stageIndex;
     public BossConfigSO Config => config;
 
@@ -144,7 +144,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private WorldModel BuildWorldModel()
     {
-        bool los = HasLineOfSight(transform.position, player.transform.position);
+        bool los = HasLineOfSight(transform.position, player.Tf.position);
         return new WorldModel(this, los);
     }
 

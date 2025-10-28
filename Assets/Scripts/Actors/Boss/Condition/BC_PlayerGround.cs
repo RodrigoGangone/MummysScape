@@ -8,5 +8,5 @@ public sealed class BC_PlayerGround : SkillConditionSO
     [SerializeField] private bool inGround;
 
     public override bool Evaluate(in WorldModel wm, IBossContext ctx) =>
-        inGround == ctx.Player._modelPlayer.CheckGround();
+        inGround == ctx.Player.IsGrounded();
 }

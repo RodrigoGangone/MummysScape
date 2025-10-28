@@ -16,9 +16,10 @@ public sealed class PlayerModel
     private readonly GameEvent _onBandagesCountChanged;
     private readonly GameEvent _onSizeChanged;
 
+    public int MinBandagesValue => MinBandages;
+    public int MaxBandagesValue => MaxBandages;
     public int Bandages { get; private set; }
     public PlayerSize Size => MapSize(Bandages);
-
     public PlayerModel(GameEvent onBandagesCountChanged, GameEvent onSizeChanged)
     {
         _onBandagesCountChanged = onBandagesCountChanged;
