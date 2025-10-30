@@ -14,33 +14,40 @@ using UnityEngine.Serialization;
 [DisallowMultipleComponent]
 public sealed class InteractionRuntime : MonoBehaviour
 {
-    [Header("Push Checker")] 
-    [SerializeField] private float _heightY = 1.0f;
+    [Header("Push Checker")] [SerializeField]
+    private float _heightY = 1.0f;
+
     [SerializeField] private float _distance = 1.0f;
     [SerializeField] private float _separation = 0.5f;
     [SerializeField] private LayerMask _interactMask;
 
-    [Header("Attract Checker")] 
-    [SerializeField] private float _attractMinDistance = 1.0f;
+    [Header("Attract Checker")] [SerializeField]
+    private float _attractMinDistance = 1.0f;
+
     [SerializeField] private float _attractMaxDistance = 5.0f;
     [SerializeField] private AnimationCurve _attractSpeedAC = AnimationCurve.Linear(0, 1, 1, 1);
-    
+
     [SerializeField, Min(0f)] private float _attractSpeedBase = 1.0f;
 
-    [Header("Swing Checker")] 
-    
-    [SerializeField] private Vector3 halfExtents = new(5, 5, 7);
-    [Tooltip("Offset LOCAL respecto al pivot del player (se transforma con su rotación).")]
-    [SerializeField] private Vector3 origin = new(0, 5, 7);
+    [Header("Swing Checker")] [SerializeField]
+    private Vector3 halfExtents = new(5, 5, 7);
 
-    [Header("Shoot Checker")] 
-    [SerializeField] private LayerMask _aimCollisionMask = ~0;
+    [Tooltip("Offset LOCAL respecto al pivot del player (se transforma con su rotación).")] [SerializeField]
+    private Vector3 origin = new(0, 5, 7);
+
+    [Header("Shoot Checker")] [SerializeField]
+    private LayerMask _aimCollisionMask = ~0;
+
     [SerializeField] private GameObject projectilePrefab;
 
     [SerializeField, Range(0, 30)] private float _aimMaxDistance;
     [SerializeField, Range(-5, 5)] private float _maxAimHeight;
     [SerializeField, Range(0, 30)] private float _arcHeight;
     [SerializeField, Range(0, 200)] private int _simMaxSteps;
+
+    [Header("Quick Travel")]
+    
+    [SerializeField] private float radiusTiny;
     
     // propiedad para que los States lean el mismo valor (exponen datos, no lógica)
     public float AttractMinDistance => _attractMinDistance;
@@ -203,11 +210,11 @@ public sealed class InteractionRuntime : MonoBehaviour
         if (distXZ > _aimMaxDistance)
             return false;
 
-        if (distXZ > 1e-3f) 
+        if (distXZ > 1e-3f)
             dirXZ.Normalize();
-        else 
+        else
             dirXZ = playertf.forward;
-        
+
         // 4) Parámetros del arco “plantilla”
         float L = distXZ;
         float height = toDesired.y;
@@ -247,6 +254,45 @@ public sealed class InteractionRuntime : MonoBehaviour
         return false;
     }
 
+    // -------------------- QuickTravel --------------------
+
+    /// <summary>
+    /// Busca un PortalSmash dentro del círculo del Smash y retorna el más cercano.
+    /// </summary>
+    
+    public bool TryGetQuickTravel(Transform playerTransform, out HippoTravel portal)
+    {
+        portal = null;
+
+        Vector3 center = playerTransform.position;
+
+        Collider[] hits = Physics.OverlapSphere(center, radiusTiny);
+
+        if (hits == null || hits.Length == 0)
+            return false;
+
+        var bestSqr = float.PositiveInfinity;
+        HippoTravel best = null;
+
+        foreach (var col in hits)
+        {
+            if (!col) continue;
+
+            var p = col.GetComponentInParent<HippoTravel>();
+            if (p == null || !p.isActiveAndEnabled) continue;
+
+            var sqr = (p.transform.position - center).sqrMagnitude;
+            
+            if (!(sqr < bestSqr)) continue;
+            
+            bestSqr = sqr;
+            best = p;
+        }
+
+        portal = best;
+        return portal != null;
+    }
+    
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
@@ -260,7 +306,11 @@ public sealed class InteractionRuntime : MonoBehaviour
         bool anyHook = false;
         foreach (var hit in hits)
         {
-            if (hit.CompareTag("Hook")) { anyHook = true; break; }
+            if (hit.CompareTag("Hook"))
+            {
+                anyHook = true;
+                break;
+            }
         }
 
         Gizmos.color = anyHook ? _hitColor : _missColor;
@@ -292,7 +342,7 @@ public sealed class InteractionRuntime : MonoBehaviour
         var minMark = _aOrigin + ((_aEnd - _aOrigin).normalized * _attractMinDistance);
         Gizmos.DrawWireSphere(minMark, 0.05f);
 
-        
+
         //AIM
 
         // 1. DIBUJAR RANGO MÁXIMO (CÍRCULO)

@@ -87,4 +87,10 @@ public sealed class PlayerContext
         norm = default;
         return _interactions != null && _interactions.TryGetAim(Tf, out pos, out norm);
     }
+
+    public bool TryGetQuickTravel(Transform playerTf, out HippoTravel target)
+    {
+        target = null;
+        return _interactions != null && _interactions.TryGetQuickTravel(Tf, out target);
+    }
 }

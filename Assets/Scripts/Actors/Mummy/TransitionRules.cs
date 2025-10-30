@@ -12,8 +12,8 @@ public static class TransitionRules
     private static readonly IReadOnlyDictionary<PlayerStateId, PlayerStateId[]> _allowed =
         new Dictionary<PlayerStateId, PlayerStateId[]>
         {
-            { PlayerStateId.Idle,        new[]{ PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.Aim, PlayerStateId.Smash, PlayerStateId.DropBandage, PlayerStateId.Push, PlayerStateId.Attract, PlayerStateId.Swing, PlayerStateId.Dead } },
-            { PlayerStateId.Walk,        new[]{ PlayerStateId.Idle, PlayerStateId.Fall, PlayerStateId.Aim, PlayerStateId.Smash, PlayerStateId.DropBandage, PlayerStateId.Push, PlayerStateId.Attract, PlayerStateId.Swing, PlayerStateId.Dead } },
+            { PlayerStateId.Idle,        new[]{ PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.Aim, PlayerStateId.Smash, PlayerStateId.DropBandage, PlayerStateId.Push, PlayerStateId.Attract, PlayerStateId.Swing, PlayerStateId.QuickTravel, PlayerStateId.Dead } },
+            { PlayerStateId.Walk,        new[]{ PlayerStateId.Idle, PlayerStateId.Fall, PlayerStateId.Aim, PlayerStateId.Smash, PlayerStateId.DropBandage, PlayerStateId.Push, PlayerStateId.Attract, PlayerStateId.Swing, PlayerStateId.QuickTravel, PlayerStateId.Dead } },
             { PlayerStateId.Fall,        new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Swing, PlayerStateId.Dead } },
             { PlayerStateId.Aim,         new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.Shoot, PlayerStateId.Dead } },
             { PlayerStateId.Shoot,       new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.Dead} },
@@ -22,6 +22,7 @@ public static class TransitionRules
             { PlayerStateId.Push,        new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.Dead } },
             { PlayerStateId.Attract,     new[]{ PlayerStateId.Idle, PlayerStateId.Dead } },
             { PlayerStateId.Swing,       new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.Dead } },
+            { PlayerStateId.QuickTravel, new[]{ PlayerStateId.Idle, PlayerStateId.Dead } },
             { PlayerStateId.Dead,        Array.Empty<PlayerStateId>() },
         };
 

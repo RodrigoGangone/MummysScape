@@ -49,4 +49,5 @@ public class StateMachinePlayer : MonoBehaviour
         _currentState?.OnEnter();
         return true;
     }
+    
 }

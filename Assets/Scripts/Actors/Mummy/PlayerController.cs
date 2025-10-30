@@ -81,6 +81,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable
         _sm.AddState(PlayerStateId.Push, new PushState(_ctx));
         _sm.AddState(PlayerStateId.Attract, new AttractState(_ctx));
         _sm.AddState(PlayerStateId.Swing, new SwingState(_ctx));
+        _sm.AddState(PlayerStateId.QuickTravel, new QuickTravelState(_ctx));
         _sm.AddState(PlayerStateId.Dead, new DeadState(_ctx));
         _sm.AddState(PlayerStateId.Win, new WinState(_ctx));
 

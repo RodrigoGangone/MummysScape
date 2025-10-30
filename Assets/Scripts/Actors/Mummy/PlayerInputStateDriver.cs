@@ -23,7 +23,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable
     private PlayerContext _ctx;
     private IPlayerInput _input;
     private bool _paused;
-    
+
     public void Bind(PlayerContext ctx, StateMachinePlayer sm)
     {
         _ctx = ctx;
@@ -54,6 +54,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable
                 {
                     _sm.ChangeState(Fall);
                 }
+
                 return; // No procesar otros estados en el aire.
             }
 
@@ -73,6 +74,12 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable
         // 2) Space press => Smash (Head). Si el guard/SizeRules no dejan, sigue el flujo.
         if (_input.ConsumeSpaceDown())
         {
+            if (_ctx.TryGetQuickTravel(_ctx.Tf, out _))
+            {
+                _sm.ChangeState(QuickTravel);
+                return;
+            }
+
             if (_sm.ChangeState(Smash)) return;
         }
 
@@ -80,7 +87,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable
         if (_input.IsSpaceHeld())
         {
             if (_sm.IsCurrent(Swing) || _sm.IsCurrent(Attract)) return;
-            
+
             if (_ctx.TryGetSwingTarget(out _)) // Small: el guard lo permite; otros tamaños lo bloquean
             {
                 _sm.ChangeState(Swing);
@@ -99,10 +106,10 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable
         {
             if (_input.ConsumeShootDown())
             {
-                _sm.ChangeState(Shoot); 
+                _sm.ChangeState(Shoot);
                 return;
             }
-            
+
             if (_sm.IsCurrent(Aim)) return;
             if (_sm.ChangeState(Aim)) return;
         }
@@ -127,5 +134,4 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable
     public void OnPauseChanged(bool paused) => _paused = paused;
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
-
 }
