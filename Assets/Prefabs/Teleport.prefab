@@ -371,7 +371,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.7515528
+  m_Radius: 1
   m_Center: {x: 0, y: 0.34768534, z: -0.08}
 --- !u!64 &7244684689710825336
 MeshCollider:
@@ -408,8 +408,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   teleportDestination: {fileID: 0}
-  posHeadOpen: {fileID: 0}
-  posHeadClose: {fileID: 0}
+  posHeadOpen: {fileID: 7044055767317469096}
+  posHeadClose: {fileID: 7021307801727976237}
+  approachDuration: 0.35
 --- !u!1 &5102610353211844388
 GameObject:
   m_ObjectHideFlags: 0
@@ -679,13 +680,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animationEvents:
-  - eventName: HT_StartCompleted
+  - eventName: HT_PlayerViewTurnOn
     OnAnimationEvent:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 2354153064458271791}
           m_TargetAssemblyTypeName: HippoTravel, Assembly-CSharp
-          m_MethodName: StartTravelCompleted
+          m_MethodName: PlayerMeshOn
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -695,13 +696,13 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-  - eventName: HT_DestCompleted
+  - eventName: HT_PlayerViewTurnOff
     OnAnimationEvent:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 2354153064458271791}
           m_TargetAssemblyTypeName: HippoTravel, Assembly-CSharp
-          m_MethodName: DestTravelCompleted
+          m_MethodName: PlayerMeshOff
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}

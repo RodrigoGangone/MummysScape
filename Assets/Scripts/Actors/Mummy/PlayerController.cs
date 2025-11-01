@@ -38,6 +38,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable
     private PlayerContext _ctx;
 
     public PlayerContext Ctx => _ctx;
+    public PlayerSizeVisual SizeVisual => _sizeVisual;
 
     private void Awake()
     {
