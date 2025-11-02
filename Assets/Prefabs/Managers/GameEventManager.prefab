@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6184456360807479907}
   - component: {fileID: 8245628366326523347}
+  - component: {fileID: 2939013598129468616}
   m_Layer: 0
   m_Name: GameEventManager
   m_TagString: Untagged
@@ -45,8 +46,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bossEvents:
-    OnBossDeath: {fileID: 0}
     OnStageChanged: {fileID: 0}
+    OnDeath: {fileID: 0}
   playerEvents:
     OnBandagesCountChanged: {fileID: 11400000, guid: c16a33d0f4dfdda45a2e4cfd4e388b71, type: 2}
     OnSizeChanged: {fileID: 11400000, guid: e09b9beee18ed2449bb90b53140fd548, type: 2}
@@ -57,3 +58,21 @@ MonoBehaviour:
     OnRespawn: {fileID: 11400000, guid: 654cc5b2c5169e64eae42d9224b49966, type: 2}
     OnPickedGem: {fileID: 11400000, guid: 3f4209f5f7b619046bc2d29f394fc453, type: 2}
     OnHourglassDeath: {fileID: 11400000, guid: e0bea34885bd17b48b83a249bb109f1a, type: 2}
+--- !u!114 &2939013598129468616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3610847831028506359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd0266ce581c44042b04c130192c1e19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  registriesToBind:
+  - {fileID: 11400000, guid: 43d364bd7f4318b4eaf699af7808c3c4, type: 2}
+  - {fileID: 11400000, guid: b1cf11d813341364e9fdb20598de4faa, type: 2}
+  - {fileID: 11400000, guid: 54ef293d238624d4d965264090c432a3, type: 2}
+  - {fileID: 11400000, guid: ffbc7f1462a3ff14bae58b5688b6f46e, type: 2}
+  - {fileID: 11400000, guid: f127592d5385ebe4fbf2e7c415c133c0, type: 2}
