@@ -327,8 +327,7 @@ GameObject:
   - component: {fileID: 6441261036485960951}
   - component: {fileID: 5963669054113484704}
   - component: {fileID: 7244684689710825336}
-  - component: {fileID: 4708747978768650028}
-  - component: {fileID: 3621999937673577149}
+  - component: {fileID: 2354153064458271791}
   m_Layer: 0
   m_Name: Teleport
   m_TagString: Untagged
@@ -372,7 +371,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.7515528
+  m_Radius: 1
   m_Center: {x: 0, y: 0.34768534, z: -0.08}
 --- !u!64 &7244684689710825336
 MeshCollider:
@@ -396,7 +395,7 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 3453500329282905385, guid: edabd79996d84aa4dabcec01167520c9, type: 3}
---- !u!114 &4708747978768650028
+--- !u!114 &2354153064458271791
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -408,30 +407,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa25dcea2a2892743ba8eeb9b3d5f60d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _teleportDestination: {fileID: 0}
-  _posHeadOpen: {fileID: 7044055767317469096}
-  _posHeadClose: {fileID: 7021307801727976237}
---- !u!114 &3621999937673577149
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2085082006614982144}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d9bca7abcbbe3d41aeca10c9bad3f26, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _interactableType: 3
-  _player: {fileID: 0}
-  _operablesMapping:
-  - _size: 2
-    _operable: 1
-  _functional: {r: 4.53665, g: 0, b: 15.241464, a: 1}
-  _inoperable: {r: 8.47419, g: 0.18329035, b: 0, a: 1}
-  _materials: []
-  _shiningParticles: {fileID: 0}
+  teleportDestination: {fileID: 0}
+  posHeadOpen: {fileID: 7044055767317469096}
+  posHeadClose: {fileID: 7021307801727976237}
+  approachDuration: 0.35
 --- !u!1 &5102610353211844388
 GameObject:
   m_ObjectHideFlags: 0
@@ -641,6 +620,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6672232584310306711}
   - component: {fileID: 7060978994327622920}
+  - component: {fileID: 4626641841425244397}
   m_Layer: 0
   m_Name: View
   m_TagString: Untagged
@@ -687,6 +667,51 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &4626641841425244397
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8095759280312676889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a1199243ee0d664892dbed486eab9a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animationEvents:
+  - eventName: HT_PlayerViewTurnOn
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 2354153064458271791}
+          m_TargetAssemblyTypeName: HippoTravel, Assembly-CSharp
+          m_MethodName: PlayerMeshOn
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: HT_PlayerViewTurnOff
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 2354153064458271791}
+          m_TargetAssemblyTypeName: HippoTravel, Assembly-CSharp
+          m_MethodName: PlayerMeshOff
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &8299183603511056192
 GameObject:
   m_ObjectHideFlags: 0

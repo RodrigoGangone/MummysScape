@@ -5,9 +5,11 @@ using UnityEngine;
 using static PlayerEnum;
 
 [DefaultExecutionOrder(-50)]
-public class StandingTable : MonoBehaviour
+public class  StandingTable : MonoBehaviour
 {
-    private Player _player;
+    //TODO: REFACTORIZAR ESTE SCRIPT URGENTEMENTE 
+    
+    private PlayerContext _playerContext;
     private List<GameObject> _tables = new();
 
     public List<GameObject> Tables
@@ -40,9 +42,9 @@ public class StandingTable : MonoBehaviour
     {
         if (!other.CompareTag("PlayerFather")) return;
 
-        _player = other.GetComponent<Player>();
+        _playerContext = other.GetComponent<PlayerController>().Ctx;
 
-        if (_player.CurrentPlayerSize == PlayerSize.Normal)
+        if (_playerContext.Model.Size == PlayerSize.Normal)
         {
             if (_gravityCoroutine == null)
                 _gravityCoroutine = StartCoroutine(CountToActivateGravity());
