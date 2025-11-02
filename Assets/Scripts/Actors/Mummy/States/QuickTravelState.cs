@@ -29,7 +29,7 @@ public class QuickTravelState : State
 
     public override void OnFixedUpdate()
     {
-        if (!_hippoTravel.InTravel)
+        if (!_hippoTravel.Link.IsBusy)
             StateMachine.ChangeState(PlayerStateId.Idle);
     }
 

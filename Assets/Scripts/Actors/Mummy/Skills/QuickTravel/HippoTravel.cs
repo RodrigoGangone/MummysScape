@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class HippoTravel : MonoBehaviour, IPausable
 {
@@ -11,11 +12,11 @@ public class HippoTravel : MonoBehaviour, IPausable
     private Animator HippoStartAnim => GetComponentInChildren<Animator>();
     private Animator HippoDestAnim => teleportDestination.GetComponentInChildren<Animator>();
 
+    public HippoLink Link => GetComponentInParent<HippoLink>();
 
-    private bool _paused, _inTravel;
-    public bool InTravel => _inTravel;
+    private bool _paused;
 
-    public PlayerSizeVisual _playerSizeVisual;
+    public PlayerSizeVisual playerSizeVisual;
 
     public void OnPauseChanged(bool paused)
     {
@@ -27,18 +28,17 @@ public class HippoTravel : MonoBehaviour, IPausable
 
     public void BeginTravel(Transform player)
     {
-        if (_inTravel || _paused) return;
-
+        if (_paused || !Link.CanStartTravel()) return;
+        
         StartCoroutine(Co_Travel(player));
     }
 
     private IEnumerator Co_Travel(Transform player)
     {
-        _inTravel = true;
-
-        _playerSizeVisual = player.GetComponent<PlayerSizeVisual>();
-
-        teleportDestination.AssignPlayerToDestination(_playerSizeVisual);
+        Link.StartTravel();
+        
+        playerSizeVisual = player.GetComponent<PlayerSizeVisual>();
+        teleportDestination.AssignPlayerToDestination(playerSizeVisual);
 
         // 1) Acercar al jugador a posHeadOpen (con pausa y rotación siempre aplicada)
         Vector3 p0 = player.position, p1 = posHeadOpen.position;
@@ -79,15 +79,15 @@ public class HippoTravel : MonoBehaviour, IPausable
 
     public void PlayerMeshOff()
     {
-        _playerSizeVisual.MeshTurn(false);
+        playerSizeVisual.MeshTurn(false);
     }
 
     public void PlayerMeshOn()
     {
-        _playerSizeVisual.MeshTurn(true);
-
-        _inTravel = false;
+        playerSizeVisual.MeshTurn(true);
+        
+        Link.EndTravel();
     }
 
-    private void AssignPlayerToDestination(PlayerSizeVisual player) => _playerSizeVisual = player;
+    private void AssignPlayerToDestination(PlayerSizeVisual player) => playerSizeVisual = player;
 }
