@@ -925,7 +925,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 768
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -1473,7 +1473,7 @@ GameObject:
   - component: {fileID: 5298202547034179722}
   - component: {fileID: 8912060584959787685}
   - component: {fileID: 636637590814106749}
-  - component: {fileID: -6140515323211252721}
+  - component: {fileID: 3174947534586476598}
   m_Layer: 10
   m_Name: Bullet3D
   m_TagString: Bullet
@@ -1546,7 +1546,7 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 2
---- !u!114 &-6140515323211252721
+--- !u!114 &3174947534586476598
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1555,14 +1555,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 7766207882271066570}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c116e787f28e2b34297904e63c65375e, type: 3}
+  m_Script: {fileID: 11500000, guid: 3b37d7a7185dd5c49acdf07bd10e8a59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rb: {fileID: 636637590814106749}
-  _speed: 30
-  _fxBullet: {fileID: 3165955199268536008, guid: b44fbe589aa0f4e42a8bd1230d9fba8c, type: 3}
-  _player: {fileID: 0}
-  _lifeTime: 5
 --- !u!1 &9148343267329579215
 GameObject:
   m_ObjectHideFlags: 0
