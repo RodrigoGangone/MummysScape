@@ -24,10 +24,10 @@ public class Interactable : MonoBehaviour
 
     [Header("Configuración de Material")]
     [SerializeField] [ColorUsage(true, true)]
-    private Color _functional = new Color(0, 1, 0, 1); // Verde
+    private Color _functional = new Color(0.5f, 0, 1, 1);
 
     [SerializeField] [ColorUsage(true, true)]
-    private Color _inoperable = new Color(1, 0, 0, 1); // Rojo
+    private Color _inoperable = new Color(1, 0, 0, 1);
 
     private const string _inRange = "_IsInRange";
     private const string _color = "_Outline_Color";

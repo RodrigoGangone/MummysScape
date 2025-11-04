@@ -20,8 +20,10 @@ public sealed class ShootState : State
         var start = (_ctx.Tf) ? _ctx.Tf.position : path[0];
         var rot = (path.Count > 1) ? Quaternion.LookRotation((path[1] - start).normalized) : Quaternion.identity;
 
-        var go = Object.Instantiate(_projectile, start, rot);
+        _ctx.Model.TryConsumeBandage();
 
+        var go = Object.Instantiate(_projectile, start, rot);
+        
         go.GetComponent<BandageProjectile>().Play(path, 30);
     }
 
