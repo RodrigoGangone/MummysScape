@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using UnityEngine.Rendering.Universal; // <-- IMPORTANTE
 
 /// <summary>
 /// PlayerView
@@ -13,8 +14,11 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [SerializeField] private Animator _anim;
     [SerializeField] private ParticleSystem _shootFX;
     [SerializeField] private ParticleSystem _smashFX;
+    
+    [Header("Shoot Visual")]
     [SerializeField] private GameObject _decal;
-    [SerializeField] private GameObject _rangeIndicator;
+    [SerializeField] private DecalProjector _rangeIndicator;
+    [SerializeField] private LineRenderer _arcRenderer;
     
     [Header("UI (opcional)")]
     [SerializeField] private Image _headTimerFill; 
@@ -31,7 +35,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     private bool _swingLineActive;
     
     public GameObject Decal => _decal;
-    public GameObject RangeIndicator => _rangeIndicator;
+    public DecalProjector RangeIndicator => _rangeIndicator;
+    public LineRenderer ArcRenderer => _arcRenderer;
 
     public void SetMoveSpeedVisual(float normalized)
     {

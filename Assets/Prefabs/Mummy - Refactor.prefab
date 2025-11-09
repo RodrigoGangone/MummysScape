@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5879846647280632364}
   - component: {fileID: 8433028144454701147}
   - component: {fileID: 8870212857929132746}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Mummy_Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 6803716298754636010}
   - component: {fileID: 8005554500596899398}
   - component: {fileID: 1459723412058550014}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Mummy_Normal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -178,7 +178,7 @@ GameObject:
   - component: {fileID: 5529134365657849943}
   - component: {fileID: 8590611144201943176}
   - component: {fileID: 213028669310234147}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -262,7 +262,7 @@ GameObject:
   - component: {fileID: 163754945814248792}
   - component: {fileID: 6364997378442541290}
   - component: {fileID: 6743598973724631453}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: View
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -463,7 +463,7 @@ GameObject:
   - component: {fileID: 4218448809033323665}
   - component: {fileID: 7196663548701985418}
   - component: {fileID: 8316873430111864093}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Mummy_Small
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -561,7 +561,7 @@ GameObject:
   - component: {fileID: 7982005369610900635}
   - component: {fileID: 8361177456444675563}
   - component: {fileID: 2808303942995360944}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Mummy - Refactor
   m_TagString: PlayerFather
   m_Icon: {fileID: 0}
@@ -830,7 +830,7 @@ CapsuleCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1024
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -941,7 +941,7 @@ GameObject:
   - component: {fileID: 3577517606468084753}
   - component: {fileID: 669281926412819788}
   - component: {fileID: 330839882636521691}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1146,8 +1146,16 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6744979442998854824, guid: 3140b56d4d6518742aad9f2a845f64a6, type: 3}
+      propertyPath: ShapeModule.type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6744979442998854824, guid: 3140b56d4d6518742aad9f2a845f64a6, type: 3}
       propertyPath: moveWithTransform
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6744979442998854824, guid: 3140b56d4d6518742aad9f2a845f64a6, type: 3}
+      propertyPath: ShapeModule.radius.value
+      value: 0.0001
       objectReference: {fileID: 0}
     - target: {fileID: 6830679000533435792, guid: 3140b56d4d6518742aad9f2a845f64a6, type: 3}
       propertyPath: m_Mesh
