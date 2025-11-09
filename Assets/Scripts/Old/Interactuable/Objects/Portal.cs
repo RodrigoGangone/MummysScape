@@ -24,6 +24,8 @@ public class Portal : MonoBehaviour
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG)) return;
 
+        Debug.Log("Entro player");
+        
         GameEventManager.Instance.levelEvents.OnWin.Raise(SceneManager.GetActiveScene().buildIndex);
     }
 

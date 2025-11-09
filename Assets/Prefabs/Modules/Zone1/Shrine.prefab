@@ -4859,8 +4859,8 @@ GameObject:
   - component: {fileID: 233668591457996994}
   - component: {fileID: 7753610369922990723}
   - component: {fileID: 6954987680570772384}
-  - component: {fileID: 8997337366432414760}
   - component: {fileID: -1459722178890639604}
+  - component: {fileID: 8997337366432414760}
   - component: {fileID: 7201125766579126696}
   m_Layer: 0
   m_Name: Shrine
@@ -6927,6 +6927,27 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: -5989938443601595269, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
+--- !u!135 &-1459722178890639604
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5568936674947108208}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 1
+  m_Center: {x: 0.14, y: 0.5, z: -0.15}
 --- !u!64 &8997337366432414760
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -6949,27 +6970,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
---- !u!135 &-1459722178890639604
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568936674947108208}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.1
-  m_Center: {x: 0.14, y: 0.5, z: -0.15}
 --- !u!114 &7201125766579126696
 MonoBehaviour:
   m_ObjectHideFlags: 0
