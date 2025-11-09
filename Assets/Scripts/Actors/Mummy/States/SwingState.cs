@@ -50,7 +50,7 @@ public class SwingState : State
         Vector3 wishDir = _ctx.CameraRelativeDir(mv.x, mv.y);
 
         // Proyección al plano tangencial
-        Vector3 ropeDir = _ctx.SwingHandler.GetRopeDirWorld(rb);
+        Vector3 ropeDir = _ctx.SwingHandler.GetRopeDirWorld();
         Vector3 tanDir = Vector3.ProjectOnPlane(wishDir, ropeDir).normalized;
 
         // Fuerza tangencial con input (aceleración independiente de la masa)
