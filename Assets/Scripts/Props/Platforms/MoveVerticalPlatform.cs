@@ -6,113 +6,161 @@ using static PauseUtils;
 
 public class MoveVerticalPlatform : MonoBehaviour, IPausable
 {
-    [Header("PLAY ON AWAKE")] 
-    [SerializeField] private bool isMoving;
-
-    [Header("SPEED")] 
-    [SerializeField] private float speed = 1;
+    [Header("SETTINGS")]
+    [SerializeField] private bool isMovingOnStart = true;
+    [SerializeField] private float speed = 1f;
     [SerializeField] private float stopTime = 0.5f;
 
-    [Header("WAYPOINTS")] 
+    [Header("WAYPOINTS")]
     [SerializeField] private Transform[] waypoints;
 
-    [Header("EFFECTS")] 
+    [Header("EFFECTS")]
     [SerializeField] private ParticleSystem sandMoundsParticle;
     [SerializeField] private ParticleSystem activationParticles;
-
     [SerializeField] private float glowDuration = 2f;
     [SerializeField] private float glowIntensity = 0.15f;
+    
+    // Estado interno
+    private int _targetWaypointIndex = 0;
+    private bool _isMoving;
+    private bool _isWaitingAtWaypoint = false;
+    private bool _isGloballyPaused = false;
 
-    private Material[] platformMaterials;
-
-    // Pausa interna (local)
-    private bool _paused;
-    private bool _isMovingToFirstWaypoint;
-    private int _currentWaypointIndex = 0;
-    private AudioSource _platformAudio;
+    private Material[] _platformMaterials;
+    private Coroutine _waitCoroutine;
 
     private void Start()
     {
-        platformMaterials = GetMaterialsFromChildren();
+        _platformMaterials = GetMaterialsFromChildren();
+        _isMoving = isMovingOnStart;
 
-        if (waypoints.Length > 0 && isMoving)
+        if (waypoints.Length == 0)
         {
-            if (Vector3.Distance(transform.position, waypoints[0].position) == 0)
-                _isMovingToFirstWaypoint = true;
-            else
-                transform.position = waypoints[0].position;
+            Debug.LogWarning("MovingPlatform no tiene waypoints asignados. Se desactivará.", this);
+            _isMoving = false;
+            return;
         }
 
-        _platformAudio = AudioManager.Instance.GetClipByName(NameSounds.SFX_MovingPlatform);
+        // Iniciar en la posición del primer waypoint
+        transform.position = waypoints[0].position;
+        // Si se mueve al empezar, el primer objetivo es el waypoint 1
+        if (_isMoving)
+            _targetWaypointIndex = 1;
     }
 
     private void Update()
     {
-        if (_paused) return;
-
-        if (_isMovingToFirstWaypoint)
-            MoveToFirstWaypoint();
-        else if (isMoving && waypoints.Length > 0)
-            MoveTowardsWaypoint();
-
-        HandleAudio();
-    }
-
-    private void MoveToFirstWaypoint()
-    {
-        Transform firstWaypoint = waypoints[0];
-        float step = speed * Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, firstWaypoint.position, step);
-
-        if (Vector3.Distance(transform.position, firstWaypoint.position) <= 0.001f)
+        // El movimiento se detiene si está pausado, esperando, o desactivado.
+        if (_isGloballyPaused || _isWaitingAtWaypoint || !_isMoving || waypoints.Length == 0)
         {
-            _isMovingToFirstWaypoint = false;
-            _currentWaypointIndex = 1;
-        }
-    }
-
-    private void MoveTowardsWaypoint()
-    {
-        if (_paused)
-        {
-            if (sandMoundsParticle && sandMoundsParticle.isPlaying)
-                sandMoundsParticle.Stop();
+            HandleEffects(false); // Asegurarse de detener efectos si no se mueve
             return;
         }
 
-        if (sandMoundsParticle && !sandMoundsParticle.isPlaying)
-            sandMoundsParticle.Play();
+        HandleEffects(true); // Reproducir efectos al moverse
+        MovePlatform();
+    }
 
-        Transform target = waypoints[_currentWaypointIndex];
+    /// <summary>
+    /// Lógica principal de movimiento hacia el waypoint objetivo.
+    /// </summary>
+    private void MovePlatform()
+    {
+        Transform target = waypoints[_targetWaypointIndex];
         float step = speed * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, target.position, step);
 
-        if (Vector3.Distance(transform.position, target.position) <= 0.001f)
-            StartCoroutine(PauseAtWaypoint());
+        // Si llega al destino, inicia la pausa en el waypoint
+        if (Vector3.Distance(transform.position, target.position) < 0.001f)
+        {
+            _waitCoroutine = StartCoroutine(PauseAtWaypoint());
+        }
     }
 
+    /// <summary>
+    /// Espera en el waypoint actual antes de moverse al siguiente.
+    /// </summary>
     private IEnumerator PauseAtWaypoint()
     {
-        _paused = true;
-
-        yield return WaitForSecondsPausable(stopTime, () => _paused); // ⏸️ pausa global respetada
-
-        _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
-        _paused = false;
+        _isWaitingAtWaypoint = true;
+        
+        // Asumiendo que 'WaitForSecondsPausable' maneja la pausa global internamente.
+        // Si no, deberías usar un 'yield return new WaitForSeconds(stopTime)' 
+        // y manejar la pausa global en el Update.
+        yield return WaitForSecondsPausable(stopTime, () => _isGloballyPaused); 
+        
+        SetNextTarget(1); // Moverse al siguiente
+        _isWaitingAtWaypoint = false;
+        _waitCoroutine = null;
     }
 
+    /// <summary>
+    /// Activa o desactiva el movimiento de la plataforma.
+    /// </summary>
     public void StartAction()
     {
-        isMoving = !isMoving;
+        _isMoving = !_isMoving;
         activationParticles?.Play();
-        StartCoroutine(GlowEffect(glowDuration));
+        StartCoroutine(GlowEffect());
+
+        // Si se activa mientras estaba esperando, cancela la espera y se mueve ya.
+        if (_isMoving && _isWaitingAtWaypoint)
+        {
+            if (_waitCoroutine != null)
+                StopCoroutine(_waitCoroutine);
+            
+            SetNextTarget(1);
+            _isWaitingAtWaypoint = false;
+        }
     }
 
+    /// <summary>
+    /// Hace que la plataforma regrese al waypoint anterior.
+    /// </summary>
     public void ReturnToPrevious()
     {
-        _currentWaypointIndex = _currentWaypointIndex > 0 ? _currentWaypointIndex - 1 : _currentWaypointIndex + 1;
+        // Si estaba esperando, cancela la espera
+        if (_waitCoroutine != null)
+        {
+            StopCoroutine(_waitCoroutine);
+            _waitCoroutine = null;
+        }
+
+        _isWaitingAtWaypoint = false;
+        SetNextTarget(-1); // Moverse al anterior
+        _isMoving = true; // Forzar el movimiento
     }
 
+    /// <summary>
+    /// Establece el siguiente waypoint objetivo, con un 'direction' de 1 (siguiente) o -1 (anterior).
+    /// </summary>
+    private void SetNextTarget(int direction)
+    {
+        // (índice + dirección + total) % total
+        // Esta fórmula de módulo maneja correctamente los números negativos
+        _targetWaypointIndex = (_targetWaypointIndex + direction + waypoints.Length) % waypoints.Length;
+    }
+
+    /// <summary>
+    /// Maneja el estado (Play/Stop) de las partículas de movimiento.
+    /// </summary>
+    private void HandleEffects(bool isMovingActive)
+    {
+        if (sandMoundsParticle == null) return;
+
+        if (isMovingActive && !sandMoundsParticle.isPlaying)
+        {
+            // No reproducir si está en pausa global (OnPauseChanged lo manejará)
+            if (!_isGloballyPaused) 
+                sandMoundsParticle.Play();
+        }
+        else if (!isMovingActive && sandMoundsParticle.isPlaying)
+        {
+            sandMoundsParticle.Stop();
+        }
+    }
+
+    #region Player Parenting
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag(PLAYER_TAG))
@@ -124,85 +172,71 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         if (other.CompareTag(PLAYER_TAG))
             other.transform.SetParent(null);
     }
+    #endregion
 
+    #region Glow Effect
     private Material[] GetMaterialsFromChildren() =>
         GetComponentsInChildren<Renderer>().SelectMany(r => r.materials).ToArray();
 
-    private IEnumerator GlowEffect(float duration)
+    private IEnumerator GlowEffect()
     {
-        StartCoroutine(IncreaseIntensity(duration / 2));
-        yield return WaitForSecondsPausable(duration / 2, () => _paused);
-        StartCoroutine(DecreaseIntensity(duration / 2));
+        // Pasar de 0 al máximo, y luego del máximo a 0
+        yield return StartCoroutine(AnimateGlow(0f, glowIntensity, glowDuration / 2));
+        yield return StartCoroutine(AnimateGlow(glowIntensity, 0f, glowDuration / 2));
     }
 
-    private IEnumerator IncreaseIntensity(float duration)
-    {
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
-
-            elapsed += Time.deltaTime;
-            float current = Mathf.Lerp(0f, glowIntensity, elapsed / duration);
-
-            foreach (var mat in platformMaterials)
-                if (mat.HasProperty("_GlowIntensity")) mat.SetFloat("_GlowIntensity", current);
-
-            yield return null;
-        }
-    }
-
-    private IEnumerator DecreaseIntensity(float duration)
+    /// <summary>
+    /// Corrutina reutilizable para animar el 'glow' de un valor a otro.
+    /// </summary>
+    private IEnumerator AnimateGlow(float from, float to, float duration)
     {
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
-
+            // Espera simple mientras esté en pausa global
+            while (_isGloballyPaused)
+                yield return null; 
+            
             elapsed += Time.deltaTime;
-            float current = Mathf.Lerp(glowIntensity, 0f, elapsed / duration);
-
-            foreach (var mat in platformMaterials)
-                if (mat.HasProperty("_GlowIntensity")) mat.SetFloat("_GlowIntensity", current);
-
+            float current = Mathf.Lerp(from, to, elapsed / duration);
+            SetGlow(current);
+            
             yield return null;
         }
+        SetGlow(to); // Asegurarse de que termina en el valor exacto
     }
 
-    private void HandleAudio()
+    /// <summary>
+    /// Aplica el valor de intensidad a todos los materiales.
+    /// </summary>
+    private void SetGlow(float intensity)
     {
-        if (isMoving && !_paused && !_paused)
-        {
-            StartCoroutine(AudioManager.Instance.FollowTransform(_platformAudio, transform, -1));
-            if (!_platformAudio.isPlaying)
-                _platformAudio.Play();
-        }
-        else
-        {
-            if (_platformAudio.isPlaying)
-                _platformAudio.Pause();
-        }
+        foreach (var mat in _platformMaterials)
+            if (mat.HasProperty("_GlowIntensity"))
+                mat.SetFloat("_GlowIntensity", intensity);
     }
+    #endregion
 
-    // 🔸 Integración con el sistema global de pausa
+    #region Pause System
     public void OnPauseChanged(bool paused)
     {
-        _paused = paused;
-        
+        _isGloballyPaused = paused;
+
         if (sandMoundsParticle)
         {
             if (paused && sandMoundsParticle.isPlaying)
                 sandMoundsParticle.Pause();
-            else if (!paused && !sandMoundsParticle.isPlaying && isMoving)
+            // Si se des-pausa y DEBERÍA estar moviéndose, reanuda.
+            else if (!paused && _isMoving && !_isWaitingAtWaypoint) 
                 sandMoundsParticle.Play();
         }
-
-        if (paused && _platformAudio.isPlaying)
-            _platformAudio.Pause();
-        else if (!paused && !_platformAudio.isPlaying && isMoving)
-            _platformAudio.Play();
+        
+        // Aquí también iría la lógica de pausar/despausar el audio
+        // if (paused && _platformAudio.isPlaying) _platformAudio.Pause();
+        // else if (!paused && _isMoving && !_isWaitingAtWaypoint) _platformAudio.Play();
     }
-    
+
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+    #endregion
 }

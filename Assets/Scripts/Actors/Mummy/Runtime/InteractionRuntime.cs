@@ -43,18 +43,19 @@ public sealed class InteractionRuntime : MonoBehaviour
     [SerializeField, Range(0, 30)] private float _aimMaxDistance;
     [SerializeField, Range(-5, 5)] private float _maxAimHeight;
     [SerializeField, Range(0, 30)] private float _arcHeight;
+    [SerializeField, Range(0.01f, 0.5f)] private float _arcRadius = 0.1f;
     [SerializeField, Range(0, 200)] private int _simMaxSteps;
+    
+    [Header("Quick Travel")] [SerializeField]
+    private float radiusTiny;
 
-    [Header("Quick Travel")]
-    
-    [SerializeField] private float radiusTiny;
-    
     // propiedad para que los States lean el mismo valor (exponen datos, no lógica)
     public float AttractMinDistance => _attractMinDistance;
     public float AttractMaxDistance => _attractMaxDistance;
     public AnimationCurve AttractSpeedCurve => _attractSpeedAC;
     public float AttractSpeedBase => _attractSpeedBase;
     public float AimMaxDistance => _aimMaxDistance;
+    public float AimMaxHeight => _maxAimHeight;
     public GameObject ProjectilePrefab => projectilePrefab;
 
     [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
@@ -219,15 +220,24 @@ public sealed class InteractionRuntime : MonoBehaviour
         float L = distXZ;
         float height = toDesired.y;
 
+        if (height > _maxAimHeight)
+        {
+            return false; // ¡Demasiado alto! No es un objetivo válido.
+        }
+
         // Limita la altura del punto de destino para que no supere nuestro máximo.
-        height = Mathf.Min(height, _maxAimHeight);
+        //height = Mathf.Min(height, _maxAimHeight);
 
         int steps = Mathf.Max(6, _simMaxSteps);
 
-        // 5) Muestreo y colisión por segmentos (sin cambios)
+// 5) Muestreo y colisión por segmentos
         var points = new List<Vector3>(steps + 1);
         Vector3 prev = start;
         points.Add(prev);
+
+        // --- CALCULAMOS EL "TECHO" MÁXIMO ABSOLUTO ---
+        // Esta es la altura máxima en el mundo que el arco puede alcanzar.
+        float maxWorldHeight = start.y + _maxAimHeight;
 
         for (int i = 1; i <= steps; i++)
         {
@@ -236,21 +246,52 @@ public sealed class InteractionRuntime : MonoBehaviour
             float y = Mathf.Lerp(0f, height, s) + 4f * _arcHeight * s * (1f - s);
             Vector3 p = new Vector3(flat.x, start.y + y, flat.z);
 
-            if (Physics.Linecast(prev, p, out RaycastHit h, _aimCollisionMask, QueryTriggerInteraction.Ignore))
+            // Comprobamos si este punto 'p' del arco supera la altura máxima permitida.
+            if (p.y > maxWorldHeight)
             {
-                hitPoint = h.point;
-                hitNormal = h.normal;
-                points.Add(hitPoint);
-                SimpleShootData.Path = points;
-                return true;
+                // El arco es inválido porque golpea el "techo invisible".
+                break;
             }
+
+            // --- INICIO DE LA CORRECCIÓN: Linecast -> SphereCast ---
+            Vector3 dir = p - prev;
+            float dist = dir.magnitude;
+
+            // Si la distancia es muy pequeña, no hacemos el cast,
+            // pero dejamos que el bucle continúe para añadir 'p' a la lista.
+            if (dist > 0.001f)
+            {
+                dir.Normalize();
+
+                // ¡AQUÍ ESTÁ LA MAGIA! Usamos SphereCast con el radio que definimos.
+                if (Physics.SphereCast(prev, _arcRadius, dir, out RaycastHit h, dist, _aimCollisionMask,
+                        QueryTriggerInteraction.Ignore))
+                {
+                    // Comprobación de DISTANCIA del impacto
+                    Vector3 hitVector = h.point - start;
+                    float hitDistXZ = new Vector3(hitVector.x, 0f, hitVector.z).magnitude;
+
+                    if (hitDistXZ > _aimMaxDistance)
+                    {
+                        break; // El impacto está fuera del RANGO HORIZONTAL.
+                    }
+
+                    // Si llegamos aquí, el hit es válido (en altura Y en distancia)
+                    hitPoint = h.point;
+                    hitNormal = h.normal;
+                    points.Add(hitPoint);
+                    SimpleShootData.Path = points;
+                    return true; // ¡Blanco válido encontrado!
+                }
+            }
+            // --- FIN DE LA CORRECCIÓN ---
 
             points.Add(p);
             prev = p;
         }
 
-        SimpleShootData.Path = points;
-        hitPoint = points[points.Count - 1];
+        // Si el bucle termina (por 'break' o sin colisión), es un 'miss'.
+        // No asignamos el Path (se queda en null) y retornamos false.
         return false;
     }
 
@@ -259,7 +300,6 @@ public sealed class InteractionRuntime : MonoBehaviour
     /// <summary>
     /// Busca un PortalSmash dentro del círculo del Smash y retorna el más cercano.
     /// </summary>
-    
     public bool TryGetQuickTravel(Transform playerTransform, out HippoTravel portal)
     {
         portal = null;
@@ -282,9 +322,9 @@ public sealed class InteractionRuntime : MonoBehaviour
             if (p == null || !p.isActiveAndEnabled) continue;
 
             var sqr = (p.transform.position - center).sqrMagnitude;
-            
+
             if (!(sqr < bestSqr)) continue;
-            
+
             bestSqr = sqr;
             best = p;
         }
@@ -292,7 +332,7 @@ public sealed class InteractionRuntime : MonoBehaviour
         portal = best;
         return portal != null;
     }
-    
+
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {

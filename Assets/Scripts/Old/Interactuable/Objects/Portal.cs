@@ -1,8 +1,5 @@
-using System;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 using static Save;
 using static Utils;
 
@@ -27,6 +24,8 @@ public class Portal : MonoBehaviour
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG)) return;
 
+        Debug.Log("Entro player");
+        
         GameEventManager.Instance.levelEvents.OnWin.Raise(SceneManager.GetActiveScene().buildIndex);
     }
 

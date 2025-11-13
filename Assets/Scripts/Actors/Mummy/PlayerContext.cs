@@ -47,6 +47,7 @@ public sealed class PlayerContext
     public float AttractSpeedBase => _interactions ? _interactions.AttractSpeedBase : 1f;
     public GameObject ProjectilePrefab => _interactions.ProjectilePrefab;
     public float AimMaxDistance => _interactions.AimMaxDistance; // <--- NUEVA LÍNEA (para acceder al rango)
+    public float AimMaxHeight => _interactions.AimMaxHeight; // <--- NUEVA LÍNEA (para acceder al rango)
 
 
     /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>c

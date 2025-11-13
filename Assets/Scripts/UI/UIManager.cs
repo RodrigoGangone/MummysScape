@@ -55,7 +55,7 @@ public class UIManager : MonoBehaviour
 
     private void OnEnable()
     {
-        GameEventManager.Instance.levelEvents.OnWin.Register(Win);
+        GameEventManager.Instance.levelEvents.OnWin.Register<int>(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Register(Lose);
 
         // ÚNICO evento de pausa:
@@ -64,7 +64,7 @@ public class UIManager : MonoBehaviour
 
     private void OnDisable()
     {
-        GameEventManager.Instance.levelEvents.OnWin.Unregister(Win);
+        GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Lose);
 
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(HandlePauseChanged);
@@ -266,13 +266,13 @@ public class UIManager : MonoBehaviour
         fadeImage.color = new Color(color.r, color.g, color.b, 0f);
     }
 
-    public void Win()
+    public void Win(int index)
     {
         StartCoroutine(FadeIn(() =>
         {
             //Si llego a la cantidad de niveles max no muestro boton de sig nivel
             //TODO: MOSTRAR OTRA PANTALLA QUE NO TENGA LA DE SIGUIENTE NIVEL
-            if (SceneManager.GetActiveScene().buildIndex >= Utils.MAX_LVLS)
+            if (index >= Utils.MAX_LVLS)
                 _btnNextLvlW.enabled = false;
 
             _WinPanel.SetActive(true);
