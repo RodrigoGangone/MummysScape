@@ -705,7 +705,6 @@ GameObject:
   - component: {fileID: 321015491591606409}
   - component: {fileID: 4265233260625840337}
   - component: {fileID: 7982005369610900635}
-  - component: {fileID: 8361177456444675563}
   - component: {fileID: 2808303942995360944}
   m_Layer: 8
   m_Name: Mummy - Refactor
@@ -821,7 +820,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _groundMask:
     serializedVersion: 2
-    m_Bits: 17858560
+    m_Bits: 17924096
   _originOffset: {x: 0, y: 0.5, z: 0}
   _footRadius: 0.52
   _castDistance: 0
@@ -1010,6 +1009,10 @@ MonoBehaviour:
   _useGravityAssist: 1
   _gravityAssist: 2
   _tangentialBrake: 5
+  _lineRenderer: {fileID: 0}
+  _hookMaterial: {fileID: 0}
+  _lineStartPoint: {fileID: 0}
+  _drawDuration: 0
 --- !u!114 &4265233260625840337
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1023,18 +1026,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &7982005369610900635
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7389072118055853021}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f63b016338238aa438b7b3db4f1d9b6c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8361177456444675563
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

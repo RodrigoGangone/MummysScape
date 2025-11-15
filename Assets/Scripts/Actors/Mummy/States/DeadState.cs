@@ -9,7 +9,7 @@ public class DeadState : State
     
     public override void OnEnter() 
     { 
-        GameEventManager.Instance.levelEvents.OnDeath.Raise();
+        //GameEventManager.Instance.levelEvents.OnDeath.Raise();
     }
     public override void OnUpdate() { }
     public override void OnFixedUpdate() { }

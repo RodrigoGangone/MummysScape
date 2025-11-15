@@ -27,7 +27,6 @@ public class GameEventManager : MonoBehaviour
         public GameEvent OnPauseChanged; // bool: true = pausa, false = resume
         public GameEvent OnRespawn;
         public GameEvent OnPickedGem;
-        public GameEvent OnHourglassDeath;
     }
 
     [Header("Boss Events")] [SerializeField]

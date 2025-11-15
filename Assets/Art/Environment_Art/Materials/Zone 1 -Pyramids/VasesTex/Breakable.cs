@@ -2,22 +2,23 @@ using UnityEngine;
 
 public class Breakable : MonoBehaviour
 {
-    [SerializeField] private GameObject _destroyeVersion;
-    [SerializeField] private GameObject _drop;
-    [SerializeField] private bool _droped;
+    [SerializeField] private GameObject destroyedVersion;
+    [SerializeField] private GameObject drop;
+    
+    [SerializeField] private bool withDrop;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("Bullet") || other.gameObject.CompareTag("PlayerFather"))
-        {
-            AudioManager.Instance.PlaySFX(NameSounds.SFX_BreakJar);
+        if (!other.gameObject.CompareTag("Bullet") && 
+            !other.gameObject.CompareTag("PlayerFather")) return;
+        
+        AudioManager.Instance.PlaySFX(NameSounds.SFX_BreakJar);
             
-            Instantiate(_destroyeVersion, transform.position, transform.rotation);
+        Instantiate(destroyedVersion, transform.position, transform.rotation);
 
-            if (_droped)
-                Instantiate(_drop, transform.position, transform.rotation);
+        if (withDrop)
+            Instantiate(drop, transform.position, transform.rotation);
 
-            Destroy(gameObject);
-        }
+        Destroy(gameObject);
     }
-}
+} 

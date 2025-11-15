@@ -76,14 +76,14 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Register<int>(OnBandagesChanged);
-        GameEventManager.Instance.levelEvents.OnHourglassDeath.Register(OnCountDownEnded);
+        GameEventManager.Instance.levelEvents.OnDeath.Register(OnCountDownEnded);
     }
 
     void OnDisable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Unregister<int>(OnBandagesChanged);
-        GameEventManager.Instance.levelEvents.OnHourglassDeath.Unregister(OnCountDownEnded);
+        GameEventManager.Instance.levelEvents.OnDeath.Unregister(OnCountDownEnded);
         HeartbeatStop();
         FxReset();
     }
@@ -118,7 +118,7 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
                 // Como ya no estamos en countdown, ocultamos baseSand aquí también
                 SetBaseSandActive(false);
 
-                GameEventManager.Instance.levelEvents.OnHourglassDeath.Raise();
+                GameEventManager.Instance.levelEvents.OnDeath.Raise();
             }
         }
     }

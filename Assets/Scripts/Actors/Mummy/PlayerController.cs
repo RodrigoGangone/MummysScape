@@ -104,14 +104,23 @@ public sealed class PlayerController : MonoBehaviour, IPausable
     }
 
     // Invocado por HeadTimer al expirar (UnityEvent): mata al player.</summary>
-    public void Kill() => _sm.ChangeState(PlayerStateId.Dead);
+    private void Kill() => _sm.ChangeState(PlayerStateId.Dead);
 
     public void OnPauseChanged(bool paused)
     {
         _rb.isKinematic = paused;
         _sm.enabled = !paused;
     }
-    
-    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+
+    private void OnEnable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+        GameEventManager.Instance.levelEvents.OnDeath.Register(Kill);
+    }
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+        GameEventManager.Instance.levelEvents.OnDeath.Unregister(Kill);
+    }
 }

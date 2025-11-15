@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
-using static Utils;
+using static VolumeSoundId;
+using static VolumeFxId;
+using static Utils; // Asumo que todavía necesitas esto para las constantes del Mixer
 
 public class VolumeSettings : MonoBehaviour
 {
@@ -18,15 +20,10 @@ public class VolumeSettings : MonoBehaviour
         _btnMusic.onClick.AddListener(ToggleMusic);
         _btnSFX.onClick.AddListener(ToggleSFX);
 
-        if (PlayerPrefs.HasKey(MUSIC_VOLUME) && PlayerPrefs.HasKey(SFX_VOLUME))
-        {
-            LoadVolume();
-        }
-        else
-        {
-            SetMusicVolume();
-            SetSFXVolume();
-        }
+        // MODIFICADO:
+        // Ya no es necesario chequear con PlayerPrefs.HasKey.
+        // Tu nuevo sistema Save.GetVolume() se encarga de los valores por defecto.
+        LoadVolume();
     }
     
     private void ToggleMusic()
@@ -41,8 +38,11 @@ public class VolumeSettings : MonoBehaviour
 
     private void LoadVolume()
     {
-        _musicSlider.value = PlayerPrefs.GetFloat(MUSIC_VOLUME);
-        _sfxSlider.value = PlayerPrefs.GetFloat(SFX_VOLUME);
+        // Esto ya estaba usando tu nuevo sistema, lo cual es correcto.
+        _musicSlider.value = Save.GetVolume(Music);
+        _sfxSlider.value = Save.GetVolume(Sfx);
+        
+        // Aplica los valores cargados al mixer
         SetMusicVolume();
         SetSFXVolume();
     }
@@ -50,14 +50,24 @@ public class VolumeSettings : MonoBehaviour
     public void SetMusicVolume()
     {
         float volume = _musicSlider.value;
+        
+        // Esto sigue igual, asumiendo que AUDIO_MIXER_MUSIC viene de Utils
         _audioMixer.SetFloat(AUDIO_MIXER_MUSIC, Mathf.Log10(volume) * 20);
-        PlayerPrefs.SetFloat(MUSIC_VOLUME, volume);
+        
+        // MODIFICADO: Usar el nuevo sistema Save
+        // PlayerPrefs.SetFloat(MUSIC_VOLUME, volume); // <-- Línea anterior
+        Save.SetVolume(Music, volume); // <-- Nueva línea
     }
     
     public void SetSFXVolume()
     {
         float volume = _sfxSlider.value;
+        
+        // Esto sigue igual, asumiendo que AUDIO_MIXER_SFX viene de Utils
         _audioMixer.SetFloat(AUDIO_MIXER_SFX, Mathf.Log10(volume) * 20);
-        PlayerPrefs.SetFloat(SFX_VOLUME, volume);
+        
+        // MODIFICADO: Usar el nuevo sistema Save
+        // PlayerPrefs.SetFloat(SFX_VOLUME, volume); // <-- Línea anterior
+        Save.SetVolume(Sfx, volume); // <-- Nueva línea
     }
 }
