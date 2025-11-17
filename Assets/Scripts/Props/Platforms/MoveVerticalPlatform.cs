@@ -103,6 +103,10 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         activationParticles?.Play();
         StartCoroutine(GlowEffect());
 
+        var cam = GetComponent<FocusOnActivation>();
+        
+        cam.Activate();
+
         // Si se activa mientras estaba esperando, cancela la espera y se mueve ya.
         if (_isMoving && _isWaitingAtWaypoint)
         {
