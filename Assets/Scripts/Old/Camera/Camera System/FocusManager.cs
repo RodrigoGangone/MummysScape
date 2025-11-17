@@ -8,20 +8,20 @@ public class FocusManager : MonoBehaviour
     public static FocusManager Instance { get; private set; }
 
     [Header("Cámaras")]
-    [SerializeField] private CinemachineVirtualCamera gameplayCam;
+    // ELIMINAMOS: [SerializeField] private CinemachineVirtualCamera gameplayCam;
     [SerializeField] private CinemachineVirtualCamera focusCam;
 
     [Header("Integración con Dolly")]
-    [SerializeField] private DollyPositionManager dollyManager;
+    // CAMBIAMOS EL TIPO Y NOMBRE DE LA VARIABLE
+    [SerializeField] private DollyPositionManager dollyCameraManager;
 
     [Header("Input de tutorial opcional (clave global)")]
     [SerializeField] private KeyCode tutorialKey = KeyCode.T;
     public KeyCode TutorialKey => tutorialKey;
 
-    private bool _isFocusing;
+    private bool _isFocusing; 
     private Coroutine _focusRoutine;
 
-    // TutorialId => aprendido
     private readonly Dictionary<string, bool> _tutorialLearned =
         new Dictionary<string, bool>();
 
@@ -36,6 +36,10 @@ public class FocusManager : MonoBehaviour
         Instance = this;
     }
 
+    // ... (Todos los métodos Request... quedan EXACTAMENTE IGUAL) ...
+
+    
+    
     // -------------------- Focus objetos normales --------------------
     public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration)
     {
@@ -73,7 +77,6 @@ public class FocusManager : MonoBehaviour
         string id = point.Id;
         if (string.IsNullOrEmpty(id)) return;
 
-        // Si aún no se vio nunca, forzamos la primera vez
         if (!_tutorialLearned.TryGetValue(id, out bool learned) || !learned)
         {
             RequestTutorialFirstTime(point);
@@ -91,7 +94,8 @@ public class FocusManager : MonoBehaviour
         ));
     }
 
-    // ---------------------- Rutina central --------------------------
+
+    // ---------------------- Rutina central (MODIFICADA) -----------------
     private IEnumerator FocusRoutine(
         Transform cameraPos,
         Transform lookAt,
@@ -101,24 +105,35 @@ public class FocusManager : MonoBehaviour
     {
         _isFocusing = true;
 
-        if (dollyManager != null)
-            dollyManager.SetZonesLocked(true);
+        // 1. Bloquea el movimiento de zonas del Dolly
+        if (dollyCameraManager != null)
+            dollyCameraManager.SetZonesLocked(true);
 
+        // 2. Configura la cámara de foco
         focusCam.Follow = lookAt;
         focusCam.LookAt = lookAt;
         focusCam.transform.position = cameraPos.position;
 
-        gameplayCam.Priority = 0;
+        // 3. APAGA la cámara de gameplay activa (le da prioridad 0)
+        if (dollyCameraManager != null)
+            dollyCameraManager.ActivateGameplayCamera(false);
+        
+        // 4. ENCIENDE la cámara de foco
         focusCam.Priority = 10;
 
         yield return new WaitForSeconds(duration);
 
-        gameplayCam.Priority = 10;
+        // 5. DEVUELVE la prioridad a la cámara de gameplay
+        if (dollyCameraManager != null)
+            dollyCameraManager.ActivateGameplayCamera(true);
+
+        // 6. APAGA la cámara de foco
         focusCam.Priority = 0;
 
         focusCam.Follow = null;
         focusCam.LookAt = null;
 
+        // 7. Marca el tutorial si es necesario
         if (tutorialPoint != null && markLearned)
         {
             string id = tutorialPoint.Id;
@@ -126,8 +141,9 @@ public class FocusManager : MonoBehaviour
                 _tutorialLearned[id] = true;
         }
 
-        if (dollyManager != null)
-            dollyManager.SetZonesLocked(false);
+        // 8. Desbloquea el movimiento de zonas
+        if (dollyCameraManager != null)
+            dollyCameraManager.SetZonesLocked(false);
 
         _isFocusing = false;
         _focusRoutine = null;
