@@ -1,116 +1,33 @@
-using System.Collections;
-using Cinemachine;
 using UnityEngine;
 
 public class FocusOnActivation : MonoBehaviour
 {
-    private enum FocusMode
-    {
-        OneShotTimed, 
-        TutorialInput 
-    }
-
-    [Header("Configuración General")]
-    [SerializeField] private FocusMode mode = FocusMode.OneShotTimed;
-    [SerializeField] private CinemachineVirtualCamera gameplayCam;
-    [SerializeField] private CinemachineVirtualCamera activateCam;
-
-    [Header("Objetos de Foco")] 
+    [Header("Datos de foco")]
     [SerializeField] private Transform cameraFocusPos;
     [SerializeField] private Transform cameraFocusLookAt;
-
-    [Header("Modo 'OneShotTimed' (Objetos)")] 
     [SerializeField] private float focusDuration = 2f;
+    [SerializeField] private bool onlyOnce = true;
 
-    [Header("Modo 'TutorialInput'")]
-    [SerializeField] private float mandatoryViewTime = 3f;
+    private bool _used;
 
-    private bool _isPlaying;
-    private bool _firstActivationDone;
-    private bool _playerInsideTrigger;
-
+    // Llamado por la lógica del objeto (palanca, botón, etc.)
     public void Activate()
     {
-        if (_isPlaying) return;
+        if (onlyOnce && _used) return;
 
-        switch (mode)
+        _used = true;
+
+        if (FocusManager.Instance != null)
         {
-            case FocusMode.OneShotTimed:
-                StartCoroutine(FocusRoutine(
-                    enforceMandatoryTime: false,
-                    exitByInputOnly: false
-                ));
-                break;
-
-            case FocusMode.TutorialInput:
-                bool enforceMandatory = !_firstActivationDone;
-                StartCoroutine(FocusRoutine(
-                    enforceMandatoryTime: enforceMandatory,
-                    exitByInputOnly: true
-                ));
-                break;
+            FocusManager.Instance.RequestObjectFocus(
+                cameraFocusPos,
+                cameraFocusLookAt,
+                focusDuration
+            );
         }
-    }
-
-    private IEnumerator FocusRoutine(bool enforceMandatoryTime, bool exitByInputOnly)
-    {
-        _isPlaying = true;
-
-        // Seteo de la cámara de foco
-        activateCam.Follow = cameraFocusLookAt;
-        activateCam.LookAt = cameraFocusLookAt;
-        activateCam.transform.position = cameraFocusPos.position;
-
-        gameplayCam.Priority = 0;
-        activateCam.Priority = 10;
-
-        if (exitByInputOnly && enforceMandatoryTime && !_firstActivationDone)
+        else
         {
-            yield return new WaitForSeconds(mandatoryViewTime);
-
-            gameplayCam.Priority = 10;
-            activateCam.Priority = 0;
-
-            activateCam.Follow = null;
-            activateCam.LookAt = null;
-
-            _firstActivationDone = true;
-            _isPlaying = false;
-            yield break;
-        }
-
-        if (!exitByInputOnly)
-        {
-            yield return new WaitForSeconds(focusDuration);
-        }
-
-        // -----------------------------
-        //   VOLVER A GAMEPLAY
-        // -----------------------------
-        gameplayCam.Priority = 10;
-        activateCam.Priority = 0;
-
-        activateCam.Follow = null;
-        activateCam.LookAt = null;
-
-        _isPlaying = false;
-    }
-    
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!other.gameObject.CompareTag("PlayerFather")) return;
-
-        _playerInsideTrigger = true;
-
-        if (mode == FocusMode.TutorialInput)
-        {
-            if (!_firstActivationDone && !_isPlaying)
-            {
-                StartCoroutine(FocusRoutine(
-                    enforceMandatoryTime: true,
-                    exitByInputOnly: true
-                ));
-            }
+            Debug.LogWarning("[FocusOnActivation] No hay FocusManager en la escena.");
         }
     }
 }
