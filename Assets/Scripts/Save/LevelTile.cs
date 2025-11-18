@@ -48,7 +48,7 @@ public class LevelTile : MonoBehaviour
 
     private void Update()
     {
-        if (_playerInside && Input.GetKeyDown(KeyCode.X))
+        if (_playerInside && Input.GetKeyDown(KeyCode.X) || Input.GetButtonDown("Space"))
         {
             if (_transition != null)
                 _transition.FadeInAndLoadScene(buildIndex);
