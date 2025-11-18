@@ -40,6 +40,8 @@ public sealed class InteractionRuntime : MonoBehaviour
 
     [SerializeField] private GameObject projectilePrefab;
 
+    [SerializeField, Range(0.1f, 3f)] private float _stickAimSensitivity = 0.5f;
+ 
     [SerializeField, Range(0, 30)] private float _aimMaxDistance;
     [SerializeField, Range(-5, 5)] private float _maxAimHeight;
     [SerializeField, Range(0, 30)] private float _arcHeight;
@@ -187,7 +189,11 @@ public sealed class InteractionRuntime : MonoBehaviour
 
     // -------------------- AIM --------------------
 
-    public bool TryGetAim(Transform playertf, out Vector3 hitPoint, out Vector3 hitNormal)
+// -------------------- AIM --------------------
+
+    // ¡¡MÉTODO MODIFICADO!!
+    // Ahora recibe "aimScreenPosition" desde el AimState
+    public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3 hitPoint, out Vector3 hitNormal)
     {
         hitPoint = default;
         hitNormal = Vector3.up;
@@ -197,7 +203,9 @@ public sealed class InteractionRuntime : MonoBehaviour
         Vector3 start = playertf.position + Vector3.up * 1.0f;
 
         // 2) Punto “deseado” desde la cámara (guía)
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        // MODIFICADO: Ya no usa Input.mousePosition
+        Ray ray = Camera.main.ScreenPointToRay(aimScreenPosition); 
+        
         Vector3 desired =
             Physics.Raycast(ray, out RaycastHit camHit, 200f, _aimCollisionMask, QueryTriggerInteraction.Ignore)
                 ? camHit.point
@@ -225,18 +233,14 @@ public sealed class InteractionRuntime : MonoBehaviour
             return false; // ¡Demasiado alto! No es un objetivo válido.
         }
 
-        // Limita la altura del punto de destino para que no supere nuestro máximo.
-        //height = Mathf.Min(height, _maxAimHeight);
-
+        // ... (El resto del método es idéntico por dentro, no cambia nada más) ...
+        
         int steps = Mathf.Max(6, _simMaxSteps);
 
-// 5) Muestreo y colisión por segmentos
         var points = new List<Vector3>(steps + 1);
         Vector3 prev = start;
         points.Add(prev);
-
-        // --- CALCULAMOS EL "TECHO" MÁXIMO ABSOLUTO ---
-        // Esta es la altura máxima en el mundo que el arco puede alcanzar.
+        
         float maxWorldHeight = start.y + _maxAimHeight;
 
         for (int i = 1; i <= steps; i++)
@@ -245,56 +249,44 @@ public sealed class InteractionRuntime : MonoBehaviour
             Vector3 flat = start + dirXZ * (L * s);
             float y = Mathf.Lerp(0f, height, s) + 4f * _arcHeight * s * (1f - s);
             Vector3 p = new Vector3(flat.x, start.y + y, flat.z);
-
-            // Comprobamos si este punto 'p' del arco supera la altura máxima permitida.
+            
             if (p.y > maxWorldHeight)
             {
-                // El arco es inválido porque golpea el "techo invisible".
                 break;
             }
 
-            // --- INICIO DE LA CORRECCIÓN: Linecast -> SphereCast ---
             Vector3 dir = p - prev;
             float dist = dir.magnitude;
-
-            // Si la distancia es muy pequeña, no hacemos el cast,
-            // pero dejamos que el bucle continúe para añadir 'p' a la lista.
+            
             if (dist > 0.001f)
             {
                 dir.Normalize();
-
-                // ¡AQUÍ ESTÁ LA MAGIA! Usamos SphereCast con el radio que definimos.
+                
                 if (Physics.SphereCast(prev, _arcRadius, dir, out RaycastHit h, dist, _aimCollisionMask,
                         QueryTriggerInteraction.Ignore))
                 {
-                    // Comprobación de DISTANCIA del impacto
                     Vector3 hitVector = h.point - start;
                     float hitDistXZ = new Vector3(hitVector.x, 0f, hitVector.z).magnitude;
 
                     if (hitDistXZ > _aimMaxDistance)
                     {
-                        break; // El impacto está fuera del RANGO HORIZONTAL.
+                        break; 
                     }
-
-                    // Si llegamos aquí, el hit es válido (en altura Y en distancia)
+                    
                     hitPoint = h.point;
                     hitNormal = h.normal;
                     points.Add(hitPoint);
                     SimpleShootData.Path = points;
-                    return true; // ¡Blanco válido encontrado!
+                    return true;
                 }
             }
-            // --- FIN DE LA CORRECCIÓN ---
-
+            
             points.Add(p);
             prev = p;
         }
-
-        // Si el bucle termina (por 'break' o sin colisión), es un 'miss'.
-        // No asignamos el Path (se queda en null) y retornamos false.
+        
         return false;
     }
-
     // -------------------- QuickTravel --------------------
 
     /// <summary>

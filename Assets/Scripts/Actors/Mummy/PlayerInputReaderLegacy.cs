@@ -1,28 +1,47 @@
 using UnityEngine;
 
-/// <summary>
-/// PlayerInputReaderLegacy
-/// Implementa IPlayerInput usando Input clásico. Usa "consumibles" para edges.
-/// </summary>
 public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
 {
     private bool _aimDown, _shootDown, _dropDown, _spaceDown;
+    
+    // La variable _shootAxisPressed fue eliminada.
 
     private void Update()
     {
-        if (Input.GetMouseButton(1))         _aimDown = true;
-        if (Input.GetMouseButtonDown(0))     _shootDown = true;
-        if (Input.GetKeyDown(KeyCode.Q))     _dropDown  = true;
-        if (Input.GetKeyDown(KeyCode.Space)) _spaceDown = true;
+        float aimRt = Input.GetAxis("AimRT");   // RT como eje 0..1 (o -1..1)
+
+        // Mouse derecho o RT por encima del umbral
+        if (Input.GetMouseButton(1) || aimRt > 0.5f)
+            _aimDown = true;
+        
+        if (Input.GetMouseButtonDown(0) || Input.GetButtonDown("Shoot"))     
+            _shootDown = true;
+        
+        // Drop (Q o Botón B/Círculo)
+        if (Input.GetKeyDown(KeyCode.Q) || Input.GetButtonDown("Drop"))     
+            _dropDown  = true;
+        
+        // Space (Space o Botón A/X)
+        if (Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Space")) 
+            _spaceDown = true;
+
+        // --- Stick Derecho ---
+        AimMove = new Vector2(Input.GetAxis("RightStickX"), Input.GetAxis("RightStickY"));
     }
 
+    // --- IMPLEMENTACIÓN DE INTERFAZ ---
+
     public Vector2 Move => new(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+    public Vector2 AimMove { get; private set; } // Propiedad para el stick derecho
 
     public bool ConsumeAimHeld()     { var v = _aimDown;    _aimDown  = false; return v; }
     public bool ConsumeShootDown()   { var v = _shootDown;  _shootDown  = false; return v; }
-    public bool ConsumeDropDown()    { var v = _dropDown;   _dropDown   = false; return v; }
+    public bool ConsumeDropDown()    { var v = _dropDown;   _dropDown  = false; return v; }
     public bool ConsumeSpaceDown()   { var v = _spaceDown;  _spaceDown  = false; return v; }
     
-    public bool IsSpaceHeld() => Input.GetKey(KeyCode.Space);
-    public bool IsAnyActionHeld() => Input.GetKey(KeyCode.E) || Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.Space);
+    public bool IsSpaceHeld() => Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.Joystick1Button0);
+    
+    public bool IsAnyActionHeld() => 
+        Input.GetKey(KeyCode.Q) || Input.GetButtonDown("Drop") || 
+        Input.GetKey(KeyCode.Space) || Input.GetButtonDown("Space");
 }

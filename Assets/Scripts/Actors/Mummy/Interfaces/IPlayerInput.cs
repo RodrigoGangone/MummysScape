@@ -1,23 +1,19 @@
 using UnityEngine;
 
-/// <summary>
-/// IPlayerInput
-/// Contrato de inputs del jugador. Los States leen desde acá (desacoplado).
-/// </summary>
-
 public interface IPlayerInput
 {
-    Vector2 Move { get; }                   // WASD / Stick (X,Z)
-    
+    Vector2 Move { get; }
+    Vector2 AimMove { get; }
+
     // OnPress
-    bool ConsumeAimHeld();                // E
+    bool ConsumeAimHeld();
     bool ConsumeShootDown();
-    bool ConsumeDropDown();                 // Q
-    bool ConsumeSpaceDown();                // Space (inicio del hold) - por si queremos detectar arranque
+    bool ConsumeDropDown();
+    bool ConsumeSpaceDown();
     
     // Hold
-    bool IsSpaceHeld();              // Space (mantener) -> Attract & Swing
+    bool IsSpaceHeld();
     
     // Auxiliar
-    bool IsAnyActionHeld();                 // útil para bloqueos/pausa
+    bool IsAnyActionHeld();
 }

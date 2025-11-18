@@ -46,11 +46,11 @@ public sealed class PlayerContext
     public AnimationCurve AttractSpeedCurve => _interactions ? _interactions.AttractSpeedCurve : AnimationCurve.Linear(0,1,1,1);
     public float AttractSpeedBase => _interactions ? _interactions.AttractSpeedBase : 1f;
     public GameObject ProjectilePrefab => _interactions.ProjectilePrefab;
-    public float AimMaxDistance => _interactions.AimMaxDistance; // <--- NUEVA LÍNEA (para acceder al rango)
-    public float AimMaxHeight => _interactions.AimMaxHeight; // <--- NUEVA LÍNEA (para acceder al rango)
+    public float AimMaxDistance => _interactions.AimMaxDistance; 
+    public float AimMaxHeight => _interactions.AimMaxHeight; 
 
 
-    /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>c
+    /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>
     public Vector3 CameraRelativeDir(float h, float v)
     {
         var cam = Cam;
@@ -82,12 +82,16 @@ public sealed class PlayerContext
         return _interactions != null && _interactions.TryGetSwingTarget(Tf, out hook);
     }
 
-    public bool TryGetAim(out Vector3 pos, out Vector3 norm)
+    // --- ¡MÉTODO MODIFICADO! ---
+    // Ahora acepta 'aimScreenPosition' y lo pasa a _interactions
+    public bool TryGetAim(Vector2 aimScreenPosition, out Vector3 pos, out Vector3 norm)
     {
         pos = default;
         norm = default;
-        return _interactions != null && _interactions.TryGetAim(Tf, out pos, out norm);
+        // Pasa la posición de la pantalla al método de InteractionRuntime
+        return _interactions != null && _interactions.TryGetAim(Tf, aimScreenPosition, out pos, out norm);
     }
+    // --- FIN DE LA MODIFICACIÓN ---
 
     public bool TryGetQuickTravel(Transform playerTf, out HippoTravel target)
     {

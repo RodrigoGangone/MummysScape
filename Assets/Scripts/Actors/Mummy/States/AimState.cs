@@ -14,6 +14,12 @@ public class AimState : State
 
     private const float ANIM_DURATION = 0.2f;
     private const float DECAL_BOX_DEPTH = 50f;
+    
+    // --- AÑADIDO: Lógica del Cursor Virtual ---
+    private Vector2 _aimScreenPos; // El cursor virtual (ratón o joystick)
+    private Vector3 _lastMousePos; // Para detectar si el ratón se movió
+    private const float AIM_SENSITIVITY = 500; // Sensibilidad del stick derecho
+    // --- FIN DE LO AÑADIDO ---
 
     public AimState(PlayerContext ctx)
     {
@@ -26,6 +32,12 @@ public class AimState : State
     public override void OnEnter()
     {
         SimpleShootData.Path = null;
+        
+        // --- AÑADIDO: Inicializar cursor virtual ---
+        _aimScreenPos = new Vector2(Screen.width / 2, Screen.height / 2);
+        _lastMousePos = Input.mousePosition;
+        // --- FIN DE LO AÑADIDO ---
+        
         if (_rangeIndicator == null) return;
 
         if (_arcRenderer != null)
@@ -53,9 +65,33 @@ public class AimState : State
             _rangeIndicator.transform.position = projectorPos;
         }
 
-        bool hasValidTarget = _ctx.TryGetAim(out var pos, out var normal);
-        
+        // --- AÑADIDO: Lógica de actualización del cursor virtual ---
+        Vector2 aimDelta = _ctx.Input.AimMove; // Leer el Stick Derecho
+        Vector3 mousePos = Input.mousePosition;
 
+        // Opción A: El Ratón se movió (tiene prioridad)
+        if ((mousePos - _lastMousePos).sqrMagnitude > 0.1f)
+        {
+            _aimScreenPos = mousePos;
+        }
+        // Opción B: El Stick Derecho se movió
+        else if (aimDelta.sqrMagnitude > 0.1f)
+        {
+            _aimScreenPos.x += aimDelta.x * AIM_SENSITIVITY * Time.deltaTime;
+            _aimScreenPos.y += aimDelta.y * AIM_SENSITIVITY * Time.deltaTime;
+
+            // Sujetar el cursor a los límites de la pantalla
+            _aimScreenPos.x = Mathf.Clamp(_aimScreenPos.x, 0f, Screen.width);
+            _aimScreenPos.y = Mathf.Clamp(_aimScreenPos.y, 0f, Screen.height);
+        }
+        
+        _lastMousePos = mousePos; // Actualizar la última pos del ratón
+        // --- FIN DE LO AÑADIDO ---
+
+
+        // --- MODIFICADO: Pasar el cursor virtual a TryGetAim ---
+        bool hasValidTarget = _ctx.TryGetAim(_aimScreenPos, out var pos, out var normal);
+        
         
         if (hasValidTarget)
             SetDecal(pos, normal);
@@ -86,21 +122,21 @@ public class AimState : State
                                                                         true));
     }
 
+    // --- El resto de métodos (SetArc, SetDecalVisible, SetDecal, AnimateScale) ---
+    // --- no cambian y permanecen idénticos a los tuyos. ---
+
     private void SetArc(bool hasValidTarget)
     {
         if (_arcRenderer != null)
         {
             if (hasValidTarget && SimpleShootData.Path != null && SimpleShootData.Path.Count > 0)
             {
-                // Si es válido: DIBUJA
                 _arcRenderer.enabled = true;
                 _arcRenderer.positionCount = SimpleShootData.Path.Count;
                 _arcRenderer.SetPositions(SimpleShootData.Path.ToArray());
             }
             else
             {
-                // ¡AQUÍ ESTÁ LA CLAVE!
-                // Si no es válido (hasValidTarget es false): APAGA
                 _arcRenderer.enabled = false;
             }
         }
@@ -133,7 +169,7 @@ public class AimState : State
             timer += Time.deltaTime;
 
             float t = Mathf.Clamp01(timer / duration);
-            t = 1 - (1 - t) * (1 - t);
+            t = 1 - (1 - t) * (1 - t); // Ease-Out Quad
 
             targetTransform.localScale = Vector3.Lerp(startScale, targetScale, t);
 
