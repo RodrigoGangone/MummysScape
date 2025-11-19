@@ -1,13 +1,20 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Collider))]
 public class LevelTile : MonoBehaviour
 {
     [SerializeField] private int buildIndex;
-    [SerializeField] private bool isFirstLevel = false;
+    [SerializeField] private bool isFirstLevel;
+    [SerializeField] private bool isBossLevel;
+    [SerializeField] private ParticleSystem portalFx;
     [SerializeField] private GameObject[] gemIcons = new GameObject[3];
 
-    [Header("TRANSICION")] [SerializeField] private SceneTransitionManager _transition;
+    private FocusOnActivation FocusOnActivation => GetComponent<FocusOnActivation>();
+    
+    [Header("TRANSICION")] 
+    
+    [SerializeField] private SceneTransitionManager transition;
 
     bool _playerInside;
 
@@ -22,36 +29,46 @@ public class LevelTile : MonoBehaviour
             int previousLevelIndex = buildIndex - 1;
             isUnlocked = Save.IsLevelCompleted(previousLevelIndex);
         }
-    
+
         if (!isUnlocked)
         {
             gameObject.SetActive(false);
             return;
         }
 
-        SetAllGems(false);
+        if (!isBossLevel)
+            SetAllGems(false);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("PlayerFather")) return;
         _playerInside = true;
-        RefreshGems();
+        portalFx.Play();
+        
+        if (!isBossLevel)
+            RefreshGems();
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag("PlayerFather")) return;
         _playerInside = false;
-        SetAllGems(false);
+        
+        portalFx.Stop();
+        
+        if (!isBossLevel)
+            SetAllGems(false);
     }
 
     private void Update()
     {
-        if (_playerInside && Input.GetKeyDown(KeyCode.X) || Input.GetButtonDown("Space"))
+        if (_playerInside && (Input.GetKeyDown(KeyCode.X) || Input.GetButtonDown("Space")))
         {
-            if (_transition != null)
-                _transition.FadeInAndLoadScene(buildIndex);
+            if (transition != null)
+                transition.FadeInAndLoadScene(buildIndex);
+            
+            FocusOnActivation.Activate();
         }
     }
 
