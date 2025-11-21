@@ -16,8 +16,9 @@ public class FocusManager : MonoBehaviour
     [SerializeField] private DollyPositionManager dollyCameraManager;
 
     [Header("Input de tutorial opcional (clave global)")]
-    [SerializeField] private KeyCode tutorialKey = KeyCode.T;
-    public KeyCode TutorialKey => tutorialKey;
+    private const string TUTORIAL_BUTTON_NAME = "Space";
+    
+    public string TutorialKey => TUTORIAL_BUTTON_NAME;
 
     private bool _isFocusing; 
     private Coroutine _focusRoutine;

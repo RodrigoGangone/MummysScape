@@ -47,14 +47,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   config: {fileID: 11400000, guid: d81d6199452ffb545834e87ade0a2d9c, type: 2}
-  player: {fileID: 0}
   animator: {fileID: 7882453827851332159}
   registry: {fileID: 11400000, guid: dd0255ca728e3f349a11322f2577451f, type: 2}
   stateMachine: {fileID: 0}
   losObstacleMask:
     serializedVersion: 2
     m_Bits: 2048
-  losRayHeight: 1.5
+  losRayHeight: 1
 --- !u!136 &6391172947875354714
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -74,7 +73,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 4
+  m_Radius: 6
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
@@ -189,6 +188,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3167988213604236582, guid: ff368c35069fbe64099dff36387fa959, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3674978092795691993}
+    - targetCorrespondingSourceObject: {fileID: 3167988213604236582, guid: ff368c35069fbe64099dff36387fa959, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3065273501292119079}
   m_SourcePrefab: {fileID: 100100000, guid: ff368c35069fbe64099dff36387fa959, type: 3}
 --- !u!1 &3517282199041911551 stripped
 GameObject:
@@ -208,6 +210,99 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bossActor: {fileID: 5909123922986822116}
+--- !u!114 &3065273501292119079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3517282199041911551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a1199243ee0d664892dbed486eab9a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animationEvents:
+  - eventName: BS_Entry
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3674978092795691993}
+          m_TargetAssemblyTypeName: BossAnimHandler, Assembly-CSharp
+          m_MethodName: AE_Entry_End
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: BS_PrimaryLaunch
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3674978092795691993}
+          m_TargetAssemblyTypeName: BossAnimHandler, Assembly-CSharp
+          m_MethodName: AE_Primary_Launch
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: BS_SecondaryLaunch
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3674978092795691993}
+          m_TargetAssemblyTypeName: BossAnimHandler, Assembly-CSharp
+          m_MethodName: AE_Secondary_Launch
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: BS_SkillEnd
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3674978092795691993}
+          m_TargetAssemblyTypeName: BossAnimHandler, Assembly-CSharp
+          m_MethodName: AE_Skill_Ended
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: BS_Die
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3674978092795691993}
+          m_TargetAssemblyTypeName: BossAnimHandler, Assembly-CSharp
+          m_MethodName: AE_Die
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!4 &4288611203057643589 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2359082265351382940, guid: ff368c35069fbe64099dff36387fa959, type: 3}

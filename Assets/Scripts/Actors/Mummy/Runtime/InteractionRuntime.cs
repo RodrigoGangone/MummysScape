@@ -41,13 +41,13 @@ public sealed class InteractionRuntime : MonoBehaviour
     [SerializeField] private GameObject projectilePrefab;
 
     [SerializeField, Range(0.1f, 3f)] private float _stickAimSensitivity = 0.5f;
- 
+
     [SerializeField, Range(0, 30)] private float _aimMaxDistance;
     [SerializeField, Range(-5, 5)] private float _maxAimHeight;
     [SerializeField, Range(0, 30)] private float _arcHeight;
     [SerializeField, Range(0.01f, 0.5f)] private float _arcRadius = 0.1f;
     [SerializeField, Range(0, 200)] private int _simMaxSteps;
-    
+
     [Header("Quick Travel")] [SerializeField]
     private float radiusTiny;
 
@@ -204,8 +204,8 @@ public sealed class InteractionRuntime : MonoBehaviour
 
         // 2) Punto “deseado” desde la cámara (guía)
         // MODIFICADO: Ya no usa Input.mousePosition
-        Ray ray = Camera.main.ScreenPointToRay(aimScreenPosition); 
-        
+        Ray ray = Camera.main.ScreenPointToRay(aimScreenPosition);
+
         Vector3 desired =
             Physics.Raycast(ray, out RaycastHit camHit, 200f, _aimCollisionMask, QueryTriggerInteraction.Ignore)
                 ? camHit.point
@@ -234,13 +234,13 @@ public sealed class InteractionRuntime : MonoBehaviour
         }
 
         // ... (El resto del método es idéntico por dentro, no cambia nada más) ...
-        
+
         int steps = Mathf.Max(6, _simMaxSteps);
 
         var points = new List<Vector3>(steps + 1);
         Vector3 prev = start;
         points.Add(prev);
-        
+
         float maxWorldHeight = start.y + _maxAimHeight;
 
         for (int i = 1; i <= steps; i++)
@@ -249,7 +249,7 @@ public sealed class InteractionRuntime : MonoBehaviour
             Vector3 flat = start + dirXZ * (L * s);
             float y = Mathf.Lerp(0f, height, s) + 4f * _arcHeight * s * (1f - s);
             Vector3 p = new Vector3(flat.x, start.y + y, flat.z);
-            
+
             if (p.y > maxWorldHeight)
             {
                 break;
@@ -257,11 +257,11 @@ public sealed class InteractionRuntime : MonoBehaviour
 
             Vector3 dir = p - prev;
             float dist = dir.magnitude;
-            
+
             if (dist > 0.001f)
             {
                 dir.Normalize();
-                
+
                 if (Physics.SphereCast(prev, _arcRadius, dir, out RaycastHit h, dist, _aimCollisionMask,
                         QueryTriggerInteraction.Ignore))
                 {
@@ -270,9 +270,9 @@ public sealed class InteractionRuntime : MonoBehaviour
 
                     if (hitDistXZ > _aimMaxDistance)
                     {
-                        break; 
+                        break;
                     }
-                    
+
                     hitPoint = h.point;
                     hitNormal = h.normal;
                     points.Add(hitPoint);
@@ -280,11 +280,11 @@ public sealed class InteractionRuntime : MonoBehaviour
                     return true;
                 }
             }
-            
+
             points.Add(p);
             prev = p;
         }
-        
+
         return false;
     }
     // -------------------- QuickTravel --------------------

@@ -48,7 +48,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
             _targetWaypointIndex = 1;
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         // El movimiento se detiene si está pausado, esperando, o desactivado.
         if (_isGloballyPaused || _isWaitingAtWaypoint || !_isMoving || waypoints.Length == 0)
@@ -64,10 +64,28 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     /// <summary>
     /// Lógica principal de movimiento hacia el waypoint objetivo.
     /// </summary>
+    /// <summary>
+    /// Lógica principal de movimiento hacia el waypoint objetivo.
+    /// </summary>
     private void MovePlatform()
     {
         Transform target = waypoints[_targetWaypointIndex];
-        float step = speed * Time.deltaTime;
+
+        // Distancia actual al waypoint
+        float distance = Vector3.Distance(transform.position, target.position);
+
+        // Radio en el que empieza a frenar (valor chico en unidades de mundo)
+        const float slowDownRadius = 1f;
+
+        // 1 = velocidad normal lejos, 0.2 = bien lento pegado al final
+        float speedFactor = 1f;
+        if (distance < slowDownRadius)
+        {
+            float t = distance / slowDownRadius;          // 1 lejos, 0 en el punto
+            speedFactor = Mathf.Lerp(0.1f, 1f, t);        // va bajando de 1 a 0.2
+        }
+
+        float step = speed * speedFactor * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, target.position, step);
 
         // Si llega al destino, inicia la pausa en el waypoint
@@ -76,6 +94,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
             _waitCoroutine = StartCoroutine(PauseAtWaypoint());
         }
     }
+
 
     /// <summary>
     /// Espera en el waypoint actual antes de moverse al siguiente.
