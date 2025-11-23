@@ -50,7 +50,7 @@ public class FxBank : ScriptableObject
         if (entry == null || entry.clip == null)
             return;
 
-        AudioManagerr.Instance.PlayClip2D(entry.clip, bus, entry.volume, entry.pitch);
+        AudioManager.Instance.PlayClip2D(entry.clip, bus, entry.volume, entry.pitch);
     }
 
     public void Play3D(string key, Vector3 position)
@@ -59,7 +59,7 @@ public class FxBank : ScriptableObject
         if (entry == null || entry.clip == null)
             return;
 
-        AudioManagerr.Instance.PlayClip3D(
+        AudioManager.Instance.PlayClip3D(
             entry.clip,
             bus,
             position,
@@ -88,4 +88,3 @@ public class FxEntry
     [Range(0f, 1f)] public float spatialBlend = 1f;
     public float maxDistance = 20f;
 }
-

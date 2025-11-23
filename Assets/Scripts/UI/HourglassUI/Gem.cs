@@ -3,6 +3,7 @@ using UnityEngine;
 public class Gem : MonoBehaviour
 {
     [SerializeField] private int gemNum;
+    [SerializeField] private FxBank gemBank;
     private static readonly int IsPickedProp = Shader.PropertyToID("_IsPicked");
 
     private Renderer Renderer => GetComponentInChildren<Renderer>();
@@ -20,6 +21,8 @@ public class Gem : MonoBehaviour
     {
         if (!other.CompareTag("PlayerFather")) return;
 
+        gemBank.Play3D("Pick", transform.position);
+        
         Save.MarkGemPicked(gemNum);
 
         GameEventManager.Instance.levelEvents.OnPickedGem.Raise(gemNum);
