@@ -28,12 +28,12 @@ public class VolumeSettings : MonoBehaviour
     
     private void ToggleMusic()
     {
-        AudioManager.Instance.ToogleMusic();
+        //AudioManagerr.Instance.ToogleMusic();
     }
     
     private void ToggleSFX()
     {
-        AudioManager.Instance.ToogleSFX();
+       // AudioManagerr.Instance.ToogleSFX();
     }
 
     private void LoadVolume()

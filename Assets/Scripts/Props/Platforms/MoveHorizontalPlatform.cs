@@ -59,7 +59,7 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
             sandMoundBackward.position = sandMoundBackwardWaypoints[0].position;
         }
 
-        platformAudio = AudioManager.Instance.GetClipByName(NameSounds.SFX_MovingPlatform);
+       // platformAudio = AudioManager.Instance.GetClipByName(NameSounds.SFX_MovingPlatform);
     }
 
     private void Update()
@@ -216,7 +216,7 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     {
         if (isMoving && !_holdAtWaypoint && !_paused)
         {
-            StartCoroutine(AudioManager.Instance.FollowTransform(platformAudio, transform, -1));
+            //StartCoroutine(AudioManager.Instance.FollowTransform(platformAudio, transform, -1));
             if (!platformAudio.isPlaying) platformAudio.Play();
         }
         else

@@ -12,7 +12,7 @@ public class Breakable : MonoBehaviour
         if (!other.gameObject.CompareTag("Bullet") && 
             !other.gameObject.CompareTag("PlayerFather")) return;
         
-        AudioManager.Instance.PlaySFX(NameSounds.SFX_BreakJar);
+        //AudioManager.Instance.PlaySFX(NameSounds.SFX_BreakJar);
             
         Instantiate(destroyedVersion, transform.position, transform.rotation);
 

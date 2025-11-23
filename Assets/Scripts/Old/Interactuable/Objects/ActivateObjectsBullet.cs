@@ -5,6 +5,7 @@ using UnityEngine;
 public class ActivateObjectsBullet : MonoBehaviour
 {
     [SerializeField] private List<GameObject> _platformsAll;
+    [SerializeField] private FxBank eagleBank;
     private Animator _animator;
     private Material _material;
     private BoxCollider _boxCollider;
@@ -19,10 +20,11 @@ public class ActivateObjectsBullet : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag("Bullet")) return;
-
         
         _boxCollider.enabled = false;
-        //AudioManager.Instance.PlaySFX(NameSounds.SFX_ActivateInteractable);
+        
+        eagleBank.Play3D("Active", transform.position);
+        
         _animator.SetBool("IsActive", !_animator.GetBool("IsActive"));
 
         StartCoroutine(SineIntensity());

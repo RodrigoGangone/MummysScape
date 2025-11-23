@@ -4859,6 +4859,7 @@ GameObject:
   - component: {fileID: 1285721111402636716}
   - component: {fileID: 157371816304818022}
   - component: {fileID: 5012039469796319912}
+  - component: {fileID: 8444606125078485497}
   m_Layer: 2
   m_Name: Jar2
   m_TagString: Untagged
@@ -4971,6 +4972,25 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4, y: 0.80809873, z: 0.4}
   m_Center: {x: 0, y: 0.40404937, z: 0}
+--- !u!114 &8444606125078485497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5345421408364137877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86d765dceeae00d4d99e352683cb1905, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _bank: {fileID: 11400000, guid: b830115bb83128d42b80d3adbc1c0b4c, type: 2}
+  _key: BandageFire
+  _loop: 1
+  _playOnStart: 1
+  _drawGizmos: 1
+  _extraRadius: 0
+  _gizmoColor: {r: 1, g: 0.6, b: 0, a: 0.25}
 --- !u!1001 &4003878718724007774
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7046223648165401898}
   - component: {fileID: 1524288728472943075}
   - component: {fileID: 6791006727711090789}
+  - component: {fileID: 9090378440248990319}
   m_Layer: 21
   m_Name: Collectible
   m_TagString: Untagged
@@ -72,6 +73,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gemNum: 2
+  gemBank: {fileID: 11400000, guid: df7aa8abddea0f1459f789e23844d781, type: 2}
+--- !u!114 &9090378440248990319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3810646370837806047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86d765dceeae00d4d99e352683cb1905, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _bank: {fileID: 11400000, guid: df7aa8abddea0f1459f789e23844d781, type: 2}
+  _key: Proximity
+  _loop: 1
+  _playOnStart: 1
+  _drawGizmos: 1
+  _extraRadius: 0
+  _gizmoColor: {r: 1, g: 0.6, b: 0, a: 0.25}
 --- !u!1 &4791295165446764209
 GameObject:
   m_ObjectHideFlags: 0

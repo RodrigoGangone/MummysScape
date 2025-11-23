@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51f9e060baa0e5b4a9b40b4cdcb1d3ec, type: 3}
+  m_Name: Platform
+  m_EditorClassIdentifier: 
+  bus: 5
+  entries:
+  - key: Moving
+    clip: {fileID: 8300000, guid: 9b943d40c6b6c184abad03a283b9792d, type: 3}
+    volume: 0.4
+    pitch: 1
+    is3D: 1
+    spatialBlend: 1
+    maxDistance: 10
+  - key: Active
+    clip: {fileID: 8300000, guid: 44035e4ad80b07c4597399c3c79698e0, type: 3}
+    volume: 0.4
+    pitch: 1
+    is3D: 1
+    spatialBlend: 1
+    maxDistance: 10
