@@ -23,7 +23,7 @@ public class AmbientLayer2D : MonoBehaviour
         _src.loop = true;
         _src.spatialBlend = 0f; // 2D
 
-        // Enchufar al bus Ambient del mixer
+        // 👉 Enchufar al bus Ambient del mixer
         if (AudioManager.Instance != null)
         {
             var group = AudioManager.Instance.GetMixerGroup(AudioBus.Ambient);

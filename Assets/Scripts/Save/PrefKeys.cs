@@ -7,7 +7,7 @@ using static PrefFamily;
 //
 
 public enum PrefFamily { Gems, GemTotals, LevelCompleted, Time, VolumeSound, VolumeFX }
-public enum VolumeSoundId { Music, UI, Voice, Ambient }
+public enum VolumeSoundId { Master, Music, Voice, Ambient }
 public enum VolumeFxId    { Sfx, UI }
 public enum TimeId { Best, Last, Total } // agrega los que necesites
 

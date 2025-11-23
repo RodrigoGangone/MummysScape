@@ -63,8 +63,14 @@ public class MusicManager : MonoBehaviour
             {
                 _sourceA.outputAudioMixerGroup = group;
                 _sourceB.outputAudioMixerGroup = group;
+                Debug.Log($"MusicManager: usando mixer group '{group.name}' para música");
             }
-        }
+            else
+            {
+                Debug.LogWarning("MusicManager: NO encontró mixer group para AudioBus.Music");
+            }
+        
+    }
     }
 
     private void SetupSource(AudioSource src)
