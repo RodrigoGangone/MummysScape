@@ -13,6 +13,8 @@ public class AmbientLayer2D : MonoBehaviour
 
     private AudioSource _src;
     private Coroutine _fadeCoroutine;
+    
+    private float _baseVolumeFromBank = 1f;
 
     private void Awake()
     {
@@ -47,12 +49,15 @@ public class AmbientLayer2D : MonoBehaviour
             return;
         }
 
+        _baseVolumeFromBank = entry.volume;   // 👈 volumen propio de ESA entrada
+        
         _src.clip = entry.clip;
         _src.pitch = entry.pitch;
         _src.volume = 0f;
         _src.Play();
 
-        SetTargetVolume(defaultVolume, defaultFadeTime);
+        float target = _baseVolumeFromBank * defaultVolume;
+        SetTargetVolume(target, defaultFadeTime);
     }
 
     public void SetTargetVolume(float target, float fadeTime = -1f)

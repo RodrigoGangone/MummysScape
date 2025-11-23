@@ -10,12 +10,11 @@ public class MusicManager : MonoBehaviour
 {
     public static MusicManager Instance { get; private set; }
 
-    [Header("Banco de música (FxBank)")]
-    [SerializeField] private FxBank musicBank;
+    [Header("Banco de música (FxBank)")] [SerializeField]
+    private FxBank musicBank;
 
-    [Header("Config")]
-    [SerializeField] private float defaultFadeTime = 1.5f;
-    [SerializeField] private string startKey = "";   // ej: "MainTheme"
+    [Header("Config")] [SerializeField] private float defaultFadeTime = 1.5f;
+    [SerializeField] private string startKey = ""; // ej: "MainTheme"
 
     private AudioSource _sourceA;
     private AudioSource _sourceB;
@@ -26,13 +25,13 @@ public class MusicManager : MonoBehaviour
     private int _currentPriority = int.MinValue;
     private Coroutine _fadeCoroutine;
 
+    private float _currentTargetVolume = 1f;
+    private float _nextTargetVolume = 1f;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
-        {
             Destroy(gameObject);
-            return;
-        }
 
         Instance = this;
 
@@ -111,7 +110,12 @@ public class MusicManager : MonoBehaviour
         // Preparar el source de destino
         _nextSource.clip = entry.clip;
         _nextSource.pitch = entry.pitch;
+
+        // El volumen lo vamos a animar desde 0 hasta entry.volume en el crossfade
         _nextSource.volume = 0f;
+        _nextTargetVolume = entry.volume;
+        _currentTargetVolume = _currentSource != null ? _currentSource.volume : 1f;
+
         _nextSource.Play();
 
         // Lanzar crossfade
@@ -140,8 +144,12 @@ public class MusicManager : MonoBehaviour
     private IEnumerator CrossfadeCoroutine(float duration)
     {
         float t = 0f;
+
         float startVolCurrent = _currentSource.volume;
-        const float targetVolNext = 1f;
+        float targetVolCurrent = 0f;                 // el actual baja a 0
+
+        float startVolNext = 0f;                     // el nuevo arranca en 0
+        float targetVolNext = _nextTargetVolume;     // y sube al volumen del Bank
 
         while (t < duration)
         {
@@ -149,24 +157,24 @@ public class MusicManager : MonoBehaviour
             float k = duration > 0f ? t / duration : 1f;
             k = Mathf.Clamp01(k);
 
-            _currentSource.volume = Mathf.Lerp(startVolCurrent, 0f, k);
-            _nextSource.volume    = Mathf.Lerp(0f, targetVolNext, k);
+            _currentSource.volume = Mathf.Lerp(startVolCurrent, targetVolCurrent, k);
+            _nextSource.volume    = Mathf.Lerp(startVolNext,    targetVolNext,   k);
 
             yield return null;
         }
 
-        _currentSource.volume = 0f;
+        _currentSource.volume = targetVolCurrent;
         _currentSource.Stop();
 
-        _nextSource.volume = 1f;
+        _nextSource.volume     = targetVolNext;
+        _currentTargetVolume   = targetVolNext;   // por si después querés usarlo
 
         // Swap referencias
-        var tmp = _currentSource;
-        _currentSource = _nextSource;
-        _nextSource = tmp;
+        (_currentSource, _nextSource) = (_nextSource, _currentSource);
 
         _fadeCoroutine = null;
     }
+
 
     private IEnumerator FadeOutAllCoroutine(float duration)
     {
@@ -186,8 +194,10 @@ public class MusicManager : MonoBehaviour
             yield return null;
         }
 
-        _sourceA.volume = 0f; _sourceA.Stop();
-        _sourceB.volume = 0f; _sourceB.Stop();
+        _sourceA.volume = 0f;
+        _sourceA.Stop();
+        _sourceB.volume = 0f;
+        _sourceB.Stop();
 
         _fadeCoroutine = null;
     }
