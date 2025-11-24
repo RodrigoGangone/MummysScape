@@ -33,6 +33,7 @@ public sealed class AudioManager : MonoBehaviour
 
         InitBuses();
         ApplyDefaultVolumes();
+        Assign2DSourcesToMixerGroups();
     }
 
     #region Buses & Volumen
@@ -101,7 +102,6 @@ public sealed class AudioManager : MonoBehaviour
 
         return null;
     }
-
     
     #endregion
 
@@ -202,4 +202,24 @@ public sealed class AudioManager : MonoBehaviour
     }
 
     #endregion
+    
+    private void Assign2DSourcesToMixerGroups()
+    {
+        AssignSourceToBus(_musicSource,    AudioBus.Music);
+        AssignSourceToBus(_ambienceSource, AudioBus.Ambient);
+        AssignSourceToBus(_uiSource,       AudioBus.UI);
+        AssignSourceToBus(_sfx2DSource,    AudioBus.Sfx);
+        AssignSourceToBus(_voiceSource,    AudioBus.Voice);
+    }
+
+    private void AssignSourceToBus(AudioSource src, AudioBus bus)
+    {
+        if (src == null)
+            return;
+
+        var group = GetMixerGroup(bus);
+        if (group != null)
+            src.outputAudioMixerGroup = group;
+    }
+
 }

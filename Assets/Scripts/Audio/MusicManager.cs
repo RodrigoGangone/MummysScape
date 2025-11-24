@@ -12,7 +12,7 @@ public class MusicManager : MonoBehaviour
 
     [Header("Banco de música (FxBank)")] [SerializeField]
     private FxBank musicBank;
-
+    
     [Header("Config")] [SerializeField] private float defaultFadeTime = 1.5f;
     [SerializeField] private string startKey = ""; // ej: "MainTheme"
 
@@ -63,6 +63,11 @@ public class MusicManager : MonoBehaviour
             {
                 _sourceA.outputAudioMixerGroup = group;
                 _sourceB.outputAudioMixerGroup = group;
+                Debug.Log($"MusicManager: usando mixer group '{group.name}' para música");
+            }
+            else
+            {
+                Debug.LogWarning("MusicManager: NO encontró mixer group para AudioBus.Music");
             }
         }
     }
@@ -146,10 +151,10 @@ public class MusicManager : MonoBehaviour
         float t = 0f;
 
         float startVolCurrent = _currentSource.volume;
-        float targetVolCurrent = 0f;                 // el actual baja a 0
+        float targetVolCurrent = 0f; // el actual baja a 0
 
-        float startVolNext = 0f;                     // el nuevo arranca en 0
-        float targetVolNext = _nextTargetVolume;     // y sube al volumen del Bank
+        float startVolNext = 0f; // el nuevo arranca en 0
+        float targetVolNext = _nextTargetVolume; // y sube al volumen del Bank
 
         while (t < duration)
         {
@@ -158,7 +163,7 @@ public class MusicManager : MonoBehaviour
             k = Mathf.Clamp01(k);
 
             _currentSource.volume = Mathf.Lerp(startVolCurrent, targetVolCurrent, k);
-            _nextSource.volume    = Mathf.Lerp(startVolNext,    targetVolNext,   k);
+            _nextSource.volume = Mathf.Lerp(startVolNext, targetVolNext, k);
 
             yield return null;
         }
@@ -166,8 +171,8 @@ public class MusicManager : MonoBehaviour
         _currentSource.volume = targetVolCurrent;
         _currentSource.Stop();
 
-        _nextSource.volume     = targetVolNext;
-        _currentTargetVolume   = targetVolNext;   // por si después querés usarlo
+        _nextSource.volume = targetVolNext;
+        _currentTargetVolume = targetVolNext; // por si después querés usarlo
 
         // Swap referencias
         (_currentSource, _nextSource) = (_nextSource, _currentSource);

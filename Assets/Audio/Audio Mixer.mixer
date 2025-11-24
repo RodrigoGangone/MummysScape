@@ -184,15 +184,17 @@ AudioMixerController:
   m_EnableSuspend: 0
   m_UpdateMode: 0
   m_ExposedParameters:
-  - guid: 564e735d2ebdf924797e248e50100571
+  - guid: a7b1f6a964e15a1408af7686c1cd63bb
     name: AmbientVol
-  - guid: 9a93f4370d60f954192598abbe016ba3
+  - guid: ccc4a052a18153044b7f6e23d798659e
+    name: MasterVol
+  - guid: b310acdd13823fc4692f0471d62d227a
     name: MusicVol
-  - guid: 7674588bbfbb6ed4381a7495b1a36047
+  - guid: c9ad63379fc9c104aa5c365448b53809
     name: SFxVol
-  - guid: 714720e1ba66fe74e98b2ea554fc1d4b
+  - guid: e6334f66a407f1f43b9dc7c17bbb0c2c
     name: UIVol
-  - guid: ba13f31f1f6e52146b9413935140d323
+  - guid: 6a61c8be812611049ab7122ec398d951
     name: VoiceVol
   m_AudioMixerGroupViews:
   - guids:
@@ -253,7 +255,9 @@ AudioMixerSnapshotController:
   m_AudioMixer: {fileID: 24100000}
   m_SnapshotID: db561d82f8b82714faafe83f1855c1d5
   m_FloatValues:
+    714720e1ba66fe74e98b2ea554fc1d4b: 1
     ccc4a052a18153044b7f6e23d798659e: 20
+    e6334f66a407f1f43b9dc7c17bbb0c2c: 20
     c9ad63379fc9c104aa5c365448b53809: 0
     a7b1f6a964e15a1408af7686c1cd63bb: 0
     7674588bbfbb6ed4381a7495b1a36047: 1

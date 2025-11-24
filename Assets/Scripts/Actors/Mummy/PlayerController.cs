@@ -110,6 +110,12 @@ public sealed class PlayerController : MonoBehaviour, IPausable
     {
         _rb.isKinematic = paused;
         _sm.enabled = !paused;
+
+        if (paused)
+        {
+            if (_sm.CurrentId().Equals(PlayerStateId.Aim)  || _sm.CurrentId().Equals(PlayerStateId.Shoot))
+                _sm.ChangeState(PlayerStateId.Idle);
+        }
     }
 
     private void OnEnable()

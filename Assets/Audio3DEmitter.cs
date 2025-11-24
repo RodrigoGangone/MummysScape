@@ -28,6 +28,7 @@ public class Audio3DEmitter : MonoBehaviour
     {
         if (_playOnStart)
             Play();
+        
     }
 
     // ---------- API pública ----------
@@ -73,6 +74,9 @@ public class Audio3DEmitter : MonoBehaviour
         if (_src == null)
             _src = gameObject.AddComponent<AudioSource>();
 
+        var group = AudioManager.Instance.GetMixerGroup(AudioBus.Sfx);
+        
+        _src.outputAudioMixerGroup = group;
         _src.clip         = entry.clip;
         _src.loop         = true;
         _src.playOnAwake  = false;
