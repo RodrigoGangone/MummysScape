@@ -33,7 +33,7 @@ public sealed class AudioManager : MonoBehaviour
 
         InitBuses();
         ApplyDefaultVolumes();
-        Assign2DSourcesToMixerGroups();   // 👈 nuevo
+        Assign2DSourcesToMixerGroups();
     }
 
     #region Buses & Volumen

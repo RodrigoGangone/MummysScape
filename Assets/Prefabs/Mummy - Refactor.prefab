@@ -706,6 +706,7 @@ GameObject:
   - component: {fileID: 4265233260625840337}
   - component: {fileID: 7982005369610900635}
   - component: {fileID: 2808303942995360944}
+  - component: {fileID: 8690595911240200217}
   m_Layer: 8
   m_Name: Mummy - Refactor
   m_TagString: PlayerFather
@@ -889,7 +890,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 17860608
   projectilePrefab: {fileID: 7766207882271066570, guid: bdd4611784970c64eaa4261113b5f6c4, type: 3}
-  _aimMaxDistance: 5
+  _stickAimSensitivity: 0.5
+  _aimMaxDistance: 10
   _maxAimHeight: 2.5
   _arcHeight: 2
   _arcRadius: 0.1
@@ -1069,6 +1071,14 @@ MonoBehaviour:
   affectMode: 0
   characterExcludeBit: 20
   groundBit: 21
+--- !u!81 &8690595911240200217
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7389072118055853021}
+  m_Enabled: 1
 --- !u!1 &7703909458147072873
 GameObject:
   m_ObjectHideFlags: 0

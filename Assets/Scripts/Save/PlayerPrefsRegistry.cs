@@ -68,36 +68,52 @@ public class PlayerPrefsRegistry : ScriptableObject
     }
 
     
-    // --------- Filtro por prefijos ----------
     public bool Matches(string key)
     {
         if (keyPrefixes == null || keyPrefixes.Length == 0) return true;
         foreach (var p in keyPrefixes)
         {
-            if (!string.IsNullOrEmpty(p) && key.StartsWith(p, StringComparison.Ordinal))
+            if (!string.IsNullOrEmpty(p) &&
+                key.StartsWith(p, StringComparison.Ordinal))
                 return true;
         }
         return false;
     }
 
-    // --------- API para reflejar en inspector ----------
+// --------- API para reflejar en inspector ----------
     public void UpdateEntry(string key, object value)
     {
         string s = value?.ToString() ?? "null";
         int idx = keys.IndexOf(key);
         if (idx >= 0) values[idx] = s;
         else { keys.Add(key); values.Add(s); }
+
+        MarkDirty();
     }
 
     public void RemoveEntry(string key)
     {
         int idx = keys.IndexOf(key);
-        if (idx >= 0) { keys.RemoveAt(idx); values.RemoveAt(idx); }
+        if (idx >= 0)
+        {
+            keys.RemoveAt(idx);
+            values.RemoveAt(idx);
+            MarkDirty();
+        }
     }
 
     public void ClearAll()
     {
         keys.Clear();
         values.Clear();
+        MarkDirty();
     }
+
+    void MarkDirty()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+#endif
+    }
+
 }
