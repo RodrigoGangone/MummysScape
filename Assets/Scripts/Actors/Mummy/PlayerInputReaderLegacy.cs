@@ -4,8 +4,6 @@ public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
 {
     private bool _aimDown, _shootDown, _dropDown, _spaceDown;
     
-    // La variable _shootAxisPressed fue eliminada.
-
     private void Update()
     {
         float aimRt = Input.GetAxis("AimRT");   // RT como eje 0..1 (o -1..1)

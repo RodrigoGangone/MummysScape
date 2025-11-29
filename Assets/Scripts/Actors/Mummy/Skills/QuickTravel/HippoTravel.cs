@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class HippoTravel : MonoBehaviour, IPausable
 {

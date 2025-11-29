@@ -5,33 +5,43 @@ using static Utils;
 
 public class Portal : MonoBehaviour
 {
-    [SerializeField] private GameObject portalFxOff;
-    [SerializeField] private GameObject portalFxOn;
-    
-    private void OnEnable()
-    {
-        GameEventManager.Instance.levelEvents.OnWin.Register(PassedLevelFX);
-        GameEventManager.Instance.levelEvents.OnWin.Register<int>(CompleteLevel);
-    }
+    [SerializeField] private bool isOpen;
+    private Animator Anim => GetComponentInChildren<Animator>();
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnWin.Register<int>(CompleteLevel);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(CompleteLevel);
 
-    private void OnDisable()
+    private void Awake()
     {
-        GameEventManager.Instance.levelEvents.OnWin.Unregister(PassedLevelFX);
-        GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(CompleteLevel);
+        if (!isOpen) return;
+
+        Locked();
+        InitLevelFx();
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.gameObject.CompareTag(PLAYER_TAG)) return;
+        if (!other.gameObject.CompareTag(PLAYER_TAG) || isOpen) return;
 
-        Debug.Log("Entro player");
+        var col = GetComponent<Collider>();
+        col.enabled = false;
         
-        GameEventManager.Instance.levelEvents.OnWin.Raise(SceneManager.GetActiveScene().buildIndex);
+        PassedLevelFX();
     }
 
-    private void PassedLevelFX()
-    {
-        portalFxOff.SetActive(false);
-        portalFxOn.SetActive(true);
-    }
+    /// <summary>
+    /// Eventos que se encargan de avisar cuando debe Iniciar le nivel y darlo por finalizado
+    /// </summary>
+    /// 
+    public void Locked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
+    public void UnLocked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
+    public void PassedLevel() => GameEventManager.Instance.levelEvents.OnWin.Raise(SceneManager.GetActiveScene().buildIndex);
+    
+    /// <summary>
+    /// Fx's correspondientes a las animaciones del sarcofago
+    ///
+    /// Open -> Al iniciar el nivel
+    /// Close -> Al finalizar el nivel
+    /// </summary>
+    private void PassedLevelFX() => Anim.SetTrigger("Close");
+    private void InitLevelFx() => Anim.SetTrigger("Open");
 }

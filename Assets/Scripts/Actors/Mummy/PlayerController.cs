@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using static PlayerEnum;
 
@@ -109,13 +108,14 @@ public sealed class PlayerController : MonoBehaviour, IPausable
     public void OnPauseChanged(bool paused)
     {
         _rb.isKinematic = paused;
-        _sm.enabled = !paused;
 
         if (paused)
         {
             if (_sm.CurrentId().Equals(PlayerStateId.Aim)  || _sm.CurrentId().Equals(PlayerStateId.Shoot))
                 _sm.ChangeState(PlayerStateId.Idle);
         }
+        
+        _sm.enabled = !paused;
     }
 
     private void OnEnable()

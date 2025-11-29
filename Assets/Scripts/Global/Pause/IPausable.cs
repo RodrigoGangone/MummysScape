@@ -1,4 +1,5 @@
-public interface IPausable
-{
-    void OnPauseChanged(bool paused);
-}
+
+    public interface IPausable
+    {
+        void OnPauseChanged(bool paused) { }
+    }

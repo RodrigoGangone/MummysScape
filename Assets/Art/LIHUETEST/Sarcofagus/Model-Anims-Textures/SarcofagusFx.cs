@@ -12,6 +12,8 @@ public class SarcofagusFx : MonoBehaviour
     [SerializeField] private ParticleSystem fx6;
     [SerializeField] private ParticleSystem fx7;
 
+    private Portal Portal => GetComponentInParent<Portal>();
+    
     public void PlayFx1()
     {
         fx1.Play();

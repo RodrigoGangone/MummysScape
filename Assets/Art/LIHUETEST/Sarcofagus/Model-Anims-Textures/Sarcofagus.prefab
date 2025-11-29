@@ -45502,6 +45502,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 39872551746159126}
+  - component: {fileID: 1703154566276700818}
+  - component: {fileID: 1429221517843768808}
   m_Layer: 0
   m_Name: Sarcofagus
   m_TagString: Untagged
@@ -45525,6 +45527,40 @@ Transform:
   - {fileID: 6957642441395626522}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &1703154566276700818
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3721958170283911563}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 1
+  m_Center: {x: 0, y: 0.5, z: 0}
+--- !u!114 &1429221517843768808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3721958170283911563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f383d7247bf05949a4655c0644b1155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isOpen: 1
 --- !u!1 &4520043552121475871
 GameObject:
   m_ObjectHideFlags: 0
@@ -50758,7 +50794,7 @@ Transform:
   - {fileID: 5277137551743628533}
   - {fileID: 1764984614384463204}
   m_Father: {fileID: 6957642441395626522}
-  m_LocalEulerAnglesHint: {x: 89.9802, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 89.98021, y: 0, z: 0}
 --- !u!1 &4790504503836565512
 GameObject:
   m_ObjectHideFlags: 0
@@ -90384,6 +90420,54 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+  - eventName: PassedLevel
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1429221517843768808}
+          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
+          m_MethodName: PassedLevel
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: Unlocked
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1429221517843768808}
+          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
+          m_MethodName: UnLocked
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: Locked
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1429221517843768808}
+          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
+          m_MethodName: LockedPlayer
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &7591693343624724272
 GameObject:
   m_ObjectHideFlags: 0
@@ -90416,7 +90500,7 @@ Transform:
   - {fileID: 7876213834075081550}
   - {fileID: 1677332057673840451}
   m_Father: {fileID: 6957642441395626522}
-  m_LocalEulerAnglesHint: {x: 17.921963, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 89.98021, y: 0, z: 0}
 --- !u!1 &8316507087150392206
 GameObject:
   m_ObjectHideFlags: 0

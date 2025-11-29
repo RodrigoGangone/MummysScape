@@ -1,6 +1,7 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static PlayerEnum.PlayerStateId;
-using static PlayerEnum.PlayerSize;
 
 /// <summary>
 /// PlayerInputStateDriver
@@ -14,7 +15,7 @@ using static PlayerEnum.PlayerSize;
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(StateMachinePlayer))]
-public class PlayerInputStateDriver : MonoBehaviour, IPausable
+public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
 {
     [Header("Tuning")] [SerializeField, Min(0f)]
     private float _moveDeadZone = 0.1f;
@@ -22,7 +23,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable
     private StateMachinePlayer _sm;
     private PlayerContext _ctx;
     private IPlayerInput _input;
-    private bool _paused;
+    private bool _paused, _locked;
 
     public void Bind(PlayerContext ctx, StateMachinePlayer sm)
     {
@@ -39,7 +40,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable
     //TODO: ver que hacer con los "if" previos a pasar de state,ya que provocan entrar al state 1 vez por frame.
     private void Update()
     {
-        if (_ctx == null || _sm == null || _input == null || _paused) return;
+        if (_ctx == null || _sm == null || _input == null || _paused || _locked) return;
 
         var mv = _input.Move;
         bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
@@ -132,6 +133,18 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable
     }
 
     public void OnPauseChanged(bool paused) => _paused = paused;
-    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+
+    private void OnEnable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+        GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
+    } 
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+        GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
+    }
+
+    public void OnLockChanged(bool isLocked) => _locked = isLocked;
 }
