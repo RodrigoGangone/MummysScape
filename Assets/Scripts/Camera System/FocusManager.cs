@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -105,6 +106,7 @@ public class FocusManager : MonoBehaviour
         bool markLearned)
     {
         _isFocusing = true;
+        Locked();
 
         // 1. Bloquea el movimiento de zonas del Dolly
         if (dollyCameraManager != null)
@@ -148,5 +150,10 @@ public class FocusManager : MonoBehaviour
 
         _isFocusing = false;
         _focusRoutine = null;
+        UnLocked();
     }
+
+    public void Locked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
+    public void UnLocked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
+    
 }
