@@ -1,5 +1,19 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8400575521690301438
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: Locked
+  triggerTime: 0
 --- !u!1102 &-8122262754759552458
 AnimatorState:
   serializedVersion: 6
@@ -423,6 +437,7 @@ AnimatorState:
   - {fileID: -606119935402246663}
   - {fileID: 6343976460362242358}
   - {fileID: -972817435209623708}
+  - {fileID: -8400575521690301438}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1

@@ -11,7 +11,7 @@ using static PlayerEnum;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputStateDriver))]
 [RequireComponent(typeof(GroundCheckRuntime))]
-public sealed class PlayerController : MonoBehaviour, IPausable
+public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
 {
     [Header("Refs (Scene/Prefab)")] [SerializeField]
     private PlayerView _view;
@@ -107,26 +107,42 @@ public sealed class PlayerController : MonoBehaviour, IPausable
 
     public void OnPauseChanged(bool paused)
     {
-        _rb.isKinematic = paused;
+        PlayerControlState.SetPause(paused);
 
-        if (paused)
-        {
-            if (_sm.CurrentId().Equals(PlayerStateId.Aim)  || _sm.CurrentId().Equals(PlayerStateId.Shoot))
-                _sm.ChangeState(PlayerStateId.Idle);
-        }
-        
+        _rb.isKinematic = PlayerControlState.AnyBlocked;
+
+        if (paused && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot)))
+            _sm.ChangeState(PlayerStateId.Idle);
+
         _sm.enabled = !paused;
     }
+    
+    //TODO: MODIFICAR ONLOCKEDCHANGED EN BASE A COMO SEA LA ANIMACION DEL SARCOFAGO [SI APAGAMOS AL PLAYER Y HACEMOS QUE LE SARCOFAGO HAGA TODO]
 
+    public void OnLockChanged(bool locked)
+    {
+        PlayerControlState.SetLock(locked);
+        
+        
+        _rb.isKinematic = PlayerControlState.AnyBlocked;
+
+        if (locked && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot)))
+            _sm.ChangeState(PlayerStateId.Idle);
+
+        _sm.enabled = !locked;
+    }
+    
     private void OnEnable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+        GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
         GameEventManager.Instance.levelEvents.OnDeath.Register(Kill);
     }
 
     private void OnDisable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+        GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Kill);
     }
 }
