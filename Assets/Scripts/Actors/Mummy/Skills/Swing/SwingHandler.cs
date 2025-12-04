@@ -23,7 +23,6 @@ public class SwingHandler : MonoBehaviour
     [Header("Control Tangencial")]
     
     [SerializeField, Min(0f)] private float _maxTangentialSpeed = 6f;
-    [SerializeField, Min(0f)] private float _tangentialAcceleration = 10f;
 
     [Header("Retorno Pasivo (sin input)")]
     
@@ -42,7 +41,6 @@ public class SwingHandler : MonoBehaviour
     private readonly float _materialEndValue = -1.5f;
     
     public float MaxTangentialSpeed => _maxTangentialSpeed;
-    public float TangentialAccel    => _tangentialAcceleration;
 
     private Rigidbody _hook;
     private Rigidbody _playerRb; // Cacheamos el Rb del player

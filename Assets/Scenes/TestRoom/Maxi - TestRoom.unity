@@ -1943,42 +1943,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 321015491591606409, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: _damper
-      value: 12
-      objectReference: {fileID: 0}
-    - target: {fileID: 321015491591606409, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: _spring
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 321015491591606409, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: _massScale
-      value: 45
-      objectReference: {fileID: 0}
-    - target: {fileID: 321015491591606409, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: _maxDistance
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 321015491591606409, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: _minDistance
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 321015491591606409, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: _drawDuration
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 321015491591606409, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: _hookMaterial
-      value: 
-      objectReference: {fileID: 2100000, guid: 961099e95cce62a47b7d2bb6408fea2d, type: 2}
-    - target: {fileID: 321015491591606409, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: _lineRenderer
-      value: 
-      objectReference: {fileID: 1728107523}
-    - target: {fileID: 321015491591606409, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: _lineStartPoint
-      value: 
-      objectReference: {fileID: 219959509}
     - target: {fileID: 6578946205384916507, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
       propertyPath: m_LocalPosition.x
       value: -8.23
@@ -2017,22 +1981,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6578946205384916507, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6743598973724631453, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 961099e95cce62a47b7d2bb6408fea2d, type: 2}
-    - target: {fileID: 6743598973724631453, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: m_Positions.Array.data[1].x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6743598973724631453, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: m_Positions.Array.data[1].y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6743598973724631453, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-      propertyPath: m_Positions.Array.data[1].z
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7389072118055853021, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
@@ -16393,11 +16341,6 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 5743464531334919182, guid: ac1c3b1e6bd9e07429f1eb1d39f68626, type: 3}
   m_PrefabInstance: {fileID: 216336940}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &219959509 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6578946205384916507, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-  m_PrefabInstance: {fileID: 15662082}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &220637444
 PrefabInstance:
@@ -94734,11 +94677,6 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 2704466052194083456, guid: 30be21167dde6934ea69400104da867f, type: 3}
   m_PrefabInstance: {fileID: 1725998391}
-  m_PrefabAsset: {fileID: 0}
---- !u!120 &1728107523 stripped
-LineRenderer:
-  m_CorrespondingSourceObject: {fileID: 6743598973724631453, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
-  m_PrefabInstance: {fileID: 15662082}
   m_PrefabAsset: {fileID: 0}
 --- !u!43 &1735324633
 Mesh:

@@ -352,7 +352,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: fd4ba8b32ee6904439d6fe24c7007537, type: 2}
+  - {fileID: 2100000, guid: 961099e95cce62a47b7d2bb6408fea2d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -375,7 +375,7 @@ LineRenderer:
   m_SortingOrder: 0
   m_Positions:
   - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 1}
+  - {x: 0, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 1
@@ -1001,20 +1001,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 638bffa284ed48c4e9fcd32e629598e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _minDistance: 2.25
-  _maxDistance: 2.5
-  _spring: 30
-  _damper: 16
-  _massScale: 100
+  _minDistance: 1.5
+  _maxDistance: 2
+  _spring: 50
+  _damper: 12
+  _massScale: 45
   _maxTangentialSpeed: 6
-  _tangentialAcceleration: 10
   _useGravityAssist: 1
   _gravityAssist: 2
   _tangentialBrake: 5
-  _lineRenderer: {fileID: 0}
-  _hookMaterial: {fileID: 0}
-  _lineStartPoint: {fileID: 0}
-  _drawDuration: 0
+  _lineRenderer: {fileID: 6743598973724631453}
+  _hookMaterial: {fileID: 2100000, guid: 961099e95cce62a47b7d2bb6408fea2d, type: 2}
+  _lineStartPoint: {fileID: 6578946205384916507}
+  _drawDuration: 0.1
 --- !u!114 &4265233260625840337
 MonoBehaviour:
   m_ObjectHideFlags: 0
