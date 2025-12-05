@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
@@ -24,6 +25,11 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private Button _btnDeletePrefs;
     [SerializeField] private TMP_Dropdown _frameRateSpinner;
 
+    // Selectables iniciales por panel
+    [Header("FIRST SELECTED")]
+    [SerializeField] private Selectable _mainFirstSelected;
+    [SerializeField] private Selectable _optionsFirstSelected;
+    
     private static List<string> FrameRateText => new(FPS.Keys);
 
     [SerializeField] private Button _btnBackToMain;
@@ -68,6 +74,9 @@ public class MainMenu : MonoBehaviour
             _blur.active = !_blur.active;
 
         CheckOptions();
+        
+        // Al arrancar la escena, asegurar botón inicial del panel principal
+        SetSelected(_mainFirstSelected ?? _btnPlay);
     }
 
     private void CheckOptions()
@@ -83,6 +92,9 @@ public class MainMenu : MonoBehaviour
         _optionsPanel.SetActive(false);
 
         _btnBackToMain.gameObject.SetActive(false);
+        
+        // Siempre que vuelvo al main panel, fijo el botón inicial
+        SetSelected(_mainFirstSelected ?? _btnPlay);
     }
 
     private void OnDropdownValueChanged(TMP_Dropdown dropdown)
@@ -98,6 +110,9 @@ public class MainMenu : MonoBehaviour
         _optionsPanel.SetActive(true);
 
         _btnBackToMain.gameObject.SetActive(true);
+        
+        // Siempre que abro Options, fijo el selectable inicial
+        SetSelected(_optionsFirstSelected ?? _btnBackToMain);
     }
 
     private void QuitGame()
@@ -107,5 +122,13 @@ public class MainMenu : MonoBehaviour
 #else
         Application.Quit();
 #endif
+    }
+    
+    private static void SetSelected(Selectable selectable)
+    {
+        if (selectable == null) return;
+        if (EventSystem.current == null) return;
+
+        EventSystem.current.SetSelectedGameObject(selectable.gameObject);
     }
 }
