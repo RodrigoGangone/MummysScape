@@ -117,10 +117,6 @@ public class MainMenu : MonoBehaviour
     
     private void OnPlayClicked()
     {
-        /*if (_isTransitioning) return;
-
-        _isTransitioning = true;*/
-
         // Bloquea interacción con toda la UI
         SetMenuInteractable(false);
 
