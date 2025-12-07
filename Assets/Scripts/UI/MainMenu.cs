@@ -11,7 +11,6 @@ using static Utils;
 public class MainMenu : MonoBehaviour
 {
     [Header("PANEL MAIN MENU")] 
-    
     [SerializeField] private GameObject _mainMenuPanel;
 
     [SerializeField] private Button _btnPlay;
@@ -19,7 +18,6 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private Button _btnExit;
 
     [Header("PANEL OPTIONS")] 
-    
     [SerializeField] private GameObject _optionsPanel;
     
     [SerializeField] private Button _btnDeletePrefs;
@@ -30,18 +28,21 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private Selectable _mainFirstSelected;
     [SerializeField] private Selectable _optionsFirstSelected;
     
+    [Header("UI ROOT")]
+    [Tooltip("CanvasGroup del Canvas o del panel raíz del menú.")]
+    [SerializeField] private CanvasGroup _canvasGroup;
+    
+    //----------------------------------------------------------------------------------------------------
+    
     private static List<string> FrameRateText => new(FPS.Keys);
-
     [SerializeField] private Button _btnBackToMain;
-
     private SceneTransitionManager Transition => GetComponent<SceneTransitionManager>();
-
     private DepthOfField _blur;
     private Volume _postProcess;
 
     private void Awake()
     {
-        AddButtonProps(_btnPlay, () => Transition.FadeInAndLoadScene(1));
+        AddButtonProps(_btnPlay, OnPlayClicked);
         AddButtonProps(_btnOptions, ShowOptions);
         AddButtonProps(_btnDeletePrefs, PlayerPrefsManager.ClearAll);
         AddButtonProps(_btnExit, QuitGame);
@@ -77,6 +78,16 @@ public class MainMenu : MonoBehaviour
         
         // Al arrancar la escena, asegurar botón inicial del panel principal
         SetSelected(_mainFirstSelected ?? _btnPlay);
+        SetMenuInteractable(true);
+    }
+    
+    //Metodo para quitar la interaccion con los botones del menu principal
+    private void SetMenuInteractable(bool interactable)
+    {
+        if (_canvasGroup == null) return;
+
+        _canvasGroup.interactable = interactable;
+        _canvasGroup.blocksRaycasts = interactable;
     }
 
     private void CheckOptions()
@@ -102,6 +113,22 @@ public class MainMenu : MonoBehaviour
         string selectedFPSKey = dropdown.options[dropdown.value].text;
         Application.targetFrameRate = FPS[selectedFPSKey];
         Debug.Log("FPS SELECCIONADO " + selectedFPSKey);
+    }
+    
+    private void OnPlayClicked()
+    {
+        /*if (_isTransitioning) return;
+
+        _isTransitioning = true;*/
+
+        // Bloquea interacción con toda la UI
+        SetMenuInteractable(false);
+
+        // Limpia el seleccionado para que no haya navegación posible
+        if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+
+        // Transición de escena
+        Transition.FadeInAndLoadScene(1);
     }
 
     private void ShowOptions()
