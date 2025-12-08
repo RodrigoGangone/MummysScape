@@ -29,7 +29,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private Selectable _optionsFirstSelected;
     
     [Header("UI ROOT")]
-    [Tooltip("CanvasGroup del Canvas o del panel raíz del menú.")]
+    [Tooltip("CanvasGroup del Canvas del main menu")]
     [SerializeField] private CanvasGroup _canvasGroup;
     
     //----------------------------------------------------------------------------------------------------
