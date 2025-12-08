@@ -1,3 +1,4 @@
+using Cinemachine;
 using UnityEngine;
 
 /// <summary>
@@ -45,6 +46,10 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
     [Header("Animaciones")]
     [SerializeField] Animator _animator;
 
+    [Tooltip("Referencia al componente que genera el temblor.")] [SerializeField]
+    private CinemachineImpulseSource _impulseSource; 
+    [SerializeField] float _shakeForce = 0.2f; 
+    
     // --- Internos ---
     static readonly int FillID = Shader.PropertyToID("_Fill");
     MaterialPropertyBlock _mpbTop, _mpbBot;
@@ -233,15 +238,33 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
         float interval = Mathf.Lerp(_beatIntervalStart, _beatIntervalEnd, countdownProgress01);
 
         _beatTimer += Time.deltaTime;
-        if (_beatTimer >= interval) { _beatTimer = 0f; _pulsing = true; _pulseTimer = 0f; }
+        
+        // AQUÍ ES EL MOMENTO DEL LATIDO (Beat Start)
+        if (_beatTimer >= interval) 
+        { 
+            _beatTimer = 0f; 
+            _pulsing = true; 
+            _pulseTimer = 0f; 
+            
+            if (_impulseSource != null)
+            {
+                _impulseSource.GenerateImpulse(_shakeForce);
+            }
+        }
 
         if (_pulsing)
         {
+
             _pulseTimer += Time.deltaTime;
-            float n   = Mathf.Clamp01(_pulseTimer / _pulseDuration);
+
+            float n = Mathf.Clamp01(_pulseTimer / _pulseDuration);
+
             float env = _pulseCurve != null ? _pulseCurve.Evaluate(n) : 1f;
+
             _heartbeatTarget.localScale = _baseScale * (1f + _pulseScale * env);
+
             if (n >= 1f) { _pulsing = false; _heartbeatTarget.localScale = _baseScale; }
+
         }
     }
 

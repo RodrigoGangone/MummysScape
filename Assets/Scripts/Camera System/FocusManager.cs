@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,24 +7,20 @@ public class FocusManager : MonoBehaviour
 {
     public static FocusManager Instance { get; private set; }
 
-    [Header("Cámaras")]
-    // ELIMINAMOS: [SerializeField] private CinemachineVirtualCamera gameplayCam;
+    [Header("Cámara de Foco")]
+    [Tooltip("Asegúrate de que esta cámara tenga Priority = 0 en el Inspector por defecto")]
     [SerializeField] private CinemachineVirtualCamera focusCam;
 
-    [Header("Integración con Dolly")]
-    // CAMBIAMOS EL TIPO Y NOMBRE DE LA VARIABLE
-    [SerializeField] private DollyPositionManager dollyCameraManager;
+    // ELIMINADO: [SerializeField] private DollyPositionManager dollyCameraManager;
 
-    [Header("Input de tutorial opcional (clave global)")]
+    [Header("Input de tutorial")]
     private const string TUTORIAL_BUTTON_NAME = "Space";
-    
     public string TutorialKey => TUTORIAL_BUTTON_NAME;
 
-    private bool _isFocusing; 
+    private bool _isFocusing;
     private Coroutine _focusRoutine;
 
-    private readonly Dictionary<string, bool> _tutorialLearned =
-        new Dictionary<string, bool>();
+    private readonly Dictionary<string, bool> _tutorialLearned = new Dictionary<string, bool>();
 
     private void Awake()
     {
@@ -34,15 +29,13 @@ public class FocusManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
     }
 
-    // ... (Todos los métodos Request... quedan EXACTAMENTE IGUAL) ...
+    // ------------------------------------------------------------------
+    //  API PUBLICA (Sin cambios, compatible con tu código existente)
+    // ------------------------------------------------------------------
 
-    
-    
-    // -------------------- Focus objetos normales --------------------
     public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration)
     {
         if (_isFocusing) return;
@@ -51,7 +44,6 @@ public class FocusManager : MonoBehaviour
         _focusRoutine = StartCoroutine(FocusRoutine(cameraPos, lookAt, duration, null, false));
     }
 
-    // ----------------------- Tutorial: primera vez ------------------
     public void RequestTutorialFirstTime(TutorialFocusPoint point)
     {
         if (point == null) return;
@@ -72,7 +64,6 @@ public class FocusManager : MonoBehaviour
         ));
     }
 
-    // ----------------------- Tutorial: opcional ---------------------
     public void RequestTutorialOptional(TutorialFocusPoint point)
     {
         if (point == null) return;
@@ -96,8 +87,10 @@ public class FocusManager : MonoBehaviour
         ));
     }
 
+    // ------------------------------------------------------------------
+    //  RUTINA CORE (Modificada para Priority System)
+    // ------------------------------------------------------------------
 
-    // ---------------------- Rutina central (MODIFICADA) -----------------
     private IEnumerator FocusRoutine(
         Transform cameraPos,
         Transform lookAt,
@@ -106,37 +99,32 @@ public class FocusManager : MonoBehaviour
         bool markLearned)
     {
         _isFocusing = true;
+        
+        // 1. Bloqueamos al jugador (Input) para que no camine a otras zonas
         Locked();
 
-        // 1. Bloquea el movimiento de zonas del Dolly
-        if (dollyCameraManager != null)
-            dollyCameraManager.SetZonesLocked(true);
-
-        // 2. Configura la cámara de foco
-        focusCam.Follow = lookAt;
-        focusCam.LookAt = lookAt;
+        // 2. Configuramos la cámara "Fantasma" (FocusCam)
         focusCam.transform.position = cameraPos.position;
+        focusCam.transform.rotation = cameraPos.rotation; 
+        focusCam.LookAt = lookAt; 
+        // focusCam.Follow = lookAt; // Descomentar si el objeto objetivo se mueve
 
-        // 3. APAGA la cámara de gameplay activa (le da prioridad 0)
-        if (dollyCameraManager != null)
-            dollyCameraManager.ActivateGameplayCamera(false);
-        
-        // 4. ENCIENDE la cámara de foco
-        focusCam.Priority = 10;
+        // 3. ACTIVAR FOCO (Priority Override)
+        // Al poner 100, Cinemachine ignora cualquier cámara de las islas (que tendrán 10 o 20)
+        // y hace un blend suave hacia esta cámara.
+        focusCam.Priority = 100;
 
         yield return new WaitForSeconds(duration);
 
-        // 5. DEVUELVE la prioridad a la cámara de gameplay
-        if (dollyCameraManager != null)
-            dollyCameraManager.ActivateGameplayCamera(true);
-
-        // 6. APAGA la cámara de foco
+        // 4. DESACTIVAR FOCO (Restaurar)
+        // Al bajar a 0, Cinemachine busca automáticamente la siguiente cámara más alta
+        // (que será la VCam de la isla donde esté parado el jugador).
         focusCam.Priority = 0;
 
         focusCam.Follow = null;
         focusCam.LookAt = null;
 
-        // 7. Marca el tutorial si es necesario
+        // 5. Marcar tutorial como aprendido si corresponde
         if (tutorialPoint != null && markLearned)
         {
             string id = tutorialPoint.Id;
@@ -144,16 +132,14 @@ public class FocusManager : MonoBehaviour
                 _tutorialLearned[id] = true;
         }
 
-        // 8. Desbloquea el movimiento de zonas
-        if (dollyCameraManager != null)
-            dollyCameraManager.SetZonesLocked(false);
-
+        // 6. Desbloqueamos al jugador
+        UnLocked();
+        
         _isFocusing = false;
         _focusRoutine = null;
-        UnLocked();
     }
 
+    // Asumo que estos métodos se comunican con tu sistema de eventos global
     public void Locked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
     public void UnLocked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
-    
 }
