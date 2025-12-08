@@ -16,7 +16,14 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     [Header("WAYPOINTS")] 
     [SerializeField] private Transform[] waypoints;
 
-    [Header("EFFECTS")] 
+    [Header("AUDIO & FX")] 
+    [SerializeField] private FxBank platformBank;
+    [SerializeField] private string movingSoundKey = "Moving"; // Key en el bank
+    [SerializeField] private string activeSoundKey = "Active"; // Sonido al activar
+    [SerializeField] private float glowDuration = 2f;
+    [SerializeField] private float glowIntensity = 0.15f;
+
+    [Header("SAND MOUNDS EFFECTS")] 
     [SerializeField] private float moundEmergenceSpeed = 1f;
     [SerializeField] private Transform sandMoundForward;
     [SerializeField] private Transform[] sandMoundForwardWaypoints;
@@ -27,18 +34,15 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     [SerializeField] private ParticleSystem[] sandMoundBackwardParticles;
     [SerializeField] private ParticleSystem activationParticles;
 
-    [SerializeField] private float glowDuration = 2f;
-    [SerializeField] private float glowIntensity = 0.15f;
-
     private Material[] platformMaterials;
     private bool isMovingToFirstWaypoint;
     private int _currentWaypointIndex = 0;
 
-    private AudioSource platformAudio;
+    // Audio interno
+    private AudioSource _movingAudio;
 
-    // ⏸️ pausa global
+    // ⏸️ Estados
     private bool _paused;
-    // ⏱️ pausa local (espera entre waypoints)
     private bool _holdAtWaypoint;
     
     private void Start()
@@ -58,21 +62,76 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
             sandMoundForward.position  = sandMoundForwardWaypoints[0].position;
             sandMoundBackward.position = sandMoundBackwardWaypoints[0].position;
         }
-
-       // platformAudio = AudioManager.Instance.GetClipByName(NameSounds.SFX_MovingPlatform);
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        if (_paused) return; // pausa global
+        // Determinamos si debe moverse
+        bool shouldMove = !_paused 
+                          && !_holdAtWaypoint 
+                          && isMoving 
+                          && waypoints.Length > 0;
 
+        // Manejamos el sonido en base al estado de movimiento
+        HandleMovingSound(shouldMove);
+
+        if (!shouldMove) return;
+
+        // Lógica de movimiento original
         if (isMovingToFirstWaypoint)
             MoveToFirstWaypoint();
-        else if (isMoving && waypoints.Length > 0)
+        else
             MoveTowardsWaypoint();
-
-        HandleAudio();
     }
+
+    // ---------------- AUDIO SYSTEM ----------------
+    
+    private void EnsureMovingAudio()
+    {
+        if (_movingAudio != null) return;
+
+        if (platformBank == null || string.IsNullOrEmpty(movingSoundKey))
+        {
+            Debug.LogWarning("MovingHorizontalPlatform: No hay bank o key configurados.", this);
+            return;
+        }
+
+        var entry = platformBank.Get(movingSoundKey);
+        if (entry == null || entry.clip == null) return;
+
+        _movingAudio = gameObject.AddComponent<AudioSource>();
+        _movingAudio.clip = entry.clip;
+        _movingAudio.loop = true;
+        _movingAudio.playOnAwake = false;
+        _movingAudio.volume = entry.volume;
+        _movingAudio.pitch = entry.pitch;
+        _movingAudio.spatialBlend = entry.is3D ? entry.spatialBlend : 0f;
+        _movingAudio.maxDistance = entry.maxDistance;
+        _movingAudio.rolloffMode = AudioRolloffMode.Logarithmic;
+
+        if (AudioManager.Instance != null)
+        {
+            var group = AudioManager.Instance.GetMixerGroup(platformBank.bus);
+            if (group != null) _movingAudio.outputAudioMixerGroup = group;
+        }
+    }
+
+    private void HandleMovingSound(bool isMovingActive)
+    {
+        if (isMovingActive)
+        {
+            EnsureMovingAudio();
+            if (_movingAudio != null && !_movingAudio.isPlaying)
+                _movingAudio.Play();
+        }
+        else
+        {
+            if (_movingAudio != null && _movingAudio.isPlaying)
+                _movingAudio.Stop();
+        }
+    }
+
+    // ---------------- MOVEMENT LOGIC ----------------
 
     private void MoveToFirstWaypoint()
     {
@@ -90,6 +149,7 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 
     private void MoveTowardsWaypoint()
     {
+        // Esta comprobación ya se hace en FixedUpdate, pero se mantiene por seguridad de la lógica interna de montículos
         if (_holdAtWaypoint)
         {
             if (sandMoundForward && sandMoundBackward)
@@ -112,16 +172,22 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     private IEnumerator PauseAtWaypoint()
     {
         _holdAtWaypoint = true;
-        yield return WaitForSecondsPausable(stopTime, () => _paused); // respeta pausa global
+        yield return WaitForSecondsPausable(stopTime, () => _paused);
         _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
         _holdAtWaypoint = false;
     }
+
+    // ---------------- INTERACTION & EVENTS ----------------
 
     public void StartAction()
     {
         isMoving = !isMoving;
         activationParticles?.Play();
         StartCoroutine(GlowEffect(glowDuration));
+        
+        // 🔹 Activación de cámara (Focus)
+        var cam = GetComponent<FocusOnActivation>();
+        cam?.Activate();
     }
 
     public void ReturnToPrevious()
@@ -140,6 +206,8 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         if (other.CompareTag(PLAYER_TAG))
             other.transform.SetParent(null);
     }
+
+    // ---------------- SAND MOUND LOGIC ----------------
 
     private void ResetSandMoundPositions()
     {
@@ -160,17 +228,20 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         sandMoundBackward.position = Vector3.MoveTowards(
             sandMoundBackward.position, targetBackward.position, moundEmergenceSpeed * Time.deltaTime);
 
+        // Control de partículas de los montículos
         if (_currentWaypointIndex == 1)
         {
-            foreach (var ps in sandMoundForwardParticles) if (!ps.isPlaying) ps.Play();
+            foreach (var ps in sandMoundForwardParticles) if (!ps.isPlaying && !_paused) ps.Play();
             foreach (var ps in sandMoundBackwardParticles) ps.Stop();
         }
         else if (_currentWaypointIndex == 0)
         {
-            foreach (var ps in sandMoundBackwardParticles) if (!ps.isPlaying) ps.Play();
+            foreach (var ps in sandMoundBackwardParticles) if (!ps.isPlaying && !_paused) ps.Play();
             foreach (var ps in sandMoundForwardParticles) ps.Stop();
         }
     }
+
+    // ---------------- VISUALS ----------------
 
     private Material[] GetMaterialsFromChildren() =>
         GetComponentsInChildren<Renderer>().SelectMany(r => r.materials).ToArray();
@@ -178,6 +249,10 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     private IEnumerator GlowEffect(float duration)
     {
         StartCoroutine(IncreaseIntensity(duration / 2f));
+        
+        // 🔹 Sonido de activación desde el Bank
+        if(platformBank != null) platformBank.Play3D(activeSoundKey, transform.position);
+
         yield return WaitForSecondsPausable(duration / 2f, () => _paused);
         StartCoroutine(DecreaseIntensity(duration / 2f));
     }
@@ -212,40 +287,33 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         }
     }
 
-    private void HandleAudio()
-    {
-        if (isMoving && !_holdAtWaypoint && !_paused)
-        {
-            //StartCoroutine(AudioManager.Instance.FollowTransform(platformAudio, transform, -1));
-            if (!platformAudio.isPlaying) platformAudio.Play();
-        }
-        else
-        {
-            if (platformAudio.isPlaying) platformAudio.Pause();
-        }
-    }
+    // ---------------- PAUSE SYSTEM ----------------
 
-    // ===== IPausable =====
     public void OnPauseChanged(bool paused)
     {
         _paused = paused;
 
-        foreach (var ps in sandMoundForwardParticles)
-            if (paused && ps.isPlaying) ps.Pause();
-            else if (!paused && !ps.isPlaying && isMoving) ps.Play();
+        // Pausa de partículas de los montículos
+        HandleParticlesPause(sandMoundForwardParticles, paused);
+        HandleParticlesPause(sandMoundBackwardParticles, paused);
 
-        foreach (var ps in sandMoundBackwardParticles)
-            if (paused && ps.isPlaying) ps.Pause();
-            else if (!paused && !ps.isPlaying && isMoving) ps.Play();
-
-        if (platformAudio != null)
+        // Pausa del Audio
+        if (_movingAudio != null)
         {
-            if (paused && platformAudio.isPlaying) platformAudio.Pause();
-            else if (!paused && !platformAudio.isPlaying && isMoving) platformAudio.Play();
+            if (paused && _movingAudio.isPlaying) _movingAudio.Pause();
+            else if (!paused && !_movingAudio.isPlaying && isMoving && !_holdAtWaypoint) _movingAudio.UnPause();
+        }
+    }
+
+    private void HandleParticlesPause(ParticleSystem[] systems, bool paused)
+    {
+        foreach (var ps in systems)
+        {
+            if (paused && ps.isPlaying) ps.Pause();
+            else if (!paused && ps.isPaused) ps.Play(); 
         }
     }
 
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
-
 }
