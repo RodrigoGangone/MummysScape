@@ -1,9 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class SmashObject : MonoBehaviour
 {
@@ -12,7 +9,6 @@ public class SmashObject : MonoBehaviour
     [SerializeField] private StandingTable _standingTable;
 
     [SerializeField] private Transform _wayPoint;
-
     [SerializeField] private List<GameObject> _tables;
 
     private const float _velocity = 3;
@@ -22,22 +18,26 @@ public class SmashObject : MonoBehaviour
     [SerializeField] private Collider _fatherCollider;
 
     [SerializeField] private ParticleSystem _destroyFx;
+    
+    // Variable para evitar que se rompa dos veces si le pegas muy rápido
+    private bool _isBroken = false; 
 
     private void Start()
     {
         _bubbles.SetActive(_inWater);
 
         _standingTable.Tables = _tables;
-
         _standingTable.ArrangeTables += () =>
         {
             _standingTable.replacementTables = StartCoroutine(MoveTablesWithDelay());
         };
     }
 
-    private void OnTriggerEnter(Collider other)
+    // Ya no dependemos de OnTriggerEnter, pero creamos este método público
+    public void DoBreak()
     {
-        if (!other.CompareTag("Smash")) return;
+        if (_isBroken) return; // Si ya se rompió, no hacemos nada
+        _isBroken = true;
 
         _destroyFx.Play();
 
@@ -50,11 +50,10 @@ public class SmashObject : MonoBehaviour
         if (_inWater)
         {
             ActivateTables();
-
             StartCoroutine(MoveTablesWithDelay());
         }
     }
-
+    
     private IEnumerator MoveTablesWithDelay()
     {
         for (int i = 0; i < _tables.Count; i++)

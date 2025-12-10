@@ -50,6 +50,10 @@ public sealed class InteractionRuntime : MonoBehaviour
 
     [Header("Quick Travel")] [SerializeField]
     private float radiusTiny;
+    
+    [Header("Smash")]
+    [SerializeField] public float smashRange = 3f; 
+    [SerializeField] public LayerMask smashLayer; 
 
     // propiedad para que los States lean el mismo valor (exponen datos, no lógica)
     public float AttractMinDistance => _attractMinDistance;
@@ -324,7 +328,7 @@ public sealed class InteractionRuntime : MonoBehaviour
         portal = best;
         return portal != null;
     }
-
+    
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {

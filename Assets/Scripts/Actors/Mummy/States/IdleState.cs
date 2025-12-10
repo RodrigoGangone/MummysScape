@@ -1,5 +1,6 @@
 using UnityEngine;
 using static PlayerEnum;
+
 /// <summary>
 /// IdleState
 /// </summary>
@@ -10,12 +11,22 @@ public sealed class IdleState : State
 
     public override void OnEnter()
     {
+        _ctx.View.Animator.SetBool("Idle", true);
+        
         _ctx.View?.SetMoveSpeedVisual(0f);
         Debug.Log("IdleState!");
     }
-    public override void OnExit()  { }
 
-    public override void OnUpdate() { }
+    public override void OnExit()
+    {
+        _ctx.View.Animator.SetBool("Idle", false);
+    }
 
-    public override void OnFixedUpdate() { }
+    public override void OnUpdate()
+    {
+    }
+
+    public override void OnFixedUpdate()
+    {
+    }
 }

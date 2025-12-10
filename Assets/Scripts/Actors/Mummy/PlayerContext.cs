@@ -47,7 +47,9 @@ public sealed class PlayerContext
     public float AttractSpeedBase => _interactions ? _interactions.AttractSpeedBase : 1f;
     public GameObject ProjectilePrefab => _interactions.ProjectilePrefab;
     public float AimMaxDistance => _interactions.AimMaxDistance; 
-    public float AimMaxHeight => _interactions.AimMaxHeight; 
+    public float AimMaxHeight => _interactions.AimMaxHeight;
+    public float SmashRange => _interactions.smashRange;
+    public LayerMask SmashLayer => _interactions.smashLayer;
 
 
     /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>
@@ -82,20 +84,18 @@ public sealed class PlayerContext
         return _interactions != null && _interactions.TryGetSwingTarget(Tf, out hook);
     }
 
-    // --- ¡MÉTODO MODIFICADO! ---
-    // Ahora acepta 'aimScreenPosition' y lo pasa a _interactions
     public bool TryGetAim(Vector2 aimScreenPosition, out Vector3 pos, out Vector3 norm)
     {
         pos = default;
         norm = default;
-        // Pasa la posición de la pantalla al método de InteractionRuntime
+
         return _interactions != null && _interactions.TryGetAim(Tf, aimScreenPosition, out pos, out norm);
     }
-    // --- FIN DE LA MODIFICACIÓN ---
 
     public bool TryGetQuickTravel(Transform playerTf, out HippoTravel target)
     {
         target = null;
         return _interactions != null && _interactions.TryGetQuickTravel(Tf, out target);
     }
+
 }
