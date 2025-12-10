@@ -1,7 +1,28 @@
+using System;
+using System.Collections;
 using UnityEngine;
+using static PauseUtils;
 
-public class Bandage : MonoBehaviour
+public class Bandage : MonoBehaviour, IPausable
 {
+    private Collider _collider;
+    private bool _paused;
+
+    private void Awake() => _collider = GetComponent<Collider>();
+
+    private void OnEnable()
+    {
+        _collider.enabled = false;
+
+        StartCoroutine(EnableColliderRoutine());
+    }
+
+    private IEnumerator EnableColliderRoutine()
+    {
+        yield return WaitForSecondsPausable(2f, () => _paused);
+
+        _collider.enabled = true;
+    }
     private void OnTriggerEnter(Collider collision)
     {
         if (!collision.gameObject.CompareTag("PlayerFather")) return;
@@ -14,4 +35,6 @@ public class Bandage : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    public void OnPauseChanged(bool paused) => _paused = paused;
 }
