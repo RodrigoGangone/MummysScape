@@ -13,12 +13,18 @@ public sealed class SmashState : State
     public override void OnEnter()
     {
         Debug.Log("Smash!");
-        _ctx.View?.PlaySmash();
-
+        
+        _ctx.View.Animator.SetBool("Smash", true);
+        
+        GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
         //StateMachine.ChangeState(PlayerStateId.Idle);
     }
 
     public override void OnUpdate() { }
     public override void OnFixedUpdate() { }
-    public override void OnExit() { }
+
+    public override void OnExit()
+    {
+        _ctx.View.Animator.SetBool("Smash", false);
+    }
 }

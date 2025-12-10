@@ -1,5 +1,6 @@
 using UnityEngine;
 using static PlayerEnum;
+
 /// <summary>
 /// WalkState
 /// Movimiento con Rigidbody relativo a la cámara. Rotación suave hacia dirección de marcha.
@@ -9,10 +10,20 @@ public sealed class WalkState : State
     private readonly PlayerContext _ctx;
     public WalkState(PlayerContext ctx) => _ctx = ctx;
 
-    public override void OnEnter() { Debug.Log("WalkState!"); }
-    public override void OnExit()  { }
+    public override void OnEnter()
+    {
+        _ctx.View.Animator.SetBool("Walk", true);
+        Debug.Log("WalkState!");
+    }
 
-    public override void OnUpdate() { }
+    public override void OnExit()
+    {
+        _ctx.View.Animator.SetBool("Walk", false);
+    }
+
+    public override void OnUpdate()
+    {
+    }
 
     public override void OnFixedUpdate()
     {
@@ -20,7 +31,7 @@ public sealed class WalkState : State
         Vector3 dir = _ctx.CameraRelativeDir(mv.x, mv.y);
 
         if (!(dir.sqrMagnitude > 0.0001f)) return;
-        
+
         Vector3 targetPos = _ctx.Rb.position + dir * (_ctx.MoveSpeed * Time.fixedDeltaTime);
         _ctx.Rb.MovePosition(targetPos);
 
