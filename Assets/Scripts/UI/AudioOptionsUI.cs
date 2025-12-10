@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class AudioOptionsUI : MonoBehaviour
@@ -11,18 +12,11 @@ public class AudioOptionsUI : MonoBehaviour
     [SerializeField] private Slider uiSlider;
 
     [Header("Mute Buttons")]
-    [SerializeField] private Button masterMuteButton;
-    [SerializeField] private Button musicMuteButton;
-    [SerializeField] private Button ambientMuteButton;
-    [SerializeField] private Button fxMuteButton;
-    [SerializeField] private Button uiMuteButton;
-
-    // Estados de mute internos (no mueven el slider)
-    private bool _masterMuted;
-    private bool _musicMuted;
-    private bool _ambientMuted;
-    private bool _fxMuted;
-    private bool _uiMuted;
+    [SerializeField] private MuteToggleButton masterMuteButton;
+    [SerializeField] private MuteToggleButton musicMuteButton;
+    [SerializeField] private MuteToggleButton ambientMuteButton;
+    [SerializeField] private MuteToggleButton sfxMuteButton;
+    [SerializeField] private MuteToggleButton uiMuteButton;
 
     private bool _initializing;
 
@@ -35,6 +29,8 @@ public class AudioOptionsUI : MonoBehaviour
         }
 
         _initializing = true;
+
+        #region Sliders
 
         // ---------- MASTER ----------
         if (masterSlider)
@@ -86,12 +82,57 @@ public class AudioOptionsUI : MonoBehaviour
             uiSlider.onValueChanged.AddListener(OnUiSliderChanged);
         }
 
-        // ---------- MUTE BUTTONS ----------
-        if (masterMuteButton)  masterMuteButton.onClick.AddListener(ToggleMasterMute);
-        if (musicMuteButton)   musicMuteButton.onClick.AddListener(ToggleMusicMute);
-        if (ambientMuteButton) ambientMuteButton.onClick.AddListener(ToggleAmbientMute);
-        if (fxMuteButton)      fxMuteButton.onClick.AddListener(ToggleFxMute);
-        if (uiMuteButton)      uiMuteButton.onClick.AddListener(ToggleUiMute);
+        #endregion
+
+        #region Buttons
+        
+        // MASTER
+        if (masterMuteButton)
+        {
+            masterMuteButton.MutedChanged += OnMasterMutedChanged;
+
+            bool muted = Save.GetMuted(VolumeSoundId.Master, false);
+            masterMuteButton.SetMuted(muted);   // Esto dispara OnMasterMutedChanged
+        }
+
+        // MUSIC
+        if (musicMuteButton)
+        {
+            musicMuteButton.MutedChanged += OnMusicMutedChanged;
+
+            bool muted = Save.GetMuted(VolumeSoundId.Music, false);
+            musicMuteButton.SetMuted(muted);
+        }
+
+        // AMBIENT
+        if (ambientMuteButton)
+        {
+            ambientMuteButton.MutedChanged += OnAmbientMutedChanged;
+
+            bool muted = Save.GetMuted(VolumeSoundId.Ambient, false);
+            ambientMuteButton.SetMuted(muted);
+        }
+
+        // SFX
+        if (sfxMuteButton)
+        {
+            sfxMuteButton.MutedChanged += OnSfxMutedChanged;
+
+            bool muted = Save.GetMuted(VolumeFxId.Sfx, false);
+            sfxMuteButton.SetMuted(muted);
+        }
+
+        // UI
+        if (uiMuteButton)
+        {
+            uiMuteButton.MutedChanged += OnUiMutedChanged;
+
+            bool muted = Save.GetMuted(VolumeFxId.UI, false);
+            uiMuteButton.SetMuted(muted);
+        }
+
+        #endregion
+
 
         _initializing = false;
     }
@@ -105,7 +146,7 @@ public class AudioOptionsUI : MonoBehaviour
         // Siempre guardamos el valor, aunque esté muteado
         Save.SetVolume(VolumeSoundId.Master, v);
 
-        if (_masterMuted)
+        if (masterMuteButton && masterMuteButton.IsMuted) 
             return; // si está muteado, no tocamos el mixer; seguirá en 0
 
         ApplyMaster(v, save: false);
@@ -117,7 +158,7 @@ public class AudioOptionsUI : MonoBehaviour
 
         Save.SetVolume(VolumeSoundId.Music, v);
 
-        if (_musicMuted)
+        if (musicMuteButton && musicMuteButton.IsMuted) 
             return;
 
         ApplyMusic(v, save: false);
@@ -129,7 +170,7 @@ public class AudioOptionsUI : MonoBehaviour
 
         Save.SetVolume(VolumeSoundId.Ambient, v);
 
-        if (_ambientMuted)
+        if (ambientMuteButton && ambientMuteButton.IsMuted) 
             return;
 
         ApplyAmbient(v, save: false);
@@ -141,7 +182,8 @@ public class AudioOptionsUI : MonoBehaviour
 
         Save.SetVolume(VolumeFxId.Sfx, v);
 
-        if (_fxMuted)
+        
+        if (sfxMuteButton && sfxMuteButton.IsMuted) 
             return;
 
         ApplyFx(v, save: false);
@@ -152,8 +194,8 @@ public class AudioOptionsUI : MonoBehaviour
         if (_initializing) return;
 
         Save.SetVolume(VolumeFxId.UI, v);
-
-        if (_uiMuted)
+        
+        if (uiMuteButton && uiMuteButton.IsMuted) 
             return;
 
         ApplyUi(v, save: false);
@@ -162,34 +204,32 @@ public class AudioOptionsUI : MonoBehaviour
     #endregion
 
     #region Mute Toggles
-
-    private void ToggleMasterMute()
+    
+    private void OnMasterMutedChanged(bool muted)
     {
-        _masterMuted = !_masterMuted;
+        if (AudioManager.Instance == null) return;
 
-        if (_masterMuted)
+        Save.SetMuted(VolumeSoundId.Master, muted);
+
+        if (muted)
         {
-            // mute: mandamos el bus a 0, pero NO tocamos el slider
             AudioManager.Instance.SetBusVolume(AudioBus.Master, 0f);
         }
         else
         {
-            // unmute: aplicamos el valor actual del slider
             float v = masterSlider ? masterSlider.value : 1f;
             ApplyMaster(v, save: false);
         }
-
-        // TODO: acá podés cambiar ícono del botón (mute/unmute) si querés
     }
 
-    private void ToggleMusicMute()
+    private void OnMusicMutedChanged(bool muted)
     {
-        _musicMuted = !_musicMuted;
+        if (AudioManager.Instance == null) return;
 
-        if (_musicMuted)
-        {
+        Save.SetMuted(VolumeSoundId.Music, muted);
+
+        if (muted)
             AudioManager.Instance.SetBusVolume(AudioBus.Music, 0f);
-        }
         else
         {
             float v = musicSlider ? musicSlider.value : 1f;
@@ -197,14 +237,14 @@ public class AudioOptionsUI : MonoBehaviour
         }
     }
 
-    private void ToggleAmbientMute()
+    private void OnAmbientMutedChanged(bool muted)
     {
-        _ambientMuted = !_ambientMuted;
+        if (AudioManager.Instance == null) return;
 
-        if (_ambientMuted)
-        {
+        Save.SetMuted(VolumeSoundId.Ambient, muted);
+
+        if (muted)
             AudioManager.Instance.SetBusVolume(AudioBus.Ambient, 0f);
-        }
         else
         {
             float v = ambientSlider ? ambientSlider.value : 1f;
@@ -212,14 +252,14 @@ public class AudioOptionsUI : MonoBehaviour
         }
     }
 
-    private void ToggleFxMute()
+    private void OnSfxMutedChanged(bool muted)
     {
-        _fxMuted = !_fxMuted;
+        if (AudioManager.Instance == null) return;
 
-        if (_fxMuted)
-        {
+        Save.SetMuted(VolumeFxId.Sfx, muted);
+
+        if (muted)
             AudioManager.Instance.SetBusVolume(AudioBus.Sfx, 0f);
-        }
         else
         {
             float v = fxSlider ? fxSlider.value : 1f;
@@ -227,14 +267,14 @@ public class AudioOptionsUI : MonoBehaviour
         }
     }
 
-    private void ToggleUiMute()
+    private void OnUiMutedChanged(bool muted)
     {
-        _uiMuted = !_uiMuted;
+        if (AudioManager.Instance == null) return;
 
-        if (_uiMuted)
-        {
+        Save.SetMuted(VolumeFxId.UI, muted);
+
+        if (muted)
             AudioManager.Instance.SetBusVolume(AudioBus.UI, 0f);
-        }
         else
         {
             float v = uiSlider ? uiSlider.value : 1f;
@@ -277,4 +317,20 @@ public class AudioOptionsUI : MonoBehaviour
     }
 
     #endregion
+    
+    private void OnDestroy()
+    {
+        if (masterSlider) masterSlider.onValueChanged.RemoveListener(OnMasterSliderChanged);
+        if (musicSlider)  musicSlider.onValueChanged.RemoveListener(OnMusicSliderChanged);
+        if (ambientSlider) ambientSlider.onValueChanged.RemoveListener(OnAmbientSliderChanged);
+        if (fxSlider) fxSlider.onValueChanged.RemoveListener(OnFxSliderChanged);
+        if (uiSlider) uiSlider.onValueChanged.RemoveListener(OnUiSliderChanged);
+
+        if (masterMuteButton) masterMuteButton.MutedChanged -= OnMasterMutedChanged;
+        if (musicMuteButton)  musicMuteButton.MutedChanged  -= OnMusicMutedChanged;
+        if (ambientMuteButton) ambientMuteButton.MutedChanged -= OnAmbientMutedChanged;
+        if (sfxMuteButton) sfxMuteButton.MutedChanged -= OnSfxMutedChanged;
+        if (uiMuteButton) uiMuteButton.MutedChanged -= OnUiMutedChanged;
+    }
+
 }

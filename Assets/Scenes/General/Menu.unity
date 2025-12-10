@@ -4216,6 +4216,17 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 28}
   m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &730935152 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3543354020067013832, guid: 2197ce44578f5a54db9482bfc1e47ea4, type: 3}
+  m_PrefabInstance: {fileID: 28391781}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3926d4a5e30835d4a85f982ed7a00d14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &771286789
 GameObject:
   m_ObjectHideFlags: 0
@@ -4769,13 +4780,13 @@ MonoBehaviour:
   masterSlider: {fileID: 941303738350117215}
   musicSlider: {fileID: 28391782}
   ambientSlider: {fileID: 1194019160}
-  fxSlider: {fileID: 1513016475}
-  uiSlider: {fileID: 1503565084}
-  masterMuteButton: {fileID: 112723042}
-  musicMuteButton: {fileID: 0}
-  ambientMuteButton: {fileID: 0}
-  fxMuteButton: {fileID: 0}
-  uiMuteButton: {fileID: 0}
+  fxSlider: {fileID: 1503565084}
+  uiSlider: {fileID: 1513016475}
+  masterMuteButton: {fileID: 919802011}
+  musicMuteButton: {fileID: 730935152}
+  ambientMuteButton: {fileID: 1194019165}
+  sfxMuteButton: {fileID: 1784150307}
+  uiMuteButton: {fileID: 1513016477}
 --- !u!225 &826789476
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -5118,6 +5129,17 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!114 &919802011 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3543354020067013832, guid: 2197ce44578f5a54db9482bfc1e47ea4, type: 3}
+  m_PrefabInstance: {fileID: 941303738350117214}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3926d4a5e30835d4a85f982ed7a00d14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!43 &1015261913
 Mesh:
   m_ObjectHideFlags: 0
@@ -5955,6 +5977,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2108594576755128511, guid: 2197ce44578f5a54db9482bfc1e47ea4, type: 3}
   m_PrefabInstance: {fileID: 1194019158}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1194019165 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3543354020067013832, guid: 2197ce44578f5a54db9482bfc1e47ea4, type: 3}
+  m_PrefabInstance: {fileID: 1194019158}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3926d4a5e30835d4a85f982ed7a00d14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1199954886
 GameObject:
   m_ObjectHideFlags: 0
@@ -7792,7 +7825,7 @@ PrefabInstance:
       objectReference: {fileID: 782967508}
     - target: {fileID: 7577065872350079304, guid: 2197ce44578f5a54db9482bfc1e47ea4, type: 3}
       propertyPath: m_Name
-      value: Volumen - SFx
+      value: Volumen - SFX
       objectReference: {fileID: 0}
     - target: {fileID: 8578602607038053653, guid: 2197ce44578f5a54db9482bfc1e47ea4, type: 3}
       propertyPath: m_AnchorMax.x
@@ -7996,6 +8029,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 31e4ac9e17f26094cbcea23fe8bc6743, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1513016477 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3543354020067013832, guid: 2197ce44578f5a54db9482bfc1e47ea4, type: 3}
+  m_PrefabInstance: {fileID: 1513016472}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3926d4a5e30835d4a85f982ed7a00d14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!43 &1537245917
@@ -9660,8 +9704,8 @@ RectTransform:
   - {fileID: 404609510}
   - {fileID: 28391783}
   - {fileID: 1194019161}
-  - {fileID: 1513016474}
   - {fileID: 1503565085}
+  - {fileID: 1513016474}
   - {fileID: 782967511}
   - {fileID: 422805179}
   m_Father: {fileID: 826789471}
@@ -10699,6 +10743,17 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!114 &1784150307 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3543354020067013832, guid: 2197ce44578f5a54db9482bfc1e47ea4, type: 3}
+  m_PrefabInstance: {fileID: 1503565083}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3926d4a5e30835d4a85f982ed7a00d14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!43 &1795896569
 Mesh:
   m_ObjectHideFlags: 0

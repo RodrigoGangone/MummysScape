@@ -42,14 +42,23 @@ public sealed class MuteToggleButton : MonoBehaviour
 
     private Button _button;
     private Image _image;
+    private bool _initializedFromOutside;
 
     private void Awake()
     {
         _button = GetComponent<Button>();
         _image  = GetComponent<Image>();
-
-        IsMuted = _startMuted;
-        ApplySprite();
+    }
+    
+    private void Start()
+    {
+        // Si NADIE nos seteó desde afuera (AudioOptionsUI.SetMuted),
+        // usamos el estado por defecto de inspector (_startMuted).
+        if (!_initializedFromOutside)
+        {
+            IsMuted = _startMuted;
+            ApplySprite();
+        }
     }
 
     private void OnEnable()
@@ -73,6 +82,7 @@ public sealed class MuteToggleButton : MonoBehaviour
     public void ToggleMute()
     {
         IsMuted = !IsMuted;
+        _initializedFromOutside = true; // a partir de acá respetamos este valor
         ApplySprite();
 
         MutedChanged?.Invoke(IsMuted);
@@ -101,6 +111,7 @@ public sealed class MuteToggleButton : MonoBehaviour
     public void SetMuted(bool muted)
     {
         IsMuted = muted;
+        _initializedFromOutside = true;
         ApplySprite();
 
         MutedChanged?.Invoke(IsMuted);

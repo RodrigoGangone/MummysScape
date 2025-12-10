@@ -45,15 +45,25 @@ public static class Save
         => Get(PrefKeys.GemTotal(SceneName(buildIndex)), 0);
 
     // ---- Volumen ----
-
     public static void  SetVolume(VolumeSoundId id, float v01) => Set(PrefKeys.VolumeSoundKey(id), v01);
     public static float GetVolume(VolumeSoundId id, float def = 0.8f) => Get(PrefKeys.VolumeSoundKey(id), def);
 
     public static void  SetVolume(VolumeFxId id, float v01) => Set(PrefKeys.VolumeFxKey(id), v01);
     public static float GetVolume(VolumeFxId id, float def = 0.8f) => Get(PrefKeys.VolumeFxKey(id), def);
+    
+    // ---- Mute ----
+    public static void SetMuted(VolumeSoundId id, bool muted)
+        => Set(PrefKeys.MuteSoundKey(id), muted);
+    public static bool GetMuted(VolumeSoundId id, bool def = false)
+        => Get(PrefKeys.MuteSoundKey(id), def);
+
+    public static void SetMuted(VolumeFxId id, bool muted)
+        => Set(PrefKeys.MuteFxKey(id), muted);
+    public static bool GetMuted(VolumeFxId id, bool def = false)
+        => Get(PrefKeys.MuteFxKey(id), def);
+
 
     // ---- Tiempos ----
-    
     //public static void  SetTime(TimeId id, float seconds) => Set(PrefKeys.TimeKey(id), seconds);
     //public static float GetTime(TimeId id, float def = float.MaxValue) => Get(PrefKeys.TimeKey(id), def);
 
