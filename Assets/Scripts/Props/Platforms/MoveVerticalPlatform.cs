@@ -4,6 +4,7 @@ using UnityEngine;
 using static Utils;
 using static PauseUtils;
 
+[RequireComponent(typeof(Rigidbody))]
 public class MoveVerticalPlatform : MonoBehaviour, IPausable
 {
     [Header("SETTINGS")]
@@ -16,7 +17,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     [Header("EFFECTS")] 
     [SerializeField] private FxBank platformBank;
-    [SerializeField] private string movingSoundKey = "Moving";   // 🔹 key en el bank
+    [SerializeField] private string movingSoundKey = "Moving";   
     [SerializeField] private ParticleSystem sandMoundsParticle;
     [SerializeField] private ParticleSystem activationParticles;
     [SerializeField] private float glowDuration = 2f;
@@ -26,18 +27,27 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     private int _targetWaypointIndex = 0;
     private bool _isMoving;
     private bool _isWaitingAtWaypoint = false;
-    private bool _isGloballyPaused = false;
+    
+    // ⏸️ Estados de Pausa
+    private bool _isGloballyPaused = false; // Pausa de Menú
+    private bool _isLocked = false;         // Pausa de Evento/Cinemática
 
     private Material[] _platformMaterials;
     private Coroutine _waitCoroutine;
 
-    // 🔹 Audio interno de la plataforma (una sola instancia)
+    // Componentes
     private AudioSource _movingAudio;
+    private Rigidbody _rb;
 
     private void Start()
     {
         _platformMaterials = GetMaterialsFromChildren();
         _isMoving = isMovingOnStart;
+        
+        _rb = GetComponent<Rigidbody>();
+        _rb.isKinematic = true; 
+        // Forzamos Interpolate (aunque en tu imagen dice 'None', esto lo corrige al iniciar)
+        _rb.interpolation = RigidbodyInterpolation.Interpolate; 
 
         if (waypoints.Length == 0)
         {
@@ -46,7 +56,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
             return;
         }
 
-        transform.position = waypoints[0].position;
+        _rb.position = waypoints[0].position; 
 
         if (_isMoving)
             _targetWaypointIndex = 1;
@@ -54,13 +64,15 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     private void FixedUpdate()
     {
+        // 🔹 CONDICIÓN ACTUALIZADA: Se detiene con Pausa O Lock
         bool shouldMove = !_isGloballyPaused 
+                          && !_isLocked
                           && !_isWaitingAtWaypoint 
                           && _isMoving 
                           && waypoints.Length > 0;
 
         HandleEffects(shouldMove);
-        HandleMovingSound(shouldMove);   // 🔹 aquí controlamos el sonido
+        HandleMovingSound(shouldMove);
 
         if (!shouldMove)
             return;
@@ -68,26 +80,38 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         MovePlatform();
     }
 
-    /// <summary>
-    /// Crea y configura el AudioSource 3D si aún no existe.
-    /// </summary>
+    private void MovePlatform()
+    {
+        Transform target = waypoints[_targetWaypointIndex];
+        
+        float distance = Vector3.Distance(_rb.position, target.position);
+        const float slowDownRadius = 1f;
+
+        float speedFactor = 1f;
+        if (distance < slowDownRadius)
+        {
+            float t = distance / slowDownRadius;
+            speedFactor = Mathf.Lerp(0.1f, 1f, t);
+        }
+
+        float step = speed * speedFactor * Time.deltaTime;
+        
+        Vector3 newPosition = Vector3.MoveTowards(_rb.position, target.position, step);
+        _rb.MovePosition(newPosition);
+
+        if (Vector3.Distance(_rb.position, target.position) < 0.001f)
+        {
+            _waitCoroutine = StartCoroutine(PauseAtWaypoint());
+        }
+    }
+
     private void EnsureMovingAudio()
     {
-        if (_movingAudio != null)
-            return;
-
-        if (platformBank == null || string.IsNullOrEmpty(movingSoundKey))
-        {
-            Debug.LogWarning("MovingPlatform: No hay bank o key configurados para el sonido de movimiento.", this);
-            return;
-        }
+        if (_movingAudio != null) return;
+        if (platformBank == null || string.IsNullOrEmpty(movingSoundKey)) return;
 
         var entry = platformBank.Get(movingSoundKey);
-        if (entry == null || entry.clip == null)
-        {
-            Debug.LogWarning($"MovingPlatform: key '{movingSoundKey}' no encontrada en bank '{platformBank.name}'.", this);
-            return;
-        }
+        if (entry == null || entry.clip == null) return;
 
         _movingAudio = gameObject.AddComponent<AudioSource>();
         _movingAudio.clip         = entry.clip;
@@ -99,64 +123,31 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         _movingAudio.maxDistance  = entry.maxDistance;
         _movingAudio.rolloffMode  = AudioRolloffMode.Logarithmic;
 
-        // Opcional: mandarlo al mixer correcto según el bus del bank
         if (AudioManager.Instance != null)
         {
             var group = AudioManager.Instance.GetMixerGroup(platformBank.bus);
-            if (group != null)
-                _movingAudio.outputAudioMixerGroup = group;
+            if (group != null) _movingAudio.outputAudioMixerGroup = group;
         }
     }
 
-    /// <summary>
-    /// Enciende o apaga el loop de movimiento según si la plataforma se mueve o no.
-    /// </summary>
     private void HandleMovingSound(bool isMovingActive)
     {
         if (isMovingActive)
         {
             EnsureMovingAudio();
-
-            if (_movingAudio != null && !_movingAudio.isPlaying)
-                _movingAudio.Play();
+            if (_movingAudio != null && !_movingAudio.isPlaying) _movingAudio.Play();
         }
         else
         {
-            if (_movingAudio != null && _movingAudio.isPlaying)
-                _movingAudio.Stop();
-        }
-    }
-
-    private void MovePlatform()
-    {
-        Transform target = waypoints[_targetWaypointIndex];
-
-        float distance = Vector3.Distance(transform.position, target.position);
-
-        const float slowDownRadius = 1f;
-
-        float speedFactor = 1f;
-        if (distance < slowDownRadius)
-        {
-            float t = distance / slowDownRadius;
-            speedFactor = Mathf.Lerp(0.1f, 1f, t);
-        }
-
-        float step = speed * speedFactor * Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, target.position, step);
-
-        if (Vector3.Distance(transform.position, target.position) < 0.001f)
-        {
-            _waitCoroutine = StartCoroutine(PauseAtWaypoint());
+            if (_movingAudio != null && _movingAudio.isPlaying) _movingAudio.Stop();
         }
     }
 
     private IEnumerator PauseAtWaypoint()
     {
         _isWaitingAtWaypoint = true;
-        
-        yield return WaitForSecondsPausable(stopTime, () => _isGloballyPaused); 
-        
+        // 🔹 ESPERA INTELIGENTE: Si hay pausa o lock, el timer se detiene
+        yield return WaitForSecondsPausable(stopTime, () => _isGloballyPaused || _isLocked); 
         SetNextTarget(1);
         _isWaitingAtWaypoint = false;
         _waitCoroutine = null;
@@ -167,16 +158,13 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         _isMoving = !_isMoving;
         activationParticles?.Play();
         StartCoroutine(GlowEffect());
-
         
         var cam = GetComponent<FocusOnActivation>();
         cam?.Activate();
 
         if (_isMoving && _isWaitingAtWaypoint)
         {
-            if (_waitCoroutine != null)
-                StopCoroutine(_waitCoroutine);
-            
+            if (_waitCoroutine != null) StopCoroutine(_waitCoroutine);
             SetNextTarget(1);
             _isWaitingAtWaypoint = false;
         }
@@ -189,7 +177,6 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
             StopCoroutine(_waitCoroutine);
             _waitCoroutine = null;
         }
-
         _isWaitingAtWaypoint = false;
         SetNextTarget(-1);
         _isMoving = true;
@@ -203,31 +190,17 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     private void HandleEffects(bool isMovingActive)
     {
         if (sandMoundsParticle == null) return;
-
-        if (isMovingActive && !sandMoundsParticle.isPlaying)
+        // Nota: La lógica de pausa de partículas ahora se maneja centralizadamente en UpdatePauseState
+        // Aquí solo manejamos si deberían emitir por movimiento
+        if (isMovingActive && !sandMoundsParticle.isPlaying && !_isGloballyPaused && !_isLocked)
         {
-            if (!_isGloballyPaused) 
-                sandMoundsParticle.Play();
+            sandMoundsParticle.Play();
         }
         else if (!isMovingActive && sandMoundsParticle.isPlaying)
         {
             sandMoundsParticle.Stop();
         }
     }
-
-    #region Player Parenting
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag(PLAYER_TAG))
-            other.transform.SetParent(transform);
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag(PLAYER_TAG))
-            other.transform.SetParent(null);
-    }
-    #endregion
 
     #region Glow Effect
     private Material[] GetMaterialsFromChildren() =>
@@ -236,9 +209,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     private IEnumerator GlowEffect()
     {
         yield return StartCoroutine(AnimateGlow(0f, glowIntensity, glowDuration / 2));
-        
         platformBank.Play3D("Active", transform.position);
-        
         yield return StartCoroutine(AnimateGlow(glowIntensity, 0f, glowDuration / 2));
     }
 
@@ -247,13 +218,12 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            while (_isGloballyPaused)
-                yield return null; 
+            // 🔹 PAUSA EN ANIMACIÓN: Esperamos si está pausado o bloqueado
+            while (_isGloballyPaused || _isLocked) yield return null; 
             
             elapsed += Time.deltaTime;
             float current = Mathf.Lerp(from, to, elapsed / duration);
             SetGlow(current);
-            
             yield return null;
         }
         SetGlow(to);
@@ -267,29 +237,59 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     }
     #endregion
 
-    #region Pause System
+    #region Pause & Lock System
+    
+    // Evento de Pausa (Menú)
     public void OnPauseChanged(bool paused)
     {
         _isGloballyPaused = paused;
+        UpdatePauseState();
+    }
+
+    // 🔹 NUEVO: Evento de Lock (Cinemática)
+    public void OnLockChanged(bool locked)
+    {
+        _isLocked = locked;
+        UpdatePauseState();
+    }
+
+    // Lógica unificada para detener audio/partículas
+    private void UpdatePauseState()
+    {
+        bool isFrozen = _isGloballyPaused || _isLocked;
 
         if (sandMoundsParticle)
         {
-            if (paused && sandMoundsParticle.isPlaying)
+            if (isFrozen && sandMoundsParticle.isPlaying) 
                 sandMoundsParticle.Pause();
-            else if (!paused && _isMoving && !_isWaitingAtWaypoint) 
+            else if (!isFrozen && _isMoving && !_isWaitingAtWaypoint) 
                 sandMoundsParticle.Play();
         }
 
         if (_movingAudio != null)
         {
-            if (paused && _movingAudio.isPlaying)
+            if (isFrozen && _movingAudio.isPlaying) 
                 _movingAudio.Pause();
-            else if (!paused && _isMoving && !_isWaitingAtWaypoint)
+            else if (!isFrozen && _isMoving && !_isWaitingAtWaypoint) 
                 _movingAudio.UnPause();
         }
     }
 
-    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+    private void OnEnable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+        // 🔹 REGISTRAMOS EL LOCKED
+        GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
+    }
+
+    private void OnDisable()
+    {
+        // Validación de null por seguridad al cerrar el juego
+        if (GameEventManager.Instance == null) return;
+        
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+        // 🔹 DES-REGISTRAMOS EL LOCKED
+        GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
+    }
     #endregion
 }
