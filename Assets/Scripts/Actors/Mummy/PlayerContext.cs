@@ -46,6 +46,7 @@ public sealed class PlayerContext
     public AnimationCurve AttractSpeedCurve => _interactions ? _interactions.AttractSpeedCurve : AnimationCurve.Linear(0,1,1,1);
     public float AttractSpeedBase => _interactions ? _interactions.AttractSpeedBase : 1f;
     public GameObject ProjectilePrefab => _interactions.ProjectilePrefab;
+    public Transform ShootOrigin => _interactions.ShootOrigin;
     public float AimMaxDistance => _interactions.AimMaxDistance; 
     public float AimMaxHeight => _interactions.AimMaxHeight;
     public float SmashRange => _interactions.smashRange;

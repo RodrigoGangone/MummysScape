@@ -103,16 +103,26 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
         }
 
         // 4) Edge: E / Q
-        if (_input.ConsumeAimHeld())
+        bool justPressedAim = _input.ConsumeAimHeld();
+        bool isHoldingAim = _input.IsAimHeld();
+
+        // Entramos si presionamos recién O si mantenemos y YA estamos apuntando
+        if (justPressedAim || (_sm.IsCurrent(Aim) && isHoldingAim))
         {
+            // Chequeo de disparo (prioridad)
             if (_input.ConsumeShootDown())
             {
                 _sm.ChangeState(Shoot);
                 return;
             }
 
+            // Si solo estoy manteniendo, retorno para no caer a Walk/Idle
+            if (!justPressedAim) return;
+
+            // Si presioné recién, cambio a Aim
             if (_sm.IsCurrent(Aim)) return;
-            if (_sm.ChangeState(Aim)) return;
+            _sm.ChangeState(Aim);
+            return;
         }
 
         if (_input.ConsumeDropDown())

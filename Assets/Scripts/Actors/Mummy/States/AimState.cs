@@ -8,18 +8,16 @@ public class AimState : State
     private readonly GameObject _decal;
     private readonly DecalProjector _rangeIndicator;
     private readonly LineRenderer _arcRenderer;
-    
+
     private Coroutine _scaleCoroutine;
     private Vector3 _targetScale;
 
     private const float ANIM_DURATION = 0.2f;
     private const float DECAL_BOX_DEPTH = 50f;
-    
-    // --- AÑADIDO: Lógica del Cursor Virtual ---
-    private Vector2 _aimScreenPos; // El cursor virtual (ratón o joystick)
-    private Vector3 _lastMousePos; // Para detectar si el ratón se movió
-    private const float AIM_SENSITIVITY = 500; // Sensibilidad del stick derecho
-    // --- FIN DE LO AÑADIDO ---
+
+    private Vector2 _aimScreenPos; 
+    private Vector3 _lastMousePos; 
+    private const float AIM_SENSITIVITY = 500;
 
     public AimState(PlayerContext ctx)
     {
@@ -31,21 +29,21 @@ public class AimState : State
 
     public override void OnEnter()
     {
+        _ctx.View.Animator.SetBool("Aim", true);
+
         SimpleShootData.Path = null;
-        
-        // --- AÑADIDO: Inicializar cursor virtual ---
+
         _aimScreenPos = new Vector2(Screen.width / 2, Screen.height / 2);
         _lastMousePos = Input.mousePosition;
-        // --- FIN DE LO AÑADIDO ---
-        
+
         if (_rangeIndicator == null) return;
 
         if (_arcRenderer != null)
             _arcRenderer.enabled = false;
-        
+
         if (_scaleCoroutine != null)
             _ctx.View.StopCoroutine(_scaleCoroutine);
-        
+
         float diameter = _ctx.AimMaxDistance * 2f;
 
         _targetScale = new Vector3(diameter, diameter, DECAL_BOX_DEPTH);
@@ -53,11 +51,15 @@ public class AimState : State
         _rangeIndicator.gameObject.SetActive(true);
 
         _scaleCoroutine = _ctx.View.StartCoroutine(AnimateScale(_rangeIndicator.transform,
-                                                                      _targetScale,
-                                                                      ANIM_DURATION));
+            _targetScale,
+            ANIM_DURATION));
     }
 
     public override void OnUpdate()
+    {
+    }
+
+    public override void OnFixedUpdate()
     {
         if (_rangeIndicator != null && _rangeIndicator.gameObject.activeSelf)
         {
@@ -65,66 +67,69 @@ public class AimState : State
             _rangeIndicator.transform.position = projectorPos;
         }
 
-        // --- AÑADIDO: Lógica de actualización del cursor virtual ---
-        Vector2 aimDelta = _ctx.Input.AimMove; // Leer el Stick Derecho
+        Vector2 aimDelta = _ctx.Input.AimMove;
         Vector3 mousePos = Input.mousePosition;
 
-        // Opción A: El Ratón se movió (tiene prioridad)
         if ((mousePos - _lastMousePos).sqrMagnitude > 0.1f)
         {
             _aimScreenPos = mousePos;
         }
-        // Opción B: El Stick Derecho se movió
         else if (aimDelta.sqrMagnitude > 0.1f)
         {
             _aimScreenPos.x += aimDelta.x * AIM_SENSITIVITY * Time.deltaTime;
             _aimScreenPos.y += aimDelta.y * AIM_SENSITIVITY * Time.deltaTime;
-
-            // Sujetar el cursor a los límites de la pantalla
             _aimScreenPos.x = Mathf.Clamp(_aimScreenPos.x, 0f, Screen.width);
             _aimScreenPos.y = Mathf.Clamp(_aimScreenPos.y, 0f, Screen.height);
         }
-        
-        _lastMousePos = mousePos; // Actualizar la última pos del ratón
-        // --- FIN DE LO AÑADIDO ---
 
+        _lastMousePos = mousePos;
 
-        // --- MODIFICADO: Pasar el cursor virtual a TryGetAim ---
         bool hasValidTarget = _ctx.TryGetAim(_aimScreenPos, out var pos, out var normal);
-        
-        
+
         if (hasValidTarget)
+        {
             SetDecal(pos, normal);
-        
+
+            Vector3 direction = (pos - _ctx.Tf.position).normalized;
+            direction.y = 0;
+
+            if (direction != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+
+                _ctx.Tf.rotation = Quaternion.RotateTowards(
+                    _ctx.Tf.rotation,
+                    targetRotation,
+                    1000 * Time.deltaTime
+                );
+            }
+        }
+
         SetArc(hasValidTarget);
         SetDecalVisible(hasValidTarget);
     }
 
-    public override void OnFixedUpdate() { }
-
     public override void OnExit()
     {
         SetDecalVisible(false);
-        
+
         if (_rangeIndicator == null) return;
 
         if (_arcRenderer != null)
             _arcRenderer.enabled = false;
-        
+
         if (_scaleCoroutine != null)
             _ctx.View.StopCoroutine(_scaleCoroutine);
 
         Vector3 exitScale = new Vector3(0, 0, DECAL_BOX_DEPTH);
 
         _scaleCoroutine = _ctx.View.StartCoroutine(AnimateScale(_rangeIndicator.transform,
-                                                                        exitScale,
-                                                                        ANIM_DURATION,
-                                                                        true));
+            exitScale,
+            ANIM_DURATION,
+            true));
+        _ctx.View.Animator.SetBool("Aim", false);
     }
-
-    // --- El resto de métodos (SetArc, SetDecalVisible, SetDecal, AnimateScale) ---
-    // --- no cambian y permanecen idénticos a los tuyos. ---
-
+    
     private void SetArc(bool hasValidTarget)
     {
         if (_arcRenderer != null)
@@ -141,13 +146,13 @@ public class AimState : State
             }
         }
     }
-    
+
     private void SetDecalVisible(bool visible)
     {
         if (_decal && _decal.activeSelf != visible)
             _decal.SetActive(visible);
     }
-    
+
     private void SetDecal(Vector3 pos, Vector3 normal)
     {
         if (!_decal) return;
@@ -169,8 +174,8 @@ public class AimState : State
             timer += Time.deltaTime;
 
             float t = Mathf.Clamp01(timer / duration);
-            t = 1 - (1 - t) * (1 - t); // Ease-Out Quad
-
+            t = 1 - (1 - t) * (1 - t);
+            
             targetTransform.localScale = Vector3.Lerp(startScale, targetScale, t);
 
             yield return null;

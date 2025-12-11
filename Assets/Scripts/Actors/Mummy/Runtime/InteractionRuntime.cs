@@ -39,9 +39,7 @@ public sealed class InteractionRuntime : MonoBehaviour
     private LayerMask _aimCollisionMask = ~0;
 
     [SerializeField] private GameObject projectilePrefab;
-
-    [SerializeField, Range(0.1f, 3f)] private float _stickAimSensitivity = 0.5f;
-
+    [SerializeField] private Transform _shootOriginTransform;
     [SerializeField, Range(0, 30)] private float _aimMaxDistance;
     [SerializeField, Range(-5, 5)] private float _maxAimHeight;
     [SerializeField, Range(0, 30)] private float _arcHeight;
@@ -60,6 +58,7 @@ public sealed class InteractionRuntime : MonoBehaviour
     public float AttractMaxDistance => _attractMaxDistance;
     public AnimationCurve AttractSpeedCurve => _attractSpeedAC;
     public float AttractSpeedBase => _attractSpeedBase;
+    public Transform ShootOrigin => _shootOriginTransform;
     public float AimMaxDistance => _aimMaxDistance;
     public float AimMaxHeight => _maxAimHeight;
     public GameObject ProjectilePrefab => projectilePrefab;
@@ -204,8 +203,16 @@ public sealed class InteractionRuntime : MonoBehaviour
         SimpleShootData.Path = null;
 
         // 1) Origen del disparo
-        Vector3 start = playertf.position + Vector3.up * 1.0f;
-
+        Vector3 start;
+        if (_shootOriginTransform != null)
+        {
+            start = _shootOriginTransform.position;
+        }
+        else
+        {
+            // Fallback por si te olvidaste de asignar la ref
+            start = playertf.position + Vector3.up * 1.0f; 
+        }
         // 2) Punto “deseado” desde la cámara (guía)
         // MODIFICADO: Ya no usa Input.mousePosition
         Ray ray = Camera.main.ScreenPointToRay(aimScreenPosition);
