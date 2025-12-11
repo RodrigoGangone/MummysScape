@@ -1,0 +1,388 @@
+fileFormatVersion: 2
+guid: baff5a3ce7fa09744a0c52ee809089e3
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects: {}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 3
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Reck_M_Idle
+      takeName: Reck_M_Idle
+      internalID: -1363220772346205441
+      firstFrame: 70
+      lastFrame: 389
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 70
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton:
+    - name: Reck_M_Idle(Clone)
+      parentName: 
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_pie_izq_motionTrail
+      parentName: Reck_M_Idle(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_todo
+      parentName: Reck_M_Idle(Clone)
+      position: {x: -0, y: 0.19724075, z: 0.08471748}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_cadera
+      parentName: Reck_M_Rig:ctrl_todo
+      position: {x: -0, y: 0.08063099, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_cintura
+      parentName: Reck_M_Rig:ctrl_cadera
+      position: {x: -0, y: 0.09133129, z: -0.014000487}
+      rotation: {x: 0.021799384, y: -0, z: -0, w: 0.99976236}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_pecho
+      parentName: Reck_M_Rig:ctrl_cintura
+      position: {x: -1.110223e-18, y: 0.08868034, z: -0.003926544}
+      rotation: {x: 0.021982016, y: -0, z: -0, w: 0.99975836}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_hombro_izq
+      parentName: Reck_M_Rig:ctrl_pecho
+      position: {x: -0.15367988, y: 0.104273945, z: 0.009969993}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_mano_izq
+      parentName: Reck_M_Rig:ctrl_hombro_izq
+      position: {x: -0.13745083, y: -0.26770535, z: 0.07682509}
+      rotation: {x: -0.37074405, y: 0.16513187, z: 0.2180932, w: 0.88753355}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_dedo_izq
+      parentName: Reck_M_Rig:ctrl_mano_izq
+      position: {x: -0.028605346, y: -0.07442467, z: 0.020875836}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:loc_codo_izq
+      parentName: Reck_M_Rig:ctrl_hombro_izq
+      position: {x: -0.19686638, y: -0.17874016, z: -0.34769115}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_hombro_der
+      parentName: Reck_M_Rig:ctrl_pecho
+      position: {x: 0.15368, y: 0.1042736, z: 0.00996995}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_mano_der
+      parentName: Reck_M_Rig:ctrl_hombro_der
+      position: {x: 0.15438426, y: -0.24300101, z: 0.109993726}
+      rotation: {x: -0.40986004, y: -0.21585177, z: -0.14442329, w: 0.87439394}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_dedo_der
+      parentName: Reck_M_Rig:ctrl_mano_der
+      position: {x: 0.028605346, y: -0.07442467, z: 0.020875836}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:loc_codo_der
+      parentName: Reck_M_Rig:ctrl_hombro_der
+      position: {x: 0.19686599, y: -0.17873996, z: -0.34769112}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_cabeza
+      parentName: Reck_M_Rig:ctrl_pecho
+      position: {x: -0, y: 0.30097565, z: 0.04055842}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_pie_izq
+      parentName: Reck_M_Rig:ctrl_todo
+      position: {x: -0.091226116, y: -0.19724075, z: -0.023926329}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ctrl_pie_der
+      parentName: Reck_M_Rig:ctrl_todo
+      position: {x: 0.091230035, y: -0.19724075, z: -0.023926329}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:loc_rodilla_izq
+      parentName: Reck_M_Rig:ctrl_todo
+      position: {x: -0.0863608, y: -0.02112708, z: 0.18356965}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:loc_rodilla_der
+      parentName: Reck_M_Rig:ctrl_todo
+      position: {x: 0.0863608, y: -0.021127032, z: 0.18356967}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:todo
+      parentName: Reck_M_Rig:ctrl_todo
+      position: {x: -0, y: 0.00012544631, z: 0}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:parte_alta
+      parentName: Reck_M_Rig:todo
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:cadera
+      parentName: Reck_M_Rig:parte_alta
+      position: {x: -0, y: 0.08050556, z: 0}
+      rotation: {x: -0.058435213, y: -0, z: -0, w: 0.99829125}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:cintura
+      parentName: Reck_M_Rig:cadera
+      position: {x: -0, y: 0.09234099, z: -0.0032491866}
+      rotation: {x: 0.04536297, y: -0, z: -0, w: 0.9989706}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:pecho
+      parentName: Reck_M_Rig:cintura
+      position: {x: -0, y: 0.088752754, z: -0.0016038154}
+      rotation: {x: 0.058417242, y: -0, z: -0, w: 0.99829227}
+      scale: {x: 1, y: 1.0000001, z: 1.0000001}
+    - name: Reck_M_Rig:cuello
+      parentName: Reck_M_Rig:pecho
+      position: {x: -0, y: 0.16359165, z: 0.0060412204}
+      rotation: {x: 0.025304578, y: -0, z: -0, w: 0.99967986}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:cabeza
+      parentName: Reck_M_Rig:cuello
+      position: {x: -0, y: 0.14, z: 1.110223e-18}
+      rotation: {x: -0.068885915, y: -0, z: -0, w: 0.9976245}
+      scale: {x: 1, y: 0.9999999, z: 0.9999999}
+    - name: Reck_M_Rig:fin_de_cabeza
+      parentName: Reck_M_Rig:cabeza
+      position: {x: -0, y: 0.47048753, z: -0.00017441572}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+    - name: Reck_M_Rig:hombro_izq
+      parentName: Reck_M_Rig:pecho
+      position: {x: -0.15367988, y: 0.10474837, z: 0.00048212128}
+      rotation: {x: 0.0000000037252899, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:brazo_izq
+      parentName: Reck_M_Rig:hombro_izq
+      position: {x: -0.08104495, y: -0.027300043, z: -0.00031621393}
+      rotation: {x: -0.06812676, y: -0.046619914, z: -0.42303878, w: 0.90234333}
+      scale: {x: 1, y: 0.9999999, z: 1.0000001}
+    - name: Reck_M_Rig:codo_izq
+      parentName: Reck_M_Rig:brazo_izq
+      position: {x: -0.11582141, y: -0.15184371, z: 0.0039928937}
+      rotation: {x: -0.221995, y: -0.044168655, z: -0.036665387, w: 0.97335654}
+      scale: {x: 1, y: 0.9999998, z: 0.99999976}
+    - name: Reck_M_Rig:mano_izq
+      parentName: Reck_M_Rig:codo_izq
+      position: {x: -0.065668926, y: -0.092850275, z: -0.02412241}
+      rotation: {x: 0.03800697, y: 0.0739879, z: -0.020517718, w: 0.9963234}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1.0000002}
+    - name: Reck_M_Rig:dedo_izq
+      parentName: Reck_M_Rig:mano_izq
+      position: {x: -0.028605336, y: -0.07559851, z: -0.016115103}
+      rotation: {x: -0, y: 0.0000000037252894, z: -0.000000002793967, w: 1}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
+    - name: Reck_M_Rig:hombro_der
+      parentName: Reck_M_Rig:pecho
+      position: {x: 0.15368, y: 0.10474804, z: 0.00048210457}
+      rotation: {x: 1, y: -0, z: -0, w: -0.0000000037252899}
+      scale: {x: 1, y: 1.0000004, z: 1.0000004}
+    - name: Reck_M_Rig:brazo_der
+      parentName: Reck_M_Rig:hombro_der
+      position: {x: 0.081044994, y: 0.027299915, z: 0.0003162186}
+      rotation: {x: -0.068120055, y: -0.046616703, z: -0.42304006, w: 0.90234345}
+      scale: {x: 0.99999994, y: 1.0000002, z: 1.0000005}
+    - name: Reck_M_Rig:codo_der
+      parentName: Reck_M_Rig:brazo_der
+      position: {x: 0.115821, y: 0.15184368, z: -0.0039929547}
+      rotation: {x: -0.221995, y: -0.04416905, z: -0.036663648, w: 0.97335666}
+      scale: {x: 1.0000004, y: 0.9999996, z: 0.9999997}
+    - name: Reck_M_Rig:mano_der
+      parentName: Reck_M_Rig:codo_der
+      position: {x: 0.06566899, y: 0.09284993, z: 0.024122285}
+      rotation: {x: 0.038003307, y: 0.0739811, z: -0.020517502, w: 0.996324}
+      scale: {x: 1, y: 1.0000004, z: 1.0000002}
+    - name: Reck_M_Rig:dedo_der
+      parentName: Reck_M_Rig:mano_der
+      position: {x: 0.028606, y: 0.075598694, z: 0.016115468}
+      rotation: {x: -0.0000000037252894, y: 0.000000007450579, z: 0.000000007217748, w: 1}
+      scale: {x: 1, y: 0.9999997, z: 0.99999994}
+    - name: Reck_M_Rig:parte_baja
+      parentName: Reck_M_Rig:todo
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:pierna_izq
+      parentName: Reck_M_Rig:parte_baja
+      position: {x: -0.079314046, y: -0.022846973, z: 0}
+      rotation: {x: 0.0009651971, y: 0.015330933, z: 0.0019387243, w: 0.99988014}
+      scale: {x: 1, y: 1, z: 0.99999994}
+    - name: Reck_M_Rig:rodilla_izq
+      parentName: Reck_M_Rig:pierna_izq
+      position: {x: -0.0070467493, y: -0.10496166, z: 1.7763568e-17}
+      rotation: {x: 0.17708482, y: -0.0000000027939677, z: 3.4833647e-10, w: 0.98419565}
+      scale: {x: 0.99999994, y: 0.99999976, z: 1.0000004}
+    - name: Reck_M_Rig:pie_izq
+      parentName: Reck_M_Rig:rodilla_izq
+      position: {x: -0.0048653265, y: -0.0872982, z: 0.0069385585}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1.0000001, z: 1}
+    - name: Reck_M_Rig:pierna_der
+      parentName: Reck_M_Rig:parte_baja
+      position: {x: 0.07931399, y: -0.022847189, z: 0.00000001678742}
+      rotation: {x: 0.99988014, y: -0.0019389391, z: 0.015332621, w: -0.00096534204}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000002}
+    - name: Reck_M_Rig:rodilla_der
+      parentName: Reck_M_Rig:pierna_der
+      position: {x: 0.0070468, y: 0.104961395, z: 1.7763568e-17}
+      rotation: {x: 0.17708476, y: 0.0000000042491592, z: -0.0000000057043508, w: 0.98419565}
+      scale: {x: 1, y: 1.0000005, z: 1.0000004}
+    - name: Reck_M_Rig:pie_der
+      parentName: Reck_M_Rig:rodilla_der
+      position: {x: 0.0048653, y: 0.08729827, z: -0.0069385986}
+      rotation: {x: -0, y: -0, z: -1.1102229e-16, w: 1}
+      scale: {x: 1, y: 1.0000004, z: 1.0000005}
+    - name: Reck_M_Rig:ikHandle1
+      parentName: Reck_M_Idle(Clone)
+      position: {x: -0.29113075, y: 0.2875741, z: 0.14282872}
+      rotation: {x: -0.33154035, y: 0.15542743, z: 0.22511216, w: 0.90291077}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ikHandle2
+      parentName: Reck_M_Idle(Clone)
+      position: {x: 0.30806422, y: 0.30928272, z: 0.17803057}
+      rotation: {x: -0.37119403, y: -0.20932332, z: -0.15373294, w: 0.8914959}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ikHandle3
+      parentName: Reck_M_Idle(Clone)
+      position: {x: 0.0912261, y: 0.0153159, z: 0.060791187}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:ikHandle4
+      parentName: Reck_M_Idle(Clone)
+      position: {x: -0.091226116, y: 0.015315931, z: 0.060791153}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:Reck_M_Low:Reck_M_High122
+      parentName: Reck_M_Idle(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Reck_M_Rig:Reck_M_Low:Reck_M_low
+      parentName: Reck_M_Idle(Clone)
+      position: {x: -0, y: 0.85800004, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: Reck_M_Rig:Reck_M_Low:Reck_M_High122
+    hasTranslationDoF: 0
+    hasExtraRoot: 1
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 1
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

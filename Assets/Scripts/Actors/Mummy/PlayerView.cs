@@ -1,89 +1,108 @@
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Rendering.Universal;
-using static PlayerEnum; // <-- IMPORTANTE
+using UnityEngine.Serialization;
+using static PlayerEnum;
 
-/// <summary>
-/// PlayerView
-/// Solo visual: Animator/FX/UI. Sin reglas de juego.
-/// </summary>
 public sealed class PlayerView : MonoBehaviour, IPausable
 {
     [Header("Anim & FX")]
     [SerializeField] private Animator _anim;
-    
+
     [SerializeField] private RuntimeAnimatorController _controllerNormal;
     [SerializeField] private RuntimeAnimatorController _controllerSmall;
     [SerializeField] private RuntimeAnimatorController _controllerHead;
     
+    [SerializeField] private Avatar _avatarNormal;
+    [SerializeField] private Avatar _avatarSmall;
+    [SerializeField] private Avatar _avatarHead;
+
     [SerializeField] public ParticleSystem _shootFX;
     [SerializeField] public ParticleSystem _smashFX;
-    
+    [SerializeField] public ParticleSystem _dropFX;
+
     [Header("Shoot Visual")]
     [SerializeField] private GameObject _decal;
     [SerializeField] private DecalProjector _rangeIndicator;
     [SerializeField] private LineRenderer _arcRenderer;
-    
+
     [Header("UI (opcional)")]
-    [SerializeField] private Image _headTimerFill; 
+    [SerializeField] private Image _headTimerFill;
     [SerializeField] private Sprite _spriteHead;
     [SerializeField] private Sprite _spriteNormalOrSmall;
-    
-    [Header("Swing Visual")]
-    [Tooltip("LineRenderer usado para dibujar la cuerda del hook.")]
-    [SerializeField] private LineRenderer _swingLine;
-    [Tooltip("Punto de salida visual de la cuerda. Si es null se usa el transform del player.")]
-    [SerializeField] private Transform _swingLineStart;
 
-    private Transform _swingLineEnd;   // hook (se asigna en SwingState)
+    [Header("Swing Visual")]
+    [SerializeField] private LineRenderer swingLine;
+    [SerializeField] private Transform swingLineStart;
+
+    private Transform _swingLineEnd;
     private bool _swingLineActive;
+
+    [Header("Hook/Bandage Visual")]
+    [Tooltip("Material que controla el reveal/dibujado de la venda/cuerda.")]
+
+    [SerializeField] private Material _hookMaterial;
+    [SerializeField] private float _bandageLaunchDelay = 0.1f;
+    [SerializeField] private float _bandageDrawDuration = 0.5f;
+
+    private const float BANDAGE_START = 1.5f;
+    private const float BANDAGE_END   = 0;
     
+    private Coroutine _bandageRoutine;
+
+    private static readonly int RightThresholdId = Shader.PropertyToID("_rightThreshold");
+
     public GameObject Decal => _decal;
     public DecalProjector RangeIndicator => _rangeIndicator;
     public LineRenderer ArcRenderer => _arcRenderer;
     public Animator Animator => _anim;
+    public Material HookMaterial => _hookMaterial;
 
-    /// <summary>
-    /// Método que se suscribe al evento OnSizeChanged.
-    /// Cambia el asset del Animator en tiempo de ejecución.
-    /// </summary>
-    public void OnSizeChanged(PlayerSize newSize)
+    // ---------------- SIZE ----------------
+    private void OnSizeChanged(PlayerSize newSize)
     {
         if (_anim == null) return;
 
-        // 1. GUARDAR ESTADO ACTUAL
-        // Es importante verificar si el animator está inicializado para evitar errores
+        // Guardamos el estado previo para intentar mantener la fluidez
         bool wasWalking = _anim.parameterCount > 0 && _anim.GetBool("Walk");
         bool wasIdle = _anim.parameterCount > 0 && _anim.GetBool("Idle");
 
-        // 2. CAMBIAR CONTROLLER
         switch (newSize)
         {
             case PlayerSize.Normal:
                 if (_controllerNormal != null) _anim.runtimeAnimatorController = _controllerNormal;
+                if (_avatarNormal != null) _anim.avatar = _avatarNormal; // <--- CAMBIO DE AVATAR
                 break;
+
             case PlayerSize.Small:
                 if (_controllerSmall != null) _anim.runtimeAnimatorController = _controllerSmall;
+                if (_avatarSmall != null) _anim.avatar = _avatarSmall;   // <--- CAMBIO DE AVATAR
                 break;
+
             case PlayerSize.Head:
                 if (_controllerHead != null) _anim.runtimeAnimatorController = _controllerHead;
+                if (_avatarHead != null) _anim.avatar = _avatarHead;     // <--- CAMBIO DE AVATAR
                 break;
         }
 
-        // 3. RESTAURAR ESTADO
-        // Unity a veces tarda un frame en reinicializar los parámetros tras el cambio,
-        // pero usualmente reasignarlos inmediatamente funciona si los nombres coinciden.
         if (_anim.runtimeAnimatorController != null)
         {
+            // Opcional: A veces es necesario forzar un Rebind() si los huesos se quedan "locos"
+            // _anim.Rebind(); 
+            
             _anim.SetBool("Walk", wasWalking);
             _anim.SetBool("Idle", wasIdle);
         }
     }
-    
+
     public void SetMoveSpeedVisual(float normalized)
     {
         if (_anim) _anim.SetFloat("Speed", normalized);
     }
+
+    // ---------------- HEAD UI ----------------
     
     public void SetHeadTimerSprite(bool isHead)
     {
@@ -96,57 +115,144 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     {
         if (_headTimerFill) _headTimerFill.fillAmount = Mathf.Clamp01(n01);
     }
-    
-    
-    /// <summary>
-    /// Activa/Desactiva la cuerda del swing. Al activar, se pasa el transform del hook.
-    /// </summary>
+
+    // ---------------- SWING LINE ----------------
     public void SetSwingLineActive(bool active, Transform hookEnd = null)
     {
         _swingLineActive = active;
         _swingLineEnd = hookEnd;
 
-        if (_swingLine)
+        if (swingLine)
         {
-            _swingLine.enabled = active;
+            swingLine.enabled = active;
             if (active)
             {
-                _swingLine.positionCount = 2;
-                _swingLine.useWorldSpace = true;
+                swingLine.positionCount = 2;
+                swingLine.useWorldSpace = true;
                 RefreshSwingLineNow();
             }
         }
     }
 
-    /// <summary>
-    /// Refresca la posición de la cuerda (player -> hook). Llamado en LateUpdate para quedar al final del frame.
-    /// </summary>
     private void RefreshSwingLineNow()
     {
-        if (!_swingLineActive || !_swingLine || !_swingLineEnd) return;
-
-        var start = _swingLineStart ? _swingLineStart.position : transform.position;
-        var end   = _swingLineEnd.position;
-
-        _swingLine.SetPosition(0, start);
-        _swingLine.SetPosition(1, end);
+        // Validación de seguridad
+        if (!swingLine || !_swingLineEnd) return;
+        
+        swingLine.SetPosition(0, swingLineStart.position);
+        swingLine.SetPosition(1, _swingLineEnd.position);
     }
 
-    private void LateUpdate()
+    private void FixedUpdate()
     {
         if (_swingLineActive) RefreshSwingLineNow();
     }
 
+    // ---------------- BANDAGE DRAW (VISUAL ONLY) ----------------
+    public void PlayBandageDraw(Action onAttachMoment = null, float? launchDelayOverride = null, float? drawDurationOverride = null)
+    {
+        if (_bandageRoutine != null)
+            StopCoroutine(_bandageRoutine);
+
+        float delay = launchDelayOverride ?? _bandageLaunchDelay;
+        float dur   = drawDurationOverride ?? _bandageDrawDuration;
+
+        _bandageRoutine = StartCoroutine(BandageRoutine(delay, dur, onAttachMoment));
+    }
+
+    public void CancelBandageDraw()
+    {
+        if (_bandageRoutine != null)
+        {
+            StopCoroutine(_bandageRoutine);
+            _bandageRoutine = null;
+        }
+    }
+
+    private IEnumerator BandageRoutine(float delay, float drawDuration, Action onAttachMoment)
+    {
+        if (_hookMaterial == null)
+        {
+            onAttachMoment?.Invoke();
+            _bandageRoutine = null;
+            yield break;
+        }
+
+        _hookMaterial.SetFloat(RightThresholdId, BANDAGE_START);
+
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+
+        float time = 0f;
+        bool fired = false;
+
+        while (time < drawDuration)
+        {
+            time += Time.deltaTime;
+
+            float newValue = Mathf.Lerp(BANDAGE_START, BANDAGE_END, time / drawDuration);
+
+            _hookMaterial.SetFloat(RightThresholdId, newValue);
+
+            if (!fired && newValue <= 0f)
+            {
+                fired = true;
+                onAttachMoment?.Invoke();
+            }
+
+            yield return null;
+        }
+
+
+        _hookMaterial.SetFloat(RightThresholdId, BANDAGE_END);
+        _bandageRoutine = null;
+    }
+    // ---------------- DROP ----------------
+
+    private void PlayDropFx(PlayerSize playerSize)
+    {
+        if (_dropFX == null) return;
+
+        var main = _dropFX.main;
+
+        switch (playerSize)
+        {
+            case PlayerSize.Normal:
+                main.startSize = new ParticleSystem.MinMaxCurve(4f, 5.5f);
+                main.startColor = new Color(1f, 0.6f, 1f, 0.5f);
+                break;
+
+            case PlayerSize.Small:
+                main.startSize = new ParticleSystem.MinMaxCurve(2f, 3.5f);
+                main.startColor = new Color(0.4f, 0.6f, 1f, 0.5f);
+                break;
+
+            case PlayerSize.Head:
+                main.startSize = new ParticleSystem.MinMaxCurve(1f, 2.5f);
+                main.startColor = new Color(0.6f, 1f, 1f, 0.5f);
+                break;
+        }
+
+        _dropFX.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        _dropFX.Play();
+    }
+    
+    // ---------------- PAUSE ----------------
     public void OnPauseChanged(bool paused) => _anim.enabled = !paused;
+
     private void OnEnable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(OnSizeChanged);
+        GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(PlayDropFx);
     }
 
     private void OnDisable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(OnSizeChanged);
+        GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(PlayDropFx);
+
+        CancelBandageDraw();
     }
 }

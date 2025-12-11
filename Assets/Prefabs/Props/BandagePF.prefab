@@ -118,6 +118,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54d38fbeaf411274781bcef17f241bc0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  meshRenderer: {fileID: 8440578047368697944}
 --- !u!1 &3202844938053361236
 GameObject:
   m_ObjectHideFlags: 0
@@ -242,15 +243,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8472728017341921147, guid: 8f777bb1e73868d48971b1d895da3b9b, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.50709456
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8472728017341921147, guid: 8f777bb1e73868d48971b1d895da3b9b, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.50709456
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8472728017341921147, guid: 8f777bb1e73868d48971b1d895da3b9b, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.50709456
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8472728017341921147, guid: 8f777bb1e73868d48971b1d895da3b9b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -258,7 +259,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8472728017341921147, guid: 8f777bb1e73868d48971b1d895da3b9b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.24
+      value: 0.481
       objectReference: {fileID: 0}
     - target: {fileID: 8472728017341921147, guid: 8f777bb1e73868d48971b1d895da3b9b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -292,6 +293,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8472728017341921147, guid: 8f777bb1e73868d48971b1d895da3b9b, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -300,5 +305,10 @@ PrefabInstance:
 --- !u!4 &8398498865980371254 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8472728017341921147, guid: 8f777bb1e73868d48971b1d895da3b9b, type: 3}
+  m_PrefabInstance: {fileID: 78913072549185101}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &8440578047368697944 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8375197801821429269, guid: 8f777bb1e73868d48971b1d895da3b9b, type: 3}
   m_PrefabInstance: {fileID: 78913072549185101}
   m_PrefabAsset: {fileID: 0}

@@ -122,7 +122,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
     public void OnLockChanged(bool locked)
     {
         PlayerControlState.SetLock(locked);
-        
+
         
         _rb.isKinematic = PlayerControlState.AnyBlocked;
 
@@ -130,6 +130,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
             _sm.ChangeState(PlayerStateId.Idle);
 
         _sm.enabled = !locked;
+        GetComponent<Collider>().enabled = !locked;
     }
     
     private void OnEnable()

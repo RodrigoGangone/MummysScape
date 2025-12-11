@@ -1,36 +1,69 @@
 using UnityEngine;
 using static PlayerEnum;
 
-/// <summary>
-/// DropBandageState
-/// Consume 1 venda del Model y (opcional) spawnea un pickup. Luego vuelve a Idle.
-/// Permitido en Normal/Small (SizeRules).
-/// </summary>
 public sealed class DropBandageState : State
 {
     private readonly PlayerContext _ctx;
-    private readonly GameObject _bandagePickupPrefab; // opcional, puede ser null
+    private readonly GameObject _bandagePickupPrefab;
+
+    // Configuración del lanzamiento (podrías pasarlas por constructor si varían)
+    private readonly float _throwForce = 5f;
+    private readonly float _upwardForce = 2f;
 
     public DropBandageState(PlayerContext ctx, GameObject bandagePickupPrefab)
-    { _ctx = ctx; _bandagePickupPrefab = bandagePickupPrefab; }
+    { 
+        _ctx = ctx; 
+        _bandagePickupPrefab = bandagePickupPrefab; 
+    }
 
     public override void OnEnter()
     {
-        Debug.Log("DropBandage!");
-        
-        // Si no hay vendas vuelvo a idle, sino las consumo
+        // 1. Chequeo de inventario
         if (!_ctx.Model.TryConsumeBandage())
         {
-            Debug.Log("DropBandage! pero sin vendas");
             return;
         }
 
-        // Spawn del prefab venda //TODO: mejorar esto para que la venda no se pueda agarrar hasta que salgas del trigger y vuelvas a entrar.
+        
         if (_bandagePickupPrefab != null)
         {
-            Vector3 pos = _ctx.Rb.position + _ctx.Tf.forward * 0.5f + Vector3.up * 0.2f;
-            Quaternion rot = Quaternion.identity;
-            Object.Instantiate(_bandagePickupPrefab, pos, rot);
+            SpawnAndThrowBandage();
+        }
+        
+        // Asumiendo que esto es una acción instantánea, volvemos a Idle u otro estado
+        // (Depende de tu máquina de estados, aquí no hago nada para dejar tu lógica original)
+    }
+
+    private void SpawnAndThrowBandage()
+    {
+        // Posición de salida: Un poco enfrente y arriba del jugador para evitar clipping inmediato
+        Vector3 spawnPos = _ctx.Rb.position + _ctx.Tf.forward * 0.5f + Vector3.up * 1.0f;
+        
+        // Instanciamos con una rotación aleatoria para variedad visual
+        GameObject bandage = Object.Instantiate(_bandagePickupPrefab, spawnPos, Random.rotation);
+
+        // Lógica física (Rigidbody)
+        Rigidbody bandageRb = bandage.GetComponent<Rigidbody>();
+
+        if (bandageRb != null)
+        {
+            // Calculamos el vector de fuerza: Hacia adelante + Hacia arriba
+            Vector3 forceDirection = (_ctx.Tf.forward * _throwForce) + (Vector3.up * _upwardForce);
+            
+            // Usamos Impulse porque es una fuerza instantánea (como un golpe o lanzamiento)
+            bandageRb.AddForce(forceDirection, ForceMode.Impulse);
+
+            // Agregamos un torque (giro) aleatorio para que la venda gire en el aire
+            bandageRb.AddTorque(Random.insideUnitSphere * 10f, ForceMode.Impulse);
+        }
+
+        // SOLUCIÓN AL TODO:
+        // Buscamos el script del pickup en el objeto instanciado e invocamos un retraso.
+        // Asumo que tu script se llama 'BandagePickup' o similar.
+        var pickupScript = bandage.GetComponent<BandagePickup>(); 
+        if (pickupScript != null)
+        {
+            pickupScript.DisablePickupForSeconds(1.0f); // Inmune por 1 segundo
         }
     }
 
