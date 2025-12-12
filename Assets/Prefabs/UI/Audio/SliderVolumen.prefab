@@ -375,7 +375,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 5320907251729482927}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0, g: 1, b: 0.7549124, a: 1}
@@ -412,9 +412,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3926d4a5e30835d4a85f982ed7a00d14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _targetImage: {fileID: 1798880493335737521}
   _spriteUnmuted: {fileID: 21300000, guid: de0737d342c713c49a3215f848d9ec81, type: 3}
   _spriteMuted: {fileID: 21300000, guid: 4acda59dd29911b47bfa9da7fc213ed3, type: 3}
   _startMuted: 0
+  _forceSameSpriteOnSpriteSwap: 1
   _onMutedChanged:
     m_PersistentCalls:
       m_Calls: []

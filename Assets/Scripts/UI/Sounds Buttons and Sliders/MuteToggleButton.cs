@@ -1,120 +1,97 @@
 /// <summary>
 /// MuteToggleButton
-/// Controla el icono de un botón de mute y mantiene un estado bool IsMuted.
-/// - Al hacer click o Submit sobre el botón, alterna entre muteado / no muteado.
-/// - Cambia el sprite base del Image según el estado.
-/// - Expone un evento para que otro sistema (AudioManager, etc.) aplique el mute real.
-/// No toca volúmenes directamente: una clase externa debe reaccionar a IsMuted.
+/// Controla el ícono de un botón de mute y mantiene un estado bool IsMuted.
+/// - Al hacer click / submit (Button) alterna muteado / no muteado.
+/// - Cambia el sprite de un Image objetivo (puede ser el del botón o un hijo).
+/// - Expone eventos para que un sistema externo (AudioOptionsUI) aplique el mute real y guarde prefs.
 /// </summary>
 
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
+[DisallowMultipleComponent]
 [RequireComponent(typeof(Button))]
-[RequireComponent(typeof(Image))]
 public sealed class MuteToggleButton : MonoBehaviour
 {
+    [Header("Target")]
+    [Tooltip("Image que cambia de sprite (si tu ícono es un hijo, arrastralo acá). Si está vacío, usa el Image del mismo GO.")]
+    [SerializeField] private Image _targetImage;
+
     [Header("Sprites")]
-    [Tooltip("Sprite cuando NO está muteado (ej: Music).")]
+    [Tooltip("Sprite cuando NO está muteado.")]
     [SerializeField] private Sprite _spriteUnmuted;
 
-    [Tooltip("Sprite cuando está muteado (ej: MusicMute).")]
+    [Tooltip("Sprite cuando está muteado.")]
     [SerializeField] private Sprite _spriteMuted;
 
-    [Header("Estado inicial")]
-    [SerializeField] private bool _startMuted = false;
+    [Header("Estado inicial (solo si nadie llama SetMuted desde afuera)")]
+    [SerializeField] private bool _startMuted;
 
-    /// <summary>
-    /// Estado actual del botón (true = muteado).
-    /// </summary>
+    [Header("Compatibilidad UI")]
+    [Tooltip("Si el Button usa Transition=SpriteSwap y el target es el mismo Graphic, forzamos que todos los estados usen el mismo sprite.")]
+    [SerializeField] private bool _forceSameSpriteOnSpriteSwap = true;
+
     public bool IsMuted { get; private set; }
 
-    /// <summary>
-    /// Evento C# cuando cambia el estado de mute.
-    /// </summary>
     public event Action<bool> MutedChanged;
 
-    [Header("Unity Event (opcional)")]
-    [Tooltip("Se dispara cuando cambia el estado de mute (true = muteado).")]
     [SerializeField] private UnityEvent<bool> _onMutedChanged;
 
     private Button _button;
-    private Image _image;
     private bool _initializedFromOutside;
 
     private void Awake()
     {
         _button = GetComponent<Button>();
-        _image  = GetComponent<Image>();
+        if (_targetImage == null) _targetImage = GetComponent<Image>();
     }
-    
+
     private void Start()
     {
-        // Si NADIE nos seteó desde afuera (AudioOptionsUI.SetMuted),
-        // usamos el estado por defecto de inspector (_startMuted).
         if (!_initializedFromOutside)
-        {
-            IsMuted = _startMuted;
-            ApplySprite();
-        }
+            SetMuted(_startMuted, notify: false);
     }
 
-    private void OnEnable()
-    {
-        _button.onClick.AddListener(HandleClick);
-    }
+    private void OnEnable()  => _button.onClick.AddListener(OnClick);
+    private void OnDisable() => _button.onClick.RemoveListener(OnClick);
 
-    private void OnDisable()
-    {
-        _button.onClick.RemoveListener(HandleClick);
-    }
+    private void OnClick() => ToggleMute();
 
-    private void HandleClick()
-    {
-        ToggleMute();
-    }
+    public void ToggleMute() => SetMuted(!IsMuted, notify: true);
 
-    /// <summary>
-    /// Alterna el estado de mute y actualiza el icono.
-    /// </summary>
-    public void ToggleMute()
+    public void SetMuted(bool muted, bool notify = true)
     {
-        IsMuted = !IsMuted;
-        _initializedFromOutside = true; // a partir de acá respetamos este valor
+        IsMuted = muted;
+        _initializedFromOutside = true;
+
         ApplySprite();
 
+        if (!notify) return;
         MutedChanged?.Invoke(IsMuted);
         _onMutedChanged?.Invoke(IsMuted);
     }
 
     private void ApplySprite()
     {
-        if (_image == null) return;
+        if (_targetImage == null) return;
 
-        if (IsMuted)
-        {
-            if (_spriteMuted != null)
-                _image.sprite = _spriteMuted;
-        }
-        else
-        {
-            if (_spriteUnmuted != null)
-                _image.sprite = _spriteUnmuted;
-        }
-    }
+        var sprite = IsMuted ? _spriteMuted : _spriteUnmuted;
+        if (sprite != null)
+            _targetImage.sprite = sprite;
 
-    /// <summary>
-    /// Permite setear el estado desde código externo sin disparar Toggle manual.
-    /// </summary>
-    public void SetMuted(bool muted)
-    {
-        IsMuted = muted;
-        _initializedFromOutside = true;
-        ApplySprite();
+        // Evita que SpriteSwap te lo pise cuando el botón está seleccionado/highlighted
+        if (!_forceSameSpriteOnSpriteSwap) return;
+        if (_button == null) return;
+        if (_button.transition != Selectable.Transition.SpriteSwap) return;
+        if (_button.targetGraphic != _targetImage) return;
 
-        MutedChanged?.Invoke(IsMuted);
-        _onMutedChanged?.Invoke(IsMuted);
+        var st = _button.spriteState;
+        st.highlightedSprite = sprite;
+        st.pressedSprite     = sprite;
+        st.selectedSprite    = sprite;
+        st.disabledSprite    = sprite;
+        _button.spriteState  = st;
     }
 }

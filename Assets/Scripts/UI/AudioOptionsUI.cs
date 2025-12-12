@@ -92,7 +92,10 @@ public class AudioOptionsUI : MonoBehaviour
             masterMuteButton.MutedChanged += OnMasterMutedChanged;
 
             bool muted = Save.GetMuted(VolumeSoundId.Master, false);
-            masterMuteButton.SetMuted(muted);   // Esto dispara OnMasterMutedChanged
+            masterMuteButton.SetMuted(muted, notify: false); 
+            
+            // aplicar al mixer en el arranque
+            if (muted) AudioManager.Instance.SetBusVolume(AudioBus.Master, 0f);
         }
 
         // MUSIC
@@ -101,7 +104,10 @@ public class AudioOptionsUI : MonoBehaviour
             musicMuteButton.MutedChanged += OnMusicMutedChanged;
 
             bool muted = Save.GetMuted(VolumeSoundId.Music, false);
-            musicMuteButton.SetMuted(muted);
+            musicMuteButton.SetMuted(muted, notify: false); 
+            
+            // aplicar al mixer en el arranque
+            if (muted) AudioManager.Instance.SetBusVolume(AudioBus.Music, 0f);
         }
 
         // AMBIENT
@@ -110,7 +116,10 @@ public class AudioOptionsUI : MonoBehaviour
             ambientMuteButton.MutedChanged += OnAmbientMutedChanged;
 
             bool muted = Save.GetMuted(VolumeSoundId.Ambient, false);
-            ambientMuteButton.SetMuted(muted);
+            ambientMuteButton.SetMuted(muted, notify: false); 
+            
+            // aplicar al mixer en el arranque
+            if (muted) AudioManager.Instance.SetBusVolume(AudioBus.Ambient, 0f);
         }
 
         // SFX
@@ -119,7 +128,10 @@ public class AudioOptionsUI : MonoBehaviour
             sfxMuteButton.MutedChanged += OnSfxMutedChanged;
 
             bool muted = Save.GetMuted(VolumeFxId.Sfx, false);
-            sfxMuteButton.SetMuted(muted);
+            sfxMuteButton.SetMuted(muted, notify: false); 
+            
+            // aplicar al mixer en el arranque
+            if (muted) AudioManager.Instance.SetBusVolume(AudioBus.Sfx, 0f);
         }
 
         // UI
@@ -128,7 +140,10 @@ public class AudioOptionsUI : MonoBehaviour
             uiMuteButton.MutedChanged += OnUiMutedChanged;
 
             bool muted = Save.GetMuted(VolumeFxId.UI, false);
-            uiMuteButton.SetMuted(muted);
+            uiMuteButton.SetMuted(muted, notify: false); 
+            
+            // aplicar al mixer en el arranque
+            if (muted) AudioManager.Instance.SetBusVolume(AudioBus.UI, 0f);
         }
 
         #endregion

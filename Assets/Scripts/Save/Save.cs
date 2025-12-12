@@ -52,15 +52,21 @@ public static class Save
     public static float GetVolume(VolumeFxId id, float def = 0.8f) => Get(PrefKeys.VolumeFxKey(id), def);
     
     // ---- Mute ----
+// ---- Mute ----
+// Guardamos como int (0/1) para no depender de que PlayerPrefsManager.Get<T> soporte bool.
+
     public static void SetMuted(VolumeSoundId id, bool muted)
-        => Set(PrefKeys.MuteSoundKey(id), muted);
+        => PlayerPrefsManager.Set(PrefKeys.MuteSoundKey(id), muted ? 1 : 0);
+
     public static bool GetMuted(VolumeSoundId id, bool def = false)
-        => Get(PrefKeys.MuteSoundKey(id), def);
+        => PlayerPrefsManager.Get(PrefKeys.MuteSoundKey(id), def ? 1 : 0) != 0;
 
     public static void SetMuted(VolumeFxId id, bool muted)
-        => Set(PrefKeys.MuteFxKey(id), muted);
+        => PlayerPrefsManager.Set(PrefKeys.MuteFxKey(id), muted ? 1 : 0);
+
     public static bool GetMuted(VolumeFxId id, bool def = false)
-        => Get(PrefKeys.MuteFxKey(id), def);
+        => PlayerPrefsManager.Get(PrefKeys.MuteFxKey(id), def ? 1 : 0) != 0;
+
 
 
     // ---- Tiempos ----
