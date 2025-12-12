@@ -43,10 +43,10 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
     {
         _sm = GetComponent<StateMachinePlayer>();
         _rb = GetComponent<Rigidbody>();
-        _rb.interpolation = RigidbodyInterpolation.Interpolate;
+        //_rb.interpolation = RigidbodyInterpolation.Interpolate;
         _rb.constraints = RigidbodyConstraints.FreezeRotation;
 
-        _swingHandler = GetComponent<SwingHandler>();
+        _swingHandler = GetComponent<SwingHandler>(); 
         _inputDriver = GetComponent<PlayerInputStateDriver>();
 
         // PlayerEvents

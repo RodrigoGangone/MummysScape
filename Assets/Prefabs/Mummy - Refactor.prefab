@@ -67,8 +67,11 @@ MonoBehaviour:
   _headTimerFill: {fileID: 0}
   _spriteHead: {fileID: 0}
   _spriteNormalOrSmall: {fileID: 0}
-  swingLine: {fileID: 6743598973724631453}
-  swingLineStart: {fileID: 4651885069105565579}
+  _bandageLine: {fileID: 6743598973724631453}
+  _bandageDrawDuration: 0.3
+  _handAnchorNormal: {fileID: 5545762264362211951}
+  _handAnchorSmall: {fileID: 4651885069105565579}
+  _handAnchorHead: {fileID: 0}
 --- !u!95 &6364997378442541290
 Animator:
   serializedVersion: 5
@@ -765,7 +768,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 1
+  m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 2
 --- !u!136 &4263530151276915557
@@ -809,10 +812,9 @@ MonoBehaviour:
   _damper: 12
   _massScale: 45
   _maxTangentialSpeed: 6
-  _lineRenderer: {fileID: 6743598973724631453}
-  _hookMaterial: {fileID: 2100000, guid: 961099e95cce62a47b7d2bb6408fea2d, type: 2}
-  _lineStartPoint: {fileID: 6578946205384916507}
-  _drawDuration: 0.15
+  _useGravityAssist: 1
+  _gravityAssist: 2
+  _tangentialBrake: 5
 --- !u!114 &4265233260625840337
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1446,6 +1448,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d2cadc737786f634f846bed5f41d3626, type: 3}
+--- !u!4 &5545762264362211951 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1315312563766266678, guid: d2cadc737786f634f846bed5f41d3626, type: 3}
+  m_PrefabInstance: {fileID: 6824761768162021721}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &5942224257701112840 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: d2cadc737786f634f846bed5f41d3626, type: 3}
