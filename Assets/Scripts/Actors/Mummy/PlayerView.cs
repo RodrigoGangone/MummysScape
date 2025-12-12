@@ -39,26 +39,11 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
     private Transform _swingLineEnd;
     private bool _swingLineActive;
-
-    [Header("Hook/Bandage Visual")]
-    [Tooltip("Material que controla el reveal/dibujado de la venda/cuerda.")]
-
-    [SerializeField] private Material _hookMaterial;
-    [SerializeField] private float _bandageLaunchDelay = 0.1f;
-    [SerializeField] private float _bandageDrawDuration = 0.5f;
-
-    private const float BANDAGE_START = 1.5f;
-    private const float BANDAGE_END   = 0;
     
-    private Coroutine _bandageRoutine;
-
-    private static readonly int RightThresholdId = Shader.PropertyToID("_rightThreshold");
-
     public GameObject Decal => _decal;
     public DecalProjector RangeIndicator => _rangeIndicator;
     public LineRenderer ArcRenderer => _arcRenderer;
     public Animator Animator => _anim;
-    public Material HookMaterial => _hookMaterial;
 
     // ---------------- SIZE ----------------
     private void OnSizeChanged(PlayerSize newSize)
@@ -148,65 +133,6 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         if (_swingLineActive) RefreshSwingLineNow();
     }
 
-    // ---------------- BANDAGE DRAW (VISUAL ONLY) ----------------
-    public void PlayBandageDraw(Action onAttachMoment = null, float? launchDelayOverride = null, float? drawDurationOverride = null)
-    {
-        if (_bandageRoutine != null)
-            StopCoroutine(_bandageRoutine);
-
-        float delay = launchDelayOverride ?? _bandageLaunchDelay;
-        float dur   = drawDurationOverride ?? _bandageDrawDuration;
-
-        _bandageRoutine = StartCoroutine(BandageRoutine(delay, dur, onAttachMoment));
-    }
-
-    public void CancelBandageDraw()
-    {
-        if (_bandageRoutine != null)
-        {
-            StopCoroutine(_bandageRoutine);
-            _bandageRoutine = null;
-        }
-    }
-
-    private IEnumerator BandageRoutine(float delay, float drawDuration, Action onAttachMoment)
-    {
-        if (_hookMaterial == null)
-        {
-            onAttachMoment?.Invoke();
-            _bandageRoutine = null;
-            yield break;
-        }
-
-        _hookMaterial.SetFloat(RightThresholdId, BANDAGE_START);
-
-        if (delay > 0f)
-            yield return new WaitForSeconds(delay);
-
-        float time = 0f;
-        bool fired = false;
-
-        while (time < drawDuration)
-        {
-            time += Time.deltaTime;
-
-            float newValue = Mathf.Lerp(BANDAGE_START, BANDAGE_END, time / drawDuration);
-
-            _hookMaterial.SetFloat(RightThresholdId, newValue);
-
-            if (!fired && newValue <= 0f)
-            {
-                fired = true;
-                onAttachMoment?.Invoke();
-            }
-
-            yield return null;
-        }
-
-
-        _hookMaterial.SetFloat(RightThresholdId, BANDAGE_END);
-        _bandageRoutine = null;
-    }
     // ---------------- DROP ----------------
 
     private void PlayDropFx(PlayerSize playerSize)
@@ -252,7 +178,5 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(OnSizeChanged);
         GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(PlayDropFx);
-
-        CancelBandageDraw();
     }
 }

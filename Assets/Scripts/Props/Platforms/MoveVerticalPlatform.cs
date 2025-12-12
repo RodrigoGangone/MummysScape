@@ -94,7 +94,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
             speedFactor = Mathf.Lerp(0.1f, 1f, t);
         }
 
-        float step = speed * speedFactor * Time.deltaTime;
+        float step = speed * speedFactor * Time.fixedDeltaTime;
         
         Vector3 newPosition = Vector3.MoveTowards(_rb.position, target.position, step);
         _rb.MovePosition(newPosition);

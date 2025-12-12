@@ -69,9 +69,6 @@ MonoBehaviour:
   _spriteNormalOrSmall: {fileID: 0}
   swingLine: {fileID: 6743598973724631453}
   swingLineStart: {fileID: 4651885069105565579}
-  _hookMaterial: {fileID: 2100000, guid: 961099e95cce62a47b7d2bb6408fea2d, type: 2}
-  _bandageLaunchDelay: 0.1
-  _bandageDrawDuration: 0.5
 --- !u!95 &6364997378442541290
 Animator:
   serializedVersion: 5
@@ -812,13 +809,10 @@ MonoBehaviour:
   _damper: 12
   _massScale: 45
   _maxTangentialSpeed: 6
-  _useGravityAssist: 1
-  _gravityAssist: 2
-  _tangentialBrake: 5
   _lineRenderer: {fileID: 6743598973724631453}
   _hookMaterial: {fileID: 2100000, guid: 961099e95cce62a47b7d2bb6408fea2d, type: 2}
   _lineStartPoint: {fileID: 6578946205384916507}
-  _drawDuration: 0.1
+  _drawDuration: 0.15
 --- !u!114 &4265233260625840337
 MonoBehaviour:
   m_ObjectHideFlags: 0

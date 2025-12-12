@@ -128,6 +128,9 @@ public sealed class InteractionRuntime : MonoBehaviour
         float minDist = float.MaxValue;
         Rigidbody nearest = null;
 
+        // Obtenemos la mask de "Wall" localmente (asegúrate que tu layer se llame exactamente "Wall")
+        int wallMask = LayerMask.GetMask("Wall");
+
         foreach (var hit in hits)
         {
             if (!hit.CompareTag("Hook")) continue;
@@ -135,11 +138,24 @@ public sealed class InteractionRuntime : MonoBehaviour
             if (rb == null) continue;
 
             float dist = Vector3.Distance(playerTf.position, rb.position);
-            if (dist < minDist)
+
+            // OPTIMIZACIÓN: Si ya encontramos uno más cerca, ni nos molestamos en tirar el Raycast
+            if (dist >= minDist) continue;
+
+            // LOGICA DE OCLUSIÓN:
+            // Lanzamos un rayo desde el player hacia el objetivo
+            Vector3 direction = (rb.position - playerTf.position).normalized;
+
+            // Si el raycast golpea algo en la layer "Wall" antes de llegar a la distancia del objeto...
+            if (Physics.Raycast(playerTf.position, direction, dist, wallMask))
             {
-                minDist = dist;
-                nearest = rb;
+                // ... significa que hay una pared en medio, pasamos al siguiente.
+                continue;
             }
+
+            // Si pasa todas las pruebas, es el nuevo candidato
+            minDist = dist;
+            nearest = rb;
         }
 
         if (nearest == null) return false;

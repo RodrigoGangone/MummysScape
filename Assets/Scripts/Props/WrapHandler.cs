@@ -1,11 +1,19 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class WrapHandler : MonoBehaviour
 {
     [Header("Configuración Shader")]
     [Tooltip("Nombre de la propiedad en Shader Graph (ej: _Offset, _Fill)")]
     [SerializeField] private string _propertyName = "_Offset";
+
+    [FormerlySerializedAs("_unWrapValue")]
+    [FormerlySerializedAs("_initValue")]
+    [Header("Valores")] 
+    
+    [SerializeField] private float _unwrapValue;
+    [SerializeField] private float _wrapValue;
     
     [Header("Tiempos")]
     [SerializeField] private float _wrapDuration = 0.5f;   // Tiempo 0 a 1
@@ -27,7 +35,7 @@ public class WrapHandler : MonoBehaviour
         _propBlock = new MaterialPropertyBlock();
         _propID = Shader.PropertyToID(_propertyName);
 
-        _currentValue = 0f;
+        _currentValue = _unwrapValue;
         ApplyValue(_currentValue);
     }
 
@@ -38,7 +46,7 @@ public class WrapHandler : MonoBehaviour
         if (_currentCoroutine != null) StopCoroutine(_currentCoroutine);
         
         // Iniciamos corrutina hacia 1
-        _currentCoroutine = StartCoroutine(AnimateToValue(1f, _wrapDuration));
+        _currentCoroutine = StartCoroutine(AnimateToValue(_wrapValue, _wrapDuration));
     }
 
     [ContextMenu("UnWrap (1 -> 0)")]
@@ -47,7 +55,7 @@ public class WrapHandler : MonoBehaviour
         if (_currentCoroutine != null) StopCoroutine(_currentCoroutine);
         
         // Iniciamos corrutina hacia 0
-        _currentCoroutine = StartCoroutine(AnimateToValue(0f, _unwrapDuration));
+        _currentCoroutine = StartCoroutine(AnimateToValue(_unwrapValue, _unwrapDuration));
     }
 
     // Corrutina Genérica para ir de "Lo que sea que tenga ahora" -> "Objetivo"
