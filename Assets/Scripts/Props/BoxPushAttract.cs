@@ -28,6 +28,7 @@ public sealed class BoxPushAttract : MonoBehaviour
     [SerializeField] private Color _okColor = new(0.2f, 1f, 0.2f, 0.9f);
     [SerializeField] private Color _badColor = new(1f, 0.2f, 0.2f, 0.9f);
 
+    private WrapHandler _wrapHandler;
     private Rigidbody _rb;
     private BoxCollider _col;
 
@@ -50,6 +51,8 @@ public sealed class BoxPushAttract : MonoBehaviour
         _rb  = GetComponent<Rigidbody>();
         _col = GetComponent<BoxCollider>();
 
+        _wrapHandler = GetComponent<WrapHandler>();
+        
         if (_materialBajaFriccion && _col) _col.sharedMaterial = _materialBajaFriccion;
 
         _rb.useGravity = true;
@@ -60,9 +63,28 @@ public sealed class BoxPushAttract : MonoBehaviour
         _rb.constraints = IdleConstraints;
     }
 
-    /// <summary>Habilita/deshabilita el modo libre en XZ para Push/Attract.</summary>
-    public void SetPushAttractMode(bool enabled)
+    public float GetAttachDuration() => _wrapHandler != null ? _wrapHandler.WrapDuration : 0f;
+
+    /// <summary>
+    /// Habilita/deshabilita el modo libre en XZ.
+    /// <param name="enabled">True para liberar física.</param>
+    /// <param name="useBandages">True para activar la animación de vendas (Attract), False para solo física (Push).</param>
+    /// </summary>
+    public void SetPushAttractMode(bool enabled, bool useBandages = true)
     {
+        // 1. Lógica Visual
+        if (enabled && useBandages)
+        {
+            _wrapHandler.Wrap();
+        }
+        else
+        {
+            // Si desactivamos la física, O activamos física pero sin vendas (Push),
+            // nos aseguramos de que esté desenredado (UnWrap).
+            _wrapHandler.UnWrap();
+        }
+
+        // 2. Lógica Física (Constraints) - Se mantiene igual
         _rb.constraints = enabled ? FreeXZConstraints : IdleConstraints;
 
         if (!enabled)

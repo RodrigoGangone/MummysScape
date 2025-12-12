@@ -27,13 +27,17 @@ public sealed class PushState : State
         }
 
         _halfSpeed = _ctx.MoveSpeed * 0.5f;
-        _box.SetPushAttractMode(true);
+    
+        // CAMBIO AQUÍ: true = mover física, false = SIN vendas
+        _box.SetPushAttractMode(true, false); 
     }
 
     public override void OnExit()
     {
         _box?.StopImmediate();
-        _box?.SetPushAttractMode(false);
+        // Al salir, desactivamos física. El segundo parámetro da igual (por defecto true), 
+        // porque al ser enabled=false, la lógica visual hará UnWrap de todas formas.
+        _box?.SetPushAttractMode(false); 
         _box = null;
     }
 
