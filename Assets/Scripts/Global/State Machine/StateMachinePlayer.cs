@@ -32,7 +32,7 @@ public class StateMachinePlayer : MonoBehaviour
     /// <summary>
     /// Devuelve true si el estado actual es 'name'.
     /// Evita castear Enum en los llamadores y mejora legibilidad.
-    /// </summary>
+    /// </summary> 
     public bool IsCurrent(Enum name) => Equals(_currentId, name);
 
     public String getCurrentState() =>  (_currentState != null) ? _currentState.ToString() : NO_STATE;

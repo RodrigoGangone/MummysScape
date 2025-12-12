@@ -35,7 +35,7 @@ public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
     // --- IMPLEMENTACIÓN DE INTERFAZ ---
 
     public Vector2 Move => new(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-    public Vector2 AimMove { get; private set; } // Propiedad para el stick derecho
+    public Vector2 AimMove { get; private set; } // Propiedad para el stick derecho 
 
     public bool ConsumeAimHeld()     { var v = _aimDown;    _aimDown  = false; return v; }
     public bool ConsumeShootDown()   { var v = _shootDown;  _shootDown  = false; return v; }
