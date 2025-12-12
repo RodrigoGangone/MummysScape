@@ -175,7 +175,7 @@ public class Geyser : MonoBehaviour, IPausable
 
         if (_playerContext.Model.Size != PlayerSize.Head)
         {
-            _playerContext.Model.TryConsumeBandage(-_playerContext.Model.Bandages);
+            _playerContext.Model.TryConsumeBandage(_playerContext.Model.Bandages);
         }
     }
 

@@ -8,7 +8,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Attack01_Scorpion 1
-  m_Speed: 1
+  m_Speed: 0.8
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -5131303872567224068}
@@ -16,6 +16,7 @@ AnimatorState:
   m_StateMachineBehaviours:
   - {fileID: -830671032282449977}
   - {fileID: 263729180004533529}
+  - {fileID: -2616987868715648588}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -184,6 +185,20 @@ AnimatorTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 1
+--- !u!114 &-2616987868715648588
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: BS_Primary_FX
+  triggerTime: 0.3
 --- !u!1102 &-2170823464824943131
 AnimatorState:
   serializedVersion: 6
@@ -238,7 +253,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   eventName: BS_PrimaryLaunch
-  triggerTime: 0.6
+  triggerTime: 0.645
 --- !u!91 &9100000
 AnimatorController:
   m_ObjectHideFlags: 0

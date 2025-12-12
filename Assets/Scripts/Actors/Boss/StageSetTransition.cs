@@ -204,6 +204,12 @@ public class StageSetTransition : MonoBehaviour, IPausable
             SetPos(toRoot, toStart);
             toRoot.gameObject.SetActive(true);
 
+            var focus = toRoot.GetComponent<FocusOnActivation>();
+            if (focus != null)
+            {
+                focus.Activate();
+            }
+            
             // Subir a su base
             yield return AnimatePos(toRoot, toStart, toBase, upDuration, easeUp);
 
