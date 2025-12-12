@@ -19,11 +19,13 @@ public class SwingState : State
     {
         Debug.Log("SwingState - Enter");
         
+        _ctx.View.Animator.SetBool("PreSwing", true);
+        
         // Reset
         _hasConnected = false;
         _currentWrapHandler = null;
 
-        // 1. Obtener Target
+        // 1. Obtener Target (Hook)
         if (!_ctx.TryGetSwingTarget(out Rigidbody hookRb))
         {
             StateMachine.ChangeState(PlayerEnum.PlayerStateId.Fall);
@@ -33,13 +35,18 @@ public class SwingState : State
         // 2. Buscar WrapHandler
         _currentWrapHandler = hookRb.GetComponent<WrapHandler>();
 
-        // 3. Iniciar Visuales (Cuerda viajando)
-        _ctx.SwingHandler.StartVisuals(hookRb, hookRb.worldCenterOfMass);
+        // 3. Preparar Datos Físicos (Handler)
+        // Asumimos que el golpe es en el centro de masa por defecto (puedes mejorarlo con RaycastHit)
+        Vector3 hitPoint = hookRb.worldCenterOfMass;
+        _ctx.SwingHandler.PreparePhysicsData(hookRb, hitPoint);
 
-        // 4. Calcular Tiempos
-        // Solo nos importa cuándo llega la cuerda a la pared. 
-        // Ya no sumamos WrapDuration al tiempo de espera físico.
-        float travelDuration = _ctx.SwingHandler.DrawDuration;
+        // 4. Iniciar Visuales (View)
+        // Delegamos el dibujado a la View
+        _ctx.View.StartBandage(hookRb.transform, hitPoint);
+
+        // 5. Calcular Tiempos
+        // Obtenemos la duración de la animación desde la View
+        float travelDuration = _ctx.View.GetBandageDrawDuration();
         _timeReachedTarget = Time.time + travelDuration; 
     }
 
@@ -51,12 +58,18 @@ public class SwingState : State
             _currentWrapHandler.UnWrap();
         }
 
-        // 2. Limpiar física
+        // 2. Limpiar física (Handler)
         _ctx.SwingHandler.Detach();
         
-        // 3. Limpiar referencias
+        // 3. Limpiar visuales (View)
+        _ctx.View.StopBandage();
+        
+        // 4. Limpiar referencias
         _currentWrapHandler = null;
         _hasConnected = false;
+        
+        _ctx.View.Animator.SetBool("Swing", false);
+        _ctx.View.Animator.SetBool("PreSwing", false);
     }
 
     public override void OnUpdate() { }
@@ -78,13 +91,15 @@ public class SwingState : State
         // ---------------------------------------------------------
         if (!_hasConnected)
         {
-            // A. Iniciar animación del Shader (Visual)
+            _ctx.View.Animator.SetBool("Swing", true);
+
+            // A. Iniciar animación del Shader (Visual en el objeto golpeado)
             if (_currentWrapHandler != null)
             {
                 _currentWrapHandler.Wrap();
             }
 
-            // B. Activar Joint (Física) INMEDIATAMENTE
+            // B. Activar Joint (Física)
             _ctx.SwingHandler.EnablePhysics(_ctx.Rb);
             
             _hasConnected = true;

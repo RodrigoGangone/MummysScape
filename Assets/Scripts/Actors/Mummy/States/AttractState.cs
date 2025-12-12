@@ -18,18 +18,29 @@ public sealed class AttractState : State
     public override void OnEnter()
     {
         Debug.Log("AttractState!");
+        
+        _ctx.View.Animator.SetBool("PrePull", true);
+        
         if (!_ctx.TryGetAttractTarget(out _box))
         {
             StateMachine.ChangeState(PlayerStateId.Idle);
             return;
         }
 
-        // 1. Iniciamos la física y la animación (Wrap)
+        // 1. Iniciamos la física de la caja
         _box.SetPushAttractMode(true, true);
         
-        // 2. Calculamos cuándo termina la animación de vendado
-        // Time.time actual + la duración que nos diga la caja
-        _moveUnlockTime = Time.time + _box.GetAttachDuration();
+        // 2. Iniciamos VISUAL de la venda (Reutilizamos la View)
+        // Le mandamos el transform de la caja y su posición central
+        // Esto asegura que la linea salga de la mano correcta y vaya a la caja
+        _ctx.View.StartBandage(_box.transform, _box.transform.position);
+
+        // 3. Calculamos tiempos
+        // Obtenemos la duración de la animación visual de la venda
+        float bandageTime = _ctx.View.GetBandageDrawDuration();
+        
+        // Esperamos ese tiempo antes de mover la caja
+        _moveUnlockTime = Time.time + bandageTime;
     }
 
     public override void OnExit()
@@ -37,6 +48,12 @@ public sealed class AttractState : State
         _box?.StopImmediate();
         _box?.SetPushAttractMode(false); // Esto dispara el UnWrap
         _box = null;
+        
+        // Limpiamos visuales de la venda
+        _ctx.View.StopBandage();
+        
+        _ctx.View.Animator.SetBool("Pull", false);
+        _ctx.View.Animator.SetBool("PrePull", false);
     }
 
     public override void OnUpdate() { }
@@ -49,7 +66,6 @@ public sealed class AttractState : State
             StateMachine.ChangeState(PlayerStateId.Fall);
             return;
         }
-        // Permitimos cancelar incluso durante la animación de vendado
         if (!_ctx.Input.IsSpaceHeld())
         {
             StateMachine.ChangeState(PlayerStateId.Idle);
@@ -67,7 +83,7 @@ public sealed class AttractState : State
         Vector3 toPlayer  = new Vector3(playerPos.x - boxPos.x, 0f, playerPos.z - boxPos.z);
         Vector3 dirPull   = toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : Vector3.zero;
 
-        // Siempre rotamos al player hacia la caja, incluso mientras espera la animación
+        // Siempre rotamos al player hacia la caja
         Vector3 toBox = -dirPull;
         if (toBox.sqrMagnitude > 0.0001f)
         {
@@ -76,16 +92,15 @@ public sealed class AttractState : State
             _ctx.Rb.MoveRotation(smooth);
         }
 
-        // --- Lógica de Espera (Wait for Wrap) ---
-        // Si el tiempo actual es menor al tiempo de desbloqueo, NO movemos la caja todavía.
+        // --- Lógica de Espera (Wait for Wrap Visual) ---
         if (Time.time < _moveUnlockTime)
         {
-            // Opcional: Podrías frenar la caja explícitamente si tuviera inercia residual
+            _ctx.View.Animator.SetBool("Pull", true);
             _box.StopImmediate(); 
             return; 
         }
 
-        // --- Lógica de Movimiento (Solo se ejecuta tras finalizar el Wrap) ---
+        // --- Lógica de Movimiento (Solo se ejecuta tras finalizar el Wrap Visual) ---
         float min    = _ctx.AttractMinDistance;
         float max    = _ctx.AttractMaxDistance;
         float distXZ = _box.HorizontalDistanceTo(playerPos);

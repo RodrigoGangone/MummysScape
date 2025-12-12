@@ -30,6 +30,8 @@ public sealed class PushState : State
     
         // CAMBIO AQUÍ: true = mover física, false = SIN vendas
         _box.SetPushAttractMode(true, false); 
+        
+        _ctx.View.Animator.SetBool("Push", true);
     }
 
     public override void OnExit()
@@ -39,6 +41,8 @@ public sealed class PushState : State
         // porque al ser enabled=false, la lógica visual hará UnWrap de todas formas.
         _box?.SetPushAttractMode(false); 
         _box = null;
+        
+        _ctx.View.Animator.SetBool("Push", false);
     }
 
     public override void OnUpdate()
