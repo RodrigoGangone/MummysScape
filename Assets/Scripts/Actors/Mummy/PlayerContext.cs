@@ -93,6 +93,8 @@ public sealed class PlayerContext
         return _interactions != null && _interactions.TryGetAim(Tf, aimScreenPosition, out pos, out norm);
     }
 
+    public bool IsAimValid => _interactions != null && _interactions.IsAimValid;
+    
     public bool TryGetQuickTravel(Transform playerTf, out HippoTravel target)
     {
         target = null;

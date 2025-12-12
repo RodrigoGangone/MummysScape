@@ -12,9 +12,13 @@ public class AimState : State
     private Coroutine _scaleCoroutine;
     private Vector3 _targetScale;
 
+    // --- VARIABLES PARA EL MATERIAL ---
+    private Material _lineMaterialInstance; // Aquí guardamos la instancia
+    private int _colorPropertyID;           // ID numérico de la propiedad "_Color"
+
     private const float ANIM_DURATION = 0.2f;
     private const float DECAL_BOX_DEPTH = 50f;
-
+    
     private Vector2 _aimScreenPos; 
     private Vector3 _lastMousePos; 
     private const float AIM_SENSITIVITY = 500;
@@ -25,6 +29,9 @@ public class AimState : State
         _decal = _ctx.View.Decal;
         _rangeIndicator = _ctx.View.RangeIndicator;
         _arcRenderer = _ctx.View.ArcRenderer;
+        
+        // Cacheamos el ID del shader una sola vez para optimizar
+        _colorPropertyID = Shader.PropertyToID("_Color");
     }
 
     public override void OnEnter()
@@ -36,18 +43,26 @@ public class AimState : State
         _aimScreenPos = new Vector2(Screen.width / 2, Screen.height / 2);
         _lastMousePos = Input.mousePosition;
 
-        if (_rangeIndicator == null) return;
-
+        // --- MANEJO DE MATERIAL ---
         if (_arcRenderer != null)
+        {
             _arcRenderer.enabled = false;
+            
+            // ALERTA: Al acceder a .material, Unity crea la instancia automáticamente.
+            // Guardamos esta referencia para reusarla y no crear copias nuevas en Update.
+            if (_lineMaterialInstance == null)
+            {
+                _lineMaterialInstance = _arcRenderer.material;
+            }
+        }
+
+        if (_rangeIndicator == null) return;
 
         if (_scaleCoroutine != null)
             _ctx.View.StopCoroutine(_scaleCoroutine);
 
         float diameter = _ctx.AimMaxDistance * 2f;
-
         _targetScale = new Vector3(diameter, diameter, DECAL_BOX_DEPTH);
-
         _rangeIndicator.gameObject.SetActive(true);
 
         _scaleCoroutine = _ctx.View.StartCoroutine(AnimateScale(_rangeIndicator.transform,
@@ -84,6 +99,7 @@ public class AimState : State
 
         _lastMousePos = mousePos;
 
+        // Llamamos al método modificado que devuelve true/false pero siempre genera path
         bool hasValidTarget = _ctx.TryGetAim(_aimScreenPos, out var pos, out var normal);
 
         if (hasValidTarget)
@@ -96,7 +112,6 @@ public class AimState : State
             if (direction != Vector3.zero)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(direction);
-
                 _ctx.Tf.rotation = Quaternion.RotateTowards(
                     _ctx.Tf.rotation,
                     targetRotation,
@@ -105,6 +120,7 @@ public class AimState : State
             }
         }
 
+        // Pasamos el estado de validez
         SetArc(hasValidTarget);
         SetDecalVisible(hasValidTarget);
     }
@@ -134,11 +150,19 @@ public class AimState : State
     {
         if (_arcRenderer != null)
         {
-            if (hasValidTarget && SimpleShootData.Path != null && SimpleShootData.Path.Count > 0)
+            if (SimpleShootData.Path != null && SimpleShootData.Path.Count > 0)
             {
                 _arcRenderer.enabled = true;
                 _arcRenderer.positionCount = SimpleShootData.Path.Count;
                 _arcRenderer.SetPositions(SimpleShootData.Path.ToArray());
+
+                if (_lineMaterialInstance != null)
+                {
+                    // AQUI EL CAMBIO: Leemos los colores desde tu PlayerView (donde pusiste el HDR)
+                    Color targetColor = hasValidTarget ? _ctx.View.AimAllowed : _ctx.View.AimNotAllowed;
+                    
+                    _lineMaterialInstance.SetColor(_colorPropertyID, targetColor);
+                }
             }
             else
             {
@@ -146,7 +170,7 @@ public class AimState : State
             }
         }
     }
-
+    // ... (El resto de métodos SetDecalVisible, SetDecal y AnimateScale siguen igual) ...
     private void SetDecalVisible(bool visible)
     {
         if (_decal && _decal.activeSelf != visible)
@@ -156,9 +180,7 @@ public class AimState : State
     private void SetDecal(Vector3 pos, Vector3 normal)
     {
         if (!_decal) return;
-
         _decal.transform.position = pos + normal * 0.05f;
-
         if (normal != Vector3.zero)
             _decal.transform.rotation = Quaternion.LookRotation(_ctx.Tf.right, normal);
     }
@@ -172,20 +194,15 @@ public class AimState : State
         while (timer < duration)
         {
             timer += Time.deltaTime;
-
             float t = Mathf.Clamp01(timer / duration);
             t = 1 - (1 - t) * (1 - t);
-            
             targetTransform.localScale = Vector3.Lerp(startScale, targetScale, t);
-
             yield return null;
         }
 
         targetTransform.localScale = targetScale;
-
         if (disableOnComplete)
             targetTransform.gameObject.SetActive(false);
-
         _scaleCoroutine = null;
     }
 }

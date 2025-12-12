@@ -26,7 +26,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [SerializeField] private GameObject _decal;
     [SerializeField] private DecalProjector _rangeIndicator;
     [SerializeField] private LineRenderer _arcRenderer;
-
+    [ColorUsage(true, true), SerializeField] private Color _aimAllowed;
+    [ColorUsage(true, true), SerializeField] private Color _aimNotAllowed;    
     [Header("UI (opcional)")]
     [SerializeField] private Image _headTimerFill;
     [SerializeField] private Sprite _spriteHead;
@@ -60,6 +61,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     public DecalProjector RangeIndicator => _rangeIndicator;
     public LineRenderer ArcRenderer => _arcRenderer;
     public Animator Animator => _anim;
+    public Color AimAllowed => _aimAllowed;
+    public Color AimNotAllowed => _aimNotAllowed;
 
     private void Awake()
     {
