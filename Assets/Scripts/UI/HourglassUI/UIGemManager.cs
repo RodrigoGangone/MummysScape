@@ -22,7 +22,7 @@ public class UIGemManager : MonoBehaviour
     private void SetGemUI(int gemNum, bool picked)
     {
         var mat = GetMaterialByGemNum(gemNum);
-        if (!mat) return; 
+        if (!mat) return;  
 
         if (mat.HasProperty(IsPickedProp))
         {
