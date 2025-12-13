@@ -12,7 +12,7 @@ public class Portal : MonoBehaviour
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnWin.Register<int>(CompleteLevel);
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(CompleteLevel);
 
-    private void Awake()
+    private void Start()
     {
         if (!isOpen) return;
 

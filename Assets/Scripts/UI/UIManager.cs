@@ -48,13 +48,15 @@ public class UIManager : MonoBehaviour
     [Header("FIRST SELECTED")]
     [SerializeField] private Selectable _pauseFirstSelected;    // btn Resume
     [SerializeField] private Selectable _optionsFirstSelected;  // options
+    
+    // **NUEVOS CAMPOS para WIN/LOSE**
+    [SerializeField] private Selectable _winFirstSelected;      // Botón inicial de Win
+    [SerializeField] private Selectable _loseFirstSelected;     // Botón inicial de Lose
 
     private float _fakeTimer = 5f;
 
     private SceneTransitionManager Transition => GetComponent<SceneTransitionManager>();
 
-    // ELIMINADO: El [Header("FADE")] y el fadeImage
-    
     private DepthOfField _blur;
     private Volume _postProcess;
 
@@ -78,9 +80,6 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        // ELIMINADO: StartCoroutine(FadeOut());
-        // El script local SceneTransitionLocal lo hace solo en su propio Start().
-
         //Buttons OnClick
         AddButtonProps(_btnResume, () => GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false));
         AddButtonProps(_btnRetry, RetryLevel);
@@ -114,6 +113,9 @@ public class UIManager : MonoBehaviour
         if (selectable == null) return;
         if (EventSystem.current == null) return;
 
+        // Limpiar selección previa (buena práctica)
+        EventSystem.current.SetSelectedGameObject(null); 
+        // Establecer la nueva selección
         EventSystem.current.SetSelectedGameObject(selectable.gameObject);
     }
 
@@ -180,7 +182,7 @@ public class UIManager : MonoBehaviour
         
         while (elapsed < 0.5f)
         {
-            // MODIFICADO: Usar Time.unscaledDeltaTime para que funcione en pausa
+            // Usar Time.unscaledDeltaTime para que funcione en pausa
             elapsed += Time.unscaledDeltaTime; 
 
             var currentValue = Mathf.Lerp(startValue, endValue, elapsed / 0.5f);
@@ -203,8 +205,6 @@ public class UIManager : MonoBehaviour
     private void GoToMainMenu()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false);
-        
-        // MODIFICADO: Llama al script local _transition
         Transition.FadeInAndLoadScene(0);
     }
     
@@ -219,37 +219,26 @@ public class UIManager : MonoBehaviour
     
     private void ShowNextLvlPanel()
     {
-        // TODAVÍA mostramos el panel "Next Lvl" como feedback
         _NextLvlPanel.SetActive(true); 
 
         _WinPanel.SetActive(false);
         _LosePanel.SetActive(false);
         _pausePanel.SetActive(false);
 
-        // MODIFICADO: Llamamos a la nueva corutina de carga
         StartCoroutine(LoadNextSceneWithPanel());
     }
     
-    // MODIFICADO: Esta corutina ahora es más simple
     private IEnumerator LoadNextSceneWithPanel()
     {
-        // 1. Mantenemos el timer FAKE aquí solo porque
-        // el panel "NextLvlPanel" está en pantalla.
-        // Si no, el cambio sería instantáneo.
         yield return new WaitForSecondsRealtime(_fakeTimer); 
 
-        // 2. Llama al manager para cargar
         int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
         Transition.FadeInAndLoadScene(nextSceneIndex);
     }
 
-    // ELIMINADO: LoadNextSceneAsync
-
     private void RetryLevel()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false);
-        
-        // MODIFICADO: Llama al script local _transition
         Transition.FadeInAndLoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
@@ -259,35 +248,32 @@ public class UIManager : MonoBehaviour
         SetSelected(_optionsFirstSelected);
     } 
 
-    // ELIMINADO: FadeIn y FadeOut (ahora están en SceneTransitionLocal)
-
     private void ShowTutorialInput(bool value) => _tutorialInput.SetActive(value);
     
     public void Win(int index)
     {
-        // MODIFICADO: Usa el TriggerFadeIn del script local _transition
         Transition.TriggerFadeIn(() =>
         {
-            //...
             if (index >= Utils.MAX_LVLS)
                 _btnNextLvlW.enabled = false;
 
             _WinPanel.SetActive(true);
             _mummyUI.SetTrigger("isWin");
-
-            //...
+            
+            // **NUEVA LÓGICA DE SELECCIÓN PARA WIN**
+            SetSelected(_winFirstSelected ?? _btnNextLvlW);
         });
     }
 
     public void Lose()
     {
-        // MODIFICADO: Usa el TriggerFadeIn del script local _transition
         Transition.TriggerFadeIn(() =>
         {
             _LosePanel.SetActive(true);
             _mummyUI.SetTrigger("isLose");
             
-            //...
+            // **NUEVA LÓGICA DE SELECCIÓN PARA LOSE**
+            SetSelected(_loseFirstSelected ?? _btnRetryL);
         });
     }
 }

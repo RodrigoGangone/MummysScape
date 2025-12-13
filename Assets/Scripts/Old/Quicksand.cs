@@ -1,6 +1,6 @@
 using System.Collections;
 using UnityEngine;
-using static PlayerEnum;
+using static PlayerEnum; 
 
 public class Quicksand : MonoBehaviour
 {
@@ -25,7 +25,7 @@ public class Quicksand : MonoBehaviour
     
     [SerializeField] private GameObject sinkFx;
     [SerializeField] private GameObject drowningFx;
-
+ 
     private bool _isMoving;
     private bool _isPlayerOnPlatform;
     private float _currentMoveSpeed;
@@ -35,16 +35,14 @@ public class Quicksand : MonoBehaviour
     private GameObject _currentDrowningFxInstance;
 
     private void OnEnable()
-    {
+    { 
         GameEventManager.Instance.levelEvents.OnDeath.Register(Drowned);
-        GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(Apply);
     }
 
 
     private void OnDisable()
     {
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Drowned);
-        GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(Apply);
     }
 
     private void Drowned()
@@ -72,6 +70,12 @@ public class Quicksand : MonoBehaviour
 
         if (_currentDrowningFxInstance != null && _player != null)
             _currentDrowningFxInstance.transform.position = _player.Tf.position;
+        
+        // LÓGICA DE VERIFICACIÓN EN UPDATE: Siempre se chequea el estado de vendajes mientras esté en la plataforma.
+        if (_isPlayerOnPlatform && _player != null)
+        {
+            CheckPlayerBandagesState();
+        }
     }
 
     private void MovePlatform()
@@ -83,14 +87,67 @@ public class Quicksand : MonoBehaviour
             _isMoving = false;
     }
 
-    private void OnCollisionEnter(Collision col)
+    private void CheckPlayerBandagesState()
     {
-        if (!col.gameObject.CompareTag("PlayerFather")) return;
+        int currentBandages = _player.Model.Bandages;
+        
+        // Si tiene 0 vendajes, escapa (la condición de escape está en Update)
+        if (currentBandages == 0)
+        {
+            EscapeQuicksand();
+        }
+        // Nota: Si los vendajes cambian de 1 a 2 o viceversa, la lógica no reinicia el timer 
+        // aquí, ya que el DrownTimer sigue corriendo normalmente. 
+        // Si el jugador entra con 1 y gana 1 más, no hay "ventana de gracia" aquí.
+    }
+    
+    private void EscapeQuicksand()
+    {
+        // Solo ejecuta la lógica de escape si actualmente está en la plataforma.
+        if (!_isPlayerOnPlatform) return; 
 
-        _player ??= col.gameObject.GetComponent<PlayerController>().Ctx;
+        // Cancelar el estado de hundimiento
+        _isPlayerOnPlatform = false;
+                
+        if (_drownCoroutine != null)
+        {
+            StopCoroutine(_drownCoroutine);
+            _drownCoroutine = null;
+        }
+                
+        if (_resetCoroutine != null)
+        {
+            StopCoroutine(_resetCoroutine);
+            _resetCoroutine = null;
+        }
+                
+        if (_currentDrowningFxInstance != null)
+        {
+            Destroy(_currentDrowningFxInstance);
+            _currentDrowningFxInstance = null;
+        }
+            
+        // La plataforma vuelve a su posición inicial
+        SetTargetPosition(_startPosition, moveSpeed);
+    }
 
-        if (_player != null && _player.Model.Size == PlayerSize.Head)
-            return;
+    // *** CAMBIO CLAVE: Usamos OnTriggerStay para iniciar y mantener la detección ***
+    private void OnTriggerStay(Collider other)
+    {
+        if (!other.gameObject.CompareTag("PlayerFather")) return;
+
+        _player ??= other.gameObject.GetComponent<PlayerController>().Ctx;
+
+        // Si el jugador no existe o está en estado Head (0 vendajes), NO hacemos nada.
+        if (_player == null || _player.Model.Bandages == 0)
+            return; 
+
+        // Si el jugador ya está marcado como en la plataforma, la lógica ya está activa 
+        // y el Update está comprobando el estado. No necesitamos re-iniciar todo.
+        if (_isPlayerOnPlatform)
+            return; 
+
+        // INICIAR EL PROCESO (Solo la primera vez que se detecta y tiene vendajes)
 
         _isPlayerOnPlatform = true;
 
@@ -102,18 +159,17 @@ public class Quicksand : MonoBehaviour
 
         SetTargetPosition(_endPosition, moveSpeed);
 
-        if (_drownCoroutine != null)
-            StopCoroutine(_drownCoroutine);
-        
-        _drownCoroutine = StartCoroutine(DrownTimer());
+        // Inicia el temporizador de ahogamiento
+        StartDrownTimer();
 
         if (drowningFx != null && _currentDrowningFxInstance == null)
             _currentDrowningFxInstance = Instantiate(drowningFx, _player.Tf.position, Quaternion.identity);
     }
 
-    private void OnCollisionExit(Collision col)
+    // Usamos OnTriggerExit para detectar al jugador cuando sale del volumen
+    private void OnTriggerExit(Collider other)
     {
-        if (!col.gameObject.CompareTag("PlayerFather")) return;
+        if (!other.gameObject.CompareTag("PlayerFather")) return;
 
         _isPlayerOnPlatform = false;
 
@@ -127,11 +183,21 @@ public class Quicksand : MonoBehaviour
         _isMoving = true;
     }
 
+    private void StartDrownTimer()
+    {
+        if (_drownCoroutine != null)
+            StopCoroutine(_drownCoroutine);
+            
+        _drownCoroutine = StartCoroutine(DrownTimer());
+    }
+
     private IEnumerator DrownTimer()
     {
         yield return new WaitForSeconds(timeToDrown);
 
-        if (_isPlayerOnPlatform)
+        // Solo ahogar si el jugador sigue en la plataforma y aún tiene vendajes (> 0)
+        // La comprobación final es crucial para evitar ahogar al jugador que escapó en el último frame.
+        if (_isPlayerOnPlatform && _player != null && _player.Model.Bandages > 0)
         {
             if (_currentDrowningFxInstance != null)
             {
@@ -167,31 +233,10 @@ public class Quicksand : MonoBehaviour
         
         _resetCoroutine = null;
     }
-
-    private void Apply(PlayerSize newSize)
+    
+    // Método Apply - Mantenido como stub.
+    private void Apply(int bandagesCount)
     {
-        if (newSize != PlayerSize.Head || !_isPlayerOnPlatform) return;
-        
-        _isPlayerOnPlatform = false;
-            
-        if (_drownCoroutine != null)
-        {
-            StopCoroutine(_drownCoroutine);
-            _drownCoroutine = null;
-        }
-            
-        if (_resetCoroutine != null)
-        {
-            StopCoroutine(_resetCoroutine);
-            _resetCoroutine = null;
-        }
-            
-        if (_currentDrowningFxInstance != null)
-        {
-            Destroy(_currentDrowningFxInstance);
-            _currentDrowningFxInstance = null;
-        }
-            
-        SetTargetPosition(_startPosition, moveSpeed);
+        // Vacío
     }
 }
