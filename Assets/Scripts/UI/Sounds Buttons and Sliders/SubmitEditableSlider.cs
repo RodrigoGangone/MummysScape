@@ -18,7 +18,7 @@ public class SubmitEditableSlider : Slider, ISubmitHandler
 
     [Header("Visual")]
     [SerializeField] public Graphic _handleGraphic;
-    [SerializeField] public Color _editingColor = Color.yellow;
+    [SerializeField] public Color _editingColor = new (1f, 0f, 0.843f, 1f);
 
     private bool _isEditing;
     private Color _handleDefaultColor;
