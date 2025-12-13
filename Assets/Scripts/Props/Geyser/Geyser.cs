@@ -49,7 +49,7 @@ public class Geyser : MonoBehaviour, IPausable
         _viewBasic.gameObject.SetActive(selectedView == _viewBasic);
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (_paused) return; // ✅ se corta toda la lógica continua
 
@@ -65,7 +65,7 @@ public class Geyser : MonoBehaviour, IPausable
 
     private void MoveTowardsWaypoint()
     {
-        if (_paused)
+        if (_paused || _isPausedPos) // 🛑 Detiene el movimiento si ya está en pausa de posición
         {
             return;
         }
@@ -81,7 +81,8 @@ public class Geyser : MonoBehaviour, IPausable
             _triggerTransform.transform.position.z);
 
         // Pausa al llegar a un punto
-        if (Vector3.Distance(_viewBasic.transform.position, targetWaypoint.position) == 0)
+        // 💡 CORRECCIÓN: Usar un umbral pequeño en lugar de una igualdad estricta a cero.
+        if (Vector3.Distance(_viewBasic.transform.position, targetWaypoint.position) <= 0.01f) 
         {
             StartCoroutine(PauseAtWaypoint());
         }

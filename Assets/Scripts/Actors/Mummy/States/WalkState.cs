@@ -23,32 +23,67 @@ public sealed class WalkState : State
         _ctx.View.Animator.SetBool("Walk", false);
     }
 
-    public override void OnUpdate()
+public override void OnUpdate()
+{
+    Vector2 mv = _ctx.Input.Move;
+    
+    // Si no hay input, frenamos inmediatamente.
+    if (mv.sqrMagnitude < 0.001f) return;
+
+    Vector3 dir = _ctx.CameraRelativeDir(mv.x, mv.y);
+    float baseMoveAmount = _ctx.MoveSpeed * Time.deltaTime;
+    float currentMoveAmount = baseMoveAmount;
+
+    // 1. Definir la Máscara de Capas (Layers)
+    // Asegúrate de que las capas 'Wall' e 'Interactable' estén configuradas en Unity
+    int layerMask = LayerMask.GetMask("Wall", "Interactable");
+
+    // 2. Lanzar el Raycast Predictivo
+    // Usamos el Raycast para ver si golpearemos algo en la dirección 'dir'
+    Vector3 rayStart = _ctx.Tf.position + Vector3.up * 0.5f;
+    float rayLength = baseMoveAmount + CollisionBuffer;
+
+    if (Physics.Raycast(rayStart, dir, out RaycastHit hit, rayLength, layerMask))
     {
-        Vector2 mv = _ctx.Input.Move;
+        // 3. Colisión detectada: Reducir la velocidad bruscamente
         
-        // Si no hay input, frenamos inmediatamente (sin inercia)
-        if (mv.sqrMagnitude < 0.001f) return;
+        // Distancia restante hasta la colisión
+        float distanceToHit = hit.distance; 
 
-        Vector3 dir = _ctx.CameraRelativeDir(mv.x, mv.y);
-        float moveAmount = _ctx.MoveSpeed * Time.deltaTime;
-
-        // --- COLISION MANUAL ---
-        // Lanzamos un rayo desde el centro (o pies) hacia donde queremos ir.
-        // Si hay pared cerca, no movemos el transform.
-        //bool canMove = !Physics.Raycast(_ctx.Tf.position + Vector3.up * 0.5f, dir, moveAmount + CollisionBuffer);
-        //
-        //if (canMove)
-        //{
-        _ctx.Tf.position += dir * moveAmount;
-        //}
-
-        // --- ROTACIÓN ---
-        Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
-        _ctx.Tf.rotation = Quaternion.Slerp(_ctx.Tf.rotation, targetRot, _ctx.TurnSpeed * Time.deltaTime);
-
-        _ctx.View?.SetMoveSpeedVisual(1f);
+        // Si la distancia a la colisión es menor que la cantidad de movimiento, 
+        // necesitamos frenar. Reducimos el movimiento a un 10% del total.
+        
+        // 10% de la velocidad total
+        float reducedSpeedFactor = 0.1f; 
+        
+        // Calculamos el nuevo movimiento: usamos el 10% de la velocidad base, 
+        // pero asegurándonos de que no traspasamos la colisión.
+        currentMoveAmount = Mathf.Min(
+            distanceToHit - 0.001f, // Mueve solo hasta justo antes de tocar
+            baseMoveAmount * reducedSpeedFactor // Limitado al 10% de la velocidad máxima
+        );
+        
+        // Si el resultado es muy pequeño (ya estamos casi tocando), podemos incluso ponerlo a cero
+        if (currentMoveAmount < 0) currentMoveAmount = 0;
+        
+        // Opcional: Para una reducción suave en lugar de inmediata
+        // float targetMoveAmount = baseMoveAmount * reducedSpeedFactor;
+        // currentMoveAmount = Mathf.Lerp(currentMoveAmount, targetMoveAmount, Time.deltaTime * 10f);
     }
+    
+    // --- MOVIMIENTO ---
+    // El movimiento se ejecuta con la velocidad modificada (o no)
+    if (currentMoveAmount > 0)
+    {
+        _ctx.Tf.position += dir * currentMoveAmount;
+    }
+
+    // --- ROTACIÓN (No se afecta por la colisión) ---
+    Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
+    _ctx.Tf.rotation = Quaternion.Slerp(_ctx.Tf.rotation, targetRot, _ctx.TurnSpeed * Time.deltaTime);
+
+    _ctx.View?.SetMoveSpeedVisual(1f);
+}
 
     public override void OnFixedUpdate()
     {
