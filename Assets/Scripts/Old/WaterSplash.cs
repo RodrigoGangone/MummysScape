@@ -8,7 +8,7 @@ public class WaterSplash : MonoBehaviour
     [SerializeField] private ParticleSystem _waterSplashFX;
 
     private PlayerController _player;
-    private Vector3 _offset = new(0, -0.5f, 0);
+    private readonly Vector3 _offset = new(0, -0.5f, 0);
 
     private void OnTriggerEnter(Collider other)
     {
@@ -23,11 +23,11 @@ public class WaterSplash : MonoBehaviour
 
         if (other.gameObject.layer == LayerMask.NameToLayer("Pickable")) other.gameObject.SetActive(false);
 
-        if (!other.gameObject.CompareTag("PlayerFather")) return;
-
-        _player = other.GetComponent<PlayerController>();
-
-        if (_player.Ctx.Model.Size != 0)
-            _player.Ctx.Model.TryConsumeBandage(-_player.Ctx.Model.Bandages);
+        //if (!other.gameObject.CompareTag("PlayerFather")) return;
+        //
+        //_player = other.GetComponent<PlayerController>();
+        //
+        //if (_player.Ctx.Model.Size != 0)
+        //    _player.Ctx.Model.TryConsumeBandage(_player.Ctx.Model.Bandages);
     }
 }

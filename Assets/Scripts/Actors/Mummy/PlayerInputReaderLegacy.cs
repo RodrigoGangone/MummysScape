@@ -3,14 +3,19 @@ using UnityEngine;
 public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
 {
     private bool _aimDown, _shootDown, _dropDown, _spaceDown;
+    private float _lastAimRt; 
     
     private void Update()
     {
         float aimRt = Input.GetAxis("AimRT");   // RT como eje 0..1 (o -1..1)
 
-        // Mouse derecho o RT por encima del umbral
-        if (Input.GetMouseButton(1) || aimRt > 0.5f)
+        bool mouseAimDown = Input.GetMouseButtonDown(1);
+        bool triggerAimDown = aimRt > 0.5f && _lastAimRt <= 0.5f;
+
+        if (mouseAimDown || triggerAimDown)
             _aimDown = true;
+            
+        _lastAimRt = aimRt; // Actualizamos para el siguiente frame
         
         if (Input.GetMouseButtonDown(0) || Input.GetButtonDown("Shoot"))     
             _shootDown = true;
@@ -30,7 +35,7 @@ public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
     // --- IMPLEMENTACIÓN DE INTERFAZ ---
 
     public Vector2 Move => new(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-    public Vector2 AimMove { get; private set; } // Propiedad para el stick derecho
+    public Vector2 AimMove { get; private set; } // Propiedad para el stick derecho 
 
     public bool ConsumeAimHeld()     { var v = _aimDown;    _aimDown  = false; return v; }
     public bool ConsumeShootDown()   { var v = _shootDown;  _shootDown  = false; return v; }
@@ -38,7 +43,7 @@ public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
     public bool ConsumeSpaceDown()   { var v = _spaceDown;  _spaceDown  = false; return v; }
     
     public bool IsSpaceHeld() => Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.Joystick1Button0);
-    
+    public bool IsAimHeld() => Input.GetMouseButton(1) || Input.GetAxis("AimRT") > 0.5f;
     public bool IsAnyActionHeld() => 
         Input.GetKey(KeyCode.Q) || Input.GetButtonDown("Drop") || 
         Input.GetKey(KeyCode.Space) || Input.GetButtonDown("Space");

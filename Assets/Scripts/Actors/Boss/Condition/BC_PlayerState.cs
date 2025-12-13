@@ -8,7 +8,7 @@ public class BC_PlayerState : SkillConditionSO
 
     public override bool Evaluate(in WorldModel wm, IBossContext ctx)
     {
-        Debug.Log($"CurrentState Mummy {ctx.Player.StateMachine.getCurrentState()}");
+        Debug.Log(ctx.Player.StateMachine.getCurrentState() + "CurrentState Mummy");
         
         return Array.IndexOf(allowedStates, ctx.Player.StateMachine.getCurrentState()) >= 0;
     }

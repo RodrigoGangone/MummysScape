@@ -6,12 +6,16 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private Animator _mummyUI;
 
-    [Header("UI PAUSE")] 
+    [Header("UI Tutorial")]
+    [SerializeField]private GameObject _tutorialInput;
+    
+    [Header("UI PAUSE")]
     [SerializeField] private GameObject _pausePanel;
     [SerializeField] private Material _pauseMaterial;
     [SerializeField] private GameObject _optionsPanel;
@@ -60,6 +64,7 @@ public class UIManager : MonoBehaviour
         GameEventManager.Instance.levelEvents.OnWin.Register<int>(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Register(Lose);
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(HandlePauseChanged);
+        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Register<bool>(ShowTutorialInput);
     }
 
     private void OnDisable()
@@ -67,6 +72,7 @@ public class UIManager : MonoBehaviour
         GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Lose);
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(HandlePauseChanged);
+        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Unregister<bool>(ShowTutorialInput);
     }
 
 
@@ -255,6 +261,8 @@ public class UIManager : MonoBehaviour
 
     // ELIMINADO: FadeIn y FadeOut (ahora están en SceneTransitionLocal)
 
+    private void ShowTutorialInput(bool value) => _tutorialInput.SetActive(value);
+    
     public void Win(int index)
     {
         // MODIFICADO: Usa el TriggerFadeIn del script local _transition

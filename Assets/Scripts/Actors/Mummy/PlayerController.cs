@@ -43,10 +43,10 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
     {
         _sm = GetComponent<StateMachinePlayer>();
         _rb = GetComponent<Rigidbody>();
-        _rb.interpolation = RigidbodyInterpolation.Interpolate;
+        //_rb.interpolation = RigidbodyInterpolation.Interpolate;
         _rb.constraints = RigidbodyConstraints.FreezeRotation;
 
-        _swingHandler = GetComponent<SwingHandler>();
+        _swingHandler = GetComponent<SwingHandler>(); 
         _inputDriver = GetComponent<PlayerInputStateDriver>();
 
         // PlayerEvents
@@ -122,7 +122,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
     public void OnLockChanged(bool locked)
     {
         PlayerControlState.SetLock(locked);
-        
+
         
         _rb.isKinematic = PlayerControlState.AnyBlocked;
 
@@ -130,6 +130,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
             _sm.ChangeState(PlayerStateId.Idle);
 
         _sm.enabled = !locked;
+        GetComponent<Collider>().enabled = !locked;
     }
     
     private void OnEnable()

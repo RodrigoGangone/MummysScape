@@ -7,6 +7,8 @@ public class Portal : MonoBehaviour
 {
     [SerializeField] private bool isOpen;
     private Animator Anim => GetComponentInChildren<Animator>();
+    private FocusOnActivation Focus => GetComponent<FocusOnActivation>();
+    
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnWin.Register<int>(CompleteLevel);
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(CompleteLevel);
 
@@ -15,6 +17,9 @@ public class Portal : MonoBehaviour
         if (!isOpen) return;
 
         Locked();
+        
+        Focus.Activate();
+        
         InitLevelFx();
     }
 
@@ -26,6 +31,7 @@ public class Portal : MonoBehaviour
         col.enabled = false;
         
         PassedLevelFX();
+        Focus.Activate();
     }
 
     /// <summary>

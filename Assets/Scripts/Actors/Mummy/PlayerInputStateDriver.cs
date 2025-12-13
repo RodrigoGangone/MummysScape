@@ -102,19 +102,33 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
             }
         }
 
-        // 4) Edge: E / Q
-        if (_input.ConsumeAimHeld())
+// 4) Aim & Shoot
+        if (_input.IsAimHeld())
         {
+            // Protección: Si ya estamos disparando, no interrumpir
+            if (_sm.IsCurrent(Shoot)) return;
+
+            // Entramos a Aim (esto hará que AimState se ejecute y actualice IsAimValid en cada frame)
+            _sm.ChangeState(Aim);
+
+            // Si presionamos disparar...
             if (_input.ConsumeShootDown())
             {
-                _sm.ChangeState(Shoot);
-                return;
+                // ... YA NO CALCULAMOS NADA.
+                // Solo preguntamos: ¿El último cálculo dijo que era válido?
+                // Esto funciona perfecto con Joystick porque AimState ya hizo el trabajo sucio.
+                if (_ctx.IsAimValid)
+                {
+                    _sm.ChangeState(Shoot);
+                }
+                else
+                {
+                    Debug.Log("Bloqueado: El sistema dice que el tiro no es válido.");
+                }
             }
-
-            if (_sm.IsCurrent(Aim)) return;
-            if (_sm.ChangeState(Aim)) return;
+            
+            return;
         }
-
         if (_input.ConsumeDropDown())
         {
             if (_sm.ChangeState(DropBandage)) return;

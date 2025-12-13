@@ -1,151 +1,109 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Collider))]
+[RequireComponent(typeof(BoxCollider))]
 public class TutorialTrigger : MonoBehaviour
 {
-    [Header("Tutorial asociado")] [SerializeField]
-    private TutorialFocusPoint focusPoint;
+    [Header("Referencias")] 
+    [SerializeField] private TutorialFocusPoint focusPoint;
 
-    [Header("Configuración de Colisión")] 
+    [Header("Configuración de Áreas")] 
     [SerializeField] private Vector3 sizeA = Vector3.one;
     [SerializeField] private Vector3 sizeB = Vector3.one * 2f;
-
-    [Header("Offsets de Posición")]
-    [Tooltip("Compensación (offset) del centro para el Tamaño A (Obligatorio).")]
     [SerializeField] private Vector3 centerOffsetA = Vector3.zero;
-    [Tooltip("Compensación (offset) del centro para el Tamaño B (Opcional).")]
     [SerializeField] private Vector3 centerOffsetB = Vector3.zero;
 
-    [Header("Configuración de Gizmos")]
+    [Header("Debug")]
     [SerializeField] private Color gizmoColorA = Color.green;
     [SerializeField] private Color gizmoColorB = Color.yellow;
     
     private BoxCollider _boxCollider;
-    private bool _playerInside;
     private bool _isSizeA = true;
+    
+    // Bandera para evitar disparar el evento GameEvent todo el tiempo
+    private bool _isPromptActive = false; 
 
     private void Awake()
     {
         _boxCollider = GetComponent<BoxCollider>();
-        if (_boxCollider == null)
-        {
-            Debug.LogError("TutorialTrigger requiere un BoxCollider para modificar sus tamaños.");
-            enabled = false;
-            return;
-        }
-        
-        // Inicializar el Collider con el tamaño y offset de la zona A
-        SetColliderSize(true);
+        SetColliderShape(true);
     }
 
-    /// <summary>
-    /// Establece el tamaño y el centro (offset) del BoxCollider.
-    /// </summary>
-    /// <param name="useSizeA">Si es true, usa SizeA y OffsetA; si es false, usa SizeB y OffsetB.</param>
-    private void SetColliderSize(bool useSizeA)
+    private void SetColliderShape(bool useSizeA)
     {
-        if (_boxCollider == null) return;
-
-        // Establecer el tamaño y el centro basándose en si es A o B
-        if (useSizeA)
-        {
-            _boxCollider.size = sizeA;
-            _boxCollider.center = centerOffsetA; // Aplica el offset de A
-        }
-        else
-        {
-            _boxCollider.size = sizeB;
-            _boxCollider.center = centerOffsetB; // Aplica el offset de B
-        }
-        
         _isSizeA = useSizeA;
+        _boxCollider.size = useSizeA ? sizeA : sizeB;
+        _boxCollider.center = useSizeA ? centerOffsetA : centerOffsetB;
     }
 
+    // Usamos Enter SOLO para la lógica de "Primera Vez" (Size A)
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("PlayerFather")) return;
-        if (FocusManager.Instance == null) return;
-        if (focusPoint == null) return;
 
-        _playerInside = true;
-
-        if (_isSizeA)
+        if (_isSizeA && FocusManager.Instance != null)
         {
             FocusManager.Instance.RequestTutorialFirstTime(focusPoint);
-
-            // Cambia el tamaño y offset del collider de A a B
-            SetColliderSize(false);
+            
+            // Expandimos el collider. Al hacerlo, el jugador ya está dentro,
+            // así que OnTriggerStay tomará el relevo inmediatamente.
+            SetColliderShape(false);
         }
     }
 
+    // Usamos Stay para mantener la UI encendida (Size B)
+    // Esto arregla el bug: si el resize ocurre, Stay sigue validando que estás dentro.
+    private void OnTriggerStay(Collider other)
+    {
+        if (!other.CompareTag("PlayerFather")) return;
+
+        // Solo nos importa la lógica de UI en la fase B
+        if (!_isSizeA)
+        {
+            // 1. Encender la UI si no está encendida
+            if (!_isPromptActive)
+            {
+                GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(true);
+                _isPromptActive = true;
+            }
+
+            // 2. Detectar el Input (Interacción)
+            // Es seguro hacerlo aquí o en Update, pero aquí garantizamos que sea mientras colisiona
+            if (FocusManager.Instance != null && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
+            {
+                FocusManager.Instance.RequestTutorialOptional(focusPoint);
+            }
+        }
+    }
+
+    // Usamos Exit para apagar la UI
     private void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag("PlayerFather")) return;
-        _playerInside = false;
-    }
 
-    private void Update()
-    {
-        if (!_playerInside) return;
-        if (FocusManager.Instance == null) return;
-        if (focusPoint == null) return;
-
-        if (!_isSizeA)
+        // Si salimos y la UI estaba activa, la apagamos
+        if (_isPromptActive)
         {
-            if (Input.GetButtonDown(FocusManager.Instance.TutorialKey))
-                FocusManager.Instance.RequestTutorialOptional(focusPoint);
+            GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(false);
+            _isPromptActive = false;
         }
     }
+    
+    // NOTA: He quitado el Update. 
+    // Al usar OnTriggerStay para el Input, nos ahorramos un ciclo Update innecesario 
+    // y aseguramos que solo puedas interactuar si la física te detecta.
 
     #region Gizmos
-
-    // --- Implementación de Gizmos para Visualización en el Editor ---
     private void OnDrawGizmos()
     {
-        // --- Cálculo de Tamaños Escalados Correcto ---
-        Vector3 scaledSizeA = Vector3.Scale(transform.lossyScale, sizeA);
-        Vector3 scaledSizeB = Vector3.Scale(transform.lossyScale, sizeB);
-        
-        // Establecer la matriz del Gizmo basada en el transform (posición, rotación, escala)
         Gizmos.matrix = transform.localToWorldMatrix;
         
-        // Dibuja el tamaño actual del collider (si existe)
-        if (_boxCollider != null)
-        {
-            Gizmos.color = _isSizeA ? gizmoColorA : gizmoColorB;
-            // El collider real siempre se dibuja usando su centro y tamaño actuales.
-            Gizmos.DrawWireCube(_boxCollider.center, _boxCollider.size);
-        }
-        
-        // Dibuja el tamaño A (Obligatorio)
-        Gizmos.color = gizmoColorA;
-        Color colorA = gizmoColorA;
-        colorA.a = 0.3f;
-        Gizmos.color = colorA;
-        
-        // Uso de centerOffsetA para la posición
-        Gizmos.DrawCube(centerOffsetA, scaledSizeA); 
-        
-        Gizmos.color = gizmoColorA;
-        
-        // Uso de centerOffsetA para la posición
-        Gizmos.DrawWireCube(centerOffsetA, scaledSizeA);
+        // Dibujo Size A
+        Gizmos.color = _isSizeA ? gizmoColorA : new Color(gizmoColorA.r, gizmoColorA.g, gizmoColorA.b, 0.1f);
+        Gizmos.DrawWireCube(centerOffsetA, sizeA);
 
-
-        // Dibuja el tamaño B (Opcional/Repetir)
-        Gizmos.color = gizmoColorB;
-        Color colorB = gizmoColorB;
-        colorB.a = 0.15f;
-        Gizmos.color = colorB;
-        
-        // Uso de centerOffsetB para la posición
-        Gizmos.DrawCube(centerOffsetB, scaledSizeB);
-        
-        Gizmos.color = gizmoColorB;
-        
-        // Uso de centerOffsetB para la posición
-        Gizmos.DrawWireCube(centerOffsetB, scaledSizeB);
+        // Dibujo Size B
+        Gizmos.color = !_isSizeA ? gizmoColorB : new Color(gizmoColorB.r, gizmoColorB.g, gizmoColorB.b, 0.1f);
+        Gizmos.DrawWireCube(centerOffsetB, sizeB);
     }
-
     #endregion
 }

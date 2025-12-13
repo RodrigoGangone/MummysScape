@@ -1,48 +1,66 @@
 using UnityEngine;
 using static PlayerEnum;
 
-/// <summary>
-/// AttractState
-/// Atrae la caja hacia el player en XZ respetando SIEMPRE la distancia mínima:
-/// - Sale cuando la distancia horizontal a la superficie de la caja <= min.
-/// - Clampea el paso para no “pasarse”.
-/// - El player rota suavemente mirando al centro horizontal de la caja.
-/// </summary>
 public sealed class AttractState : State
 {
     private readonly PlayerContext _ctx;
     private BoxPushAttract _box;
 
-    // Piso de velocidad para evitar “quedarse corto” si la curva vale ~0 lejos.
+    // Constantes
     private const float MIN_PULL_SPEED_FLOOR = 0.05f;
     private const float ROT_LERP = 1f;
+
+    // Variable para controlar el delay
+    private float _moveUnlockTime;
 
     public AttractState(PlayerContext ctx) => _ctx = ctx;
 
     public override void OnEnter()
     {
         Debug.Log("AttractState!");
+        
+        _ctx.View.Animator.SetBool("PrePull", true);
+        
         if (!_ctx.TryGetAttractTarget(out _box))
         {
             StateMachine.ChangeState(PlayerStateId.Idle);
             return;
         }
-        _box.SetPushAttractMode(true);
+
+        // 1. Iniciamos la física de la caja
+        _box.SetPushAttractMode(true, true);
+        
+        // 2. Iniciamos VISUAL de la venda (Reutilizamos la View)
+        // Le mandamos el transform de la caja y su posición central
+        // Esto asegura que la linea salga de la mano correcta y vaya a la caja
+        _ctx.View.StartBandage(_box.transform, _box.transform.position);
+
+        // 3. Calculamos tiempos
+        // Obtenemos la duración de la animación visual de la venda
+        float bandageTime = _ctx.View.GetBandageDrawDuration();
+        
+        // Esperamos ese tiempo antes de mover la caja
+        _moveUnlockTime = Time.time + bandageTime;
     }
 
     public override void OnExit()
     {
         _box?.StopImmediate();
-        _box?.SetPushAttractMode(false);
+        _box?.SetPushAttractMode(false); // Esto dispara el UnWrap
         _box = null;
+        
+        // Limpiamos visuales de la venda
+        _ctx.View.StopBandage();
+        
+        _ctx.View.Animator.SetBool("Pull", false);
+        _ctx.View.Animator.SetBool("PrePull", false);
     }
 
-    public override void OnUpdate()
-    {
-    }
+    public override void OnUpdate() { }
 
     public override void OnFixedUpdate()
     {
+        // --- Chequeos de validación (Salidas) ---
         if (!_ctx.IsGrounded())
         {
             StateMachine.ChangeState(PlayerStateId.Fall);
@@ -59,46 +77,48 @@ public sealed class AttractState : State
             return;
         }
 
-       
+        // --- Lógica de Dirección y Rotación ---
         Vector3 playerPos = _ctx.Tf.position;
         Vector3 boxPos    = _box.transform.position;
+        Vector3 toPlayer  = new Vector3(playerPos.x - boxPos.x, 0f, playerPos.z - boxPos.z);
+        Vector3 dirPull   = toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : Vector3.zero;
 
-        // Distancia horizontal REAL a la superficie de la caja
-        float min    = _ctx.AttractMinDistance;
-        float max    = _ctx.AttractMaxDistance;
-        float distXZ = _box.HorizontalDistanceTo(playerPos);
-
-        // Salida si ya llegó al mínimo
-        if (distXZ <= min)
-        {
-            StateMachine.ChangeState(PlayerEnum.PlayerStateId.Idle);
-            return;
-        }
-
-        // Normalización 0..1 (0 en min, 1 en max)
-        float t01 = Mathf.InverseLerp(min, max, Mathf.Clamp(distXZ, min, max));
-
-        // Velocidad por curva * base * MoveSpeed del size actual
-        float curveMul = Mathf.Max(0f, _ctx.AttractSpeedCurve.Evaluate(t01));
-        float pullSpeed = Mathf.Max(MIN_PULL_SPEED_FLOOR, _ctx.MoveSpeed * _ctx.AttractSpeedBase * curveMul);
-
-        // Dirección caja -> player (plano XZ) + clamp para no "pasarse" del mínimo
-        Vector3 toPlayer = new Vector3(playerPos.x - boxPos.x, 0f, playerPos.z - boxPos.z);
-        Vector3 dirPull  = toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : Vector3.zero;
-
-        float maxStep = pullSpeed * Time.fixedDeltaTime;
-        float allowed = Mathf.Max(0f, distXZ - min);
-        float step    = Mathf.Min(maxStep, allowed);
-
-        if (step > 0f) _box.MoveBy(dirPull * step);
-
-        // Rotación suave del player mirando al centro de la caja (horizontal)
-        Vector3 toBox = -dirPull; // player -> caja
+        // Siempre rotamos al player hacia la caja
+        Vector3 toBox = -dirPull;
         if (toBox.sqrMagnitude > 0.0001f)
         {
             var targetRot = Quaternion.LookRotation(toBox, Vector3.up);
             var smooth    = Quaternion.Slerp(_ctx.Rb.rotation, targetRot, _ctx.TurnSpeed * ROT_LERP * Time.fixedDeltaTime);
             _ctx.Rb.MoveRotation(smooth);
         }
+
+        // --- Lógica de Espera (Wait for Wrap Visual) ---
+        if (Time.time < _moveUnlockTime)
+        {
+            _ctx.View.Animator.SetBool("Pull", true);
+            _box.StopImmediate(); 
+            return; 
+        }
+
+        // --- Lógica de Movimiento (Solo se ejecuta tras finalizar el Wrap Visual) ---
+        float min    = _ctx.AttractMinDistance;
+        float max    = _ctx.AttractMaxDistance;
+        float distXZ = _box.HorizontalDistanceTo(playerPos);
+
+        if (distXZ <= min)
+        {
+            StateMachine.ChangeState(PlayerStateId.Idle);
+            return;
+        }
+
+        float t01 = Mathf.InverseLerp(min, max, Mathf.Clamp(distXZ, min, max));
+        float curveMul = Mathf.Max(0f, _ctx.AttractSpeedCurve.Evaluate(t01));
+        float pullSpeed = Mathf.Max(MIN_PULL_SPEED_FLOOR, _ctx.MoveSpeed * _ctx.AttractSpeedBase * curveMul);
+
+        float maxStep = pullSpeed * Time.fixedDeltaTime;
+        float allowed = Mathf.Max(0f, distXZ - min);
+        float step    = Mathf.Min(maxStep, allowed);
+
+        if (step > 0f) _box.MoveBy(dirPull * step);
     }
 }

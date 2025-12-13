@@ -39,9 +39,7 @@ public sealed class InteractionRuntime : MonoBehaviour
     private LayerMask _aimCollisionMask = ~0;
 
     [SerializeField] private GameObject projectilePrefab;
-
-    [SerializeField, Range(0.1f, 3f)] private float _stickAimSensitivity = 0.5f;
-
+    [SerializeField] private Transform _shootOriginTransform;
     [SerializeField, Range(0, 30)] private float _aimMaxDistance;
     [SerializeField, Range(-5, 5)] private float _maxAimHeight;
     [SerializeField, Range(0, 30)] private float _arcHeight;
@@ -50,16 +48,22 @@ public sealed class InteractionRuntime : MonoBehaviour
 
     [Header("Quick Travel")] [SerializeField]
     private float radiusTiny;
+    
+    [Header("Smash")]
+    [SerializeField] public float smashRange = 3f; 
+    [SerializeField] public LayerMask smashLayer; 
 
     // propiedad para que los States lean el mismo valor (exponen datos, no lógica)
     public float AttractMinDistance => _attractMinDistance;
     public float AttractMaxDistance => _attractMaxDistance;
     public AnimationCurve AttractSpeedCurve => _attractSpeedAC;
     public float AttractSpeedBase => _attractSpeedBase;
+    public Transform ShootOrigin => _shootOriginTransform;
     public float AimMaxDistance => _aimMaxDistance;
     public float AimMaxHeight => _maxAimHeight;
     public GameObject ProjectilePrefab => projectilePrefab;
-
+    public bool IsAimValid { get; private set; }
+    
     [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
     [SerializeField] private Color _hitColor = new(0.2f, 1f, 0.2f, 0.9f);
     [SerializeField] private Color _missColor = new(1f, 0.2f, 0.2f, 0.9f);
@@ -125,6 +129,9 @@ public sealed class InteractionRuntime : MonoBehaviour
         float minDist = float.MaxValue;
         Rigidbody nearest = null;
 
+        // Obtenemos la mask de "Wall" localmente (asegúrate que tu layer se llame exactamente "Wall")
+        int wallMask = LayerMask.GetMask("Wall");
+
         foreach (var hit in hits)
         {
             if (!hit.CompareTag("Hook")) continue;
@@ -132,11 +139,24 @@ public sealed class InteractionRuntime : MonoBehaviour
             if (rb == null) continue;
 
             float dist = Vector3.Distance(playerTf.position, rb.position);
-            if (dist < minDist)
+
+            // OPTIMIZACIÓN: Si ya encontramos uno más cerca, ni nos molestamos en tirar el Raycast
+            if (dist >= minDist) continue;
+
+            // LOGICA DE OCLUSIÓN:
+            // Lanzamos un rayo desde el player hacia el objetivo
+            Vector3 direction = (rb.position - playerTf.position).normalized;
+
+            // Si el raycast golpea algo en la layer "Wall" antes de llegar a la distancia del objeto...
+            if (Physics.Raycast(playerTf.position, direction, dist, wallMask))
             {
-                minDist = dist;
-                nearest = rb;
+                // ... significa que hay una pared en medio, pasamos al siguiente.
+                continue;
             }
+
+            // Si pasa todas las pruebas, es el nuevo candidato
+            minDist = dist;
+            nearest = rb;
         }
 
         if (nearest == null) return false;
@@ -193,55 +213,41 @@ public sealed class InteractionRuntime : MonoBehaviour
 
     // ¡¡MÉTODO MODIFICADO!!
     // Ahora recibe "aimScreenPosition" desde el AimState
-    public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3 hitPoint, out Vector3 hitNormal)
+// En InteractionRuntime.cs
+
+public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3 hitPoint, out Vector3 hitNormal)
     {
         hitPoint = default;
         hitNormal = Vector3.up;
-        SimpleShootData.Path = null;
+        SimpleShootData.Path = null; 
 
-        // 1) Origen del disparo
-        Vector3 start = playertf.position + Vector3.up * 1.0f;
-
-        // 2) Punto “deseado” desde la cámara (guía)
-        // MODIFICADO: Ya no usa Input.mousePosition
+        // --- 1) Origen y Raycast ---
+        Vector3 start = _shootOriginTransform != null ? _shootOriginTransform.position : playertf.position + Vector3.up * 1.0f;
         Ray ray = Camera.main.ScreenPointToRay(aimScreenPosition);
-
-        Vector3 desired =
-            Physics.Raycast(ray, out RaycastHit camHit, 200f, _aimCollisionMask, QueryTriggerInteraction.Ignore)
+        Vector3 desired = Physics.Raycast(ray, out RaycastHit camHit, 200f, _aimCollisionMask, QueryTriggerInteraction.Ignore)
                 ? camHit.point
-                : ray.GetPoint(200f);
+                : ray.GetPoint(50f);
 
-        // 3) Dirección y distancia horizontal al punto deseado
+        // --- 2) Cálculos ---
         Vector3 toDesired = desired - start;
         Vector3 dirXZ = new Vector3(toDesired.x, 0f, toDesired.z);
         float distXZ = dirXZ.magnitude;
+        if (distXZ > 1e-3f) dirXZ.Normalize(); else dirXZ = playertf.forward;
 
-        if (distXZ > _aimMaxDistance)
-            return false;
+        // --- 3) Validación Inicial ---
+        bool isValid = true;
+        if (distXZ > _aimMaxDistance) isValid = false;
+        if (toDesired.y > _maxAimHeight) isValid = false;
 
-        if (distXZ > 1e-3f)
-            dirXZ.Normalize();
-        else
-            dirXZ = playertf.forward;
-
-        // 4) Parámetros del arco “plantilla”
-        float L = distXZ;
+        // --- 4) Generación del Arco ---
+        float L = distXZ; 
         float height = toDesired.y;
-
-        if (height > _maxAimHeight)
-        {
-            return false; // ¡Demasiado alto! No es un objetivo válido.
-        }
-
-        // ... (El resto del método es idéntico por dentro, no cambia nada más) ...
-
         int steps = Mathf.Max(6, _simMaxSteps);
-
         var points = new List<Vector3>(steps + 1);
         Vector3 prev = start;
         points.Add(prev);
-
         float maxWorldHeight = start.y + _maxAimHeight;
+        bool collisionFound = false;
 
         for (int i = 1; i <= steps; i++)
         {
@@ -250,42 +256,40 @@ public sealed class InteractionRuntime : MonoBehaviour
             float y = Mathf.Lerp(0f, height, s) + 4f * _arcHeight * s * (1f - s);
             Vector3 p = new Vector3(flat.x, start.y + y, flat.z);
 
-            if (p.y > maxWorldHeight)
-            {
-                break;
-            }
+            if (p.y > maxWorldHeight) isValid = false;
 
             Vector3 dir = p - prev;
             float dist = dir.magnitude;
-
             if (dist > 0.001f)
             {
-                dir.Normalize();
-
-                if (Physics.SphereCast(prev, _arcRadius, dir, out RaycastHit h, dist, _aimCollisionMask,
-                        QueryTriggerInteraction.Ignore))
+                if (Physics.SphereCast(prev, _arcRadius, dir, out RaycastHit h, dist, _aimCollisionMask, QueryTriggerInteraction.Ignore))
                 {
                     Vector3 hitVector = h.point - start;
                     float hitDistXZ = new Vector3(hitVector.x, 0f, hitVector.z).magnitude;
-
-                    if (hitDistXZ > _aimMaxDistance)
-                    {
-                        break;
-                    }
+                    if (hitDistXZ > _aimMaxDistance) isValid = false;
 
                     hitPoint = h.point;
                     hitNormal = h.normal;
                     points.Add(hitPoint);
-                    SimpleShootData.Path = points;
-                    return true;
+                    collisionFound = true;
+                    break; 
                 }
             }
-
             points.Add(p);
             prev = p;
         }
 
-        return false;
+        SimpleShootData.Path = points;
+
+        if (!collisionFound)
+        {
+            if (distXZ > _aimMaxDistance) isValid = false;
+            hitPoint = points[points.Count - 1];
+        }
+        
+        IsAimValid = isValid;
+
+        return isValid;
     }
     // -------------------- QuickTravel --------------------
 
@@ -324,7 +328,7 @@ public sealed class InteractionRuntime : MonoBehaviour
         portal = best;
         return portal != null;
     }
-
+    
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {

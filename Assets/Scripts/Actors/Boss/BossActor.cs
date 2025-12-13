@@ -15,9 +15,10 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     [Header("Config & Refs")] [SerializeField]
     private BossConfigSO config;
 
-    [SerializeField] private PlayerContext player;
+    [SerializeField] private PlayerController player;
     [SerializeField] private Animator animator;
-    [SerializeField] private PlayerPrefsRegistry registry;
+    [SerializeField] public FocusOnActivation focus;
+    
     [Header("FSM")] public StateMachinePlayer stateMachine;
 
     [Header("Percepción")] [Tooltip("Layers que bloquean la visión y largo del LoS")] [SerializeField]
@@ -28,7 +29,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     // IBossContext
     public Transform Transform => transform;
     public Animator Animator => animator;
-    public PlayerContext Player => player;
+    public PlayerContext Player => player.Ctx;
     public int CurrentStageIndex => _stageIndex;
     public BossConfigSO Config => config;
 
@@ -58,8 +59,10 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     public Func<bool> OnPrimarySkill;
     public Func<bool> OnSecondarySkill;
-    private bool _paused;
-
+    
+    private bool _paused;    // Pausa de Menú
+    private bool _isLocked;  // Pausa de Focus/Cinemática
+    
     // Eventos opcionales
     public event Action<int> OnStageChanged;
     public event Action OnDeath;
@@ -91,8 +94,8 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private void Update()
     {
-        if (_paused) return; // ⏸️ pausa global detiene toda la lógica
-
+        if (_paused || _isLocked) return;
+        
         _time = Time.time;
         if (player == null || config == null || config.StageCount == 0) return;
 
@@ -109,7 +112,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("Box"))
+        if (other.gameObject.layer == LayerMask.NameToLayer("Interactable"))
         {
             OnDamaged?.Invoke();
             other.gameObject.SetActive(false);
@@ -144,7 +147,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private WorldModel BuildWorldModel()
     {
-        bool los = HasLineOfSight(transform.position, player.Tf.position);
+        bool los = HasLineOfSight(transform.position, player.transform.position);
         return new WorldModel(this, los);
     }
 
@@ -206,6 +209,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     private void OnEnable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+        GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
         
         OnPrimarySkill += TryUseSkillA;
         OnSecondarySkill += TryUseSkillB;
@@ -219,7 +223,8 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     private void OnDisable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
-
+        GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
+        
         OnDamaged -= NotifyDamaged;
         OnDamaged -= AdvanceStage;
 
@@ -233,6 +238,43 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         animator.enabled = !paused;
         stateMachine.enabled = !paused;
         _goap.Paused = paused;
+    }
+    
+    public void OnLockChanged(bool locked)
+    {
+        _isLocked = locked;
+        UpdateControlState();
+    }
+    
+    /// <summary>
+    /// Gestiona el estado de congelamiento del Boss.
+    /// </summary>
+    private void UpdateControlState()
+    {
+        // 1. SI HAY PAUSA (Menú):
+        // Se congela todo sin excepción.
+        if (_paused)
+        {
+            if (animator != null) animator.enabled = false;
+            if (stateMachine != null) stateMachine.enabled = false;
+            if (_goap != null) _goap.Paused = true;
+            return;
+        }
+
+        // 2. SI HAY LOCK (Cinemática / Focus):
+        // Aquí está la corrección: Solo congelamos si el Boss YA TERMINÓ su Entry.
+        // Si IsEntry es true, significa que el Boss está actuando en la cinemática,
+        // por lo tanto debe poder moverse y ejecutar su estado BS_Entry.
+        bool shouldFreezeByLock = _isLocked && !IsEntry;
+
+        if (animator != null) animator.enabled = !shouldFreezeByLock;
+        
+        // La FSM también debe seguir corriendo en Entry para detectar cuándo terminar la intro
+        if (stateMachine != null) stateMachine.enabled = !shouldFreezeByLock;
+
+        // El Brain puede pausarse siempre en Lock, ya que de todas formas
+        // en Entry devuelve 'Intent.None', pero por seguridad lo linkeamos igual.
+        if (_goap != null) _goap.Paused = shouldFreezeByLock;
     }
 }
 

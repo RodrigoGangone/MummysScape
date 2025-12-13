@@ -132,7 +132,7 @@ public class StoneProjectile : MonoBehaviour, IPausable
         
         OnHit?.Invoke(other.transform.position);
 
-        var player = other.GetComponentInParent<PlayerController>();
+        // var player = other.GetComponentInParent<Player>();
         var hitRb = other.attachedRigidbody ? other.attachedRigidbody : other.GetComponentInParent<Rigidbody>();
 
         if (hitRb != null)
@@ -152,11 +152,11 @@ public class StoneProjectile : MonoBehaviour, IPausable
                 hitRb.AddForce(pushDir.normalized * pushForce, pushForceMode);
             }
         }
-
-        if (player != null)
-        {
-            StartCoroutine(SimpleStun(player, stunDuration));
-        }
+        //
+        // if (player != null)
+        // {
+        //     StartCoroutine(SimpleStun(player, stunDuration));
+        // }
 
         Debug.Log("[BS_Stone] Impacto con Player (stun simple y empuje XZ aplicado).");
         if(view != null) view.SetActive(false);
@@ -187,13 +187,13 @@ public class StoneProjectile : MonoBehaviour, IPausable
         return rb != null ? rb.worldCenterOfMass : col.bounds.center;
     }
 
-    private IEnumerator SimpleStun(PlayerController player, float seconds)
-    {
-        player.enabled = false;
-        yield return WaitForSecondsPausable(seconds, () => _paused);
-        player.enabled = true;
-        Destroy(gameObject);
-    }
+    // private IEnumerator SimpleStun(Player player, float seconds)
+    // {
+    //     player.enabled = false;
+    //     yield return WaitForSecondsPausable(seconds, () => _paused);
+    //     player.enabled = true;
+    //     Destroy(gameObject);
+    // }
 
     void SpawnFX(Vector3 pos) => Instantiate(fxImpact, pos, Quaternion.identity);
     

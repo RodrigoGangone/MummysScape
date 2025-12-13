@@ -8,7 +8,8 @@ public class DeadState : State
     public DeadState(PlayerContext ctx) => _ctx = ctx;
     
     public override void OnEnter() 
-    { 
+    {
+        _ctx.View.Animator.SetTrigger("Death");
         //GameEventManager.Instance.levelEvents.OnDeath.Raise();
     }
     public override void OnUpdate() { }

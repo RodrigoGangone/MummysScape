@@ -26,7 +26,7 @@ public sealed class PlayerSizeVisual : MonoBehaviour
     private void Apply(PlayerSize size)
     {
         if (_meshNormal) _meshNormal.SetActive(size == PlayerSize.Normal);
-        if (_meshSmall) _meshSmall.SetActive(size == PlayerSize.Small);
+        if (_meshSmall) _meshSmall.SetActive(size == PlayerSize.Small); 
         if (_meshHead) _meshHead.SetActive(size == PlayerSize.Head);
     }
 

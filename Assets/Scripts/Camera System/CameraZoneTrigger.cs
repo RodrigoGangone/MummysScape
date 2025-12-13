@@ -1,25 +1,27 @@
 using UnityEngine;
+using Cinemachine;
 
 public class CameraZoneTrigger : MonoBehaviour
 {
-    [SerializeField] private DollyPositionManager dollyManager;
-    [SerializeField] private string dollyTrackId; // Ej: "Ground", "Water"
-    [SerializeField] private int waypointIndex;   // 0..N según la zona
+    [Header("Arrastra aquí la VCam de ESTA isla")]
+    public CinemachineVirtualCamera vCam;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
-        if (dollyManager == null) return;
-
-        if (string.IsNullOrEmpty(dollyTrackId))
+        if (other.CompareTag("PlayerFather"))
         {
-            // Compatibilidad: usa el track actual del DollyManager
-            dollyManager.SetZoneDollyPosition(waypointIndex);
+            // CinemachineBrain siempre elige la cámara con mayor prioridad.
+            // Al entrar, subimos esta a 20 (encima del default que suele ser 10).
+            vCam.Priority = 20;
         }
-        else
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("PlayerFather"))
         {
-            // Nuevo sistema multi-dolly
-            dollyManager.SetZoneDollyPosition(dollyTrackId, waypointIndex);
+            // Al salir, la bajamos. Si entra en otra zona, la otra subirá a 20.
+            vCam.Priority = 10;
         }
     }
 }

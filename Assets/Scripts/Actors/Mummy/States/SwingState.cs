@@ -1,84 +1,140 @@
 using UnityEngine;
 
-/// <summary>
-/// SwingState
-/// - Conecta el spring al hook real (sin frames con ancla en (0,0,0)).
-/// - Movimiento por fuerzas: input proyectado al plano tangencial del cable (AddForce Acceleration).
-/// - Clamp de velocidad tangencial + brake cuando no hay input.
-/// - Rotación suave mirando la dirección de la velocidad tangencial.
-/// </summary>
 public class SwingState : State
 {
     private readonly PlayerContext _ctx;
-    private Transform _hookTf;
+    
+    // Referencia al script del objeto que golpeamos
+    private WrapHandler _currentWrapHandler;
+
+    // Tiempos
+    private float _timeReachedTarget; // Cuándo termina de viajar la línea e impacta
+
+    // Banderas
+    private bool _hasConnected; // Controla si ya iniciamos Wrap + Física
 
     public SwingState(PlayerContext ctx) => _ctx = ctx;
 
     public override void OnEnter()
     {
         Debug.Log("SwingState - Enter");
-        // Buscar hook válido, si no hay salimos (evita joints mal configurados).
-        if (_ctx.TryGetSwingTarget(out var hookRb))
-        {
-            _hookTf = hookRb.transform;
+        
+        _ctx.View.Animator.SetBool("PreSwing", true);
+        
+        // Reset
+        _hasConnected = false;
+        _currentWrapHandler = null;
 
-            // Punto de enganche en mundo: si tu hook tiene un child "Anchor", úsalo.
-            Vector3 worldHookPoint = hookRb.worldCenterOfMass;
-            _ctx.SwingHandler.Attach(_ctx.Rb, hookRb, worldHookPoint);
-
-            // Visual
-            _ctx.View?.SetSwingLineActive(true, _hookTf);
-        }
-        else
+        // 1. Obtener Target (Hook)
+        if (!_ctx.TryGetSwingTarget(out Rigidbody hookRb))
         {
             StateMachine.ChangeState(PlayerEnum.PlayerStateId.Fall);
+            return;
         }
+
+        // 2. Buscar WrapHandler
+        _currentWrapHandler = hookRb.GetComponent<WrapHandler>();
+
+        // 3. Preparar Datos Físicos (Handler)
+        // Asumimos que el golpe es en el centro de masa por defecto (puedes mejorarlo con RaycastHit)
+        Vector3 hitPoint = hookRb.worldCenterOfMass;
+        _ctx.SwingHandler.PreparePhysicsData(hookRb, hitPoint);
+
+        // 4. Iniciar Visuales (View)
+        // Delegamos el dibujado a la View
+        _ctx.View.StartBandage(hookRb.transform, hitPoint);
+
+        // 5. Calcular Tiempos
+        // Obtenemos la duración de la animación desde la View
+        float travelDuration = _ctx.View.GetBandageDrawDuration();
+        _timeReachedTarget = Time.time + travelDuration; 
+    }
+
+    public override void OnExit()
+    {
+        // 1. Ejecutar UnWrap al soltar
+        if (_currentWrapHandler != null)
+        {
+            _currentWrapHandler.UnWrap();
+        }
+
+        // 2. Limpiar física (Handler)
+        _ctx.SwingHandler.Detach();
+        
+        // 3. Limpiar visuales (View)
+        _ctx.View.StopBandage();
+        
+        // 4. Limpiar referencias
+        _currentWrapHandler = null;
+        _hasConnected = false;
+        
+        _ctx.View.Animator.SetBool("Swing", false);
+        _ctx.View.Animator.SetBool("PreSwing", false);
     }
 
     public override void OnUpdate() { }
 
-public override void OnFixedUpdate()
+    public override void OnFixedUpdate()
     {
-        var rb = _ctx.Rb;
-        var joint = _ctx.SwingHandler.SpringJoint;
-        if (joint == null) return;
+        // ---------------------------------------------------------
+        // FASE 1: VUELO (Esperar a que la línea llegue visualmente)
+        // ---------------------------------------------------------
+        if (Time.time < _timeReachedTarget)
+        {
+            // Gravedad normal mientras viaja la cuerda
+            _ctx.Rb.AddForce(Physics.gravity, ForceMode.Acceleration);
+            return; 
+        }
 
+        // ---------------------------------------------------------
+        // FASE 2: IMPACTO (Wrap Visual + Conexión Física SIMULTÁNEAS)
+        // ---------------------------------------------------------
+        if (!_hasConnected)
+        {
+            _ctx.View.Animator.SetBool("Swing", true);
+
+            // A. Iniciar animación del Shader (Visual en el objeto golpeado)
+            if (_currentWrapHandler != null)
+            {
+                _currentWrapHandler.Wrap();
+            }
+
+            // B. Activar Joint (Física)
+            _ctx.SwingHandler.EnablePhysics(_ctx.Rb);
+            
+            _hasConnected = true;
+        }
+
+        // ---------------------------------------------------------
+        // FASE 3: BALANCEO (Lógica de movimiento)
+        // ---------------------------------------------------------
+        
+        var joint = _ctx.SwingHandler.SpringJoint;
+        if (joint == null) return; 
+
+        var rb = _ctx.Rb;
         Vector2 mv = _ctx.Input.Move;
         bool hasInput = mv.sqrMagnitude > 0.0001f;
 
-        // 1. Vectores básicos
         Vector3 wishDir = _ctx.CameraRelativeDir(mv.x, mv.y);
-        Vector3 ropeDir = _ctx.SwingHandler.GetRopeDirWorld(); // Vector desde Player -> Hook
-        
-        // 2. Dirección tangencial deseada (A dónde queremos ir)
+        Vector3 ropeDir = _ctx.SwingHandler.GetRopeDirWorld();
+
         Vector3 tanDir = Vector3.ProjectOnPlane(wishDir, ropeDir).normalized;
 
-        // 3. Velocidad actual en el plano del swing
         Vector3 currentVel = rb.velocity;
         Vector3 currentTanVel = Vector3.ProjectOnPlane(currentVel, ropeDir);
         float currentSpeed = currentTanVel.magnitude;
 
-        // 4. LÓGICA DE FUERZA DE PÉNDULO
         if (hasInput && tanDir.sqrMagnitude > 0f)
         {
-            // A) Detectar si estamos tratando de "trepar" o "bajar"
-            // tanDir.y > 0 significa que el input apunta hacia el cielo (luchar contra gravedad)
             bool isFightingGravity = tanDir.y > 0;
-
-            // B) Configurar fuerzas
-            // Si bajamos, ayudamos mucho (Gravedad + Input).
-            // Si subimos, ayudamos muy poco o nada (Input vs Gravedad).
-            float forcePower = isFightingGravity ? 4f : 20f; 
-            
-            // C) Límite de Velocidad "Suave" (Soft Cap)
-            // Si ya vamos más rápido que el máximo, NO empujamos más en esa dirección.
-            // Esto evita la aceleración infinita sin frenarte de golpe.
+            float forcePower = isFightingGravity ? 4f : 20f;
             float maxSpeed = _ctx.SwingHandler.MaxTangentialSpeed;
-            
-            // Calculamos si el input está alineado con la velocidad actual
-            float alignment = Vector3.Dot(tanDir, currentTanVel.normalized);
 
-            // Solo aplicamos fuerza si estamos bajo el límite O si estamos girando (cambiando dirección)
+            float alignment = currentTanVel.sqrMagnitude > 0.0001f
+                ? Vector3.Dot(tanDir, currentTanVel.normalized)
+                : 0f;
+
             if (currentSpeed < maxSpeed || alignment < 0.5f)
             {
                 rb.AddForce(tanDir * forcePower, ForceMode.Acceleration);
@@ -86,15 +142,12 @@ public override void OnFixedUpdate()
         }
         else
         {
-            // Freno pasivo suave (Drag) para que no oscile eternamente
             _ctx.SwingHandler.HandlePassiveReturn(rb, Time.fixedDeltaTime);
         }
 
-        // Clamp de seguridad final (por si la gravedad física te acelera demasiado en una caída muy larga)
-        // Puedes relajar esto un poco para permitir picos de velocidad en caídas grandes.
         _ctx.SwingHandler.ClampTangentialSpeed(rb);
 
-        // --- Rotación y Visuales (Igual que antes) ---
+        // Rotación visual
         Vector3 face = new Vector3(currentTanVel.x, 0f, currentTanVel.z);
         if (face.sqrMagnitude > 0.001f)
         {
@@ -104,12 +157,5 @@ public override void OnFixedUpdate()
 
         float n = Mathf.Clamp01(currentSpeed / Mathf.Max(0.01f, _ctx.SwingHandler.MaxTangentialSpeed));
         _ctx.View?.SetMoveSpeedVisual(n);
-    }
-
-    public override void OnExit()
-    {
-        _ctx.SwingHandler.Detach();
-        _ctx.View?.SetSwingLineActive(false);
-        _hookTf = null;
     }
 }

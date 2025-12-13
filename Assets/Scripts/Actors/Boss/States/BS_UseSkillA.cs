@@ -33,5 +33,13 @@ public sealed class BS_UseSkillA : State
     {
     }
 
-    public override void OnExit() => _actor.Animator.SetBool(PRIMARY_ANIM_SCORPION, false);
+    public override void OnExit()
+    {
+        _actor.Animator.SetBool(PRIMARY_ANIM_SCORPION, false);
+
+        var chargingProjectile = _actor.Transform.GetComponentInChildren<ChargeableProjectile>();
+
+        if (chargingProjectile != null)
+            GameObject.Destroy(chargingProjectile.gameObject);
+    }
 }

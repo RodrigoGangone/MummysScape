@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,7 +7,13 @@ using static PauseUtils;
 [RequireComponent(typeof(Rigidbody))]
 public class BandageProjectile : MonoBehaviour, IPausable
 {
-    [SerializeField] private GameObject drop;
+    [Header("Settings")] [SerializeField]
+    private LayerMask collisionLayers; // Selecciona aquí las layers con las que choca (ej: Default, Wall, Enemy)
+
+    [Header("References")] [SerializeField]
+    private GameObject drop;
+
+    [SerializeField] private GameObject view;
 
     private Rigidbody _rb;
     private bool _paused;
@@ -51,12 +58,16 @@ public class BandageProjectile : MonoBehaviour, IPausable
 
     private void OnTriggerEnter(Collider other)
     {
-        //if (other.gameObject.CompareTag("PlayerFather")) return;
-        //
-        //Instantiate(drop, transform.position, Quaternion.identity);
-        //
-        //Destroy(gameObject);
+        // Operación bitwise para verificar si la layer del objeto está dentro de la máscara seleccionada
+        if (((1 << other.gameObject.layer) & collisionLayers) != 0)
+        {
+            Instantiate(drop, transform.position, Quaternion.identity);
+
+            Destroy(view);
+            GetComponent<Collider>().enabled = false;
+        }
     }
+
 
     public void OnPauseChanged(bool paused) => _paused = paused;
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
