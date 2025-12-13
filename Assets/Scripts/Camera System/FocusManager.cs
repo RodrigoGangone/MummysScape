@@ -14,7 +14,7 @@ public class FocusManager : MonoBehaviour
     // ELIMINADO: [SerializeField] private DollyPositionManager dollyCameraManager;
 
     [Header("Input de tutorial")]
-    private const string TUTORIAL_BUTTON_NAME = "Space";
+    private const string TUTORIAL_BUTTON_NAME = "Accept";
     public string TutorialKey => TUTORIAL_BUTTON_NAME;
 
     private bool _isFocusing;
