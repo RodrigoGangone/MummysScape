@@ -45,15 +45,31 @@ public static class Save
         => Get(PrefKeys.GemTotal(SceneName(buildIndex)), 0);
 
     // ---- Volumen ----
-
     public static void  SetVolume(VolumeSoundId id, float v01) => Set(PrefKeys.VolumeSoundKey(id), v01);
     public static float GetVolume(VolumeSoundId id, float def = 0.8f) => Get(PrefKeys.VolumeSoundKey(id), def);
 
     public static void  SetVolume(VolumeFxId id, float v01) => Set(PrefKeys.VolumeFxKey(id), v01);
     public static float GetVolume(VolumeFxId id, float def = 0.8f) => Get(PrefKeys.VolumeFxKey(id), def);
+    
+    // ---- Mute ----
+// ---- Mute ----
+// Guardamos como int (0/1) para no depender de que PlayerPrefsManager.Get<T> soporte bool.
+
+    public static void SetMuted(VolumeSoundId id, bool muted)
+        => PlayerPrefsManager.Set(PrefKeys.MuteSoundKey(id), muted ? 1 : 0);
+
+    public static bool GetMuted(VolumeSoundId id, bool def = false)
+        => PlayerPrefsManager.Get(PrefKeys.MuteSoundKey(id), def ? 1 : 0) != 0;
+
+    public static void SetMuted(VolumeFxId id, bool muted)
+        => PlayerPrefsManager.Set(PrefKeys.MuteFxKey(id), muted ? 1 : 0);
+
+    public static bool GetMuted(VolumeFxId id, bool def = false)
+        => PlayerPrefsManager.Get(PrefKeys.MuteFxKey(id), def ? 1 : 0) != 0;
+
+
 
     // ---- Tiempos ----
-    
     //public static void  SetTime(TimeId id, float seconds) => Set(PrefKeys.TimeKey(id), seconds);
     //public static float GetTime(TimeId id, float def = float.MaxValue) => Get(PrefKeys.TimeKey(id), def);
 

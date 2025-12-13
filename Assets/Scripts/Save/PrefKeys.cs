@@ -48,7 +48,13 @@ public static class PrefKeys
         => $"{Prefix[VolumeSound]}{Slug(id)}";
     public static string VolumeFxKey(VolumeFxId id)
         => $"{Prefix[VolumeFX]}{Slug(id)}";
-
+    
+    // --- Mute (booleans) ---
+    // reutilizamos los prefijos existentes y les colgamos un sufijo ".mute"
+    public static string MuteSoundKey(VolumeSoundId id)
+        => $"{Prefix[VolumeSound]}{Slug(id)}.mute";
+    public static string MuteFxKey(VolumeFxId id)
+        => $"{Prefix[VolumeFX]}{Slug(id)}.mute";
+    
     //public static string TimeKey(TimeId id) => $"{Prefix[Time]}{id.ToString().ToLowerInvariant()}";
-
 }

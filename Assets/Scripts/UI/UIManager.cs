@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
@@ -22,6 +23,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button _btnRetry;
     [SerializeField] private Button _btnOptions;
     [SerializeField] private Button _btnExit;
+    //(esto va junto al resto de botones del Pause / Options
+    [SerializeField] private Button _btnBackOptions;
     
     private bool _isPaused;
     private bool _pauseCharging;
@@ -40,6 +43,11 @@ public class UIManager : MonoBehaviour
 
     [Header("UI NEXT LVL")]
     [SerializeField] private GameObject _NextLvlPanel;
+    
+    // Selectables iniciales por panel
+    [Header("FIRST SELECTED")]
+    [SerializeField] private Selectable _pauseFirstSelected;    // btn Resume
+    [SerializeField] private Selectable _optionsFirstSelected;  // options
 
     private float _fakeTimer = 5f;
 
@@ -78,6 +86,7 @@ public class UIManager : MonoBehaviour
         AddButtonProps(_btnRetry, RetryLevel);
         AddButtonProps(_btnOptions, ShowOptionsPanel);
         AddButtonProps(_btnExit, GoToMainMenu);
+        AddButtonProps(_btnBackOptions, BackFromOptions);
 
         AddButtonProps(_btnNextLvlW, ShowNextLvlPanel);
         AddButtonProps(_btnRetryW, RetryLevel);
@@ -98,6 +107,14 @@ public class UIManager : MonoBehaviour
     {
         if (Input.GetButtonDown("Pause"))
             Toggle();
+    }
+    
+    private static void SetSelected(Selectable selectable)
+    {
+        if (selectable == null) return;
+        if (EventSystem.current == null) return;
+
+        EventSystem.current.SetSelectedGameObject(selectable.gameObject);
     }
 
     private void Toggle()
@@ -142,6 +159,9 @@ public class UIManager : MonoBehaviour
         {
             _pausePanel.SetActive(false);
             _optionsPanel.SetActive(false);
+            
+            //Al cerrar pausa, limpiar selección
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
 
             StartCoroutine(LoadPauseBandage());
         }
@@ -172,7 +192,10 @@ public class UIManager : MonoBehaviour
         _pauseCharging = false;
 
         if (endValue == 1f)
+        {
             _pausePanel.SetActive(true);
+            SetSelected(_pauseFirstSelected ?? _btnResume);
+        }
 
         _pauseMaterial.SetFloat(PAUSE_FILL, endValue);
     }
@@ -183,6 +206,15 @@ public class UIManager : MonoBehaviour
         
         // MODIFICADO: Llama al script local _transition
         Transition.FadeInAndLoadScene(0);
+    }
+    
+    private void BackFromOptions()
+    {
+        _optionsPanel.SetActive(false);
+        _pausePanel.SetActive(true);
+
+        // Devolver foco al panel de pausa
+        SetSelected(_pauseFirstSelected ?? _btnResume);
     }
     
     private void ShowNextLvlPanel()
@@ -220,8 +252,12 @@ public class UIManager : MonoBehaviour
         // MODIFICADO: Llama al script local _transition
         Transition.FadeInAndLoadScene(SceneManager.GetActiveScene().buildIndex);
     }
-    
-    private void ShowOptionsPanel() => _optionsPanel.SetActive(true);
+
+    private void ShowOptionsPanel()
+    {
+        _optionsPanel.SetActive(true);
+        SetSelected(_optionsFirstSelected);
+    } 
 
     // ELIMINADO: FadeIn y FadeOut (ahora están en SceneTransitionLocal)
 
