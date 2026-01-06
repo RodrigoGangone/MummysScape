@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -380,11 +379,7 @@ public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3
 
 
         //AIM
-
-        // 1. DIBUJAR RANGO MÁXIMO (CÍRCULO)
-        Handles.color = new Color(0.1f, 0.7f, 1f, 0.5f);
-        Handles.DrawWireDisc(transform.position, Vector3.up, _aimMaxDistance);
-
+        
         // 2. DIBUJAR TRAYECTORIA Y PUNTO DE IMPACTO
         if (SimpleShootData.Path != null && SimpleShootData.Path.Count > 1)
         {
