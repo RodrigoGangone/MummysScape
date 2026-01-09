@@ -13,6 +13,7 @@ public sealed class PlayerContext
     public readonly PlayerView View;
     public readonly IPlayerInput Input;
     public readonly SwingHandler SwingHandler;
+    public readonly ShootingHandler ShootingHandler;
     public readonly StateMachinePlayer StateMachine;
     
     private readonly ICameraProvider _camProvider;
@@ -22,7 +23,7 @@ public sealed class PlayerContext
 
     public PlayerContext(
         Transform tf, Rigidbody rb,
-        SwingHandler swingHandler,
+        SwingHandler swingHandler, ShootingHandler shootingHandler,
         ICameraProvider camProvider,
         PlayerModel model, PlayerView view,
         MovementRuntime movement, IPlayerInput input, InteractionRuntime interactionRuntime,
@@ -30,6 +31,7 @@ public sealed class PlayerContext
     {
         Tf = tf; Rb = rb;
         SwingHandler = swingHandler;
+        ShootingHandler = shootingHandler;
         _camProvider = camProvider;
         Model = model; View = view; _movement = movement; Input = input;
         _interactions = interactionRuntime;
@@ -45,8 +47,6 @@ public sealed class PlayerContext
     public float AttractMaxDistance => _interactions ? _interactions.AttractMaxDistance : 5f;
     public AnimationCurve AttractSpeedCurve => _interactions ? _interactions.AttractSpeedCurve : AnimationCurve.Linear(0,1,1,1);
     public float AttractSpeedBase => _interactions ? _interactions.AttractSpeedBase : 1f;
-    public GameObject ProjectilePrefab => _interactions.ProjectilePrefab;
-    public Transform ShootOrigin => _interactions.ShootOrigin;
     public float AimMaxDistance => _interactions.AimMaxDistance; 
     public float AimMaxHeight => _interactions.AimMaxHeight;
     public float SmashRange => _interactions.smashRange;

@@ -24,7 +24,9 @@ public sealed class PlayerModel
     {
         _onBandagesCountChanged = onBandagesCountChanged;
         _onSizeChanged          = onSizeChanged;
-
+        
+        GameEventManager.Instance.playerEvents.OnShoot.Register((() => { TryConsumeBandage(); }));
+        
         Bandages = Clamp(MaxBandages, MinBandages, MaxBandages); // Arranca en 2
         // No hacemos Raise acá: el Controller hará un "bootstrap" inicial
     }

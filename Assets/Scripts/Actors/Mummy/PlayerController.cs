@@ -19,6 +19,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
     [SerializeField] private CameraProvider _cameraProvider;
     [SerializeField] private MovementRuntime _movement;
     [SerializeField] private SwingHandler _swingHandler;
+    [SerializeField] private ShootingHandler _shootingHandler; // Asignar en Inspector
     [SerializeField] private PlayerInputReaderLegacy _input; // podés cambiar por el de New Input System
     [SerializeField] private HeadTimerController _headTimer; // opcional (puede estar en UI)
     [SerializeField] private InteractionRuntime _interactions;
@@ -67,9 +68,9 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         _ground = GetComponent<GroundCheckRuntime>();
 
         // Contexto compartido por States
-        _ctx = new PlayerContext(transform, _rb, _swingHandler, _cameraProvider, _model, _view, _movement, _input,
+        _ctx = new PlayerContext(transform, _rb, _swingHandler, _shootingHandler, _cameraProvider, _model, _view, _movement, _input,
             _interactions, _ground, _sm);
-
+        
         // Estados (tu API AddState / ChangeState)
         _sm.AddState(PlayerStateId.Idle, new IdleState(_ctx));
         _sm.AddState(PlayerStateId.Walk, new WalkState(_ctx));

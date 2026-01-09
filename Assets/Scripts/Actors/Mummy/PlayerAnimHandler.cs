@@ -27,7 +27,7 @@ public class PlayerAnimHandler : MonoBehaviour
         }
     }
 
-    public void ConsumeBandage() => _ctx.Model.TryConsumeBandage();
+    public void Shoot() => GameEventManager.Instance.playerEvents.OnShoot.Raise();
     
     public void UnLocked()
     {

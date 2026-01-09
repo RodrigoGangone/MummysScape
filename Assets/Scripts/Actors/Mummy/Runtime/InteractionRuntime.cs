@@ -37,7 +37,6 @@ public sealed class InteractionRuntime : MonoBehaviour
     [Header("Shoot Checker")] [SerializeField]
     private LayerMask _aimCollisionMask = ~0;
 
-    [SerializeField] private GameObject projectilePrefab;
     [SerializeField] private Transform _shootOriginTransform;
     [SerializeField, Range(0, 30)] private float _aimMaxDistance;
     [SerializeField, Range(-5, 5)] private float _maxAimHeight;
@@ -60,7 +59,6 @@ public sealed class InteractionRuntime : MonoBehaviour
     public Transform ShootOrigin => _shootOriginTransform;
     public float AimMaxDistance => _aimMaxDistance;
     public float AimMaxHeight => _maxAimHeight;
-    public GameObject ProjectilePrefab => projectilePrefab;
     public bool IsAimValid { get; private set; }
     
     [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
