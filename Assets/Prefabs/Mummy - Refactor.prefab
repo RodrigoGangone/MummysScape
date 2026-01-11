@@ -553,6 +553,7 @@ MonoBehaviour:
   _cameraProvider: {fileID: 0}
   _movement: {fileID: 2706546613065623957}
   _swingHandler: {fileID: 0}
+  _shootingHandler: {fileID: 0}
   _input: {fileID: 8671530515944238678}
   _headTimer: {fileID: 0}
   _interactions: {fileID: 6352385872740916496}
@@ -627,7 +628,7 @@ MonoBehaviour:
     m_Bits: 17924096
   _originOffset: {x: 0, y: 0.5, z: 0}
   _footRadius: 0.52
-  _castDistance: 0
+  _castDistance: 0.25
   _maxGroundAngle: 75
   _drawGizmos: 1
   _hitColor: {r: 0.2, g: 1, b: 0.2, a: 0.9}
@@ -692,7 +693,6 @@ MonoBehaviour:
   _aimCollisionMask:
     serializedVersion: 2
     m_Bits: 17860608
-  projectilePrefab: {fileID: 7766207882271066570, guid: bdd4611784970c64eaa4261113b5f6c4, type: 3}
   _shootOriginTransform: {fileID: 6537420997497854155}
   _aimMaxDistance: 10
   _maxAimHeight: 2.5

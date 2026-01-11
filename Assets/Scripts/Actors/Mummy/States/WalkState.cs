@@ -23,7 +23,7 @@ public sealed class WalkState : State
         _ctx.View.Animator.SetBool("Walk", false);
     }
 
-public override void OnUpdate()
+public override void OnFixedUpdate()
 {
     Vector2 mv = _ctx.Input.Move;
     
@@ -85,7 +85,7 @@ public override void OnUpdate()
     _ctx.View?.SetMoveSpeedVisual(1f);
 }
 
-    public override void OnFixedUpdate()
+    public override void OnUpdate()
     {
         // Chequeo de suelo: Si deja de haber suelo, pasamos a Fall
         // (Necesario porque al mover por transform, el Rigidbody no cae solo a veces)

@@ -23,7 +23,7 @@ public sealed class GroundCheckRuntime : MonoBehaviour
     [Min(0f)][SerializeField] private float _footRadius = 0.52f;
 
     [Tooltip("Alcance del SphereCast hacia abajo.")]
-    [Min(0f)][SerializeField] private float _castDistance = 0f;
+    [Min(0f)][SerializeField] private float  _castDistance = 0f;
 
     [Header("Slope")]
     [Tooltip("Ángulo máximo (grados) para considerar 'suelo'. 90 = cualquier pendiente.")]
