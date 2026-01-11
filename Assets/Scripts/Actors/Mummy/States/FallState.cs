@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FallState : State
+public class FallState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
 
