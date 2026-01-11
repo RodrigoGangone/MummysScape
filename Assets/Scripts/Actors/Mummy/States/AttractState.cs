@@ -1,7 +1,7 @@
 using UnityEngine;
 using static PlayerEnum;
 
-public sealed class AttractState : State
+public sealed class AttractState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
     private BoxPushAttract _box;

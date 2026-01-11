@@ -1,7 +1,7 @@
 using static PlayerEnum;
 using UnityEngine;
 
-public class QuickTravelState : State
+public class QuickTravelState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
     private HippoTravel _hippoTravel;

@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.Rendering.Universal;
 
-public class AimState : State
+public class AimState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
     private readonly GameObject _decal;

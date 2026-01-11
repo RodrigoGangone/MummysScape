@@ -5,7 +5,7 @@ using static PlayerEnum;
 /// SmashState
 /// Ejecuta el smash (placeholder) y vuelve a Idle. Solo permitido en Head.
 /// </summary>
-public sealed class SmashState : State
+public sealed class SmashState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
     public SmashState(PlayerContext ctx) => _ctx = ctx;

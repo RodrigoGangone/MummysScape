@@ -44,7 +44,7 @@ public class Bandage : MonoBehaviour, IPausable
         if (_instancedMaterial != null) _instancedMaterial.SetFloat(IsActive, 1);
     }
 
-    private void OnTriggerEnter(Collider collision)
+    private void OnTriggerStay (Collider collision)
     {
         if (!collision.gameObject.CompareTag("PlayerFather")) return;
 

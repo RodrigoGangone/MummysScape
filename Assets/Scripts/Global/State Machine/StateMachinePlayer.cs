@@ -50,4 +50,8 @@ public class StateMachinePlayer : MonoBehaviour
         return true;
     }
     
+    public bool CurrentStateImplement<T>() where T : class
+    {
+        return _currentState is T;
+    }
 }

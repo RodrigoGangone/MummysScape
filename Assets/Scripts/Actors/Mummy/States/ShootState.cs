@@ -1,7 +1,7 @@
 using UnityEngine;
 using static PlayerEnum;
 
-public sealed class ShootState : State
+public sealed class ShootState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
 

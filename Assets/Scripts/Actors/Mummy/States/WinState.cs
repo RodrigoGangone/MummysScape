@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WinState : State
+public class WinState : State, IBandageRestrictor
 {
     private PlayerContext _ctx;
     public WinState(PlayerContext ctx) => _ctx = ctx;

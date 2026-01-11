@@ -8,7 +8,7 @@ using static PlayerEnum;
 /// - Suelta si no hay suelo bajo la caja o se pierde el target.
 /// - Rotación suave.
 /// </summary>
-public sealed class PushState : State
+public sealed class PushState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
     private BoxPushAttract _box;

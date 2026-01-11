@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DeadState : State
+public class DeadState : State, IBandageRestrictor
 {
     private PlayerContext _ctx;
     public DeadState(PlayerContext ctx) => _ctx = ctx;

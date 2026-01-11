@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SwingState : State
+public class SwingState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
     

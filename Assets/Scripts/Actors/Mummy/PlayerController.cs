@@ -98,6 +98,11 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
     // Intenta sumar 'amount' vendas al Model (retorna false si ya estás en el máximo).
     public bool TryCollectBandage(int amount)
     {
+        if (_sm.CurrentStateImplement<IBandageRestrictor>())
+        {
+            return false;
+        }
+        
         int before = _model.Bandages;
         _model.AddBandages(amount);
         return _model.Bandages > before;
