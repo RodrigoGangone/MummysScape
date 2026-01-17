@@ -10,9 +10,9 @@ public class BandageProjectile : MonoBehaviour, IPausable
     [Header("Settings")] 
     [SerializeField] private LayerMask collisionLayers; 
     [SerializeField] private GameObject drop;
-    [SerializeField] private TrailRenderer _trail; // (OPCIONAL) Arrástralo si tienes uno
 
     private Rigidbody _rb;
+    private Collider _collider;
     private IObjectPool<BandageProjectile> _pool;
     private bool _paused;
 
@@ -20,40 +20,42 @@ public class BandageProjectile : MonoBehaviour, IPausable
     {
         _rb = GetComponent<Rigidbody>();
         _rb.useGravity = false;
-        // Si no asignaste el trail en inspector, intenta buscarlo
-        if (_trail == null) _trail = GetComponent<TrailRenderer>();
+        
+        _collider = GetComponent<Collider>(); // Obtener el collider
     }
 
     public void SetPool(IObjectPool<BandageProjectile> pool) => _pool = pool;
 
-    // --- AHORA RECIBE startPos ---
     public void Initialize(IReadOnlyList<Vector3> path, float speed, Vector3 startPos)
     {
-        // 1. LIMPIEZA VISUAL (Evita líneas raras al teleportarse)
-        if (_trail != null) _trail.Clear();
-
-        // 2. RESET FÍSICO DURO (Transform + Rigidbody)
         transform.position = startPos; 
         transform.rotation = Quaternion.identity;
         
-        _rb.position = startPos; // <--- ESTO SOLUCIONA QUE SALGA DE LA ÚLTIMA POSICIÓN
+        _rb.position = startPos;
         _rb.velocity = Vector3.zero;
         _rb.angularVelocity = Vector3.zero;
         _rb.useGravity = false;
         
-        // 3. Iniciar lógica
-        StopAllCoroutines(); // Seguridad extra por si quedó alguna corriendo
+        if (_collider != null) _collider.enabled = false;
+        
+        StopAllCoroutines();
         StartCoroutine(RunPhysics(path, speed));
     }
 
     private IEnumerator RunPhysics(IReadOnlyList<Vector3> path, float speed)
     {
-        // Pequeña espera de 1 frame si quieres asegurar que el Trail empiece limpio, 
-        // pero generalmente _trail.Clear() basta.
-        
-        foreach (var target in path)
+        for (int i = 0; i < path.Count; i++)
         {
-            // Verificamos distancia
+            Vector3 target = path[i];
+
+            if (_collider != null && !_collider.enabled)
+            {
+                if (i >= path.Count - 5)
+                {
+                    _collider.enabled = true;
+                }
+            }
+
             while (Vector3.Distance(_rb.position, target) > 0.1f)
             {
                 if (_paused)
@@ -62,11 +64,9 @@ public class BandageProjectile : MonoBehaviour, IPausable
                     continue; 
                 }
 
-                // MovePosition interpola, es suave para físicas
                 var newPosition = Vector3.MoveTowards(_rb.position, target, speed * Time.fixedDeltaTime);
                 _rb.MovePosition(newPosition);
 
-                // Rotación
                 var dir = target - _rb.position;
                 if (dir.sqrMagnitude > 0.001f)
                 {
@@ -80,10 +80,9 @@ public class BandageProjectile : MonoBehaviour, IPausable
         }
 
         _rb.useGravity = true;
+        if (_collider != null) _collider.enabled = true;
         StartCoroutine(ReturnToPoolAfterTime(5f));
     }
-
-    // ... (El resto de OnTriggerEnter, ReturnToPoolAfterTime, etc. sigue igual) ...
     
     private void OnTriggerEnter(Collider other)
     {
