@@ -18084,8 +18084,8 @@ GameObject:
   - component: {fileID: 3250867667693339950}
   - component: {fileID: 3703399318777936089}
   - component: {fileID: 2028157767126748300}
-  - component: {fileID: 1321288949247322542}
   - component: {fileID: 5685020173999125869}
+  - component: {fileID: 3830023929936902136}
   m_Layer: 0
   m_Name: Platform
   m_TagString: Untagged
@@ -18204,7 +18204,7 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 132096
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
@@ -18230,13 +18230,25 @@ MonoBehaviour:
   waypoints:
   - {fileID: 1348086747530271076}
   - {fileID: 5471147903896879434}
-  platformBank: {fileID: 0}
+  platformBank: {fileID: 11400000, guid: 866e10c823b0798468c6e60843fe3298, type: 2}
   movingSoundKey: Moving
   sandMoundsParticle: {fileID: 4411936912017711928}
   activationParticles: {fileID: 7542629736257955921}
   glowDuration: 2
   glowIntensity: 0.15
---- !u!54 &1321288949247322542
+--- !u!114 &5685020173999125869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4517651014775981341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bee2daa0de478647afa4245b76bf6ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!54 &3830023929936902136
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -18258,23 +18270,11 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
+  m_UseGravity: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
---- !u!114 &5685020173999125869
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4517651014775981341}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6bee2daa0de478647afa4245b76bf6ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Constraints: 126
+  m_CollisionDetection: 1
 --- !u!1 &4741537487359464449
 GameObject:
   m_ObjectHideFlags: 0

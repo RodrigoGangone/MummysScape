@@ -4,33 +4,31 @@ using UnityEngine;
 using static Utils;
 using static PauseUtils;
 
-[RequireComponent(typeof(Rigidbody))]
 public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 {
-    [Header("PLAY ON AWAKE")] [SerializeField]
-    private bool isMoving;
+    [Header("PLAY ON AWAKE")] 
+    [SerializeField] private bool isMoving;
 
-    [Header("SPEED")] [SerializeField] private float speed = 1f;
+    [Header("SPEED")] 
+    [SerializeField] private float speed = 1f;
     [SerializeField] private float stopTime = 0.5f;
 
-    [Header("WAYPOINTS")] [SerializeField] private Transform[] waypoints;
+    [Header("WAYPOINTS")] 
+    [SerializeField] private Transform[] waypoints;
 
-    [Header("AUDIO & FX")] [SerializeField]
-    private FxBank platformBank;
-
+    [Header("AUDIO & FX")] 
+    [SerializeField] private FxBank platformBank;
     [SerializeField] private string movingSoundKey = "Moving"; 
     [SerializeField] private string activeSoundKey = "Active"; 
     [SerializeField] private float glowDuration = 2f;
     [SerializeField] private float glowIntensity = 0.15f;
 
-    [Header("SAND MOUNDS EFFECTS")] [SerializeField]
-    private float moundEmergenceSpeed = 1f;
-
+    [Header("SAND MOUNDS EFFECTS")] 
+    [SerializeField] private float moundEmergenceSpeed = 1f;
     [SerializeField] private Transform sandMoundForward;
     [SerializeField] private Transform[] sandMoundForwardWaypoints;
     [SerializeField] private Transform sandMoundBackward;
     [SerializeField] private Transform[] sandMoundBackwardWaypoints;
-
     [SerializeField] private ParticleSystem[] sandMoundForwardParticles;
     [SerializeField] private ParticleSystem[] sandMoundBackwardParticles;
     [SerializeField] private ParticleSystem activationParticles;
@@ -39,41 +37,40 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     private bool isMovingToFirstWaypoint;
     private int _currentWaypointIndex = 0;
 
-    // Componentes
     private AudioSource _movingAudio;
-    private Rigidbody _rb;
 
     // ⏸️ Estados
-    private bool _paused;     // Pausa de Menú (Hard Pause)
-    private bool _isLocked;   // Pausa de Cinemática/Interacción (Soft Pause)
+    private bool _paused;     
+    private bool _isLocked;   
     private bool _holdAtWaypoint;
 
     private void Start()
     {
         platformMaterials = GetMaterialsFromChildren();
         
-        _rb = GetComponent<Rigidbody>();
-        _rb.isKinematic = true;
-        _rb.interpolation = RigidbodyInterpolation.Interpolate;
+        // Se eliminó la configuración de Rigidbody.isKinematic
 
         if (waypoints.Length > 0 && isMoving)
         {
-            if (Vector3.Distance(_rb.position, waypoints[0].position) == 0)
+            if (Vector3.Distance(transform.position, waypoints[0].position) < 0.001f)
                 isMovingToFirstWaypoint = true;
             else
-                _rb.position = waypoints[0].position;
+                transform.position = waypoints[0].position;
         }
 
         if (sandMoundForward && sandMoundBackward)
         {
-            sandMoundForward.position = sandMoundForwardWaypoints[0].position;
-            sandMoundBackward.position = sandMoundBackwardWaypoints[0].position;
+            if (sandMoundForwardWaypoints.Length > 0)
+                sandMoundForward.position = sandMoundForwardWaypoints[0].position;
+            
+            if (sandMoundBackwardWaypoints.Length > 0)
+                sandMoundBackward.position = sandMoundBackwardWaypoints[0].position;
         }
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
-        // 🔹 AHORA SE DETIENE SI ESTÁ PAUSADO O SI ESTÁ BLOQUEADO (LOCKED)
+        // Se detiene si hay pausa de menú o bloqueo de evento (Locked)
         bool shouldMove = !_paused 
                           && !_isLocked 
                           && !_holdAtWaypoint
@@ -90,23 +87,14 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
             MoveTowardsWaypoint();
     }
 
-    // ... [Resto de lógica de movimiento igual (MoveToFirstWaypoint, MoveTowardsWaypoint)] ...
-    
-    // Omito el cuerpo de estos métodos para ahorrar espacio, ya que no cambian
-    // MoveToFirstWaypoint() ...
-    // MoveTowardsWaypoint() ...
-    // EnsureMovingAudio() ...
-    // HandleMovingSound() ...
-
     private void MoveToFirstWaypoint()
     {
         Transform firstWaypoint = waypoints[0];
         float step = speed * Time.deltaTime; 
 
-        Vector3 newPos = Vector3.MoveTowards(_rb.position, firstWaypoint.position, step);
-        _rb.MovePosition(newPos);
+        transform.position = Vector3.MoveTowards(transform.position, firstWaypoint.position, step);
 
-        if (Vector3.Distance(_rb.position, firstWaypoint.position) <= 0.001f)
+        if (Vector3.Distance(transform.position, firstWaypoint.position) <= 0.001f)
         {
             isMovingToFirstWaypoint = false;
             _currentWaypointIndex = 1;
@@ -125,16 +113,15 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         Transform targetWaypoint = waypoints[_currentWaypointIndex];
         float step = speed * Time.deltaTime;
 
-        Vector3 newPos = Vector3.MoveTowards(_rb.position, targetWaypoint.position, step);
-        _rb.MovePosition(newPos);
+        transform.position = Vector3.MoveTowards(transform.position, targetWaypoint.position, step);
 
-        if (Vector3.Distance(_rb.position, targetWaypoint.position) <= 0.01f)
+        if (Vector3.Distance(transform.position, targetWaypoint.position) <= 0.01f)
             StartCoroutine(PauseAtWaypoint());
 
         if (sandMoundForward && sandMoundBackward)
             MoveSandMound();
     }
-    
+
     private void EnsureMovingAudio()
     {
         if (_movingAudio != null) return;
@@ -173,14 +160,10 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         }
     }
 
-
     private IEnumerator PauseAtWaypoint()
     {
         _holdAtWaypoint = true;
-        
-        // 🔹 Esperamos considerando ambas pausas
         yield return WaitForSecondsPausable(stopTime, () => _paused || _isLocked);
-        
         _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
         _holdAtWaypoint = false;
     }
@@ -196,15 +179,10 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     
     public void ReturnToPrevious()
     {
-        _currentWaypointIndex = _currentWaypointIndex > 0 ? _currentWaypointIndex - 1 : _currentWaypointIndex + 1;
+        _currentWaypointIndex = _currentWaypointIndex > 0 ? _currentWaypointIndex - 1 : waypoints.Length - 1;
     }
 
-    // ... [Métodos de SandMound y GlowEffect iguales] ...
-    
-    // Omito SandMounds Logic y Visuals para brevedad, no cambian...
-    // Solo recuerda que en FixedUpdate ya los controlas con "shouldMove"
-
-    // ---------------- SAND MOUND LOGIC (Visuals) ----------------
+    // ---------------- SAND MOUND LOGIC ----------------
     private void ResetSandMoundPositions()
     {
         sandMoundForward.position = Vector3.MoveTowards(
@@ -227,51 +205,37 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         if (_currentWaypointIndex == 1)
         {
             foreach (var ps in sandMoundForwardParticles)
-                if (!ps.isPlaying && !_paused && !_isLocked) ps.Play(); // 🔹 Check Locked
+                if (!ps.isPlaying && !_paused && !_isLocked) ps.Play();
             foreach (var ps in sandMoundBackwardParticles) ps.Stop();
         }
-        else if (_currentWaypointIndex == 0)
+        else
         {
             foreach (var ps in sandMoundBackwardParticles)
-                if (!ps.isPlaying && !_paused && !_isLocked) ps.Play(); // 🔹 Check Locked
+                if (!ps.isPlaying && !_paused && !_isLocked) ps.Play();
             foreach (var ps in sandMoundForwardParticles) ps.Stop();
         }
     }
     
-    // ... GlowEffect methods ...
+    // ---------------- VISUALS & GLOW ----------------
     private Material[] GetMaterialsFromChildren() =>
         GetComponentsInChildren<Renderer>().SelectMany(r => r.materials).ToArray();
 
     private IEnumerator GlowEffect(float duration)
     {
-        StartCoroutine(IncreaseIntensity(duration / 2f));
+        StartCoroutine(AnimateGlow(0f, glowIntensity, duration / 2f));
         if (platformBank != null) platformBank.Play3D(activeSoundKey, transform.position);
-        yield return WaitForSecondsPausable(duration / 2f, () => _paused || _isLocked); // 🔹 Check Locked
-        StartCoroutine(DecreaseIntensity(duration / 2f));
+        yield return WaitForSecondsPausable(duration / 2f, () => _paused || _isLocked);
+        StartCoroutine(AnimateGlow(glowIntensity, 0f, duration / 2f));
     }
 
-    private IEnumerator IncreaseIntensity(float duration)
+    private IEnumerator AnimateGlow(float from, float to, float duration)
     {
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            if (_paused || _isLocked) { yield return null; continue; } // 🔹 Espera simple
+            if (_paused || _isLocked) { yield return null; continue; }
             elapsed += Time.deltaTime;
-            float current = Mathf.Lerp(0f, glowIntensity, elapsed / duration);
-            foreach (var mat in platformMaterials)
-                if (mat.HasProperty("_GlowIntensity")) mat.SetFloat("_GlowIntensity", current);
-            yield return null;
-        }
-    }
-
-    private IEnumerator DecreaseIntensity(float duration)
-    {
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-             if (_paused || _isLocked) { yield return null; continue; } // 🔹 Espera simple
-            elapsed += Time.deltaTime;
-            float current = Mathf.Lerp(glowIntensity, 0f, elapsed / duration);
+            float current = Mathf.Lerp(from, to, elapsed / duration);
             foreach (var mat in platformMaterials)
                 if (mat.HasProperty("_GlowIntensity")) mat.SetFloat("_GlowIntensity", current);
             yield return null;
@@ -280,21 +244,18 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 
     // ---------------- EVENT HANDLERS ----------------
 
-    // Evento de Pausa (Menu)
     public void OnPauseChanged(bool paused)
     {
         _paused = paused;
         UpdateState();
     }
 
-    // 🔹 NUEVO: Evento de Lock (Cinemática/Interacción)
     public void OnLockChanged(bool locked)
     {
         _isLocked = locked;
         UpdateState();
     }
 
-    // Lógica centralizada para detener/reanudar efectos
     private void UpdateState()
     {
         bool isFrozen = _paused || _isLocked;
@@ -313,7 +274,7 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 
     private void HandleParticlesPause(ParticleSystem[] systems, bool isFrozen)
     {
-        if (systems == null || systems.Length == 0) return;
+        if (systems == null) return;
         foreach (var ps in systems)
         {
             if (ps == null) continue;
@@ -325,16 +286,27 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     private void OnEnable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-        // 🔹 REGISTRAMOS EL LOCKED
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
     }
 
     private void OnDisable()
     {
         if (GameEventManager.Instance == null) return;
-        
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
-        // 🔹 DES-REGISTRAMOS EL LOCKED
         GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
     }
+
+    #region Player Collision Logic
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player")) 
+            other.transform.SetParent(this.transform);
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+            other.transform.SetParent(null);
+    }
+    #endregion
 }
