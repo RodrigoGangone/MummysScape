@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static Save;
@@ -8,7 +9,7 @@ public class Portal : MonoBehaviour
     [SerializeField] private bool isOpen;
     private Animator Anim => GetComponentInChildren<Animator>();
     private FocusOnActivation Focus => GetComponent<FocusOnActivation>();
-    
+
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnWin.Register<int>(CompleteLevel);
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(CompleteLevel);
 
@@ -17,9 +18,9 @@ public class Portal : MonoBehaviour
         if (!isOpen) return;
 
         Locked();
-        
+
         Focus.Activate();
-        
+
         InitLevelFx();
     }
 
@@ -27,11 +28,29 @@ public class Portal : MonoBehaviour
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG) || isOpen) return;
 
-        var col = GetComponent<Collider>();
-        col.enabled = false;
-        
-        PassedLevelFX();
-        Focus.Activate();
+        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(true, buttonType.A);
+    }
+
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.gameObject.CompareTag(PLAYER_TAG) || isOpen) return;
+
+        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(false, buttonType.A);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (isOpen) return;
+
+        if (Input.GetButtonDown("Space"))
+        {
+            var col = GetComponent<Collider>();
+            col.enabled = false;
+
+            PassedLevelFX();
+            Focus.Activate();
+        }
     }
 
     /// <summary>
@@ -39,9 +58,12 @@ public class Portal : MonoBehaviour
     /// </summary>
     /// 
     public void Locked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
+
     public void UnLocked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
-    public void PassedLevel() => GameEventManager.Instance.levelEvents.OnWin.Raise(SceneManager.GetActiveScene().buildIndex);
-    
+
+    public void PassedLevel() =>
+        GameEventManager.Instance.levelEvents.OnWin.Raise(SceneManager.GetActiveScene().buildIndex);
+
     /// <summary>
     /// Fx's correspondientes a las animaciones del sarcofago
     ///
@@ -49,5 +71,6 @@ public class Portal : MonoBehaviour
     /// Close -> Al finalizar el nivel
     /// </summary>
     private void PassedLevelFX() => Anim.SetTrigger("Close");
+
     private void InitLevelFx() => Anim.SetTrigger("Open");
 }

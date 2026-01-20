@@ -12,8 +12,12 @@ public class UIManager : MonoBehaviour
 {
     [SerializeField] private Animator _mummyUI;
 
-    [Header("UI Tutorial")] [SerializeField]
-    private GameObject _tutorialInput;
+    [FormerlySerializedAs("_interactionInput")] [FormerlySerializedAs("_tutorialInput")] [Header("UI Tutorial")] [SerializeField]
+    private GameObject _interaction;
+    [SerializeField] private Image _interactionBtn;
+
+    [SerializeField] private Sprite btnA;
+    [SerializeField] private Sprite btnY;
 
     [Header("UI PAUSE")] [SerializeField] private GameObject _pausePanel;
     [SerializeField] private Material _pauseMaterial;
@@ -67,7 +71,7 @@ public class UIManager : MonoBehaviour
         GameEventManager.Instance.levelEvents.OnWin.Register<int>(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Register(Lose);
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(HandlePauseChanged);
-        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Register<bool>(ShowTutorialInput);
+        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Register<bool, buttonType>(ShowInteractionInput);
     }
 
     private void OnDisable()
@@ -75,7 +79,7 @@ public class UIManager : MonoBehaviour
         GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Lose);
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(HandlePauseChanged);
-        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Unregister<bool>(ShowTutorialInput);
+        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Unregister<bool, buttonType>(ShowInteractionInput);
     }
 
 
@@ -296,7 +300,17 @@ public class UIManager : MonoBehaviour
         Transition.FadeInAndLoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    private void ShowTutorialInput(bool value) => _tutorialInput.SetActive(value);
+    public void ShowInteractionInput(bool value, buttonType button)
+    {
+        _interactionBtn.sprite = button switch
+        {
+            buttonType.A => btnA,
+            buttonType.Y => btnY,
+            _ => _interactionBtn.sprite
+        };
+
+        _interaction.SetActive(value);
+    }
 
     public void Win(int index)
     {
@@ -320,4 +334,10 @@ public class UIManager : MonoBehaviour
             SetSelected(_loseFirstSelected ?? _btnRetryL);
         });
     }
+}
+
+public enum buttonType
+{
+    A,
+    Y
 }

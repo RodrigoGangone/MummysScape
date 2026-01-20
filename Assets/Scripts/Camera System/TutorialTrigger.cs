@@ -62,7 +62,7 @@ public class TutorialTrigger : MonoBehaviour
             // 1. Encender la UI si no está encendida
             if (!_isPromptActive)
             {
-                GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(true);
+                GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(true, buttonType.Y);
                 _isPromptActive = true;
             }
 
@@ -83,7 +83,7 @@ public class TutorialTrigger : MonoBehaviour
         // Si salimos y la UI estaba activa, la apagamos
         if (_isPromptActive)
         {
-            GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(false);
+            GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(false, buttonType.Y);
             _isPromptActive = false;
         }
     }
