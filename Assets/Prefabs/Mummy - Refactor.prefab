@@ -507,6 +507,7 @@ GameObject:
   - component: {fileID: 7982005369610900635}
   - component: {fileID: 2808303942995360944}
   - component: {fileID: 8690595911240200217}
+  - component: {fileID: 7966449624530503382}
   m_Layer: 8
   m_Name: Mummy - Refactor
   m_TagString: PlayerFather
@@ -553,7 +554,7 @@ MonoBehaviour:
   _cameraProvider: {fileID: 0}
   _movement: {fileID: 2706546613065623957}
   _swingHandler: {fileID: 0}
-  _shootingHandler: {fileID: 0}
+  _observer: {fileID: 7966449624530503382}
   _input: {fileID: 8671530515944238678}
   _headTimer: {fileID: 0}
   _interactions: {fileID: 6352385872740916496}
@@ -881,6 +882,18 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7389072118055853021}
   m_Enabled: 1
+--- !u!114 &7966449624530503382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7389072118055853021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb8c732c0e0b3894f8a13f5d5aa8af45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7703909458147072873
 GameObject:
   m_ObjectHideFlags: 0

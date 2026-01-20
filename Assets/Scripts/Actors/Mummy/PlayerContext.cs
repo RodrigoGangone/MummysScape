@@ -13,9 +13,9 @@ public sealed class PlayerContext
     public readonly PlayerView View;
     public readonly IPlayerInput Input;
     public readonly SwingHandler SwingHandler;
-    public readonly ShootingHandler ShootingHandler;
+    public readonly EnvironmentObserver Observer;
     public readonly StateMachinePlayer StateMachine;
-    
+
     private readonly ICameraProvider _camProvider;
     private readonly MovementRuntime _movement;
     private readonly InteractionRuntime _interactions;
@@ -23,17 +23,21 @@ public sealed class PlayerContext
 
     public PlayerContext(
         Transform tf, Rigidbody rb,
-        SwingHandler swingHandler, ShootingHandler shootingHandler,
+        SwingHandler swingHandler, EnvironmentObserver observer,
         ICameraProvider camProvider,
         PlayerModel model, PlayerView view,
         MovementRuntime movement, IPlayerInput input, InteractionRuntime interactionRuntime,
         GroundCheckRuntime ground, StateMachinePlayer sm)
     {
-        Tf = tf; Rb = rb;
+        Tf = tf;
+        Rb = rb;
         SwingHandler = swingHandler;
-        ShootingHandler = shootingHandler;
+        Observer = observer;
         _camProvider = camProvider;
-        Model = model; View = view; _movement = movement; Input = input;
+        Model = model;
+        View = view;
+        _movement = movement;
+        Input = input;
         _interactions = interactionRuntime;
         _ground = ground;
         StateMachine = sm;
@@ -45,24 +49,33 @@ public sealed class PlayerContext
     public bool IsGrounded() => _ground != null && _ground.IsGrounded(Tf);
     public float AttractMinDistance => _interactions ? _interactions.AttractMinDistance : 1f;
     public float AttractMaxDistance => _interactions ? _interactions.AttractMaxDistance : 5f;
-    public AnimationCurve AttractSpeedCurve => _interactions ? _interactions.AttractSpeedCurve : AnimationCurve.Linear(0,1,1,1);
+
+    public AnimationCurve AttractSpeedCurve =>
+        _interactions ? _interactions.AttractSpeedCurve : AnimationCurve.Linear(0, 1, 1, 1);
+
     public float AttractSpeedBase => _interactions ? _interactions.AttractSpeedBase : 1f;
-    public float AimMaxDistance => _interactions.AimMaxDistance; 
+    public float AimMaxDistance => _interactions.AimMaxDistance;
     public float AimMaxHeight => _interactions.AimMaxHeight;
     public float SmashRange => _interactions.smashRange;
     public LayerMask SmashLayer => _interactions.smashLayer;
 
+    public Vector3 KnockbackTargetPosition;
+    public float KnockbackDuration;
+    public bool HasExternalImpact => Observer.HasKnockback;
 
     /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>
     public Vector3 CameraRelativeDir(float h, float v)
     {
         var cam = Cam;
         Vector3 fwd = cam ? cam.transform.forward : Vector3.forward;
-        Vector3 right = cam ? cam.transform.right   : Vector3.right;
-        fwd.y = 0f; right.y = 0f; fwd.Normalize(); right.Normalize();
+        Vector3 right = cam ? cam.transform.right : Vector3.right;
+        fwd.y = 0f;
+        right.y = 0f;
+        fwd.Normalize();
+        right.Normalize();
         return (fwd * v + right * h).normalized;
     }
-    
+
     /// <summary>Conveniencia: corre el PushChecker de InteractionRuntime.</summary>
     public bool TryGetPushTarget(out BoxPushAttract target, out RaycastHit left, out RaycastHit right)
     {
@@ -71,14 +84,14 @@ public sealed class PlayerContext
         right = default;
         return _interactions != null && _interactions.TryGetPushTarget(Tf, out target, out left, out right);
     }
-    
+
     /// <summary>Conveniencia: Attract checker (LOS a 1..5u frente al player).</summary>
     public bool TryGetAttractTarget(out BoxPushAttract target)
     {
         target = null;
         return _interactions != null && _interactions.TryGetAttractTarget(Tf, out target);
     }
-    
+
     public bool TryGetSwingTarget(out Rigidbody hook)
     {
         hook = null;
@@ -94,11 +107,10 @@ public sealed class PlayerContext
     }
 
     public bool IsAimValid => _interactions != null && _interactions.IsAimValid;
-    
+
     public bool TryGetQuickTravel(Transform playerTf, out HippoTravel target)
     {
         target = null;
         return _interactions != null && _interactions.TryGetQuickTravel(Tf, out target);
     }
-
 }

@@ -10184,6 +10184,11 @@ MonoBehaviour:
   waypoints:
   - {fileID: 1348086747530271076}
   - {fileID: 5471147903896879434}
+  platformBank: {fileID: 11400000, guid: 866e10c823b0798468c6e60843fe3298, type: 2}
+  movingSoundKey: Moving
+  activeSoundKey: Active
+  glowDuration: 2
+  glowIntensity: 0.15
   moundEmergenceSpeed: 0.3
   sandMoundForward: {fileID: 0}
   sandMoundForwardWaypoints:
@@ -10200,8 +10205,6 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   activationParticles: {fileID: 9098302310690838257}
-  glowDuration: 2
-  glowIntensity: 0.15
 --- !u!65 &3250867667693339950
 BoxCollider:
   m_ObjectHideFlags: 0

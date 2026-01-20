@@ -4,7 +4,6 @@ using UnityEngine;
 using static Utils;
 using static PauseUtils;
 
-[RequireComponent(typeof(Rigidbody))]
 public class MoveVerticalPlatform : MonoBehaviour, IPausable
 {
     [Header("SETTINGS")]
@@ -37,17 +36,14 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     // Componentes
     private AudioSource _movingAudio;
-    private Rigidbody _rb;
+    // ❌ Rigidbody eliminado
 
     private void Start()
     {
         _platformMaterials = GetMaterialsFromChildren();
         _isMoving = isMovingOnStart;
         
-        _rb = GetComponent<Rigidbody>();
-        _rb.isKinematic = true; 
-        // Forzamos Interpolate (aunque en tu imagen dice 'None', esto lo corrige al iniciar)
-        _rb.interpolation = RigidbodyInterpolation.Interpolate; 
+        // ❌ Eliminada configuración de Rigidbody
 
         if (waypoints.Length == 0)
         {
@@ -56,15 +52,17 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
             return;
         }
 
-        _rb.position = waypoints[0].position; 
+        // Posicionamiento directo por Transform
+        transform.position = waypoints[0].position; 
 
         if (_isMoving)
             _targetWaypointIndex = 1;
     }
 
-    private void FixedUpdate()
+    // 🔄 Cambiado a Update para movimiento visual suave sin físicas
+    private void Update()
     {
-        // 🔹 CONDICIÓN ACTUALIZADA: Se detiene con Pausa O Lock
+        // 🔹 CONDICIÓN: Se detiene con Pausa O Lock
         bool shouldMove = !_isGloballyPaused 
                           && !_isLocked
                           && !_isWaitingAtWaypoint 
@@ -84,7 +82,8 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     {
         Transform target = waypoints[_targetWaypointIndex];
         
-        float distance = Vector3.Distance(_rb.position, target.position);
+        // Usamos transform.position en lugar de _rb.position
+        float distance = Vector3.Distance(transform.position, target.position);
         const float slowDownRadius = 1f;
 
         float speedFactor = 1f;
@@ -94,12 +93,13 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
             speedFactor = Mathf.Lerp(0.1f, 1f, t);
         }
 
-        float step = speed * speedFactor * Time.fixedDeltaTime;
+        // Usamos deltaTime porque estamos en Update
+        float step = speed * speedFactor * Time.deltaTime;
         
-        Vector3 newPosition = Vector3.MoveTowards(_rb.position, target.position, step);
-        _rb.MovePosition(newPosition);
+        // Movemos el transform directamente
+        transform.position = Vector3.MoveTowards(transform.position, target.position, step);
 
-        if (Vector3.Distance(_rb.position, target.position) < 0.001f)
+        if (Vector3.Distance(transform.position, target.position) < 0.001f)
         {
             _waitCoroutine = StartCoroutine(PauseAtWaypoint());
         }
@@ -146,7 +146,6 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     private IEnumerator PauseAtWaypoint()
     {
         _isWaitingAtWaypoint = true;
-        // 🔹 ESPERA INTELIGENTE: Si hay pausa o lock, el timer se detiene
         yield return WaitForSecondsPausable(stopTime, () => _isGloballyPaused || _isLocked); 
         SetNextTarget(1);
         _isWaitingAtWaypoint = false;
@@ -190,8 +189,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     private void HandleEffects(bool isMovingActive)
     {
         if (sandMoundsParticle == null) return;
-        // Nota: La lógica de pausa de partículas ahora se maneja centralizadamente en UpdatePauseState
-        // Aquí solo manejamos si deberían emitir por movimiento
+
         if (isMovingActive && !sandMoundsParticle.isPlaying && !_isGloballyPaused && !_isLocked)
         {
             sandMoundsParticle.Play();
@@ -218,7 +216,6 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            // 🔹 PAUSA EN ANIMACIÓN: Esperamos si está pausado o bloqueado
             while (_isGloballyPaused || _isLocked) yield return null; 
             
             elapsed += Time.deltaTime;
@@ -239,21 +236,18 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     #region Pause & Lock System
     
-    // Evento de Pausa (Menú)
     public void OnPauseChanged(bool paused)
     {
         _isGloballyPaused = paused;
         UpdatePauseState();
     }
 
-    // 🔹 NUEVO: Evento de Lock (Cinemática)
     public void OnLockChanged(bool locked)
     {
         _isLocked = locked;
         UpdatePauseState();
     }
 
-    // Lógica unificada para detener audio/partículas
     private void UpdatePauseState()
     {
         bool isFrozen = _isGloballyPaused || _isLocked;
@@ -278,18 +272,37 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     private void OnEnable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-        // 🔹 REGISTRAMOS EL LOCKED
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
     }
 
     private void OnDisable()
     {
-        // Validación de null por seguridad al cerrar el juego
         if (GameEventManager.Instance == null) return;
         
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
-        // 🔹 DES-REGISTRAMOS EL LOCKED
         GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
+    }
+    #endregion
+
+    #region Player Collision Logic (Requerido para Transform)
+    // ⚠️ IMPORTANTE: Al mover por Transform, el jugador NO se moverá con la plataforma
+    // automáticamente (se resbalará). Necesitas emparentarlo.
+    
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player")) 
+        {
+            other.transform.SetParent(this.transform);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            other.transform.SetParent(null);
+            // Opcional: DontDestroyOnLoad puede requerir lógica extra si tu player es persistente
+        }
     }
     #endregion
 }

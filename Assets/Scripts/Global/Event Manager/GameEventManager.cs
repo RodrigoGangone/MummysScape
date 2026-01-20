@@ -18,6 +18,7 @@ public class GameEventManager : MonoBehaviour
         public GameEvent OnBandagesCountChanged;
         public GameEvent OnSizeChanged;
         public GameEvent OnShoot;
+        public GameEvent OnHit;
         public GameEvent OnLocked;
     }
 

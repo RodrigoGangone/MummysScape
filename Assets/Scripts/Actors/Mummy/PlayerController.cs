@@ -19,7 +19,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
     [SerializeField] private CameraProvider _cameraProvider;
     [SerializeField] private MovementRuntime _movement;
     [SerializeField] private SwingHandler _swingHandler;
-    [SerializeField] private ShootingHandler _shootingHandler; // Asignar en Inspector
+    [SerializeField] private EnvironmentObserver _observer;
     [SerializeField] private PlayerInputReaderLegacy _input; // podés cambiar por el de New Input System
     [SerializeField] private HeadTimerController _headTimer; // opcional (puede estar en UI)
     [SerializeField] private InteractionRuntime _interactions;
@@ -47,7 +47,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         //_rb.interpolation = RigidbodyInterpolation.Interpolate;
         _rb.constraints = RigidbodyConstraints.FreezeRotation;
 
-        _swingHandler = GetComponent<SwingHandler>(); 
+        _swingHandler = GetComponent<SwingHandler>();
         _inputDriver = GetComponent<PlayerInputStateDriver>();
 
         // PlayerEvents
@@ -68,9 +68,10 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         _ground = GetComponent<GroundCheckRuntime>();
 
         // Contexto compartido por States
-        _ctx = new PlayerContext(transform, _rb, _swingHandler, _shootingHandler, _cameraProvider, _model, _view, _movement, _input,
+        _ctx = new PlayerContext(transform, _rb, _swingHandler, _observer, _cameraProvider, _model, _view, _movement,
+            _input,
             _interactions, _ground, _sm);
-        
+
         // Estados (tu API AddState / ChangeState)
         _sm.AddState(PlayerStateId.Idle, new IdleState(_ctx));
         _sm.AddState(PlayerStateId.Walk, new WalkState(_ctx));
@@ -83,6 +84,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         _sm.AddState(PlayerStateId.Attract, new AttractState(_ctx));
         _sm.AddState(PlayerStateId.Swing, new SwingState(_ctx));
         _sm.AddState(PlayerStateId.QuickTravel, new QuickTravelState(_ctx));
+        _sm.AddState(PlayerStateId.KnockBack, new KnockBackState(_ctx, _bandagePickupPrefab));
         _sm.AddState(PlayerStateId.Dead, new DeadState(_ctx));
         _sm.AddState(PlayerStateId.Win, new WinState(_ctx));
 
@@ -102,7 +104,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         {
             return false;
         }
-        
+
         int before = _model.Bandages;
         _model.AddBandages(amount);
         return _model.Bandages > before;
@@ -122,14 +124,14 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
 
         _sm.enabled = !paused;
     }
-    
+
     //TODO: MODIFICAR ONLOCKEDCHANGED EN BASE A COMO SEA LA ANIMACION DEL SARCOFAGO [SI APAGAMOS AL PLAYER Y HACEMOS QUE LE SARCOFAGO HAGA TODO]
 
     public void OnLockChanged(bool locked)
     {
         PlayerControlState.SetLock(locked);
 
-        
+
         _rb.isKinematic = PlayerControlState.AnyBlocked;
 
         if (locked && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot)))
@@ -138,7 +140,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         _sm.enabled = !locked;
         GetComponent<Collider>().enabled = !locked;
     }
-    
+
     private void OnEnable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
