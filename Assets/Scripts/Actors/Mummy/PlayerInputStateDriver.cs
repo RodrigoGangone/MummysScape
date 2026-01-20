@@ -42,6 +42,14 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
     {
         if (_ctx == null || _sm == null || _input == null || _paused || _locked) return;
 
+        if (_ctx.HasExternalImpact) 
+        {
+            if(!_sm.IsCurrent(KnockBack))
+                _sm.ChangeState(KnockBack);
+            
+            return;
+        }
+        
         var mv = _input.Move;
         bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
 
