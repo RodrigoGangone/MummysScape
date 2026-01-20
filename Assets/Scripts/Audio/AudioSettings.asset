@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df3e404eee337f44c8665b0489952b41, type: 3}
+  m_Name: AudioSettings
+  m_EditorClassIdentifier: 
+  mixer: {fileID: 24100000, guid: f811c3aaec684944190077a9cef9780f, type: 2}
+  buses:
+  - bus: 0
+    defaultVolume: 1
+    mixerParameter: MasterVol
+    mixerGroup: {fileID: 24300002, guid: f811c3aaec684944190077a9cef9780f, type: 2}
+  - bus: 1
+    defaultVolume: 1
+    mixerParameter: MusicVol
+    mixerGroup: {fileID: -7056721243429086201, guid: f811c3aaec684944190077a9cef9780f, type: 2}
+  - bus: 4
+    defaultVolume: 1
+    mixerParameter: AmbientVol
+    mixerGroup: {fileID: -9138444054506815898, guid: f811c3aaec684944190077a9cef9780f, type: 2}
+  - bus: 5
+    defaultVolume: 1
+    mixerParameter: SFxVol
+    mixerGroup: {fileID: -221072623167197429, guid: f811c3aaec684944190077a9cef9780f, type: 2}
+  - bus: 2
+    defaultVolume: 1
+    mixerParameter: UIVol
+    mixerGroup: {fileID: -7392657830772340135, guid: f811c3aaec684944190077a9cef9780f, type: 2}

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3140258654729876683}
   - component: {fileID: 5882805819609090}
   - component: {fileID: 2680829863816091478}
-  - component: {fileID: 8659468451936070448}
+  - component: {fileID: 4880450911788602938}
   m_Layer: 12
   m_Name: Button
   m_TagString: Untagged
@@ -74,7 +74,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _platformsAll:
   - {fileID: 0}
-  _shiningParticles: {fileID: 7423957511053072862}
+  eagleBank: {fileID: 11400000, guid: 76649d7f7a62a8b40a9b22e5b82f223f, type: 2}
 --- !u!114 &3140258654729876683
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5306,7 +5306,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &8659468451936070448
+--- !u!114 &4880450911788602938
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5315,20 +5315,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1581429415559360427}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d9bca7abcbbe3d41aeca10c9bad3f26, type: 3}
+  m_Script: {fileID: 11500000, guid: dfd18982a3973674d91c79893d8ff66e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interactableType: 1
-  _player: {fileID: 0}
-  _operablesMapping:
-  - _size: 0
-    _operable: 1
-  - _size: 1
-    _operable: 1
-  _functional: {r: 4.53665, g: 0, b: 15.241464, a: 1}
-  _inoperable: {r: 8.47419, g: 0.18329035, b: 0, a: 1}
-  _materials: []
-  _shiningParticles: {fileID: 7423957511053072862}
+  _operableByHead: 0
+  _operableBySmall: 1
+  _operableByNormal: 1
+  _functional: {r: 0.5, g: 0, b: 1, a: 1}
+  _inoperable: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1001 &3736609774224434766
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5539,10 +5533,5 @@ PrefabInstance:
 --- !u!4 &975725595041233955 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7035543239861194584, guid: 7108b189bef777a4894761e880a27490, type: 3}
-  m_PrefabInstance: {fileID: 7793826663911109499}
-  m_PrefabAsset: {fileID: 0}
---- !u!198 &7423957511053072862 stripped
-ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 805596825607924389, guid: 7108b189bef777a4894761e880a27490, type: 3}
   m_PrefabInstance: {fileID: 7793826663911109499}
   m_PrefabAsset: {fileID: 0}

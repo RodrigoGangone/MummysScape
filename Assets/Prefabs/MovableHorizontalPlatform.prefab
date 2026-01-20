@@ -22981,6 +22981,8 @@ GameObject:
   - component: {fileID: 3191671548854698303}
   - component: {fileID: 3250867667693339950}
   - component: {fileID: 3703399318777936089}
+  - component: {fileID: 5373727488533993094}
+  - component: {fileID: 4844197900328897549}
   m_Layer: 0
   m_Name: Platform
   m_TagString: Untagged
@@ -23085,6 +23087,11 @@ MonoBehaviour:
   waypoints:
   - {fileID: 1348086747530271076}
   - {fileID: 5471147903896879434}
+  platformBank: {fileID: 11400000, guid: 866e10c823b0798468c6e60843fe3298, type: 2}
+  movingSoundKey: Moving
+  activeSoundKey: Active
+  glowDuration: 2
+  glowIntensity: 0.15
   moundEmergenceSpeed: 0.3
   sandMoundForward: {fileID: 1147361226476944290}
   sandMoundForwardWaypoints:
@@ -23101,9 +23108,6 @@ MonoBehaviour:
   - {fileID: 4411936912017711928}
   - {fileID: 3626682231584442197}
   activationParticles: {fileID: 9098302310690838257}
-  glowDuration: 2
-  glowIntensity: 0.15
-  isPaused: 0
 --- !u!65 &3250867667693339950
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -23138,7 +23142,7 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 132096
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
@@ -23146,6 +23150,45 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.588089, y: 1, z: 3.590222}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5373727488533993094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4517651014775981341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bee2daa0de478647afa4245b76bf6ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!54 &4844197900328897549
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4517651014775981341}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 1
 --- !u!1 &4741537487359464449
 GameObject:
   m_ObjectHideFlags: 0

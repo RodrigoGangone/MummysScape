@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Rushes_Mat
-  m_Shader: {fileID: -6465566751694194690, guid: cc11e5b1162860b4ab6fdd46f2fbd7f0, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 0be77cdf11d5e9e469a4bfac829bf2bc, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -36,8 +36,20 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _Albedo:
+        m_Texture: {fileID: 2800000, guid: 77da305e83fd5f04fb749e3444209e79, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTexture:
         m_Texture: {fileID: 2800000, guid: 77da305e83fd5f04fb749e3444209e79, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Mask:
+        m_Texture: {fileID: 2800000, guid: 7d64298986c86834287a01505e309f32, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalTex:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -54,10 +66,13 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaThreshold: 0
+    - _BendStrength: 10
     - _BoundControl: 20
     - _QueueControl: 0
     - _QueueOffset: 0
     m_Colors:
     - _BendDirection: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 0.6981132, g: 0.6981132, b: 0.6981132, a: 0}
+    - _Direction: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
