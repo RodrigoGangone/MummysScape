@@ -503,7 +503,7 @@ GameObject:
   - component: {fileID: 2259937421141407715}
   - component: {fileID: 4263530151276915557}
   - component: {fileID: 321015491591606409}
-  - component: {fileID: 4265233260625840337}
+  - component: {fileID: 7323259575781804066}
   - component: {fileID: 7982005369610900635}
   - component: {fileID: 2808303942995360944}
   - component: {fileID: 8690595911240200217}
@@ -818,7 +818,7 @@ MonoBehaviour:
   _useGravityAssist: 1
   _gravityAssist: 2
   _tangentialBrake: 5
---- !u!114 &4265233260625840337
+--- !u!114 &7323259575781804066
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -827,9 +827,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 7389072118055853021}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00fa2d35d37332a4b9f2228e5852c205, type: 3}
+  m_Script: {fileID: 11500000, guid: 3ea92e41f1439ce479e2ee447a6e13d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _projectilePrefab: {fileID: 1440582261667823458, guid: bdd4611784970c64eaa4261113b5f6c4, type: 3}
+  _defaultCapacity: 5
+  _maxCapacity: 10
+  _shootOrigin: {fileID: 0}
+  _shootSpeed: 15
 --- !u!114 &7982005369610900635
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -854,7 +859,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af40b375598337c4096da654c5f2e660, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  projector: {fileID: 0}
+  projector: {fileID: 1516780396086283348}
   groundMask:
     serializedVersion: 2
     m_Bits: 1083393
