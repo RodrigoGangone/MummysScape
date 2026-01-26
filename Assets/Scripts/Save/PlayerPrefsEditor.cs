@@ -1,9 +1,10 @@
 #if UNITY_EDITOR
 using System;
-using System.Text;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [CustomEditor(typeof(PlayerPrefsRegistry))]
 public class PlayerPrefsRegistryEditor : Editor
@@ -15,313 +16,596 @@ public class PlayerPrefsRegistryEditor : Editor
     SerializedProperty _valuesProp;
 
     bool _showEntries = true;
+    bool _showCreator = false;
     string _search = "";
+    Vector2 _scrollPos;
+
+    // Variables para creación manual
+    string _newKey = "";
+    string _newValue = "1";
+    int _newTypeIndex = 0;
+
+    // Estilos
+    GUIStyle _headerStyle;
+    GUIStyle _groupHeaderStyle; // Estilo para los separadores
 
     void OnEnable()
     {
-        _presetProp       = serializedObject.FindProperty("preset");
-        _lockProp         = serializedObject.FindProperty("lockToPreset");
-        _keyPrefixesProp  = serializedObject.FindProperty("keyPrefixes");
-        _keysProp         = serializedObject.FindProperty("keys");
-        _valuesProp       = serializedObject.FindProperty("values");
+        _presetProp = serializedObject.FindProperty("preset");
+        _lockProp = serializedObject.FindProperty("lockToPreset");
+        _keyPrefixesProp = serializedObject.FindProperty("keyPrefixes");
+        _keysProp = serializedObject.FindProperty("keys");
+        _valuesProp = serializedObject.FindProperty("values");
+
+        SyncValuesFromDisk();
     }
 
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
+        InitStyles();
 
-        // 1) Preset arriba (como te gusta)
-        DrawPresetUI();
-        EditorGUILayout.Space(8);
+        EditorGUILayout.Space(5);
+        EditorGUILayout.LabelField("Gestor de Guardado", _headerStyle);
+        EditorGUILayout.Space(5);
 
-        // 2) Prefijos visibles (se puede editar si no está lockeado)
-        DrawPrefixesUI();
-        EditorGUILayout.Space(8);
-
-        // 3) Herramientas -> SOLO 2 botones
-        DrawTools();
-        EditorGUILayout.Space(8);
-
-        // 4) Vista de entradas (solo lectura)
-        DrawEntries();
+        DrawConfigSection();
+        DrawSimulatorSection();
+        DrawToolsSection();
+        DrawDataSection();
 
         serializedObject.ApplyModifiedProperties();
     }
 
-    // ----------------- PRESET -----------------
-    void DrawPresetUI()
+    // ... (SECCIONES CONFIG Y SIMULATOR IGUAL QUE ANTES) ...
+    // Solo resumo Config y Simulator para ahorrar espacio visual, 
+    // PERO EL CÓDIGO COMPLETO DEBE INCLUIRLAS. 
+    // Copio aquí las secciones sin cambios para que sea Copy-Paste seguro.
+
+    void DrawConfigSection()
     {
-        EditorGUILayout.LabelField("Preset", EditorStyles.boldLabel);
-        EditorGUILayout.PropertyField(_presetProp);
-        EditorGUILayout.PropertyField(_lockProp, new GUIContent("Lock a preset"));
-
-        using (new EditorGUI.DisabledScope(
-                   ((PlayerPrefsRegistry.RegistryKeyPreset)_presetProp.intValue) ==
-                   PlayerPrefsRegistry.RegistryKeyPreset.None))
+        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
         {
-            if (GUILayout.Button("Aplicar preset → Prefijos"))
+            EditorGUILayout.LabelField("Filtros y Presets", EditorStyles.boldLabel);
+            using (new EditorGUILayout.HorizontalScope())
             {
-                var registry = (PlayerPrefsRegistry)target;
-                var prefixes = PlayerPrefsRegistry.PresetToPrefixes(
-                    (PlayerPrefsRegistry.RegistryKeyPreset)_presetProp.intValue);
+                EditorGUI.BeginChangeCheck();
+                var current = (PlayerPrefsRegistry.RegistryKeyPreset)_presetProp.intValue;
+                var next = (PlayerPrefsRegistry.RegistryKeyPreset)EditorGUILayout.EnumFlagsField(
+                    new GUIContent("Preset Activo"), current);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _presetProp.intValue = (int)next;
+                    ApplyPresetPrefixes();
+                }
 
-                Undo.RecordObject(registry, "Apply Preset");
-                SetStringArray(_keyPrefixesProp, prefixes);
-                EditorUtility.SetDirty(registry);
-                AssetDatabase.SaveAssets();
-
-                Debug.Log($"[Registry] Prefijos actualizados desde preset: {string.Join(", ", prefixes)}");
+                var icon = _lockProp.boolValue ? "InspectorLock" : "InspectorUnlock";
+                if (GUILayout.Button(EditorGUIUtility.IconContent(icon), EditorStyles.iconButton, GUILayout.Width(22),
+                        GUILayout.Height(18)))
+                    _lockProp.boolValue = !_lockProp.boolValue;
             }
+
+            bool locked = _lockProp.boolValue && (PlayerPrefsRegistry.RegistryKeyPreset)_presetProp.intValue !=
+                PlayerPrefsRegistry.RegistryKeyPreset.None;
+            using (new EditorGUI.DisabledScope(locked))
+                EditorGUILayout.PropertyField(_keyPrefixesProp, new GUIContent("Prefijos Rastreados"), true);
         }
+
+        EditorGUILayout.Space(5);
     }
 
-    // ----------------- PREFIJOS -----------------
-    void DrawPrefixesUI()
+    void DrawSimulatorSection()
     {
-        EditorGUILayout.LabelField("Filtros (Prefijos aceptados)", EditorStyles.boldLabel);
-
-        bool locked = _lockProp.boolValue &&
-                      (PlayerPrefsRegistry.RegistryKeyPreset)_presetProp.intValue !=
-                      PlayerPrefsRegistry.RegistryKeyPreset.None;
-
-        using (new EditorGUI.DisabledScope(locked))
+        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
         {
-            EditorGUILayout.PropertyField(_keyPrefixesProp, includeChildren: true);
+            _showCreator = EditorGUILayout.Foldout(_showCreator, "Simulador / Crear Datos", true,
+                EditorStyles.foldoutHeader);
+            if (_showCreator)
+            {
+                EditorGUILayout.HelpBox("Crea claves manualmente para simular progreso.", MessageType.None);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    string[] opts = { "Int", "Float", "String" };
+                    _newTypeIndex = EditorGUILayout.Popup(_newTypeIndex, opts, GUILayout.Width(60));
+                    _newKey = EditorGUILayout.TextField(_newKey, GUILayout.ExpandWidth(true));
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    GUILayout.Label("Valor:", GUILayout.Width(40));
+                    _newValue = EditorGUILayout.TextField(_newValue);
+                    GUI.backgroundColor = new Color(0.6f, 0.9f, 0.6f);
+                    if (GUILayout.Button(EditorGUIUtility.IconContent("SaveAs"), GUILayout.Height(20),
+                            GUILayout.Width(40))) SimulateData();
+                    GUI.backgroundColor = Color.white;
+                }
+
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("Gem Global", EditorStyles.miniButton))
+                {
+                    _newKey = "gemTotal.Global";
+                    _newValue = "100";
+                }
+
+                if (GUILayout.Button("Level 5 OK", EditorStyles.miniButton))
+                {
+                    _newKey = "level.completed.index.5";
+                    _newValue = "1";
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
         }
 
-        EditorGUILayout.HelpBox(
-            "Este Registry reflejará claves que comiencen con alguno de estos prefijos.\n" +
-            "Sugerencia: usar el 'Preset' para no tipear strings.",
-            MessageType.Info);
+        EditorGUILayout.Space(5);
     }
 
-    // ----------------- HERRAMIENTAS (2 BOTONES) -----------------
-void DrawTools()
-{
-    EditorGUILayout.LabelField("Herramientas", EditorStyles.boldLabel);
-
-    var currentPreset =
-        (PlayerPrefsRegistry.RegistryKeyPreset)_presetProp.intValue;
-
-    using (new EditorGUILayout.VerticalScope("box"))
+    // ---------------------------------------------------------
+    // SECCIÓN 3: HERRAMIENTAS (ACTUALIZADA con SORT)
+    // ---------------------------------------------------------
+    void DrawToolsSection()
     {
-        using (new EditorGUILayout.HorizontalScope())
+        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
         {
-            // BOTÓN 1 – Borrar datos del PRESET actual
-            GUI.backgroundColor = new Color(0.95f, 0.75f, 0.3f);
-            if (GUILayout.Button("Borrar datos de ESTE preset (Prefs + Registries)",
-                                 GUILayout.Height(32)))
-            {
-                GUI.backgroundColor = Color.white;
-
-                if (currentPreset == PlayerPrefsRegistry.RegistryKeyPreset.None)
-                {
-                    EditorUtility.DisplayDialog(
-                        "Sin preset",
-                        "Elegí un preset arriba (Gems, GemTotals, etc.) antes de usar este botón.",
-                        "Ok");
-                }
-                else if (EditorUtility.DisplayDialog(
-                             "Confirmar",
-                             $"Se borrarán TODAS las PlayerPrefs de guardado que pertenezcan al preset '{currentPreset}'.\n\n" +
-                             "Ejemplo: si elegís Gems+GemTotals, se borran todas las 'gem.*' y 'gemTotal.*'.",
-                             "Sí, borrar", "Cancelar"))
-                {
-                    ClearByPreset(currentPreset);
-                }
-            }
-
-            // BOTÓN 2 – Borrar TODO el guardado (todas las familias)
-            GUI.backgroundColor = new Color(0.9f, 0.4f, 0.4f);
-            if (GUILayout.Button("Borrar TODAS las keys de guardado",
-                                 GUILayout.Height(32)))
-            {
-                GUI.backgroundColor = Color.white;
-
-                if (EditorUtility.DisplayDialog(
-                        "Confirmar borrado TOTAL",
-                        "Se borrarán TODAS las keys de guardado del juego:\n" +
-                        "- Gems\n- GemTotals\n- LevelCompleted\n- Volumen (sound/fx)\n\n" +
-                        "Otros PlayerPrefs (plugins, editor, etc.) NO se tocan.",
-                        "Sí, borrar todo", "Cancelar"))
-                {
-                    ClearByPreset(PlayerPrefsRegistry.RegistryKeyPreset.All);
-                }
-            }
-
-            GUI.backgroundColor = Color.white;
-        }
-
-        EditorGUILayout.HelpBox(
-            "• Botón 1: borra SOLO la familia del preset seleccionado (ej. todas las gemas).\n" +
-            "• Botón 2: borra TODO el progreso/guardado del juego (todas las familias del enum RegistryKeyPreset),\n" +
-            "  tanto en PlayerPrefs como en TODOS los PlayerPrefsRegistry.",
-            MessageType.Info);
-    }
-}
-
-    // ----------------- ENTRADAS (solo lectura) -----------------
-    void DrawEntries()
-    {
-        _showEntries = EditorGUILayout.Foldout(
-            _showEntries,
-            $"Entradas (solo lectura) [{_keysProp.arraySize}]",
-            true);
-        if (!_showEntries) return;
-
-        using (new EditorGUILayout.HorizontalScope())
-        {
-            _search = EditorGUILayout.TextField("Buscar", _search);
-            if (GUILayout.Button("Copiar todo", GUILayout.Width(100)))
-            {
-                var sb = new StringBuilder();
-                for (int i = 0; i < _keysProp.arraySize; i++)
-                {
-                    string k = _keysProp.GetArrayElementAtIndex(i).stringValue;
-                    if (!string.IsNullOrEmpty(_search) && !k.Contains(_search)) continue;
-
-                    string v = _valuesProp.GetArrayElementAtIndex(i).stringValue;
-                    sb.AppendLine($"{k}={v}");
-                }
-                EditorGUIUtility.systemCopyBuffer = sb.ToString();
-                ShowToast("Contenido copiado al portapapeles.");
-            }
-        }
-
-        EditorGUILayout.Space(4);
-
-        var head = new GUIStyle(EditorStyles.miniLabel) { fontStyle = FontStyle.Bold };
-        using (new EditorGUILayout.HorizontalScope())
-        {
-            GUILayout.Label("Key", head);
-            GUILayout.Label("Value", head);
-            GUILayout.Space(64);
-        }
-        EditorGUILayout.Separator();
-
-        for (int i = 0; i < _keysProp.arraySize; i++)
-        {
-            string k = _keysProp.GetArrayElementAtIndex(i).stringValue;
-            if (!string.IsNullOrEmpty(_search) && !k.Contains(_search)) continue;
-
-            string v = _valuesProp.GetArrayElementAtIndex(i).stringValue;
+            EditorGUILayout.LabelField("Mantenimiento", EditorStyles.boldLabel);
 
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.SelectableLabel(k, GUILayout.Height(18));
-                EditorGUILayout.SelectableLabel(v, GUILayout.Height(18));
+                // Escaneo
+                if (GUILayout.Button(
+                        new GUIContent(" Escanear Disco", EditorGUIUtility.IconContent("d_ViewToolOrbit").image),
+                        GUILayout.Height(24)))
+                    PerformSmartDiscovery();
 
-                if (GUILayout.Button("Copiar", GUILayout.Width(60)))
-                    EditorGUIUtility.systemCopyBuffer = k;
-
-                if (GUILayout.Button("Borrar", GUILayout.Width(60)))
+                // NUEVO: BOTÓN ORGANIZAR
+                if (GUILayout.Button(
+                        new GUIContent(" Organizar (Tipo)", EditorGUIUtility.IconContent("AlphabeticalSorting").image),
+                        GUILayout.Height(24)))
                 {
-                    if (EditorUtility.DisplayDialog("Borrar clave",
-                        $"¿Eliminar '{k}' de PlayerPrefs y del Registry?", "Sí", "No"))
-                    {
-                        PlayerPrefs.DeleteKey(k);
-                        PlayerPrefs.Save();
+                    SortRegistryByType();
+                }
+            }
 
-                        var registry = (PlayerPrefsRegistry)target;
-                        Undo.RecordObject(registry, "Remove Entry");
-                        registry.RemoveEntry(k);
-                        EditorUtility.SetDirty(registry);
-                        AssetDatabase.SaveAssets();
-                    }
+            GUILayout.Space(5);
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                GUI.backgroundColor = new Color(1f, 0.7f, 0.2f);
+                if (GUILayout.Button(
+                        new GUIContent(" Limpiar Vista", EditorGUIUtility.IconContent("TreeEditor.Trash").image),
+                        GUILayout.Height(24)))
+                    ConfirmAndClearVisible();
+
+                GUI.backgroundColor = new Color(1f, 0.4f, 0.4f);
+                if (GUILayout.Button(
+                        new GUIContent(" FORMAT TOTAL", EditorGUIUtility.IconContent("d_TreeEditor.Trash").image),
+                        GUILayout.Height(24)))
+                    ConfirmAndNukeAll();
+                GUI.backgroundColor = Color.white;
+            }
+        }
+
+        EditorGUILayout.Space(5);
+    }
+
+    // ---------------------------------------------------------
+    // SECCIÓN 4: DATOS (ACTUALIZADA CON GRUPOS Y MOVER)
+    // ---------------------------------------------------------
+    void DrawDataSection()
+    {
+        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button(EditorGUIUtility.IconContent("Refresh"), EditorStyles.iconButton,
+                        GUILayout.Width(22)))
+                {
+                    SyncValuesFromDisk();
+                    ShowToast("Sincronizado");
+                }
+
+                _showEntries = EditorGUILayout.Foldout(_showEntries, $"Datos [{_keysProp.arraySize}]", true,
+                    EditorStyles.foldoutHeader);
+                if (_showEntries)
+                {
+                    GUILayout.FlexibleSpace();
+                    _search = EditorGUILayout.TextField(_search, EditorStyles.toolbarSearchField, GUILayout.Width(120));
+                }
+            }
+
+            if (!_showEntries) return;
+            EditorGUILayout.Space(2);
+
+            using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
+            {
+                GUILayout.Label("Key", GUILayout.Width(200));
+                GUILayout.Label("Value", GUILayout.ExpandWidth(true));
+                GUILayout.Label("", GUILayout.Width(80)); // Espacio extra para flechas
+            }
+
+            var currentPrefixes = GetCurrentPrefixes();
+            string lastGroup = ""; // Para detectar cambios de categoría
+
+            _scrollPos =
+                EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.MinHeight(100), GUILayout.MaxHeight(400));
+
+            int visibleCount = 0;
+            for (int i = 0; i < _keysProp.arraySize; i++)
+            {
+                string k = _keysProp.GetArrayElementAtIndex(i).stringValue;
+
+                if (!MatchesPrefix(k, currentPrefixes)) continue;
+                if (!string.IsNullOrEmpty(_search) &&
+                    !k.Contains(_search, StringComparison.OrdinalIgnoreCase)) continue;
+
+                // --- Lógica de Grupos ---
+                // Si la categoría cambia respecto a la fila anterior, pintamos un header
+                string currentGroup = GetGroupHeader(k);
+                if (currentGroup != lastGroup &&
+                    string.IsNullOrEmpty(_search)) // No agrupar si buscamos texto específico
+                {
+                    DrawGroupHeader(currentGroup);
+                    lastGroup = currentGroup;
+                }
+
+                DrawEditableRow(i, i == 0, i == _keysProp.arraySize - 1);
+                visibleCount++;
+            }
+
+            if (visibleCount == 0 && _keysProp.arraySize > 0)
+                EditorGUILayout.LabelField("Oculto por filtro.", EditorStyles.centeredGreyMiniLabel);
+
+            EditorGUILayout.EndScrollView();
+        }
+    }
+
+    void DrawGroupHeader(string title)
+    {
+        EditorGUILayout.Space(5);
+        // Dibujamos una franja oscura con el título
+        var rect = EditorGUILayout.GetControlRect(false, 18);
+        EditorGUI.DrawRect(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
+        EditorGUI.LabelField(rect, title, _groupHeaderStyle);
+    }
+
+    void DrawEditableRow(int index, bool isFirst, bool isLast)
+    {
+        SerializedProperty keyProp = _keysProp.GetArrayElementAtIndex(index);
+        SerializedProperty valProp = _valuesProp.GetArrayElementAtIndex(index);
+        string k = keyProp.stringValue;
+        string v = valProp.stringValue;
+
+        if (index % 2 == 0) EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 22), new Color(0, 0, 0, 0.05f));
+
+        using (new EditorGUILayout.HorizontalScope(GUILayout.Height(22)))
+        {
+            EditorGUILayout.SelectableLabel(k, EditorStyles.label, GUILayout.Width(200), GUILayout.Height(20));
+
+            // Valor editable
+            bool exists = PlayerPrefs.HasKey(k);
+            if (!exists) GUI.color = new Color(1, 1, 1, 0.5f);
+
+            EditorGUI.BeginChangeCheck();
+            string newValue = EditorGUILayout.DelayedTextField(v, GUILayout.ExpandWidth(true));
+            if (EditorGUI.EndChangeCheck())
+            {
+                UpdateDiskValue(k, newValue);
+                valProp.stringValue = newValue;
+            }
+
+            GUI.color = Color.white;
+
+            // --- BOTONES MOVER (▲ ▼) ---
+            // Solo permitimos mover si no estamos filtrando por texto (para evitar confusiones de índices)
+            if (string.IsNullOrEmpty(_search))
+            {
+                if (GUILayout.Button("▲", EditorStyles.miniButtonLeft, GUILayout.Width(20)))
+                {
+                    MoveItem(index, -1);
+                }
+
+                if (GUILayout.Button("▼", EditorStyles.miniButtonRight, GUILayout.Width(20)))
+                {
+                    MoveItem(index, 1);
+                }
+            }
+
+            // Save & Delete
+            if (GUILayout.Button(EditorGUIUtility.IconContent("SaveAs"), EditorStyles.iconButton, GUILayout.Width(22)))
+            {
+                UpdateDiskValue(k, newValue);
+                ShowToast("Guardado");
+            }
+
+            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), EditorStyles.iconButton,
+                    GUILayout.Width(22)))
+            {
+                DeleteSingleKey(k);
+            }
+        }
+    }
+
+    // ---------------------------------------------------------
+    // LÓGICA DE ORDENAMIENTO Y GRUPOS
+    // ---------------------------------------------------------
+
+    void SortRegistryByType()
+    {
+        var reg = (PlayerPrefsRegistry)target;
+        var list = new List<KeyValuePair<string, string>>();
+
+        // 1. Extraer pares
+        var so = new SerializedObject(reg);
+        var kP = so.FindProperty("keys");
+        var vP = so.FindProperty("values");
+
+        for (int i = 0; i < kP.arraySize; i++)
+            list.Add(new KeyValuePair<string, string>(kP.GetArrayElementAtIndex(i).stringValue,
+                vP.GetArrayElementAtIndex(i).stringValue));
+
+        // 2. Ordenar con peso personalizado
+        list.Sort((a, b) =>
+        {
+            int wA = GetTypeWeight(a.Key);
+            int wB = GetTypeWeight(b.Key);
+            if (wA != wB) return wA.CompareTo(wB); // Primero por peso
+            return string.Compare(a.Key, b.Key, StringComparison.Ordinal); // Luego alfabético
+        });
+
+        // 3. Reinsertar
+        kP.ClearArray();
+        vP.ClearArray();
+        for (int i = 0; i < list.Count; i++)
+        {
+            kP.InsertArrayElementAtIndex(i);
+            vP.InsertArrayElementAtIndex(i);
+            kP.GetArrayElementAtIndex(i).stringValue = list[i].Key;
+            vP.GetArrayElementAtIndex(i).stringValue = list[i].Value;
+        }
+
+        so.ApplyModifiedProperties();
+        ShowToast("Lista organizada por Tipo");
+    }
+
+    void MoveItem(int index, int direction)
+    {
+        int newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= _keysProp.arraySize) return;
+
+        _keysProp.MoveArrayElement(index, newIndex);
+        _valuesProp.MoveArrayElement(index, newIndex);
+        serializedObject.ApplyModifiedProperties();
+    }
+
+    string GetGroupHeader(string key)
+    {
+        if (key.StartsWith("level.")) return "--- LEVELS ---";
+        if (key.StartsWith("seen.level")) return "--- SEEN (REVEALS) ---";
+        if (key.StartsWith("seen.tutorial")) return "--- SEEN (TUTORIALS) ---";
+        if (key.StartsWith("seen.")) return "--- SEEN (OTHERS) ---";
+        if (key.StartsWith("gem.")) return "--- GEMS ---";
+        if (key.StartsWith("gemTotal.")) return "--- GEM TOTALS ---";
+        if (key.StartsWith("volume.")) return "--- AUDIO / SETTINGS ---";
+        return "--- OTROS ---";
+    }
+
+    int GetTypeWeight(string key)
+    {
+        // Define el orden: Menor número = Aparece más arriba
+        if (key.StartsWith("level.")) return 0; // 1. Niveles
+        if (key.StartsWith("seen.level")) return 10; // 2. Seen Reveals
+        if (key.StartsWith("seen.tutorial")) return 11; // 3. Seen Tutorials
+        if (key.StartsWith("seen.")) return 12; // 4. Seen Otros
+        if (key.StartsWith("gemTotal.")) return 20; // 5. Gem Totals
+        if (key.StartsWith("gem.")) return 21; // 6. Gemas individuales
+        if (key.StartsWith("volume.")) return 90; // 7. Audio
+        return 100; // 8. Resto
+    }
+
+    // ---------------------------------------------------------
+    // RESTO DE LÓGICA (Scan, Styles, Helpers...)
+    // ---------------------------------------------------------
+
+    // (Pego aquí la lógica de escaneo actualizada del paso anterior para asegurar que esté completa)
+    void PerformSmartDiscovery()
+    {
+        var registry = (PlayerPrefsRegistry)target;
+        int found = 0;
+        var potentialKeys = new HashSet<string>();
+
+        string currentScene = SceneManager.GetActiveScene().name;
+        if (!string.IsNullOrEmpty(currentScene))
+        {
+            for (int i = 1; i <= 50; i++) potentialKeys.Add($"gem.{i}.{currentScene}");
+            potentialKeys.Add($"gemTotal.{currentScene}");
+        }
+
+        potentialKeys.Add("gemTotal.Global");
+
+        for (int i = 0; i <= 50; i++)
+        {
+            potentialKeys.Add($"level.completed.index.{i}");
+            potentialKeys.Add($"seen.level_reveal.{i}");
+            potentialKeys.Add($"seen.zone_reveal.{i}");
+        }
+
+        var allTutorialPoints = Resources.FindObjectsOfTypeAll<TutorialFocusPoint>();
+        foreach (var t in allTutorialPoints)
+            if (!string.IsNullOrEmpty(t.Id))
+                potentialKeys.Add($"seen.tutorial.{t.Id}");
+
+        potentialKeys.Add("volume.sound.master");
+        potentialKeys.Add("volume.sound.music");
+        potentialKeys.Add("volume.fx.sfx");
+        potentialKeys.Add("volume.sound.master.mute");
+        potentialKeys.Add("volume.sound.music.mute");
+        potentialKeys.Add("volume.fx.sfx.mute");
+
+        foreach (var key in potentialKeys)
+        {
+            if (PlayerPrefs.HasKey(key) && registry.Matches(key))
+            {
+                registry.UpdateEntry(key, GetValueAsString(key));
+                found++;
+            }
+        }
+
+        if (found > 0)
+        {
+            EditorUtility.SetDirty(registry);
+            serializedObject.Update();
+            Repaint();
+            ShowToast($"{found} claves importadas.");
+        }
+        else ShowToast("Sin datos nuevos.");
+    }
+
+    // ... (Helpers SimulateData, UpdateDiskValue, SyncValuesFromDisk... se mantienen igual) ...
+    // Copio las esenciales para que compile:
+
+    void SimulateData()
+    {
+        if (string.IsNullOrEmpty(_newKey)) return;
+        try
+        {
+            if (_newTypeIndex == 0) PlayerPrefs.SetInt(_newKey, int.Parse(_newValue));
+            else if (_newTypeIndex == 1) PlayerPrefs.SetFloat(_newKey, float.Parse(_newValue));
+            else PlayerPrefs.SetString(_newKey, _newValue);
+            PlayerPrefs.Save();
+            ((PlayerPrefsRegistry)target).UpdateEntry(_newKey, _newValue);
+            EditorUtility.SetDirty(target);
+            ShowToast("Creado");
+        }
+        catch
+        {
+            ShowToast("Error formato");
+        }
+    }
+
+    void UpdateDiskValue(string key, string s)
+    {
+        if (int.TryParse(s, out int i)) PlayerPrefs.SetInt(key, i);
+        else if (float.TryParse(s, out float f)) PlayerPrefs.SetFloat(key, f);
+        else PlayerPrefs.SetString(key, s);
+        PlayerPrefs.Save();
+    }
+
+    void SyncValuesFromDisk()
+    {
+        bool changed = false;
+        for (int i = 0; i < _keysProp.arraySize; i++)
+        {
+            string k = _keysProp.GetArrayElementAtIndex(i).stringValue;
+            if (PlayerPrefs.HasKey(k))
+            {
+                string disk = GetValueAsString(k);
+                var vp = _valuesProp.GetArrayElementAtIndex(i);
+                if (vp.stringValue != disk)
+                {
+                    vp.stringValue = disk;
+                    changed = true;
                 }
             }
         }
+
+        if (changed) serializedObject.ApplyModifiedProperties();
     }
 
-    // ----------------- HELPERS -----------------
-    static bool HasAnyPrefix(string key, string[] prefixes)
+    string GetValueAsString(string key)
     {
-        if (prefixes == null || prefixes.Length == 0) return false;
-        foreach (var p in prefixes)
-        {
-            if (!string.IsNullOrEmpty(p) &&
-                key.StartsWith(p, StringComparison.Ordinal))
+        string s = PlayerPrefs.GetString(key, "__NOT_STRING__");
+        if (s != "__NOT_STRING__") return s;
+        float f = PlayerPrefs.GetFloat(key, float.NaN);
+        int i = PlayerPrefs.GetInt(key, 0);
+        if (!float.IsNaN(f) && Math.Abs(f % 1) > 0.0001f) return f.ToString("F2");
+        return i.ToString();
+    }
+
+    void ApplyPresetPrefixes()
+    {
+        var r = (PlayerPrefsRegistry)target;
+        var p = PlayerPrefsRegistry.PresetToPrefixes((PlayerPrefsRegistry.RegistryKeyPreset)_presetProp.intValue);
+        _keyPrefixesProp.arraySize = p.Length;
+        for (int i = 0; i < p.Length; i++) _keyPrefixesProp.GetArrayElementAtIndex(i).stringValue = p[i];
+        serializedObject.ApplyModifiedProperties();
+    }
+
+    string[] GetCurrentPrefixes()
+    {
+        var l = new List<string>();
+        for (int i = 0; i < _keyPrefixesProp.arraySize; i++)
+            l.Add(_keyPrefixesProp.GetArrayElementAtIndex(i).stringValue);
+        return l.ToArray();
+    }
+
+    bool MatchesPrefix(string k, string[] p)
+    {
+        if (p == null || p.Length == 0) return true;
+        foreach (var x in p)
+            if (!string.IsNullOrEmpty(x) && k.StartsWith(x))
                 return true;
-        }
         return false;
     }
 
-    void SetStringArray(SerializedProperty prop, string[] values)
+    void ConfirmAndClearVisible()
     {
-        prop.arraySize = values?.Length ?? 0;
-        if (values == null) return;
-        for (int i = 0; i < values.Length; i++)
-            prop.GetArrayElementAtIndex(i).stringValue = values[i];
+        if (EditorUtility.DisplayDialog("Limpiar", "¿Borrar visibles?", "Si", "No"))
+            ClearByPreset((PlayerPrefsRegistry.RegistryKeyPreset)_presetProp.intValue);
     }
 
-    void ShowToast(string msg)
+    void ConfirmAndNukeAll()
     {
-        SceneView.lastActiveSceneView?.ShowNotification(new GUIContent(msg));
-    }
-
-static void ClearByPreset(PlayerPrefsRegistry.RegistryKeyPreset preset)
-{
-    // Mapeamos el preset a los prefijos reales usando PrefKeys.Prefix
-    string[] prefixes = PlayerPrefsRegistry.PresetToPrefixes(preset);
-    if (prefixes == null || prefixes.Length == 0)
-    {
-        Debug.LogWarning($"[Registry] ClearByPreset llamado con preset {preset}, pero no hay prefijos asociados.");
-        return;
-    }
-
-    int totalKeys = 0;
-    int totalRegistries = 0;
-
-    // Buscamos TODOS los PlayerPrefsRegistry del proyecto
-    string[] guids = AssetDatabase.FindAssets("t:PlayerPrefsRegistry");
-    foreach (var guid in guids)
-    {
-        string path = AssetDatabase.GUIDToAssetPath(guid);
-        var reg = AssetDatabase.LoadAssetAtPath<PlayerPrefsRegistry>(path);
-        if (reg == null) continue;
-
-        var so = new SerializedObject(reg);
-        var keysProp   = so.FindProperty("keys");
-        var valuesProp = so.FindProperty("values");
-
-        var indices = new List<int>();
-
-        for (int i = 0; i < keysProp.arraySize; i++)
+        if (EditorUtility.DisplayDialog("NUCLEAR", "¿Borrar TODO?", "Si", "No"))
         {
-            string k = keysProp.GetArrayElementAtIndex(i).stringValue;
-            if (string.IsNullOrEmpty(k)) continue;
-            if (!HasAnyPrefix(k, prefixes)) continue;
+            PlayerPrefs.DeleteAll();
+            PlayerPrefs.Save();
+            ((PlayerPrefsRegistry)target).ClearAll();
+        }
+    }
 
-            // Borramos la PlayerPref real
+    void DeleteSingleKey(string k)
+    {
+        if (EditorUtility.DisplayDialog("Borrar", k, "Si", "No"))
+        {
             PlayerPrefs.DeleteKey(k);
-            indices.Add(i);
-        }
-
-        if (indices.Count > 0)
-        {
-            // Borramos las entradas en el SO, de atrás para adelante
-            indices.Sort();
-            for (int i = indices.Count - 1; i >= 0; i--)
-            {
-                int idx = indices[i];
-                keysProp.DeleteArrayElementAtIndex(idx);
-                valuesProp.DeleteArrayElementAtIndex(idx);
-                totalKeys++;
-            }
-
-            so.ApplyModifiedProperties();
-            EditorUtility.SetDirty(reg);
-            totalRegistries++;
+            ((PlayerPrefsRegistry)target).RemoveEntry(k);
         }
     }
 
-    PlayerPrefs.Save();
+    // Helper de borrado estático reducido para compilar
+    void ClearByPreset(PlayerPrefsRegistry.RegistryKeyPreset preset)
+    {
+        string[] prefixes = PlayerPrefsRegistry.PresetToPrefixes(preset);
+        var so = new SerializedObject(target);
+        var kP = so.FindProperty("keys");
+        var vP = so.FindProperty("values");
+        for (int i = kP.arraySize - 1; i >= 0; i--)
+        {
+            string k = kP.GetArrayElementAtIndex(i).stringValue;
+            foreach (var p in prefixes)
+                if (k.StartsWith(p))
+                {
+                    PlayerPrefs.DeleteKey(k);
+                    kP.DeleteArrayElementAtIndex(i);
+                    vP.DeleteArrayElementAtIndex(i);
+                    break;
+                }
+        }
 
-    Debug.Log($"[Registry] Borradas {totalKeys} keys para preset {preset}. Registries afectados: {totalRegistries}.");
+        so.ApplyModifiedProperties();
+        PlayerPrefs.Save();
+    }
 
-    var view = SceneView.lastActiveSceneView;
-    view?.ShowNotification(new GUIContent($"Borradas {totalKeys} keys ({preset})."));
-}
+    void InitStyles()
+    {
+        if (_headerStyle == null)
+            _headerStyle = new GUIStyle(EditorStyles.largeLabel)
+                { fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+        if (_groupHeaderStyle == null)
+            _groupHeaderStyle = new GUIStyle(EditorStyles.boldLabel)
+                { normal = { textColor = new Color(0.9f, 0.9f, 0.9f) }, alignment = TextAnchor.MiddleCenter };
+    }
 
+    void ShowToast(string m) => SceneView.lastActiveSceneView?.ShowNotification(new GUIContent(m));
 }
 #endif
