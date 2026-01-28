@@ -115,7 +115,7 @@ public class LevelTile : MonoBehaviour
         else SetAllGems(false);
 
         // Reset Prompt UI
-        GameEventManager.Instance?.levelEvents.OnTutorialPrompt.Raise(false, buttonType.A);
+        GameEventManager.Instance?.levelEvents.OnPrompt.Raise(false, buttonType.A);
     }
 
     private void Update()
@@ -186,7 +186,7 @@ public class LevelTile : MonoBehaviour
         if (portalFx != null) portalFx.Play();
         
         if (!isBossLevel) RefreshGems();
-        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(true, buttonType.A);
+        GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.A);
     }
 
     private void OnTriggerExit(Collider other)
@@ -198,6 +198,6 @@ public class LevelTile : MonoBehaviour
         // FX se apaga al salir (Tu lógica original)
         if (portalFx != null) portalFx.Stop();
         
-        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(false, buttonType.A);
+        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.A);
     }
 }

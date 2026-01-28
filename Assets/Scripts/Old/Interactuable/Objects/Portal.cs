@@ -28,7 +28,7 @@ public class Portal : MonoBehaviour
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG) || isOpen) return;
 
-        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(true, buttonType.A);
+        GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.A);
     }
 
 
@@ -36,7 +36,7 @@ public class Portal : MonoBehaviour
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG) || isOpen) return;
 
-        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(false, buttonType.A);
+        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.A);
     }
 
     private void OnTriggerStay(Collider other)

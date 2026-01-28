@@ -95,7 +95,7 @@ public class ZoneTile : MonoBehaviour
             }
         }
         
-        GameEventManager.Instance?.levelEvents.OnTutorialPrompt.Raise(false, buttonType.A);
+        GameEventManager.Instance?.levelEvents.OnPrompt.Raise(false, buttonType.A);
     }
 
     void CheckUnlockConditions()
@@ -174,7 +174,7 @@ public class ZoneTile : MonoBehaviour
         _playerInside = true;
 
         if (_isUnlocked)
-            GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(true, buttonType.A);
+            GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.A);
         else
         {
 #if UNITY_EDITOR
@@ -187,6 +187,6 @@ public class ZoneTile : MonoBehaviour
     {
         if (!other.CompareTag("PlayerFather")) return;
         _playerInside = false;
-        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Raise(false, buttonType.A);
+        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.A);
     }
 }

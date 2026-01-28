@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GameEventManager : MonoBehaviour
 {
@@ -27,7 +28,7 @@ public class GameEventManager : MonoBehaviour
     {
         public GameEvent OnWin;
         public GameEvent OnDeath;
-        public GameEvent OnTutorialPrompt;
+        public GameEvent OnPrompt;
         public GameEvent OnPauseChanged; // bool: true = pausa, false = resume
         public GameEvent OnRespawn;
         public GameEvent OnPickedGem;

@@ -71,7 +71,7 @@ public class UIManager : MonoBehaviour
         GameEventManager.Instance.levelEvents.OnWin.Register<int>(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Register(Lose);
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(HandlePauseChanged);
-        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Register<bool, buttonType>(ShowInteractionInput);
+        GameEventManager.Instance.levelEvents.OnPrompt.Register<bool, buttonType>(ShowInteractionInput);
     }
 
     private void OnDisable()
@@ -79,7 +79,7 @@ public class UIManager : MonoBehaviour
         GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Lose);
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(HandlePauseChanged);
-        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Unregister<bool, buttonType>(ShowInteractionInput);
+        GameEventManager.Instance.levelEvents.OnPrompt.Unregister<bool, buttonType>(ShowInteractionInput);
     }
 
 
