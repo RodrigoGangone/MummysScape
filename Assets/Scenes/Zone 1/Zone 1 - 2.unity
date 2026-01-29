@@ -9111,6 +9111,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Mummy - Refactor
       objectReference: {fileID: 0}
+    - target: {fileID: 8287931560255625519, guid: 044558a4c55684d47a9cc4573e5ce7d3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -38660,12 +38664,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   focusPoint: {fileID: 403847135}
+  pillars: []
+  tutorialMaterial: {fileID: 0}
   sizeA: {x: 5, y: 1, z: 8.5}
   sizeB: {x: 2, y: 1, z: 4.41}
   centerOffsetA: {x: 31, y: -15, z: 11}
   centerOffsetB: {x: 32, y: -15, z: 11}
-  gizmoColorA: {r: 0, g: 1, b: 0, a: 1}
-  gizmoColorB: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1001 &405095545
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -50743,7 +50747,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3837217133625275285, guid: 802961a31af991a4a81a0a620b60630d, type: 3}
       propertyPath: far clip plane
-      value: 1
+      value: 2.53
       objectReference: {fileID: 0}
     - target: {fileID: 3837217133625275285, guid: 802961a31af991a4a81a0a620b60630d, type: 3}
       propertyPath: orthographic size
@@ -50751,15 +50755,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8441553355757512533, guid: 802961a31af991a4a81a0a620b60630d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.100000024
+      value: -0.8
       objectReference: {fileID: 0}
     - target: {fileID: 8441553355757512533, guid: 802961a31af991a4a81a0a620b60630d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.2363024
+      value: -2.25
       objectReference: {fileID: 0}
     - target: {fileID: 8441553355757512533, guid: 802961a31af991a4a81a0a620b60630d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 9.4
+      value: 3.7
       objectReference: {fileID: 0}
     - target: {fileID: 8441553355757512533, guid: 802961a31af991a4a81a0a620b60630d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -78018,12 +78022,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   focusPoint: {fileID: 785507509}
+  pillars: []
+  tutorialMaterial: {fileID: 0}
   sizeA: {x: 5, y: 1, z: 7}
   sizeB: {x: 2, y: 2, z: 5}
   centerOffsetA: {x: 31, y: -15.5, z: 11}
   centerOffsetB: {x: 32, y: -15.5, z: 9.5}
-  gizmoColorA: {r: 0, g: 1, b: 0, a: 1}
-  gizmoColorB: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1001 &789842962
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -116843,12 +116847,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   focusPoint: {fileID: 1138617059}
+  pillars: []
+  tutorialMaterial: {fileID: 0}
   sizeA: {x: 1, y: 1, z: 1}
   sizeB: {x: 2, y: 2, z: 2}
   centerOffsetA: {x: 0, y: 0, z: 0}
   centerOffsetB: {x: 0, y: 0, z: 0}
-  gizmoColorA: {r: 0, g: 1, b: 0, a: 1}
-  gizmoColorB: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!114 &1138617059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183785,31 +183789,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2921015100595203473, guid: ca54a9083b20b0741872fa0d407f5b6b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.520586
+      value: 7.5100007
       objectReference: {fileID: 0}
     - target: {fileID: 2921015100595203473, guid: ca54a9083b20b0741872fa0d407f5b6b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 8.135699
+      value: 8.135698
       objectReference: {fileID: 0}
     - target: {fileID: 2921015100595203473, guid: ca54a9083b20b0741872fa0d407f5b6b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 20.700329
+      value: 20.690002
       objectReference: {fileID: 0}
     - target: {fileID: 2921015100595203473, guid: ca54a9083b20b0741872fa0d407f5b6b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.6844883
+      value: 0.9999242
       objectReference: {fileID: 0}
     - target: {fileID: 2921015100595203473, guid: ca54a9083b20b0741872fa0d407f5b6b, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2921015100595203473, guid: ca54a9083b20b0741872fa0d407f5b6b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.7290239
+      value: 0.012313009
       objectReference: {fileID: 0}
     - target: {fileID: 2921015100595203473, guid: ca54a9083b20b0741872fa0d407f5b6b, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2921015100595203473, guid: ca54a9083b20b0741872fa0d407f5b6b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -183817,7 +183821,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2921015100595203473, guid: ca54a9083b20b0741872fa0d407f5b6b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -93.609
+      value: 1.411
       objectReference: {fileID: 0}
     - target: {fileID: 2921015100595203473, guid: ca54a9083b20b0741872fa0d407f5b6b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
