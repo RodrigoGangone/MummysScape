@@ -1,8 +1,10 @@
+using System;
 using UnityEngine;
 using System.Collections;
+using static PauseUtils;
 
 [RequireComponent(typeof(BoxCollider))]
-public class TutorialTrigger : MonoBehaviour
+public class TutorialTrigger : MonoBehaviour, IPausable
 {
     [Header("Referencias")] [SerializeField]
     private TutorialFocusPoint focusPoint;
@@ -21,6 +23,7 @@ public class TutorialTrigger : MonoBehaviour
     private bool _isSizeA = true;
     private bool _isPromptActive;
     private Coroutine _effectRoutine;
+    private bool _paused;
 
     private static readonly int PlayShaderProp = Shader.PropertyToID("_play");
 
@@ -33,47 +36,51 @@ public class TutorialTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
-
-        if (!_isSizeA || FocusManager.Instance == null) return;
+        if (!other.CompareTag("PlayerFather") || !_isSizeA ) return;
         
         if (!Save.IsTutorialSeen(focusPoint.Id))
-            ExecuteTutorialSequence();
+            ExecuteTutorialSequence(focusPoint.MandatoryTime);
 
         SetColliderShape(false);
     }
 
     private void OnTriggerStay(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
-        if (_isSizeA) return;
-
+        if (!other.CompareTag("PlayerFather") || _isSizeA) return;
+        
         if (!_isPromptActive)
         {
             GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.Y);
             _isPromptActive = true;
         }
 
-        if (FocusManager.Instance != null && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
-            ExecuteTutorialSequence();
+        if (!_paused && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
+            ExecuteTutorialSequence(focusPoint.OptionalTime);
+    }
+    
+    
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("PlayerFather")) return;
+
+        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
+        _isPromptActive = false;
     }
 
-    private void ExecuteTutorialSequence()
+    private void ExecuteTutorialSequence(float tutorialTime)
     {
-        if (FocusManager.Instance == null) return;
-
         FocusManager.Instance.RequestTutorial(focusPoint);
 
         if (_effectRoutine != null) StopCoroutine(_effectRoutine);
 
-        _effectRoutine = StartCoroutine(TutorialDurationRoutine());
+        _effectRoutine = StartCoroutine(TutorialDurationRoutine(tutorialTime));
     }
 
-    private IEnumerator TutorialDurationRoutine()
+    private IEnumerator TutorialDurationRoutine(float time)
     {
         ToggleEffects(true);
 
-        yield return new WaitForSeconds(focusPoint.MandatoryTime);
+        yield return WaitForSecondsPausable(time, () => _paused);
 
         ToggleEffects(false);
 
@@ -90,30 +97,17 @@ public class TutorialTrigger : MonoBehaviour
         if (tutorialMaterial != null)
             tutorialMaterial.SetFloat(PlayShaderProp, active ? 1.0f : 0.0f);
     }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (!other.CompareTag("PlayerFather")) return;
-
-        ForceClosePrompt();
-    }
-
     private void SetColliderShape(bool useSizeA)
     {
         _isSizeA = useSizeA;
         _boxCollider.size = useSizeA ? sizeA : sizeB;
         _boxCollider.center = useSizeA ? centerOffsetA : centerOffsetB;
-
-        ForceClosePrompt();
     }
 
-    private void ForceClosePrompt()
-    {
-        if (!_isPromptActive) return;
+    public void OnPauseChanged(bool paused) => _paused = paused;
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
 
-        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
-        _isPromptActive = false;
-    }
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 
     #region Gizmo
 

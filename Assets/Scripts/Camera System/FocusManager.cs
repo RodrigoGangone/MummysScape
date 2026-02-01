@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 using System.Linq;
+// Agregamos esto para usar WaitForSecondsPausable fácilmente
+using static PauseUtils; 
 
-public class FocusManager : MonoBehaviour
+public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la interfaz
 {
     public static FocusManager Instance { get; private set; }
 
@@ -16,8 +18,7 @@ public class FocusManager : MonoBehaviour
     private float bufferBetweenFocus = 0.5f;
 
     [Header("Efecto Zoom (Push-In)")]
-    [Tooltip(
-        "Cuánto zoom hace la cámara durante el foco (grados de FOV). Poner un valor bajo (ej. 2 o 3) para que sea sutil.")]
+    [Tooltip("Cuánto zoom hace la cámara durante el foco (grados de FOV).")]
     [SerializeField]
     private float zoomAmount = 3.0f;
 
@@ -36,6 +37,9 @@ public class FocusManager : MonoBehaviour
 
     private List<FocusRequest> _pendingRequests = new();
     private bool _isCollectingRequests;
+    
+    // Variable para controlar el estado de pausa localmente
+    private bool _paused;
 
     private const string TUTORIAL_BUTTON_NAME = "Accept";
     public string TutorialKey => TUTORIAL_BUTTON_NAME;
@@ -51,9 +55,11 @@ public class FocusManager : MonoBehaviour
         Instance = this;
     }
 
-    // ==================================================================
-    //  API PÚBLICA
-    // ==================================================================
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+
+    public void OnPauseChanged(bool paused) => _paused = paused;
+
     public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration)
     {
         AddRequestInternal(9999, cameraPos, lookAt, duration, null);
@@ -76,11 +82,7 @@ public class FocusManager : MonoBehaviour
             AddRequestInternal(9999, point.CameraPos, point.LookAt, point.MandatoryTime,
                 () => { Save.MarkTutorialSeen(point.Id); });
     }
-
-    // ==================================================================
-    //  CORE
-    // ==================================================================
-
+    
     private void AddRequestInternal(int index, Transform camT, Transform lookAt, float duration, Action onComplete)
     {
         if (camT == null) return;
@@ -104,15 +106,19 @@ public class FocusManager : MonoBehaviour
     private IEnumerator CollectAndSortRoutine()
     {
         _isCollectingRequests = true;
-        yield return new WaitForEndOfFrame();
+
+        yield return new WaitForEndOfFrame(); 
+        
         _pendingRequests = _pendingRequests.OrderBy(x => x.PriorityIndex).ToList();
+        
         yield return StartCoroutine(PlaySequenceRoutine());
+        
         _isCollectingRequests = false;
     }
 
     private IEnumerator PlaySequenceRoutine()
     {
-        GameEventManager.Instance?.playerEvents.OnLocked.Raise(true);
+        GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
 
         float originalFOV = focusCam.m_Lens.FieldOfView;
 
@@ -129,9 +135,7 @@ public class FocusManager : MonoBehaviour
                 focusCam.transform.rotation = req.Rotation;
 
             focusCam.LookAt = req.LookAt;
-
             focusCam.PreviousStateIsValid = false;
-
             focusCam.m_Lens.FieldOfView = originalFOV;
             focusCam.Priority = 100;
 
@@ -140,6 +144,12 @@ public class FocusManager : MonoBehaviour
 
             while (elapsed < req.Duration)
             {
+                if (_paused)
+                {
+                    yield return null;
+                    continue;
+                }
+
                 elapsed += Time.deltaTime;
                 float t = elapsed / req.Duration;
 
@@ -154,15 +164,13 @@ public class FocusManager : MonoBehaviour
             req.OnComplete?.Invoke();
 
             if (_pendingRequests.Count > 0)
-            {
-                yield return new WaitForSeconds(bufferBetweenFocus);
-            }
+                yield return WaitForSecondsPausable(bufferBetweenFocus, () => _paused);
         }
 
         focusCam.m_Lens.FieldOfView = originalFOV;
         focusCam.Priority = 0;
         focusCam.LookAt = null;
 
-        GameEventManager.Instance?.playerEvents.OnLocked.Raise(false);
+        GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
     }
 }
