@@ -77,9 +77,9 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
         bool seen = Save.IsTutorialSeen(point.Id);
 
         if (seen)
-            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.OptionalTime, null);
+            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, null);
         else
-            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.MandatoryTime,
+            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time,
                 () => { Save.MarkTutorialSeen(point.Id); });
     }
     

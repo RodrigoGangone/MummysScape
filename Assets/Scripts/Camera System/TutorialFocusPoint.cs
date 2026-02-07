@@ -2,20 +2,15 @@ using UnityEngine;
 
 public class TutorialFocusPoint : MonoBehaviour
 {
-    [Header("Identificador del tutorial")]
-    [SerializeField] private string tutorialId;
+    [Header("Identificador del tutorial")] [SerializeField]
+    private string tutorialId;
 
-    [Header("Cámara")]
-    [SerializeField] private Transform cameraPos;
+    [Header("Cámara")] [SerializeField] private Transform cameraPos;
     [SerializeField] private Transform lookAt;
 
-    [Header("Tiempos")]
-    [SerializeField] private float mandatoryTime = 3f;
-    [SerializeField] private float optionalTime = 2f;
-
+    [Header("Tiempos")] [SerializeField] private float time;
     public string Id => tutorialId;
     public Transform CameraPos => cameraPos;
     public Transform LookAt => lookAt;
-    public float MandatoryTime => mandatoryTime;
-    public float OptionalTime => optionalTime;
+    public float Time => time; 
 }

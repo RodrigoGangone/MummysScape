@@ -10,7 +10,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     [Header("Referencias")] [SerializeField]
     private TutorialFocusPoint focusPoint;
 
-    [SerializeField] private FirePillar[] pillars;
+    [SerializeField] private ParticleSystem[] braziers;
     private VideoPlayer _tutorialVideo;
 
     [Header("Configuración de Áreas")] [SerializeField]
@@ -25,22 +25,23 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private bool _isPromptActive;
     private Coroutine _effectRoutine;
     private bool _paused;
+    private bool _isPlaying;
     
     private void Awake()
     {
         _boxCollider = GetComponent<BoxCollider>();
         _tutorialVideo = GetComponentInChildren<VideoPlayer>();
-        
+
         SetColliderShape(true);
         ToggleEffects(false);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("PlayerFather") || !_isSizeA ) return;
-        
+        if (!other.CompareTag("PlayerFather") || !_isSizeA) return;
+
         if (!Save.IsTutorialSeen(focusPoint.Id))
-            ExecuteTutorialSequence(focusPoint.MandatoryTime);
+            ExecuteTutorialSequence(focusPoint.Time);
 
         SetColliderShape(false);
     }
@@ -48,17 +49,19 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private void OnTriggerStay(Collider other)
     {
         if (!other.CompareTag("PlayerFather") || _isSizeA) return;
-        
+
         if (!_isPromptActive)
         {
             GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.Y);
             _isPromptActive = true;
         }
 
-        if (!_paused && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
-            ExecuteTutorialSequence(focusPoint.OptionalTime);
+        if (!_paused && !_isPlaying &&Input.GetButtonDown(FocusManager.Instance.TutorialKey))
+        {
+            ExecuteTutorialSequence(focusPoint.Time);
+            _isPlaying = true;
+        }
     }
-    
     
     private void OnTriggerExit(Collider other)
     {
@@ -70,6 +73,8 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     private void ExecuteTutorialSequence(float tutorialTime)
     {
+        Debug.Log("TutorialTrigger");
+        
         FocusManager.Instance.RequestTutorial(focusPoint);
 
         if (_effectRoutine != null) StopCoroutine(_effectRoutine);
@@ -86,20 +91,26 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         ToggleEffects(false);
 
         _effectRoutine = null;
+        _isPlaying = false;
     }
 
     private void ToggleEffects(bool active)
     {
-        if (pillars != null)
-            foreach (var pillar in pillars)
-                if (pillar != null)
-                    pillar.SetState(active);
+        foreach (var brazier in braziers)
+        {
+            if (brazier == null) continue;
 
-        if(active)
-            _tutorialVideo.Play();
-        else
-            _tutorialVideo.Stop();
+            if (active) brazier.Play();
+            else brazier.Stop();
+        }
+
+        if (_tutorialVideo != null)
+        {
+            if (active) _tutorialVideo.Play();
+            else _tutorialVideo.Stop();
+        }
     }
+
     private void SetColliderShape(bool useSizeA)
     {
         _isSizeA = useSizeA;
