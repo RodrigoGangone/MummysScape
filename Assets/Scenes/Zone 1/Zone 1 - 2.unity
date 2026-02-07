@@ -27235,7 +27235,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6963038475205729316, guid: 3b2ccc6f99277ab4cb1fc76ad9b8a561, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8937473051746400636, guid: 3b2ccc6f99277ab4cb1fc76ad9b8a561, type: 3}
       propertyPath: m_LocalPosition.x
@@ -34185,12 +34185,13 @@ GameObject:
   - component: {fileID: 345317272}
   - component: {fileID: 345317271}
   - component: {fileID: 345317270}
+  - component: {fileID: 345317273}
   m_Layer: 11
   m_Name: ImageHookTutorial
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &345317269
 Transform:
@@ -34202,7 +34203,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: -0.5, z: 0.5, w: 0.5}
   m_LocalPosition: {x: 33.324, y: -13.537, z: 10.798}
-  m_LocalScale: {x: 0.23, y: 0.20474191, z: 0.20474191}
+  m_LocalScale: {x: 0.272688, y: 0.24274202, z: 0.24274202}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 403847132}
@@ -34279,6 +34280,42 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 345317268}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!328 &345317273
+VideoPlayer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 345317268}
+  m_Enabled: 1
+  m_VideoClip: {fileID: 32900000, guid: 493d222bc77275f4fbcfe4aacb044793, type: 3}
+  m_TargetCameraAlpha: 1
+  m_TargetCamera3DLayout: 0
+  m_TargetCamera: {fileID: 0}
+  m_TargetTexture: {fileID: 0}
+  m_TimeReference: 0
+  m_TargetMaterialRenderer: {fileID: 0}
+  m_TargetMaterialProperty: _Texture
+  m_RenderMode: 3
+  m_AspectRatio: 2
+  m_DataSource: 0
+  m_TimeUpdateMode: 2
+  m_PlaybackSpeed: 1
+  m_AudioOutputMode: 2
+  m_TargetAudioSources:
+  - {fileID: 0}
+  m_DirectAudioVolumes:
+  - 1
+  m_Url: 
+  m_EnabledAudioTracks: 01
+  m_DirectAudioMutes: 00
+  m_ControlledAudioTrackCount: 1
+  m_PlayOnAwake: 1
+  m_SkipOnDrop: 1
+  m_Looping: 0
+  m_WaitForFirstFrame: 1
+  m_FrameReadyEventEnabled: 0
+  m_VideoShaders: []
 --- !u!1001 &345453958
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35948,7 +35985,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4756220587717188389, guid: ff9dca53be2a91845a74a7186ed4820a, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5007335973900667760, guid: ff9dca53be2a91845a74a7186ed4820a, type: 3}
       propertyPath: m_Mesh
@@ -38582,7 +38619,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &403847132
 Transform:
@@ -38649,8 +38686,8 @@ MonoBehaviour:
   tutorialId: Swing
   cameraPos: {fileID: 1870141743}
   lookAt: {fileID: 345317269}
-  mandatoryTime: 5
-  optionalTime: 3
+  mandatoryTime: 11.5
+  optionalTime: 11.5
 --- !u!114 &403847136
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -38665,7 +38702,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   focusPoint: {fileID: 403847135}
   pillars: []
-  tutorialMaterial: {fileID: 0}
   sizeA: {x: 5, y: 1, z: 8.5}
   sizeB: {x: 2, y: 1, z: 4.41}
   centerOffsetA: {x: 31, y: -15, z: 11}
@@ -38997,7 +39033,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4701594437377577851, guid: ef453b34fca2612418708e8fbaa5c5d6, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5784627941837093342, guid: ef453b34fca2612418708e8fbaa5c5d6, type: 3}
       propertyPath: m_AdditionalVertexStreams
@@ -70301,7 +70337,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5987735674990974443, guid: 22f853639d7a1a84c9dd9191e21a1de4, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7306139079146752727, guid: 22f853639d7a1a84c9dd9191e21a1de4, type: 3}
       propertyPath: m_LocalPosition.x
@@ -72205,6 +72241,7 @@ GameObject:
   - component: {fileID: 733022725}
   - component: {fileID: 733022724}
   - component: {fileID: 733022723}
+  - component: {fileID: 733022726}
   m_Layer: 11
   m_Name: ImageShootTutorial
   m_TagString: Untagged
@@ -72222,7 +72259,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: -0.5, z: 0.5, w: 0.5}
   m_LocalPosition: {x: 33.341, y: -13.53, z: 9.58}
-  m_LocalScale: {x: 0.437114, y: 0.56962514, z: 0.20223099}
+  m_LocalScale: {x: 0.4989219, y: 0.65017015, z: 0.23082645}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 785507506}
@@ -72299,6 +72336,42 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 733022721}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!328 &733022726
+VideoPlayer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 733022721}
+  m_Enabled: 1
+  m_VideoClip: {fileID: 32900000, guid: 454b2df6c95706744935867dc9a6324b, type: 3}
+  m_TargetCameraAlpha: 1
+  m_TargetCamera3DLayout: 0
+  m_TargetCamera: {fileID: 0}
+  m_TargetTexture: {fileID: 0}
+  m_TimeReference: 0
+  m_TargetMaterialRenderer: {fileID: 0}
+  m_TargetMaterialProperty: <noninit>
+  m_RenderMode: 3
+  m_AspectRatio: 2
+  m_DataSource: 0
+  m_TimeUpdateMode: 2
+  m_PlaybackSpeed: 1
+  m_AudioOutputMode: 2
+  m_TargetAudioSources:
+  - {fileID: 0}
+  m_DirectAudioVolumes:
+  - 1
+  m_Url: 
+  m_EnabledAudioTracks: 01
+  m_DirectAudioMutes: 00
+  m_ControlledAudioTrackCount: 1
+  m_PlayOnAwake: 1
+  m_SkipOnDrop: 1
+  m_Looping: 0
+  m_WaitForFirstFrame: 1
+  m_FrameReadyEventEnabled: 0
+  m_VideoShaders: []
 --- !u!43 &734034267
 Mesh:
   m_ObjectHideFlags: 0
@@ -78007,8 +78080,8 @@ MonoBehaviour:
   tutorialId: Shoot
   cameraPos: {fileID: 782474156}
   lookAt: {fileID: 733022722}
-  mandatoryTime: 5
-  optionalTime: 3
+  mandatoryTime: 10.4
+  optionalTime: 10.4
 --- !u!114 &785507510
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -78023,7 +78096,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   focusPoint: {fileID: 785507509}
   pillars: []
-  tutorialMaterial: {fileID: 0}
   sizeA: {x: 5, y: 1, z: 7}
   sizeB: {x: 2, y: 2, z: 5}
   centerOffsetA: {x: 31, y: -15.5, z: 11}
@@ -87883,7 +87955,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5987735674990974443, guid: 22f853639d7a1a84c9dd9191e21a1de4, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7306139079146752727, guid: 22f853639d7a1a84c9dd9191e21a1de4, type: 3}
       propertyPath: m_LocalPosition.x
@@ -102901,7 +102973,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5941969449970552256, guid: 1cdbe7ac767128b48928a002a43aaa0d, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6476944172033942873, guid: 1cdbe7ac767128b48928a002a43aaa0d, type: 3}
       propertyPath: m_Mesh
@@ -116848,7 +116920,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   focusPoint: {fileID: 1138617059}
   pillars: []
-  tutorialMaterial: {fileID: 0}
   sizeA: {x: 1, y: 1, z: 1}
   sizeB: {x: 2, y: 2, z: 2}
   centerOffsetA: {x: 0, y: 0, z: 0}
@@ -121231,7 +121302,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4756220587717188389, guid: ff9dca53be2a91845a74a7186ed4820a, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5007335973900667760, guid: ff9dca53be2a91845a74a7186ed4820a, type: 3}
       propertyPath: m_Mesh
@@ -147733,7 +147804,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1969123010274745027, guid: 90a087ab3ec280c42ae8f8302d4ca08f, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3348210103758260774, guid: 90a087ab3ec280c42ae8f8302d4ca08f, type: 3}
       propertyPath: m_PolyMesh.name
@@ -150971,7 +151042,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4756220587717188389, guid: ff9dca53be2a91845a74a7186ed4820a, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5007335973900667760, guid: ff9dca53be2a91845a74a7186ed4820a, type: 3}
       propertyPath: m_Mesh
@@ -168229,7 +168300,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2583784592468568202, guid: 00879f896f56013418593f0d082ff1e8, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3014451530710857018, guid: 00879f896f56013418593f0d082ff1e8, type: 3}
       propertyPath: m_Mesh
@@ -182179,7 +182250,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4701594437377577851, guid: ef453b34fca2612418708e8fbaa5c5d6, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5784627941837093342, guid: ef453b34fca2612418708e8fbaa5c5d6, type: 3}
       propertyPath: m_AdditionalVertexStreams
@@ -198485,7 +198556,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &1870141743
 Transform:
@@ -229990,7 +230061,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5941969449970552256, guid: 1cdbe7ac767128b48928a002a43aaa0d, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6476944172033942873, guid: 1cdbe7ac767128b48928a002a43aaa0d, type: 3}
       propertyPath: m_Mesh

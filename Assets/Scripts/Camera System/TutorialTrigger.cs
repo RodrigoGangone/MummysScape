@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Video;
 using static PauseUtils;
 
 [RequireComponent(typeof(BoxCollider))]
@@ -10,7 +11,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private TutorialFocusPoint focusPoint;
 
     [SerializeField] private FirePillar[] pillars;
-    [SerializeField] private Material tutorialMaterial;
+    private VideoPlayer _tutorialVideo;
 
     [Header("Configuración de Áreas")] [SerializeField]
     private Vector3 sizeA = Vector3.one;
@@ -24,12 +25,12 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private bool _isPromptActive;
     private Coroutine _effectRoutine;
     private bool _paused;
-
-    private static readonly int PlayShaderProp = Shader.PropertyToID("_play");
-
+    
     private void Awake()
     {
         _boxCollider = GetComponent<BoxCollider>();
+        _tutorialVideo = GetComponentInChildren<VideoPlayer>();
+        
         SetColliderShape(true);
         ToggleEffects(false);
     }
@@ -94,8 +95,10 @@ public class TutorialTrigger : MonoBehaviour, IPausable
                 if (pillar != null)
                     pillar.SetState(active);
 
-        if (tutorialMaterial != null)
-            tutorialMaterial.SetFloat(PlayShaderProp, active ? 1.0f : 0.0f);
+        if(active)
+            _tutorialVideo.Play();
+        else
+            _tutorialVideo.Stop();
     }
     private void SetColliderShape(bool useSizeA)
     {
