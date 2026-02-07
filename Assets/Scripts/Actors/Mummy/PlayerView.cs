@@ -36,7 +36,6 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     // --- NUEVO SISTEMA CENTRALIZADO DE VENDAS ---
     [Header("Bandage Visuals System")]
     [SerializeField] private LineRenderer _bandageLine;
-    [SerializeField] private float _bandageDrawDuration = 0.3f; // Tiempo de carga del shader
     
     [Header("Hand Anchors (Asignar transforms de las manos)")]
     [SerializeField] private Transform _handAnchorNormal;
@@ -101,7 +100,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     /// </summary>
     /// <param name="targetTransform">El transform del objeto (Caja, Pared, Hook)</param>
     /// <param name="worldHitPoint">El punto exacto del impacto en coordenadas de mundo</param>
-    public void StartBandage(Transform targetTransform, Vector3 worldHitPoint)
+    public void StartBandage(Transform targetTransform, Vector3 worldHitPoint, float duration)
     {
         if (_bandageLine == null) return;
 
@@ -114,7 +113,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
         // Iniciar animación del shader ("Carga" visual)
         if (_drawCoroutine != null) StopCoroutine(_drawCoroutine);
-        _drawCoroutine = StartCoroutine(AnimateMaterialDraw());
+        _drawCoroutine = StartCoroutine(AnimateMaterialDraw(duration));
     }
 
     public void StopBandage()
@@ -132,19 +131,17 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         if (_drawCoroutine != null) StopCoroutine(_drawCoroutine);
     }
     
-    public float GetBandageDrawDuration() => _bandageDrawDuration;
-
-    private IEnumerator AnimateMaterialDraw()
+    private IEnumerator AnimateMaterialDraw(float duration)
     {
         if (!_bandageMatInst) yield break;
-
+        
         _bandageMatInst.SetFloat(_thresholdPropID, MAT_START_VAL);
         float time = 0f;
         
-        while (time < _bandageDrawDuration)
+        while (time < duration)
         {
             time += Time.deltaTime;
-            float t = Mathf.Clamp01(time / _bandageDrawDuration);
+            float t = Mathf.Clamp01(time / duration);
             // Lerp inverso (de 1.5 a 0) asumiendo que el shader funciona así
             float val = Mathf.Lerp(MAT_START_VAL, MAT_END_VAL, t);
             

@@ -33,14 +33,11 @@ public sealed class AttractState : State, IBandageRestrictor
         // 2. Iniciamos VISUAL de la venda (Reutilizamos la View)
         // Le mandamos el transform de la caja y su posición central
         // Esto asegura que la linea salga de la mano correcta y vaya a la caja
-        _ctx.View.StartBandage(_box.transform, _box.transform.position);
+        _ctx.View.StartBandage(_box.transform, _box.transform.position, 0.4f);
 
         // 3. Calculamos tiempos
-        // Obtenemos la duración de la animación visual de la venda
-        float bandageTime = _ctx.View.GetBandageDrawDuration();
-        
         // Esperamos ese tiempo antes de mover la caja
-        _moveUnlockTime = Time.time + bandageTime;
+        _moveUnlockTime = Time.time + 0.4f;
     }
 
     public override void OnExit()
