@@ -26,8 +26,7 @@ public class FocusOnActivation : MonoBehaviour
             FocusManager.Instance.RequestObjectFocus(
                 cameraFocusPos,
                 cameraFocusLookAt,
-                focusDuration,
-                unlockOnFinish // <--- Aquí pasamos tu elección
+                focusDuration
             );
         }
         else

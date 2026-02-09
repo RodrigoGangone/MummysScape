@@ -16,7 +16,7 @@ public sealed class SmashState : State, IBandageRestrictor
         
         _ctx.View.Animator.SetBool("Smash", true);
         
-        GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Smash", true);
         //StateMachine.ChangeState(PlayerStateId.Idle);
     }
 

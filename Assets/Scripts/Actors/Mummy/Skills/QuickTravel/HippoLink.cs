@@ -15,14 +15,14 @@ public class HippoLink : MonoBehaviour
     // Método para "notificar" que el viaje comenzó
     public void StartTravel()
     {
-        GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("HippoTravel", true);
         _isBusy = true;
     }
 
     // Método para "notificar" que el viaje terminó
     public void EndTravel()
     {
-        GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("HippoTravel", false);
         _isBusy = false;
     }
 }

@@ -8,7 +8,9 @@ public class EntryLevelTimeLine : MonoBehaviour
     [SerializeField] private GameObject fakeMummy; 
     [SerializeField] private PlayableDirector director; 
 
-    public void LockPlayer() => GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
+    private const string LOCK_ID = "EntryTimeline";
+    
+    public void LockPlayer() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, true);
 
     public void UnlockPlayer()
     {
@@ -16,6 +18,6 @@ public class EntryLevelTimeLine : MonoBehaviour
 
         director.Stop();
 
-        GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, false);    
     }
 }

@@ -10,8 +10,9 @@ public class WinState : State, IBandageRestrictor
     public override void OnEnter()
     {
         GameEventManager.Instance.levelEvents.OnWin.Raise();
-        GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Win", true);
     }
+    
     public override void OnUpdate() { }
     public override void OnFixedUpdate() { }
     public override void OnExit() { }

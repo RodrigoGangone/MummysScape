@@ -11,8 +11,7 @@ public class DeadState : State, IBandageRestrictor
     {
         _ctx.View.Animator.SetTrigger("Death");
         //GameEventManager.Instance.levelEvents.OnDeath.Raise();
-        GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
-
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Death", true);
     }
     public override void OnUpdate() { }
     public override void OnFixedUpdate() { }
