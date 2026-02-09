@@ -18,14 +18,22 @@ public class ZoneTile : MonoBehaviour
     [SerializeField] private ParticleSystem portalFx;
     [SerializeField] private Material lockedMaterial;
 
+    // --- SECCIÓN REVEAL (Cuando se desbloquea automáticamente) ---
     [Header("Focus Reveal (Animación de Desbloqueo)")]
     [SerializeField] private Transform revealCamPos;
     [SerializeField] private float revealDuration = 3.0f;
+    [Tooltip("Zoom suave para mostrar panorámicamente que se abrió el camino.")]
+    [SerializeField] private float revealZoomAmount = 2.0f; 
+    [SerializeField] private AnimationCurve revealZoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
+    // --- SECCIÓN ENTRY (Cuando el jugador entra) ---
     [Header("Focus Entry (Animación al Entrar)")]
     [SerializeField] private Transform entryFocusPos;
     [SerializeField] private Transform entryLookAt;
     [SerializeField] private float entryDuration = 2.0f;
+    [Tooltip("Zoom más intenso hacia el portal al entrar.")]
+    [SerializeField] private float entryZoomAmount = 4.0f;
+    [SerializeField] private AnimationCurve entryZoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     [Header("Sistema")]
     [SerializeField] private UIManager uiManager;
@@ -44,7 +52,6 @@ public class ZoneTile : MonoBehaviour
     [ContextMenu("Borrar Datos de ESTA Zona")]
     void ClearZoneData()
     {
-        // Borrar el "Visto"
         PlayerPrefs.DeleteKey($"seen.zone_reveal.{targetBuildIndex}");
         Debug.Log($"[ZoneTile Debug] Reset 'Seen' para zona {targetBuildIndex}");
     }
@@ -79,17 +86,18 @@ public class ZoneTile : MonoBehaviour
         if (portalFx != null) portalFx.Play();
 
         // --- 4. Lógica de Revelación (Cola de Foco) ---
-        // Si la zona está desbloqueada y NO la hemos visto, pedimos foco.
-        // Pasa el targetBuildIndex como prioridad de ordenamiento.
         if (!Save.IsZoneRevealSeen(targetBuildIndex))
         {
             if (FocusManager.Instance != null)
             {
+                // Usamos los parámetros de REVEAL
                 FocusManager.Instance.RequestRevealFocus(
-                    targetBuildIndex, // Prioridad en la cola
+                    targetBuildIndex, // Prioridad
                     revealCamPos != null ? revealCamPos : transform,
-                    transform,
+                    transform, // LookAt por defecto al objeto
                     revealDuration,
+                    revealZoomAmount, // <--- Zoom específico de Reveal
+                    revealZoomCurve,  // <--- Curva específica de Reveal
                     () => Save.MarkZoneRevealSeen(targetBuildIndex)
                 );
             }
@@ -122,12 +130,6 @@ public class ZoneTile : MonoBehaviour
         bool enoughGems = currentGems >= requiredTotalGems;
 
         _isUnlocked = bossDefeated && enoughGems;
-
-        // Debug info solo si está bloqueado
-        if (!_isUnlocked && _playerInside) // Solo loguear si intenta entrar o al debuggear
-        {
-             // (Opcional) Log para entender por qué está cerrado
-        }
     }
 
     private void Update()
@@ -146,7 +148,15 @@ public class ZoneTile : MonoBehaviour
         {
             Transform camPos = entryFocusPos != null ? entryFocusPos : transform;
             Transform lookAt = entryLookAt != null ? entryLookAt : transform;
-            FocusManager.Instance.RequestObjectFocus(camPos, lookAt, entryDuration);
+            
+            // Usamos los parámetros de ENTRY
+            FocusManager.Instance.RequestObjectFocus(
+                camPos, 
+                lookAt, 
+                entryDuration,
+                entryZoomAmount, // <--- Zoom específico de Entry
+                entryZoomCurve   // <--- Curva específica de Entry
+            );
         }
 
         // 2. Load Scene
@@ -175,12 +185,6 @@ public class ZoneTile : MonoBehaviour
 
         if (_isUnlocked)
             GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.A);
-        else
-        {
-#if UNITY_EDITOR
-            Debug.Log($"[ZoneTile] Bloqueado. BossLv{requiredBossLevelIndex} completado: {Save.IsLevelCompleted(requiredBossLevelIndex)}. Gemas: {Save.GetGlobalGemCount()}/{requiredTotalGems}");
-#endif
-        }
     }
 
     private void OnTriggerExit(Collider other)

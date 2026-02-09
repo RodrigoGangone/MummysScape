@@ -4,27 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 using System.Linq;
-// Agregamos esto para usar WaitForSecondsPausable fácilmente
 using static PauseUtils;
 
-public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la interfaz
+public class FocusManager : MonoBehaviour, IPausable
 {
     public static FocusManager Instance { get; private set; }
-
-    [Header("Cámara de Foco")] [SerializeField]
-    private CinemachineVirtualCamera focusCam;
-
-    [Header("Configuración")] [SerializeField]
-    private float bufferBetweenFocus = 0.5f;
-
-    [Header("Efecto Zoom (Push-In)")]
-    [Tooltip("Cuánto zoom hace la cámara durante el foco (grados de FOV).")]
-    [SerializeField]
-    private float zoomAmount = 3.0f;
-
-    [Tooltip("Curva para suavizar el movimiento del zoom.")] [SerializeField]
-    private AnimationCurve zoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-
+    
+    [SerializeField] private CinemachineVirtualCamera focusCam;
+    [SerializeField] private float bufferBetweenFocus = 0.5f;
+    
     private class FocusRequest
     {
         public int PriorityIndex;
@@ -32,13 +20,14 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
         public Quaternion Rotation;
         public Transform LookAt;
         public float Duration;
+        public float ZoomAmount;
+        public AnimationCurve ZoomCurve; 
+
         public Action OnComplete;
     }
 
     private List<FocusRequest> _pendingRequests = new();
     private bool _isCollectingRequests;
-
-    // Variable para controlar el estado de pausa localmente
     private bool _paused;
 
     private const string TUTORIAL_BUTTON_NAME = "Accept";
@@ -60,17 +49,16 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
 
     public void OnPauseChanged(bool paused) => _paused = paused;
 
-// Agregamos el parámetro opcional al final
-    public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration)
+    public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration, float zoomAmount,
+        AnimationCurve zoomCurve)
     {
-        // Pasamos 'unlockPlayer' al método interno
-        AddRequestInternal(9999, cameraPos, lookAt, duration, null);
+        AddRequestInternal(9999, cameraPos, lookAt, duration, zoomAmount, zoomCurve, null);
     }
-
-    public void RequestRevealFocus(int orderIndex, Transform cameraPos, Transform lookAt, float duration,
-        Action onFinishedCallback)
+    
+    public void RequestRevealFocus(int orderIndex, Transform cameraPos, Transform lookAt, float duration, float zoomAmt,
+        AnimationCurve curve, Action onFinishedCallback)
     {
-        AddRequestInternal(orderIndex, cameraPos, lookAt, duration, onFinishedCallback);
+        AddRequestInternal(orderIndex, cameraPos, lookAt, duration, zoomAmt, curve, onFinishedCallback);
     }
 
     public void RequestTutorial(TutorialFocusPoint point)
@@ -79,14 +67,19 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
         bool seen = Save.IsTutorialSeen(point.Id);
 
         if (seen)
-            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, null);
+        {
+            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, point.ZoomAmount, point.ZoomCurve,
+                null);
+        }
         else
-            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time,
+        {
+            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, point.ZoomAmount, point.ZoomCurve,
                 () => { Save.MarkTutorialSeen(point.Id); });
+        }
     }
 
-// Modificamos la firma para aceptar el bool (por defecto true)
-    private void AddRequestInternal(int index, Transform camT, Transform lookAt, float duration, Action onComplete)
+    private void AddRequestInternal(int index, Transform camT, Transform lookAt, float duration, float zoomAmt,
+        AnimationCurve curve, Action onComplete)
     {
         if (camT == null) return;
 
@@ -97,6 +90,8 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
             Rotation = camT.rotation,
             LookAt = lookAt,
             Duration = duration,
+            ZoomAmount = zoomAmt,
+            ZoomCurve = curve, 
             OnComplete = onComplete,
         };
 
@@ -109,50 +104,36 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
     private IEnumerator CollectAndSortRoutine()
     {
         _isCollectingRequests = true;
-
         yield return new WaitForEndOfFrame();
-
         _pendingRequests = _pendingRequests.OrderBy(x => x.PriorityIndex).ToList();
-
         yield return StartCoroutine(PlaySequenceRoutine());
-
         _isCollectingRequests = false;
     }
 
     private IEnumerator PlaySequenceRoutine()
     {
-        // 1. Bloqueamos siempre al empezar cualquier secuencia de focos
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FocusManager", true);
-        float originalFOV = focusCam.m_Lens.FieldOfView;
 
-        // Variable local para recordar la preferencia del último request.
-        // Lo iniciamos en true por seguridad.
-        bool shouldUnlockAtEnd = true;
+        float originalFOV = focusCam.m_Lens.FieldOfView;
 
         while (_pendingRequests.Count > 0)
         {
             FocusRequest req = _pendingRequests[0];
             _pendingRequests.RemoveAt(0);
 
-            // ---> AQUI ESTA EL CAMBIO <---
-            // Actualizamos la variable con la preferencia de ESTA petición.
-            // Como es un bucle, al final nos quedaremos con el valor de la última petición de la cola.
-
-            // --- Lógica de movimiento de cámara (sin cambios) ---
             focusCam.transform.position = req.Position;
-
-            if (req.LookAt != null)
-                focusCam.transform.LookAt(req.LookAt);
-            else
-                focusCam.transform.rotation = req.Rotation;
+            if (req.LookAt != null) focusCam.transform.LookAt(req.LookAt);
+            else focusCam.transform.rotation = req.Rotation;
 
             focusCam.LookAt = req.LookAt;
             focusCam.PreviousStateIsValid = false;
+
             focusCam.m_Lens.FieldOfView = originalFOV;
             focusCam.Priority = 100;
 
             float elapsed = 0f;
-            float targetFOV = originalFOV - zoomAmount;
+
+            float targetFOV = originalFOV - req.ZoomAmount;
 
             while (elapsed < req.Duration)
             {
@@ -165,22 +146,20 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
                 elapsed += Time.deltaTime;
                 float t = elapsed / req.Duration;
 
-                float curveValue = zoomCurve.Evaluate(t);
+                float curveValue = req.ZoomCurve.Evaluate(t);
+
                 focusCam.m_Lens.FieldOfView = Mathf.Lerp(originalFOV, targetFOV, curveValue);
 
                 yield return null;
             }
 
             focusCam.m_Lens.FieldOfView = targetFOV;
-
-            // Ejecutamos callbacks (Save tutorial, etc.)
             req.OnComplete?.Invoke();
 
             if (_pendingRequests.Count > 0)
                 yield return WaitForSecondsPausable(bufferBetweenFocus, () => _paused);
         }
 
-        // Restaurar cámara
         focusCam.m_Lens.FieldOfView = originalFOV;
         focusCam.Priority = 0;
         focusCam.LookAt = null;

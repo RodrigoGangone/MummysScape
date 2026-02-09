@@ -14,12 +14,25 @@ public class LevelTile : MonoBehaviour
     [SerializeField] private GameObject[] gemIcons = new GameObject[3];
     [SerializeField] private Material lockedMaterial;
 
+    // --- SECCIÓN REVEAL (Cuando se desbloquea automáticamente) ---
+    [Header("Focus Reveal (Al desbloquearse)")]
+    [Tooltip("Cuánto tiempo se queda la cámara mirando el nivel desbloqueado.")]
+    [SerializeField] private float revealDuration = 3.0f; // <--- NUEVA VARIABLE
+    [Tooltip("Zoom suave para mostrar que el nivel está disponible.")]
+    [SerializeField] private float revealZoomAmount = 2.0f;
+    [SerializeField] private AnimationCurve revealZoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    
+    // --- SECCIÓN ENTRY (Cuando el jugador entra) ---
     [Header("Focus Entry (Animación al Entrar)")]
-    [Tooltip("Posición de la cámara cuando el jugador presiona X para entrar.")]
+    [Tooltip("Posición de la cámara para la entrada.")]
     [SerializeField] private Transform entryFocusPos;
-    [Tooltip("Hacia dónde mira la cámara al entrar (ej. al portal).")]
+    [Tooltip("Hacia dónde mira la cámara.")]
     [SerializeField] private Transform entryLookAt;
-    [SerializeField] private float entryDuration = 2.0f;
+    [Tooltip("Cuánto tarda la animación al entrar (usualmente más rápido).")]
+    [SerializeField] private float entryDuration = 1.5f; // <--- SEPARADA
+    [Tooltip("Zoom agresivo hacia el portal.")]
+    [SerializeField] private float entryZoomAmount = 4.0f;
+    [SerializeField] private AnimationCurve entryZoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     [Header("Sistema")]
     [SerializeField] private UIManager uiManager;
@@ -29,47 +42,30 @@ public class LevelTile : MonoBehaviour
     // ==========================================
 #if UNITY_EDITOR
     [Header("--- DEBUG TOOLS ---")]
-    [Tooltip("Si es true, borra la key 'Seen' al iniciar, forzando la animación de cámara.")]
     [SerializeField] private bool debugResetSeenOnPlay;
-    
-    [Tooltip("Si es true, el nivel estará abierto ignorando el nivel anterior.")]
     [SerializeField] private bool debugForceUnlock;
 
-    [ContextMenu("Borrar Datos de ESTE Nivel (Lock & Unseen)")]
+    [ContextMenu("Borrar Datos de ESTE Nivel")]
     void ClearThisLevelData()
     {
-        // Borrar el "Visto"
         PlayerPrefs.DeleteKey($"seen.level_reveal.{buildIndex}");
-        // Opcional: Borrar el nivel anterior para bloquear este
-        // PlayerPrefs.DeleteKey($"level.completed.index.{buildIndex - 1}");
         Debug.Log($"[LevelTile Debug] Reset 'Seen' para nivel {buildIndex}");
     }
 #endif
     // ==========================================
 
-    // Cache
     bool _playerInside;
     bool _isUnlocked;
 
     void Start()
     {
-        // --- 0. DEBUG: Resetear estado 'Seen' ---
 #if UNITY_EDITOR
-        if (debugResetSeenOnPlay)
-        {
-            PlayerPrefs.DeleteKey($"seen.level_reveal.{buildIndex}");
-        }
+        if (debugResetSeenOnPlay) PlayerPrefs.DeleteKey($"seen.level_reveal.{buildIndex}");
 #endif
 
-        // --- 1. Validaciones ---
-        if (buildIndex == 0 && !isFirstLevel)
-            Debug.LogWarning($"[LevelTile] '{name}' tiene BuildIndex 0 pero no es FirstLevel.", gameObject);
+        if (buildIndex == 0 && !isFirstLevel) Debug.LogWarning($"[LevelTile] Indice 0 sin FirstLevel.", gameObject);
 
-        // --- 2. Lógica Unlocked ---
-        if (isFirstLevel)
-        {
-            _isUnlocked = true;
-        }
+        if (isFirstLevel) _isUnlocked = true;
         else
         {
 #if UNITY_EDITOR
@@ -79,7 +75,6 @@ public class LevelTile : MonoBehaviour
 #endif
         }
 
-        // --- 3. Estado Bloqueado ---
         if (!_isUnlocked)
         {
             ApplyLockedMaterial();
@@ -88,8 +83,6 @@ public class LevelTile : MonoBehaviour
             return;
         }
 
-        // --- 4. Estado Desbloqueado ---
-        // Respetando tu lógica: Apagamos FX al inicio, solo se prenden al entrar al trigger
         if (portalFx != null) portalFx.Stop();
 
         // --- 5. REVEAL (Seen) ---
@@ -97,24 +90,21 @@ public class LevelTile : MonoBehaviour
         {
             if (FocusManager.Instance != null)
             {
-                // CAMBIO IMPORTANTE:
-                // Pasamos 'buildIndex' como primer parámetro. 
-                // Esto le dice al FocusManager: "Mi turno es el número X".
                 FocusManager.Instance.RequestRevealFocus(
-                    buildIndex, // <--- LA CLAVE DEL ORDENAMIENTO
+                    buildIndex, 
                     entryFocusPos != null ? entryFocusPos : transform,
                     entryLookAt, 
-                    entryDuration,
+                    revealDuration,   // <--- CORREGIDO: Usamos la duración de reveal
+                    revealZoomAmount, 
+                    revealZoomCurve,  
                     () => Save.MarkLevelRevealSeen(buildIndex)
                 );
             }
         }
 
-        // --- 6. Gemas ---
         if (!isBossLevel) RefreshGems();
         else SetAllGems(false);
 
-        // Reset Prompt UI
         GameEventManager.Instance?.levelEvents.OnPrompt.Raise(false, buttonType.A);
     }
 
@@ -122,39 +112,39 @@ public class LevelTile : MonoBehaviour
     {
         if (_playerInside && _isUnlocked)
         {
-            if (Input.GetButtonDown("Space"))
-                EnterLevel();
+            if (Input.GetButtonDown("Space")) EnterLevel();
         }
     }
 
     void EnterLevel()
     {
-        // 1. Disparar el Focus de Entrada
         if (FocusManager.Instance != null)
         {
             Transform camPos = entryFocusPos != null ? entryFocusPos : transform;
             Transform lookAt = entryLookAt != null ? entryLookAt : transform;
 
-            FocusManager.Instance.RequestObjectFocus(camPos, lookAt, entryDuration);
+            FocusManager.Instance.RequestObjectFocus(
+                camPos, 
+                lookAt, 
+                entryDuration,    // <--- Usamos la duración de entrada
+                entryZoomAmount, 
+                entryZoomCurve   
+            );
         }
 
-        // 2. Cargar Escena
         if (uiManager != null)
         {
             var transition = uiManager.GetComponent<SceneTransitionManager>();
-            if (transition != null)
-                transition.FadeInAndLoadScene(buildIndex);
+            if (transition != null) transition.FadeInAndLoadScene(buildIndex);
         }
     }
 
     // --- Helpers Visuales ---
-
     private void ApplyLockedMaterial()
     {
         if (lockedMaterial == null) return;
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        foreach (var r in renderers)
-        {
+        foreach (var r in renderers) {
             Material[] mats = new Material[r.sharedMaterials.Length];
             for (int i = 0; i < mats.Length; i++) mats[i] = lockedMaterial;
             r.materials = mats;
@@ -163,28 +153,20 @@ public class LevelTile : MonoBehaviour
 
     private void RefreshGems()
     {
-        for (int i = 0; i < gemIcons.Length; i++)
-        {
+        for (int i = 0; i < gemIcons.Length; i++) {
             if (gemIcons[i] == null) continue;
             bool picked = Save.WasGemPickedInLevel(i + 1, buildIndex);
             gemIcons[i].SetActive(picked);
         }
     }
 
-    private void SetAllGems(bool on)
-    {
-        foreach (var g in gemIcons) if (g) g.SetActive(on);
-    }
+    private void SetAllGems(bool on) { foreach (var g in gemIcons) if (g) g.SetActive(on); }
 
     private void OnTriggerEnter(Collider other)
     {
         if (!_isUnlocked || !other.CompareTag("PlayerFather")) return;
-        
         _playerInside = true;
-        
-        // FX se prende al entrar (Tu lógica original)
         if (portalFx != null) portalFx.Play();
-        
         if (!isBossLevel) RefreshGems();
         GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.A);
     }
@@ -192,12 +174,8 @@ public class LevelTile : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         if (!_isUnlocked || !other.CompareTag("PlayerFather")) return;
-        
         _playerInside = false;
-        
-        // FX se apaga al salir (Tu lógica original)
         if (portalFx != null) portalFx.Stop();
-        
         GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.A);
     }
 }
