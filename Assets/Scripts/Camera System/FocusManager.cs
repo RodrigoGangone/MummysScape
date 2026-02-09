@@ -5,7 +5,7 @@ using UnityEngine;
 using Cinemachine;
 using System.Linq;
 // Agregamos esto para usar WaitForSecondsPausable fácilmente
-using static PauseUtils; 
+using static PauseUtils;
 
 public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la interfaz
 {
@@ -33,11 +33,14 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
         public Transform LookAt;
         public float Duration;
         public Action OnComplete;
+
+        // AGREGAR ESTO: Por defecto true para que todo lo viejo siga funcionando
+        public bool UnlockOnFinish = true;
     }
 
     private List<FocusRequest> _pendingRequests = new();
     private bool _isCollectingRequests;
-    
+
     // Variable para controlar el estado de pausa localmente
     private bool _paused;
 
@@ -60,9 +63,11 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
 
     public void OnPauseChanged(bool paused) => _paused = paused;
 
-    public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration)
+// Agregamos el parámetro opcional al final
+    public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration, bool unlockPlayer = true)
     {
-        AddRequestInternal(9999, cameraPos, lookAt, duration, null);
+        // Pasamos 'unlockPlayer' al método interno
+        AddRequestInternal(9999, cameraPos, lookAt, duration, null, unlockPlayer);
     }
 
     public void RequestRevealFocus(int orderIndex, Transform cameraPos, Transform lookAt, float duration,
@@ -82,8 +87,10 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
             AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time,
                 () => { Save.MarkTutorialSeen(point.Id); });
     }
-    
-    private void AddRequestInternal(int index, Transform camT, Transform lookAt, float duration, Action onComplete)
+
+// Modificamos la firma para aceptar el bool (por defecto true)
+    private void AddRequestInternal(int index, Transform camT, Transform lookAt, float duration, Action onComplete,
+        bool unlockOnFinish = true)
     {
         if (camT == null) return;
 
@@ -94,7 +101,8 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
             Rotation = camT.rotation,
             LookAt = lookAt,
             Duration = duration,
-            OnComplete = onComplete
+            OnComplete = onComplete,
+            UnlockOnFinish = unlockOnFinish // <--- ASIGNAMOS EL VALOR
         };
 
         _pendingRequests.Add(req);
@@ -107,26 +115,37 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
     {
         _isCollectingRequests = true;
 
-        yield return new WaitForEndOfFrame(); 
-        
+        yield return new WaitForEndOfFrame();
+
         _pendingRequests = _pendingRequests.OrderBy(x => x.PriorityIndex).ToList();
-        
+
         yield return StartCoroutine(PlaySequenceRoutine());
-        
+
         _isCollectingRequests = false;
     }
 
     private IEnumerator PlaySequenceRoutine()
     {
+        // 1. Bloqueamos siempre al empezar cualquier secuencia de focos
         GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
 
         float originalFOV = focusCam.m_Lens.FieldOfView;
+
+        // Variable local para recordar la preferencia del último request.
+        // Lo iniciamos en true por seguridad.
+        bool shouldUnlockAtEnd = true;
 
         while (_pendingRequests.Count > 0)
         {
             FocusRequest req = _pendingRequests[0];
             _pendingRequests.RemoveAt(0);
 
+            // ---> AQUI ESTA EL CAMBIO <---
+            // Actualizamos la variable con la preferencia de ESTA petición.
+            // Como es un bucle, al final nos quedaremos con el valor de la última petición de la cola.
+            shouldUnlockAtEnd = req.UnlockOnFinish;
+
+            // --- Lógica de movimiento de cámara (sin cambios) ---
             focusCam.transform.position = req.Position;
 
             if (req.LookAt != null)
@@ -161,16 +180,25 @@ public class FocusManager : MonoBehaviour, IPausable // 1. Implementamos la inte
 
             focusCam.m_Lens.FieldOfView = targetFOV;
 
+            // Ejecutamos callbacks (Save tutorial, etc.)
             req.OnComplete?.Invoke();
 
             if (_pendingRequests.Count > 0)
                 yield return WaitForSecondsPausable(bufferBetweenFocus, () => _paused);
         }
 
+        // Restaurar cámara
         focusCam.m_Lens.FieldOfView = originalFOV;
         focusCam.Priority = 0;
         focusCam.LookAt = null;
 
-        GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
+        // ---> LA VALIDACIÓN FINAL <---
+        // Solo quitamos el candado si el último foco tenía 'UnlockOnFinish = true'.
+        // Si fue el del Sarcófago (que le pasaste false), esto se saltará
+        // y el Player seguirá bloqueado hasta que tu Timeline lo libere.
+        if (shouldUnlockAtEnd)
+        {
+            GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
+        }
     }
 }

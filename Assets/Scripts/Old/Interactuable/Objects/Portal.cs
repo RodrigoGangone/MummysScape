@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
 using static Save;
 using static Utils;
@@ -9,7 +10,7 @@ public class Portal : MonoBehaviour
     [SerializeField] private bool isOpen;
     private Animator Anim => GetComponentInChildren<Animator>();
     private FocusOnActivation Focus => GetComponent<FocusOnActivation>();
-
+    [SerializeField] private PlayableDirector director; // Asigna aquí el 'Cinematic_Sarcophagus'
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnWin.Register<int>(CompleteLevel);
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(CompleteLevel);
 
@@ -17,11 +18,14 @@ public class Portal : MonoBehaviour
     {
         if (!isOpen) return;
 
-        Locked();
-
         Focus.Activate();
-
         InitLevelFx();
+        
+        // 1. Bloqueamos al player (si no estaba bloqueado ya)
+      //  GameEventManager.Instance.playerEvents.OnLocked.Raise(true); 
+        
+        // 2. Iniciamos la magia
+        director.Play();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -56,11 +60,8 @@ public class Portal : MonoBehaviour
     /// <summary>
     /// Eventos que se encargan de avisar cuando debe Iniciar le nivel y darlo por finalizado
     /// </summary>
-    /// 
-    public void Locked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
-
-    public void UnLocked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
-
+    ///
+    ///  
     public void PassedLevel() =>
         GameEventManager.Instance.levelEvents.OnWin.Raise(SceneManager.GetActiveScene().buildIndex);
 
@@ -71,6 +72,5 @@ public class Portal : MonoBehaviour
     /// Close -> Al finalizar el nivel
     /// </summary>
     private void PassedLevelFX() => Anim.SetTrigger("Close");
-
     private void InitLevelFx() => Anim.SetTrigger("Open");
 }

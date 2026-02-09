@@ -29,6 +29,7 @@ public class PlayerAnimHandler : MonoBehaviour
 
     public void Shoot() => GameEventManager.Instance.playerEvents.OnShoot.Raise();
     
+    
     public void UnLocked()
     {
         GameEventManager.Instance.playerEvents.OnLocked.Raise(false);

@@ -131,7 +131,6 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
     {
         PlayerControlState.SetLock(locked);
 
-
         _rb.isKinematic = PlayerControlState.AnyBlocked;
 
         if (locked && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot)))
