@@ -156,37 +156,50 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     {
         if (_anim == null) return;
 
+        // 1. Guardar estados
         bool wasWalking = _anim.parameterCount > 0 && _anim.GetBool("Walk");
         bool wasIdle = _anim.parameterCount > 0 && _anim.GetBool("Idle");
+        float currentSpeed = _anim.GetFloat("Speed");
 
+        // 2. APAGAR EL ANIMATOR (Esto destruye cualquier PlayableGraph residual)
+        _anim.enabled = false;
+
+        // 3. Cambiar Controller y Avatar
         switch (newSize)
         {
             case PlayerSize.Normal:
-                if (_controllerNormal != null) _anim.runtimeAnimatorController = _controllerNormal;
-                if (_avatarNormal != null) _anim.avatar = _avatarNormal;
-                _currentHandAnchor = _handAnchorNormal; // Actualizamos Anchor
+                _anim.runtimeAnimatorController = _controllerNormal;
+                _anim.avatar = _avatarNormal;
+                _currentHandAnchor = _handAnchorNormal;
                 break;
-
             case PlayerSize.Small:
-                if (_controllerSmall != null) _anim.runtimeAnimatorController = _controllerSmall;
-                if (_avatarSmall != null) _anim.avatar = _avatarSmall;
-                _currentHandAnchor = _handAnchorSmall; // Actualizamos Anchor
+                _anim.runtimeAnimatorController = _controllerSmall;
+                _anim.avatar = _avatarSmall;
+                _currentHandAnchor = _handAnchorSmall;
                 break;
-
             case PlayerSize.Head:
-                if (_controllerHead != null) _anim.runtimeAnimatorController = _controllerHead;
-                if (_avatarHead != null) _anim.avatar = _avatarHead;
-                _currentHandAnchor = _handAnchorHead; // Actualizamos Anchor
+                _anim.runtimeAnimatorController = _controllerHead;
+                _anim.avatar = _avatarHead;
+                _currentHandAnchor = _handAnchorHead;
                 break;
         }
 
+        // 4. ENCENDER Y REBIND
+        _anim.enabled = true;
+        _anim.Rebind(); 
+    
+        // 5. Restaurar parámetros
         if (_anim.runtimeAnimatorController != null)
         {
             _anim.SetBool("Walk", wasWalking);
             _anim.SetBool("Idle", wasIdle);
+            _anim.SetFloat("Speed", currentSpeed);
+        
+            // 6. FORZAR EVALUACIÓN (Truco final)
+            // Esto obliga al Animator a entrar al estado por defecto inmediatamente
+            _anim.Play(0, -1, 0f); 
         }
     }
-
     public void SetMoveSpeedVisual(float normalized)
     {
         if (_anim) _anim.SetFloat("Speed", normalized);
