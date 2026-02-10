@@ -32,9 +32,9 @@ public class PlayerAnimHandler : MonoBehaviour
     
     public void UnLocked()
     {
-        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("AnimHandler", false);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Smash", false);
         _ctx.View.Animator.SetBool("Smash", false);
     }
 
-    public void Locked() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise("AnimHandler", true);
+    public void Locked() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Smash", true);
 }

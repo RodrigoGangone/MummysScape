@@ -22,6 +22,7 @@ public class GameEventManager : MonoBehaviour
         public GameEvent OnHit;
         public GameEvent OnLocked;
         public GameEvent OnLockRequested;
+        public GameEvent OnWin;
     }
 
     [Serializable]

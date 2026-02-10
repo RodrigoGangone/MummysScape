@@ -5047,6 +5047,37 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!1 &640095860794665579
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8183560707422345618}
+  m_Layer: 0
+  m_Name: Target
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8183560707422345618
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 640095860794665579}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 39872551746159126}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &847758005088362047
 GameObject:
   m_ObjectHideFlags: 0
@@ -45536,6 +45567,7 @@ GameObject:
   - component: {fileID: 1703154566276700818}
   - component: {fileID: 1922525160810501105}
   - component: {fileID: 8327508785484449685}
+  - component: {fileID: 7163751912731866487}
   m_Layer: 0
   m_Name: Sarcofagus - Exit
   m_TagString: Untagged
@@ -45558,6 +45590,8 @@ Transform:
   m_Children:
   - {fileID: 6957642441395626522}
   - {fileID: 6156863897433214430}
+  - {fileID: 8183560707422345618}
+  - {fileID: 2963733336260352827}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &1703154566276700818
@@ -45579,8 +45613,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 1
-  m_Center: {x: 0, y: 0.5, z: 0}
+  m_Radius: 2
+  m_Center: {x: 0, y: 0.5, z: 0.37}
 --- !u!114 &1922525160810501105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45593,7 +45627,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f383d7247bf05949a4655c0644b1155, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isOpen: 0
+  enterLevel: 0
+  directorEnter: {fileID: 0}
+  directorExit: {fileID: 1162922022393787200}
+  moveDuration: 2
+  winTarget: {fileID: 8183560707422345618}
+  fakeMummy: {fileID: 0}
+  anim: {fileID: 4797485692898047505}
 --- !u!114 &8327508785484449685
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45608,8 +45648,123 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cameraFocusPos: {fileID: 6156863897433214430}
   cameraFocusLookAt: {fileID: 39872551746159126}
-  focusDuration: 10
+  focusDuration: 200
   onlyOnce: 1
+  zoomAmount: 3
+  zoomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &7163751912731866487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3721958170283911563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e52de21a22b6dd44c9cc19f810c65059, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Events:
+    m_Signals:
+    - {fileID: 11400000, guid: d91e7b9afd19596499919bd276fc9d39, type: 2}
+    - {fileID: 11400000, guid: cca92ff599de5b946b37f8373079af57, type: 2}
+    - {fileID: 11400000, guid: b584e2560de3ae346a3d70f2b4a6f5de, type: 2}
+    - {fileID: 11400000, guid: 854256da8e897ed43b0b08f053bae53c, type: 2}
+    - {fileID: 11400000, guid: 86a592e7e63f7304fa0228f34ea747b1, type: 2}
+    m_Events:
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1922525160810501105}
+          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
+          m_MethodName: LockPlayer
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 0}
+          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
+          m_MethodName: UnlockPlayer
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1922525160810501105}
+          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
+          m_MethodName: WinUI
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1922525160810501105}
+          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
+          m_MethodName: WinPlayer
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1922525160810501105}
+          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
+          m_MethodName: CloseAnim
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &4520043552121475871
 GameObject:
   m_ObjectHideFlags: 0
@@ -90469,54 +90624,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-  - eventName: PassedLevel
-    OnAnimationEvent:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1922525160810501105}
-          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
-          m_MethodName: PassedLevel
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - eventName: Unlocked
-    OnAnimationEvent:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1922525160810501105}
-          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
-          m_MethodName: UnLocked
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - eventName: Locked
-    OnAnimationEvent:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1922525160810501105}
-          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
-          m_MethodName: Locked
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
 --- !u!1 &7591693343624724272
 GameObject:
   m_ObjectHideFlags: 0
@@ -120646,6 +120753,59 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!1 &8909512501377831175
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2963733336260352827}
+  - component: {fileID: 1162922022393787200}
+  m_Layer: 0
+  m_Name: TimeLine - Exit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2963733336260352827
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8909512501377831175}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.7071063, z: -0, w: 0.70710737}
+  m_LocalPosition: {x: -4.699715, y: 0.83015907, z: 6.044921}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 39872551746159126}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!320 &1162922022393787200
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8909512501377831175}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: d1f440f875064164389d2505caa25be0, type: 2}
+  m_InitialState: 0
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings:
+  - key: {fileID: 7259522221103560354, guid: d1f440f875064164389d2505caa25be0, type: 2}
+    value: {fileID: 7163751912731866487}
+  - key: {fileID: -1468502494068362474, guid: d1f440f875064164389d2505caa25be0, type: 2}
+    value: {fileID: 0}
+  m_ExposedReferences:
+    m_References: []
 --- !u!1 &9191972055396532944
 GameObject:
   m_ObjectHideFlags: 0

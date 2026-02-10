@@ -112,6 +112,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
 
     // Invocado por HeadTimer al expirar (UnityEvent): mata al player.</summary>
     private void Kill() => _sm.ChangeState(PlayerStateId.Dead);
+    private void Win() => _sm.ChangeState(PlayerStateId.Win);
 
     public void OnPauseChanged(bool paused)
     {
@@ -145,6 +146,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
         GameEventManager.Instance.levelEvents.OnDeath.Register(Kill);
+        GameEventManager.Instance.playerEvents.OnWin.Register(Win);
     }
 
     private void OnDisable()
@@ -152,5 +154,6 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Kill);
+        GameEventManager.Instance.levelEvents.OnWin.Unregister(Win);
     }
 }

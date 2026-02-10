@@ -19,8 +19,6 @@ AnimatorState:
   - {fileID: 9058728522178573207}
   - {fileID: 4602796090331615618}
   - {fileID: 415761129003532888}
-  - {fileID: -7416971625128135164}
-  - {fileID: 5382404480615602103}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -92,20 +90,6 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!114 &-7416971625128135164
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  eventName: PassedLevel
-  triggerTime: 0.9
 --- !u!1107 &-7398321347302405901
 AnimatorStateMachine:
   serializedVersion: 6
@@ -171,7 +155,7 @@ AnimatorStateTransition:
   m_TransitionDuration: 0
   m_TransitionOffset: 0
   m_ExitTime: 0.75
-  m_HasExitTime: 1
+  m_HasExitTime: 0
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
@@ -232,13 +216,13 @@ AnimatorController:
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 0}
+    m_Controller: {fileID: 9100000}
   - m_Name: Close
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 0}
+    m_Controller: {fileID: 9100000}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Base Layer
@@ -375,20 +359,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: Explosion
   triggerTime: 0.831
---- !u!114 &5382404480615602103
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  eventName: Locked
-  triggerTime: 0
 --- !u!1102 &5580194167724007668
 AnimatorState:
   serializedVersion: 6

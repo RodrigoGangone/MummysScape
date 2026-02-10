@@ -12,8 +12,8 @@ public static class TransitionRules
     private static readonly IReadOnlyDictionary<PlayerStateId, PlayerStateId[]> _allowed =
         new Dictionary<PlayerStateId, PlayerStateId[]>
         {
-            { PlayerStateId.Idle,        new[]{ PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.Aim, PlayerStateId.Smash, PlayerStateId.DropBandage, PlayerStateId.Push, PlayerStateId.Attract, PlayerStateId.Swing, PlayerStateId.QuickTravel, PlayerStateId.KnockBack, PlayerStateId.Dead } },
-            { PlayerStateId.Walk,        new[]{ PlayerStateId.Idle, PlayerStateId.Fall, PlayerStateId.Aim, PlayerStateId.Smash, PlayerStateId.DropBandage, PlayerStateId.Push, PlayerStateId.Attract, PlayerStateId.Swing, PlayerStateId.QuickTravel, PlayerStateId.KnockBack,PlayerStateId.Dead } },
+            { PlayerStateId.Idle,        new[]{ PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.Aim, PlayerStateId.Smash, PlayerStateId.DropBandage, PlayerStateId.Push, PlayerStateId.Attract, PlayerStateId.Swing, PlayerStateId.QuickTravel, PlayerStateId.KnockBack, PlayerStateId.Win,PlayerStateId.Dead } },
+            { PlayerStateId.Walk,        new[]{ PlayerStateId.Idle, PlayerStateId.Fall, PlayerStateId.Aim, PlayerStateId.Smash, PlayerStateId.DropBandage, PlayerStateId.Push, PlayerStateId.Attract, PlayerStateId.Swing, PlayerStateId.QuickTravel, PlayerStateId.KnockBack, PlayerStateId.Win,PlayerStateId.Dead } },
             { PlayerStateId.Fall,        new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Swing, PlayerStateId.KnockBack, PlayerStateId.Dead } },
             { PlayerStateId.Aim,         new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.Shoot, PlayerStateId.KnockBack, PlayerStateId.Dead } },
             { PlayerStateId.Shoot,       new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.KnockBack,PlayerStateId.Dead} },

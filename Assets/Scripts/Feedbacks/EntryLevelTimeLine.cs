@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.Playables; // Necesario para apagar el director si quieres
+using UnityEngine.Playables;
 
 public class EntryLevelTimeLine : MonoBehaviour
 {
