@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.35058123, g: 0.2581356, b: 0.16618682, a: 1}
+  m_IndirectSpecularColor: {r: 0.3101084, g: 0.3992942, b: 0.41601688, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -30153,7 +30153,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 140013407}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.048866868, y: 0.9358217, z: -0.1437667, w: -0.3180895}
+  m_LocalRotation: {x: -0.048866868, y: 0.9358218, z: -0.1437667, w: -0.3180895}
   m_LocalPosition: {x: -7.1590366, y: 2, z: -15.330376}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -86245,7 +86245,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 650484943}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.030768834, y: -0.7505467, z: 0.03503411, w: 0.6591704}
+  m_LocalRotation: {x: 0.030768836, y: -0.7505467, z: 0.03503411, w: 0.6591704}
   m_LocalPosition: {x: 30.840963, y: 2, z: -20.330376}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -96317,7 +96317,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 731609601}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.38427606, y: -0.3600195, z: 0.1659277, w: 0.8337781}
+  m_LocalRotation: {x: 0.38427603, y: -0.36001948, z: 0.16592766, w: 0.8337781}
   m_LocalPosition: {x: -12.9262295, y: 2, z: -28.95356}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -175999,7 +175999,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1430523552}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.016463501, y: 0.93235743, z: -0.35861763, w: -0.04280288}
+  m_LocalRotation: {x: -0.016463494, y: 0.93235743, z: -0.35861763, w: -0.04280286}
   m_LocalPosition: {x: -32.386513, y: 19.63, z: -6.7161303}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -176066,7 +176066,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5291789114610156296, guid: e16a7b3cd0a6b1943b649d8895c52ce9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.886374
+      value: 3.89
       objectReference: {fileID: 0}
     - target: {fileID: 5291789114610156296, guid: e16a7b3cd0a6b1943b649d8895c52ce9, type: 3}
       propertyPath: m_LocalPosition.y
@@ -180961,6 +180961,31 @@ MonoBehaviour:
   cameraFocusLookAt: {fileID: 1470628465}
   focusDuration: 2
   onlyOnce: 1
+  zoomAmount: 3
+  zoomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!43 &1470765562
 Mesh:
   m_ObjectHideFlags: 0
