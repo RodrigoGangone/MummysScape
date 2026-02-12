@@ -77,12 +77,6 @@ public sealed class BoxPushAttract : MonoBehaviour
         {
             _wrapHandler.Wrap();
         }
-        else
-        {
-            // Si desactivamos la física, O activamos física pero sin vendas (Push),
-            // nos aseguramos de que esté desenredado (UnWrap).
-            _wrapHandler.UnWrap();
-        }
 
         // 2. Lógica Física (Constraints) - Se mantiene igual
         _rb.constraints = enabled ? FreeXZConstraints : IdleConstraints;

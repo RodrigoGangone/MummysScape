@@ -13,6 +13,8 @@ public sealed class AttractState : State, IBandageRestrictor
     // Variable para controlar el delay
     private float _moveUnlockTime;
 
+    private WrapHandler _currentWrapHandler;
+
     public AttractState(PlayerContext ctx) => _ctx = ctx;
 
     public override void OnEnter()
@@ -38,6 +40,8 @@ public sealed class AttractState : State, IBandageRestrictor
         // 3. Calculamos tiempos
         // Esperamos ese tiempo antes de mover la caja
         _moveUnlockTime = Time.time + 0.4f;
+
+        _currentWrapHandler = _box.GetComponent<WrapHandler>();
     }
 
     public override void OnExit()
@@ -48,6 +52,8 @@ public sealed class AttractState : State, IBandageRestrictor
         
         // Limpiamos visuales de la venda
         _ctx.View.StopBandage();
+        
+        _currentWrapHandler.UnWrap();
         
         _ctx.View.Animator.SetBool("Pull", false);
         _ctx.View.Animator.SetBool("PrePull", false);

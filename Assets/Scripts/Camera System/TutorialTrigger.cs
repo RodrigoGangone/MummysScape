@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Serialization;
 using UnityEngine.Video;
 using static PauseUtils;
 
@@ -20,6 +21,9 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     [SerializeField] private Vector3 centerOffsetA = Vector3.zero;
     [SerializeField] private Vector3 centerOffsetB = Vector3.zero;
 
+    [SerializeField] private FxBank _bank;
+    [SerializeField] private string keySound;
+    
     private BoxCollider _boxCollider;
     private bool _isPromptActive;
     private Coroutine _effectRoutine;
@@ -75,6 +79,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private void ExecuteTutorialSequence(float tutorialTime)
     {
         Debug.Log("TutorialTrigger");
+        _bank.Play2D(keySound);
         
         FocusManager.Instance.RequestTutorial(focusPoint);
 
@@ -97,6 +102,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     private void ToggleEffects(bool active)
     {
+        
         foreach (var brazier in braziers)
         {
             if (brazier == null) continue;

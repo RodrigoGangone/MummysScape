@@ -90499,6 +90499,11 @@ MonoBehaviour:
   fx5: {fileID: 8264986911990406777}
   fx6: {fileID: 4020235548729348076}
   fx7: {fileID: 3934005309146414980}
+  bank: {fileID: 11400000, guid: afccf22339aa59e41a1741026abaf3e2, type: 2}
+  keySound01: Destroy
+  keySound02: Open
+  keySound03: Mystic
+  keySound04: Fall
 --- !u!114 &4650535316902770501
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -90615,6 +90620,38 @@ MonoBehaviour:
         - m_Target: {fileID: 6357266839566988333}
           m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
           m_MethodName: PlayFx7
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: Destroy
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6357266839566988333}
+          m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
+          m_MethodName: PlaySound1
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: Closed
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6357266839566988333}
+          m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
+          m_MethodName: PlaySound2
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}

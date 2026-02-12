@@ -24,6 +24,8 @@ public class WrapHandler : MonoBehaviour
     [Header("Referencias")]
     [SerializeField] private Renderer[] _renderers;
 
+    [SerializeField] private FxBank bank;
+    
     private MaterialPropertyBlock _propBlock;
     private int _propID;
     private Coroutine _currentCoroutine;
@@ -47,6 +49,8 @@ public class WrapHandler : MonoBehaviour
         
         // Iniciamos corrutina hacia 1
         _currentCoroutine = StartCoroutine(AnimateToValue(_wrapValue, _wrapDuration));
+        
+        bank.Play3D("Wrap", transform.position);
     }
 
     [ContextMenu("UnWrap (1 -> 0)")]
@@ -56,6 +60,8 @@ public class WrapHandler : MonoBehaviour
         
         // Iniciamos corrutina hacia 0
         _currentCoroutine = StartCoroutine(AnimateToValue(_unwrapValue, _unwrapDuration));
+        
+        bank.Play3D("UnWrap", transform.position);
     }
 
     // Corrutina Genérica para ir de "Lo que sea que tenga ahora" -> "Objetivo"

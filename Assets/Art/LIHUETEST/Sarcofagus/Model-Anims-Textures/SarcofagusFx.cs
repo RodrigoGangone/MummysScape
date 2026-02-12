@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,6 +13,15 @@ public class SarcofagusFx : MonoBehaviour
     [SerializeField] private ParticleSystem fx6;
     [SerializeField] private ParticleSystem fx7;
 
+    [SerializeField] private FxBank bank;
+
+    [SerializeField] private string keySound01;
+    [SerializeField] private string keySound02;
+    [SerializeField] private string keySound03;
+    [SerializeField] private string keySound04;
+
+    private const string KEY_BOUNCE_SOUND = "Bounce";
+    
     private Portal Portal => GetComponentInParent<Portal>();
     
     public void PlayFx1()
@@ -31,6 +41,7 @@ public class SarcofagusFx : MonoBehaviour
     public void PlayFx4()
     {
         fx4.Play();
+        bank.Play2D(KEY_BOUNCE_SOUND);
     }
     
     public void PlayFx5()
@@ -47,4 +58,9 @@ public class SarcofagusFx : MonoBehaviour
     {
         fx7.Play();
     }
+
+    public void PlaySound1() => bank.Play2D(keySound01);
+    public void PlaySound2() => bank.Play2D(keySound02);
+    public void PlaySound3() => bank.Play2D(keySound03);
+    public void PlaySound4() => bank.Play2D(keySound04);
 }

@@ -81,7 +81,7 @@ public class FxEntry
 
     [Header("Ajustes de reproducción")]
     [Range(0f, 1f)] public float volume = 1f;
-    [Range(0.1f, 3f)] public float pitch = 1f;
+    [Range(0.1f, 5f)] public float pitch = 1f;
 
     [Header("3D")]
     public bool is3D = true;
