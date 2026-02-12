@@ -21,13 +21,14 @@ public class WaterSplash : MonoBehaviour
             _waterSplashFX.Play();
         }
 
-        if (other.gameObject.layer == LayerMask.NameToLayer("Pickable")) other.gameObject.SetActive(false);
+        if (other.gameObject.layer == LayerMask.NameToLayer("Pickable"))
+            other.gameObject.SetActive(false);
 
-        //if (!other.gameObject.CompareTag("PlayerFather")) return;
-        //
-        //_player = other.GetComponent<PlayerController>();
-        //
-        //if (_player.Ctx.Model.Size != 0)
-        //    _player.Ctx.Model.TryConsumeBandage(_player.Ctx.Model.Bandages);
+        if (other.gameObject.CompareTag("PlayerFather"))
+        {
+            _player = other.GetComponent<PlayerController>();
+
+            _player.Ctx.Model.TryConsumeBandage(_player.Ctx.Model.Bandages);
+        }
     }
 }

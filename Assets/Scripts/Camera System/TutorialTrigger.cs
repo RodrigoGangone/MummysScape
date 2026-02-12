@@ -21,24 +21,25 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     [SerializeField] private Vector3 centerOffsetB = Vector3.zero;
 
     private BoxCollider _boxCollider;
-    private bool _isSizeA = true;
     private bool _isPromptActive;
     private Coroutine _effectRoutine;
     private bool _paused;
     private bool _isPlaying;
+    
+    private bool IsTutorialAlreadySeen => Save.IsTutorialSeen(focusPoint.Id);
     
     private void Awake()
     {
         _boxCollider = GetComponent<BoxCollider>();
         _tutorialVideo = GetComponentInChildren<VideoPlayer>();
 
-        SetColliderShape(true);
+        SetColliderShape(!IsTutorialAlreadySeen);
         ToggleEffects(false);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("PlayerFather") || !_isSizeA) return;
+        if (!other.CompareTag("PlayerFather") || IsTutorialAlreadySeen) return;
 
         if (!Save.IsTutorialSeen(focusPoint.Id))
             ExecuteTutorialSequence(focusPoint.Time);
@@ -48,7 +49,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     private void OnTriggerStay(Collider other)
     {
-        if (!other.CompareTag("PlayerFather") || _isSizeA) return;
+        if (!other.CompareTag("PlayerFather") || !IsTutorialAlreadySeen) return;
 
         if (!_isPromptActive)
         {
@@ -113,7 +114,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     private void SetColliderShape(bool useSizeA)
     {
-        _isSizeA = useSizeA;
         _boxCollider.size = useSizeA ? sizeA : sizeB;
         _boxCollider.center = useSizeA ? centerOffsetA : centerOffsetB;
     }
@@ -128,9 +128,9 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private void OnDrawGizmos()
     {
         Gizmos.matrix = transform.localToWorldMatrix;
-        Gizmos.color = _isSizeA ? Color.green : new Color(0, 1, 0, 0.2f);
+        Gizmos.color = !IsTutorialAlreadySeen ? Color.green : new Color(0, 1, 0, 0.2f);
         Gizmos.DrawWireCube(centerOffsetA, sizeA);
-        Gizmos.color = !_isSizeA ? Color.yellow : new Color(1, 0.92f, 0.016f, 0.2f);
+        Gizmos.color = IsTutorialAlreadySeen ? Color.yellow : new Color(1, 0.92f, 0.016f, 0.2f);
         Gizmos.DrawWireCube(centerOffsetB, sizeB);
     }
 
