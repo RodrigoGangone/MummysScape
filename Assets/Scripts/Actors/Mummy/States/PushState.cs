@@ -19,8 +19,8 @@ public sealed class PushState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
-        _ctx.View.PlaySfx("Push01");
-        _ctx.View.PlaySfx("WalkPush");
+        _ctx.View.PlaySfx("Push02");
+        //_ctx.View.PlaySfx("WalkPush");
         
         Debug.Log("PushState!");
         if (!_ctx.TryGetPushTarget(out _box, out _, out _))

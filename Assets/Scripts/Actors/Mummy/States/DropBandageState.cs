@@ -18,6 +18,8 @@ public sealed class DropBandageState : State
 
     public override void OnEnter()
     {
+        Debug.Log("DropBandage State");
+        
         // 1. Chequeo de inventario
         if (!_ctx.Model.TryConsumeBandage())
         {

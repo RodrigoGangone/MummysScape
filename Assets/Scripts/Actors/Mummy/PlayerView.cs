@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Rendering.Universal;
@@ -7,9 +8,8 @@ using static PlayerEnum;
 
 public sealed class PlayerView : MonoBehaviour, IPausable
 {
-    [Header("Anim & FX")]
-    [SerializeField] private Animator _anim;
-    
+    [Header("Anim & FX")] [SerializeField] private Animator _anim;
+
     [SerializeField] private FxBank bankNormal;
     [SerializeField] private FxBank bankSmall;
     [SerializeField] private FxBank bankHead;
@@ -17,30 +17,32 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [SerializeField] private RuntimeAnimatorController _controllerNormal;
     [SerializeField] private RuntimeAnimatorController _controllerSmall;
     [SerializeField] private RuntimeAnimatorController _controllerHead;
-    
+
     [SerializeField] private Avatar _avatarNormal;
     [SerializeField] private Avatar _avatarSmall;
     [SerializeField] private Avatar _avatarHead;
 
-    [SerializeField] public ParticleSystem _shootFX;
     [SerializeField] public ParticleSystem _smashFX;
     [SerializeField] public ParticleSystem _dropFX;
 
-    [Header("Shoot Visual")]
-    [SerializeField] private GameObject _decal;
+    [Header("Shoot Visual")] [SerializeField]
+    private GameObject _decal;
+
     [SerializeField] private DecalProjector _rangeIndicator;
     [SerializeField] private LineRenderer _arcRenderer;
+
     [ColorUsage(true, true), SerializeField] private Color _aimAllowed;
-    [ColorUsage(true, true), SerializeField] private Color _aimNotAllowed;    
-    [Header("UI (opcional)")]
+    [ColorUsage(true, true), SerializeField] private Color _aimNotAllowed;
+
+    [Header("UI (opcional)")] 
+    
     [SerializeField] private Image _headTimerFill;
     [SerializeField] private Sprite _spriteHead;
     [SerializeField] private Sprite _spriteNormalOrSmall;
-
-    // --- NUEVO SISTEMA CENTRALIZADO DE VENDAS ---
-    [Header("Bandage Visuals System")]
-    [SerializeField] private LineRenderer _bandageLine;
     
+    [Header("Bandage Visuals System")] 
+    [SerializeField] private LineRenderer _bandageLine;
+
     [Header("Hand Anchors (Asignar transforms de las manos)")]
     [SerializeField] private Transform _handAnchorNormal;
     [SerializeField] private Transform _handAnchorSmall;
@@ -48,19 +50,20 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
     // Estado interno del Bandage
     private Transform _currentHandAnchor; // Se actualiza al cambiar de tamaño
-    private Transform _bandageTarget;     // El objeto al que nos pegamos
+    private Transform _bandageTarget; // El objeto al que nos pegamos
     private Vector3 _bandageTargetLocalOffset; // El punto exacto del golpe en local
     private bool _isBandageActive;
-    
+
     // Shader Logic
     private Coroutine _drawCoroutine;
-    private Material _bandageMatInst; 
+    private Material _bandageMatInst;
     private int _thresholdPropID;
     private const string THRESHOLD_NAME = "_rightThreshold";
     private const float MAT_START_VAL = 1.5f;
     private const float MAT_END_VAL = 0f;
 
-    private PlayerSize _currentSize = PlayerSize.Normal; // Tamaño por defecto
+    private PlayerSize _currentSize = PlayerSize.Normal; 
+    private FxBank _currentBank;
     
     public GameObject Decal => _decal;
     public DecalProjector RangeIndicator => _rangeIndicator;
@@ -68,23 +71,20 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     public Animator Animator => _anim;
     public Color AimAllowed => _aimAllowed;
     public Color AimNotAllowed => _aimNotAllowed;
-    public FxBank BankNormal => bankNormal;
-    public FxBank BankSmall => bankSmall;
-    public FxBank BankHead => bankHead;
 
     private void Awake()
     {
-        _currentSize = PlayerSize.Normal;
-        
+        _currentBank = bankNormal;
+
         _thresholdPropID = Shader.PropertyToID(THRESHOLD_NAME);
-        
+
         // Instanciamos material para poder modificarlo individualmente sin alterar el asset
         if (_bandageLine != null)
         {
-            _bandageMatInst = _bandageLine.material; 
+            _bandageMatInst = _bandageLine.material;
             _bandageLine.enabled = false;
         }
-        
+
         // Inicializamos el anchor por defecto (Normal)
         _currentHandAnchor = _handAnchorNormal;
     }
@@ -96,7 +96,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         if (_isBandageActive && _bandageLine != null && _currentHandAnchor != null && _bandageTarget != null)
         {
             _bandageLine.SetPosition(0, _currentHandAnchor.position);
-            
+
             // Calculamos el punto en mundo basado en el offset local 
             // (Esto permite que la linea siga al objeto si este rota o se mueve)
             Vector3 targetWorldPos = _bandageTarget.TransformPoint(_bandageTargetLocalOffset);
@@ -118,7 +118,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         _bandageTarget = targetTransform;
         // Guardamos el offset local para que la linea se pegue al objeto relativo a su rotación
         _bandageTargetLocalOffset = _bandageTarget.InverseTransformPoint(worldHitPoint);
-        
+
         _isBandageActive = true;
         _bandageLine.enabled = true;
 
@@ -131,8 +131,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     {
         _isBandageActive = false;
         _bandageTarget = null;
-        
-        if (_bandageLine != null) 
+
+        if (_bandageLine != null)
         {
             _bandageLine.enabled = false;
             // Reseteamos el material al estado invisible/inicial
@@ -141,24 +141,25 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
         if (_drawCoroutine != null) StopCoroutine(_drawCoroutine);
     }
-    
+
     private IEnumerator AnimateMaterialDraw(float duration)
     {
         if (!_bandageMatInst) yield break;
-        
+
         _bandageMatInst.SetFloat(_thresholdPropID, MAT_START_VAL);
         float time = 0f;
-        
+
         while (time < duration)
         {
             time += Time.deltaTime;
             float t = Mathf.Clamp01(time / duration);
             // Lerp inverso (de 1.5 a 0) asumiendo que el shader funciona así
             float val = Mathf.Lerp(MAT_START_VAL, MAT_END_VAL, t);
-            
+
             _bandageMatInst.SetFloat(_thresholdPropID, val);
             yield return null;
         }
+
         _bandageMatInst.SetFloat(_thresholdPropID, MAT_END_VAL);
     }
 
@@ -171,22 +172,12 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     /// <param name="position">Si se pasa posición, será 3D. Si es null, será 2D.</param>
     public void PlaySfx(string key, Vector3? position = null)
     {
-        FxBank currentBank = GetBankForCurrentSize();
-
-        if (currentBank == null)
-        {
-            Debug.LogWarning($"PlayerView: No hay un FxBank asignado para el tamaño {_currentSize}");
-            return;
-        }
-
+        if (_currentBank == null) _currentBank = GetBankForCurrentSize();
+        
         if (position.HasValue)
-        {
-            currentBank.Play3D(key, position.Value); //
-        }
+            _currentBank.Play3D(key, position.Value);
         else
-        {
-            currentBank.Play2D(key); //
-        }
+            _currentBank.Play2D(key);
     }
 
     /// <summary>
@@ -194,12 +185,17 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     /// </summary>
     public void StopSfx(string key)
     {
-        GetBankForCurrentSize()?.Stop(key); // Usando el método Stop que agregamos antes
+        if (_currentBank == null) _currentBank = GetBankForCurrentSize();
+        
+        _currentBank?.Stop(key);
     }
 
-    private FxBank GetBankForCurrentSize()
+    private FxBank GetBankForCurrentSize(PlayerSize? size = null)
     {
-        return _currentSize switch
+        // Si no pasamos un tamaño, usamos el actual
+        PlayerSize targetSize = size ?? _currentSize; 
+
+        return targetSize switch
         {
             PlayerSize.Normal => bankNormal,
             PlayerSize.Small  => bankSmall,
@@ -207,12 +203,10 @@ public sealed class PlayerView : MonoBehaviour, IPausable
             _                 => null
         };
     }
-    
+
     // ---------------- SIZE ----------------
     private void OnSizeChanged(PlayerSize newSize)
     {
-        _currentSize = newSize;
-        
         if (_anim == null) return;
 
         // 1. Guardar estados
@@ -245,20 +239,23 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
         // 4. ENCENDER Y REBIND
         _anim.enabled = true;
-        _anim.Rebind(); 
-    
+        _anim.Rebind();
+        _currentSize = newSize; // Actualizamos el estado interno
+        _currentBank = GetBankForCurrentSize(newSize); // ASIGNAMOS el nuevo banco 👈
+        
         // 5. Restaurar parámetros
         if (_anim.runtimeAnimatorController != null)
         {
             _anim.SetBool("Walk", wasWalking);
             _anim.SetBool("Idle", wasIdle);
             _anim.SetFloat("Speed", currentSpeed);
-        
+
             // 6. FORZAR EVALUACIÓN (Truco final)
             // Esto obliga al Animator a entrar al estado por defecto inmediatamente
-            _anim.Play(0, -1, 0f); 
+            _anim.Play(0, -1, 0f);
         }
     }
+
     public void SetMoveSpeedVisual(float normalized)
     {
         if (_anim) _anim.SetFloat("Speed", normalized);
@@ -305,7 +302,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         _dropFX.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         _dropFX.Play();
     }
-    
+
     // ---------------- PAUSE ----------------
     public void OnPauseChanged(bool paused) => _anim.enabled = !paused;
 
