@@ -41,6 +41,8 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
     [Header("Animaciones")]
     [SerializeField] Animator _animator;
 
+    [SerializeField] private FxBank bank;
+    
     [Tooltip("Referencia al componente que genera el temblor.")] [SerializeField]
     private CinemachineImpulseSource _impulseSource; 
     [SerializeField] float _shakeForce = 0.2f; 
@@ -178,7 +180,11 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
             SnapByBandages(count);
             return;
         }
-
+        
+        // --- SONIDOS DE VENDAS ---
+        if (count < _lastBandages) bank.Play2D("UnWrap");
+        else if (count > _lastBandages) bank.Play2D("Wrap");
+        
         if (count == 0 && _lastBandages > 0) StartCountdown();
         else if (count > 0 && _lastBandages == 0) ResetAndFill();
 
@@ -190,6 +196,8 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
         _animator.SetTrigger("Death");
         ExplosionPlay();
 
+        bank.Play2D("Break");
+        
         // Al finalizar: ocultar líquidos y baseSand
         SetLiquidsVisible(false);
         SetBaseSandActive(false);
@@ -219,6 +227,8 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
         SetLiquidsVisible(true);
         SetBaseSandActive(false);
 
+        bank.Play2D("Refill");
+        
         BeginAnim(_fillTop, 1f, _resetDuration);
         HeartbeatStop();
         FxReset();
@@ -283,6 +293,8 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
             _beatTimer = 0f; 
             _pulsing = true; 
             _pulseTimer = 0f; 
+            
+            bank.Play2D("Beat");
             
             if (_impulseSource != null)
             {

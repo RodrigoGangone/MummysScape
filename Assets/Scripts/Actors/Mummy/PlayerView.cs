@@ -9,6 +9,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 {
     [Header("Anim & FX")]
     [SerializeField] private Animator _anim;
+    [SerializeField] private FxBank bank;
 
     [SerializeField] private RuntimeAnimatorController _controllerNormal;
     [SerializeField] private RuntimeAnimatorController _controllerSmall;
