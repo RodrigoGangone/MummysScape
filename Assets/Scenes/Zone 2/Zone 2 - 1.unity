@@ -15322,6 +15322,8 @@ MonoBehaviour:
   sizeB: {x: 2, y: 1, z: 2}
   centerOffsetA: {x: 31, y: -15, z: 10}
   centerOffsetB: {x: 32.5, y: -15, z: 10}
+  _bank: {fileID: 0}
+  keySound: 
 --- !u!65 &78128140
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -58590,7 +58592,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 319819715}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.11942458, y: 0.86949205, z: -0.25644463, w: -0.40491673}
+  m_LocalRotation: {x: -0.11942462, y: 0.86949205, z: -0.2564446, w: -0.40491682}
   m_LocalPosition: {x: -7.2960825, y: 19.63, z: 17.01096}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -71954,7 +71956,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 393443175}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3994272, y: 0.057879783, z: -0.025277823, w: 0.9145867}
+  m_LocalRotation: {x: 0.39942718, y: 0.05787973, z: -0.025277795, w: 0.9145868}
   m_LocalPosition: {x: -2.9478607, y: 10.5, z: -13.938648}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -127703,6 +127705,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2442568577347922546, guid: 85b86eaa77319624ebb615633fe77905, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 1115208572919146520, guid: 40057147eadf3b4458da33b27456b085, type: 3}
     - target: {fileID: 2559967442267692841, guid: 85b86eaa77319624ebb615633fe77905, type: 3}
       propertyPath: m_LocalPosition.x
       value: 18.124146
@@ -127739,6 +127745,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2724243530913219937, guid: 85b86eaa77319624ebb615633fe77905, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 1dabfbafefd1440478057af3858e1676, type: 2}
     - target: {fileID: 3607539109565231605, guid: 85b86eaa77319624ebb615633fe77905, type: 3}
       propertyPath: m_Name
       value: Hippo Duo
@@ -149525,7 +149535,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 806379657}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.2486789, y: 0.7464931, z: -0.38456836, w: -0.48271537}
+  m_LocalRotation: {x: -0.24867891, y: 0.7464931, z: -0.3845683, w: -0.48271543}
   m_LocalPosition: {x: 5.762701, y: 8.4, z: 1.3641872}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -389964,6 +389974,8 @@ MonoBehaviour:
   sizeB: {x: 1, y: 1, z: 2}
   centerOffsetA: {x: 31, y: -15, z: 10}
   centerOffsetB: {x: 32.5, y: -15, z: 10}
+  _bank: {fileID: 0}
+  keySound: 
 --- !u!65 &2080369231
 BoxCollider:
   m_ObjectHideFlags: 0

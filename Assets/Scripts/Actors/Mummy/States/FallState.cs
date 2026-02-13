@@ -68,6 +68,7 @@ public class FallState : State, IBandageRestrictor
 
     public override void OnExit()
     {
+        _ctx.View.PlaySfx("Fall");
         _ctx.View.Animator.SetBool("Fall", false);
     }
 }

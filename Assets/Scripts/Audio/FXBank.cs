@@ -43,31 +43,33 @@ public class FxBank : ScriptableObject
         _lookup.TryGetValue(key, out var entry);
         return entry;
     }
-    
+
     public void Play2D(string key)
     {
         var entry = Get(key);
-        if (entry == null || entry.clip == null)
-            return;
+        if (entry == null || entry.clip == null) return;
 
-        AudioManager.Instance.PlayClip2D(entry.clip, bus, entry.volume, entry.pitch);
+        AudioManager.Instance.PlayClip2D(entry.clip, bus, key, entry.volume, entry.pitch, entry.loop);
     }
 
     public void Play3D(string key, Vector3 position)
     {
         var entry = Get(key);
-        if (entry == null || entry.clip == null)
-            return;
+        if (entry == null || entry.clip == null) return;
 
-        AudioManager.Instance.PlayClip3D(
-            entry.clip,
-            bus,
-            position,
-            entry.volume,
-            entry.pitch,
-            entry.is3D ? entry.spatialBlend : 0f,
-            entry.maxDistance
-        );
+        AudioManager.Instance.PlayClip3D(entry.clip, bus, key, position, entry.volume, entry.pitch, entry.loop,
+            entry.is3D ? entry.spatialBlend : 0f, entry.maxDistance);
+    }
+
+    /// <summary>
+    /// Detiene el sonido asociado a esta key si está en loop.
+    /// </summary>
+    public void Stop(string key)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.StopLoop(key);
+        }
     }
 }
 
@@ -79,12 +81,13 @@ public class FxEntry
 
     public AudioClip clip;
 
-    [Header("Ajustes de reproducción")]
-    [Range(0f, 1f)] public float volume = 1f;
-    [Range(0.1f, 5f)] public float pitch = 1f;
+    [Header("Ajustes de reproducción")] [Range(0f, 1f)]
+    public float volume = 1f;
 
-    [Header("3D")]
-    public bool is3D = true;
+    [Range(0.1f, 5f)] public float pitch = 1f;
+    public bool loop;
+
+    [Header("3D")] public bool is3D = true;
     [Range(0f, 1f)] public float spatialBlend = 1f;
     public float maxDistance = 20f;
 }

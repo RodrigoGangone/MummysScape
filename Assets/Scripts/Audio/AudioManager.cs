@@ -6,11 +6,12 @@ public sealed class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
 
-    [Header("Configuración")]
-    [SerializeField] private AudioSettings _settings;
+    [Header("Configuración")] [SerializeField]
+    private AudioSettings _settings;
 
-    [Header("AudioSources 2D")]
-    [SerializeField] private AudioSource _musicSource;
+    [Header("AudioSources 2D")] [SerializeField]
+    private AudioSource _musicSource;
+
     [SerializeField] private AudioSource _ambienceSource;
     [SerializeField] private AudioSource _uiSource;
     [SerializeField] private AudioSource _sfx2DSource;
@@ -18,8 +19,9 @@ public sealed class AudioManager : MonoBehaviour
 
     private Dictionary<AudioBus, BusConfig> _busLookup;
     private readonly Dictionary<AudioBus, float> _busVolumes = new();
+    private readonly Dictionary<string, AudioSource> _activeLoops = new Dictionary<string, AudioSource>();
 
-    private void Awake() 
+    private void Awake()
     {
         // Singleton simple
         if (Instance != null && Instance != this)
@@ -102,7 +104,7 @@ public sealed class AudioManager : MonoBehaviour
 
         return null;
     }
-    
+
     #endregion
 
     #region Play 2D
@@ -110,10 +112,13 @@ public sealed class AudioManager : MonoBehaviour
     /// <summary>
     /// Reproduce un clip 2D en el bus indicado.
     /// </summary>
-    public void PlayClip2D(AudioClip clip, AudioBus bus, float volume = 1f, float pitch = 1f)
+    public void PlayClip2D(AudioClip clip, AudioBus bus, string key, float volume = 1f, float pitch = 1f,
+        bool loop = false)
     {
         if (clip == null)
             return;
+
+        StopLoop(key);
 
         AudioSource src = null;
 
@@ -136,19 +141,34 @@ public sealed class AudioManager : MonoBehaviour
                 break;
         }
 
-        if (src == null) 
+        if (src == null)
         {
             Debug.LogWarning($"AudioManager: No hay AudioSource asignado para el bus {bus}");
             return;
         }
 
-        src.pitch = pitch;
-
-        // Para música/ambiente suele ser mejor asignar clip y Play normal.
-        if (bus == AudioBus.Music || bus == AudioBus.Ambient)
+        if (loop)
         {
             src.clip = clip;
-            src.loop = true; // ajustalo según tu caso
+            src.loop = true;
+            src.volume = volume;
+            src.pitch = pitch;
+            src.Play();
+            _activeLoops[key] = src; // Registramos el loop
+        }
+        else
+        {
+            src.PlayOneShot(clip, volume);
+        }
+
+        src.pitch = pitch;
+        src.loop = loop;
+
+        // Para música/ambiente suele ser mejor asignar clip y Play normal.
+        if (loop || bus == AudioBus.Music || bus == AudioBus.Ambient)
+        {
+            src.clip = clip;
+            src.loop = loop; // ajustalo según tu caso
             src.volume = volume;
             src.Play();
         }
@@ -165,51 +185,69 @@ public sealed class AudioManager : MonoBehaviour
     /// <summary>
     /// Crea un AudioSource 3D temporal en la posición indicada y lo destruye al terminar.
     /// </summary>
-    public void PlayClip3D(
-        AudioClip clip,
-        AudioBus bus,
-        Vector3 position,
-        float volume = 1f,
-        float pitch = 1f,
-        float spatialBlend = 1f,
-        float maxDistance = 20f
-    )
+    public void PlayClip3D(AudioClip clip, AudioBus bus, string key, Vector3 position, float volume = 1f,
+        float pitch = 1f, bool loop = false, float spatialBlend = 1f, float maxDistance = 20f)
     {
-        if (clip == null)
-            return;
+        if (clip == null) return;
+        StopLoop(key);
 
-        var go = new GameObject($"OneShot3D_{clip.name}");
+        var go = new GameObject($"Loop3D_{key}");
         go.transform.position = position;
-
         var src = go.AddComponent<AudioSource>();
+
         src.clip = clip;
+        src.loop = loop;
         src.volume = volume;
         src.pitch = pitch;
         src.spatialBlend = spatialBlend;
         src.maxDistance = maxDistance;
-        src.rolloffMode = AudioRolloffMode.Linear;
 
-        // Asignar el mixer group según el bus
-        if (_busLookup != null && _busLookup.TryGetValue(bus, out var config) && config.mixerGroup != null)
-        {
+        if (_busLookup.TryGetValue(bus, out var config))
             src.outputAudioMixerGroup = config.mixerGroup;
-        } 
 
         src.Play();
-        Destroy(go, clip.length + 0.5f);
-        
-        Debug.Log("PlaySoundFx3D");
+
+        if (loop)
+        {
+            _activeLoops[key] = src;
+        }
+        else
+        {
+            Destroy(go, clip.length + 0.1f);
+        }
     }
 
     #endregion
+
+    /// <summary>
+    /// Detiene un sonido loopeable activo por su key.
+    /// </summary>
+    public void StopLoop(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return;
+
+        if (_activeLoops.TryGetValue(key, out AudioSource src))
+        {
+            if (src != null)
+            {
+                src.Stop();
+                // Si es un objeto 3D temporal creado por PlayClip3D, destruimos el GameObject
+                if (src.gameObject.name.StartsWith("Loop3D_"))
+                {
+                    Destroy(src.gameObject);
+                }
+            }
+            _activeLoops.Remove(key);
+        }
+    }
     
     private void Assign2DSourcesToMixerGroups()
     {
-        AssignSourceToBus(_musicSource,    AudioBus.Music);
+        AssignSourceToBus(_musicSource, AudioBus.Music);
         AssignSourceToBus(_ambienceSource, AudioBus.Ambient);
-        AssignSourceToBus(_uiSource,       AudioBus.UI);
-        AssignSourceToBus(_sfx2DSource,    AudioBus.Sfx);
-        AssignSourceToBus(_voiceSource,    AudioBus.Voice);
+        AssignSourceToBus(_uiSource, AudioBus.UI);
+        AssignSourceToBus(_sfx2DSource, AudioBus.Sfx);
+        AssignSourceToBus(_voiceSource, AudioBus.Voice);
     }
 
     private void AssignSourceToBus(AudioSource src, AudioBus bus)
@@ -221,5 +259,4 @@ public sealed class AudioManager : MonoBehaviour
         if (group != null)
             src.outputAudioMixerGroup = group;
     }
-
 }

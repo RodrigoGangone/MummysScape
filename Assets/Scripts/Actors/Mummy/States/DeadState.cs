@@ -9,6 +9,8 @@ public class DeadState : State, IBandageRestrictor
     
     public override void OnEnter() 
     {
+        _ctx.View.PlaySfx("Death");
+        
         _ctx.View.Animator.SetTrigger("Death");
         //GameEventManager.Instance.levelEvents.OnDeath.Raise();
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Death", true);

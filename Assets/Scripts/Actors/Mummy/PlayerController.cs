@@ -11,7 +11,7 @@ using static PlayerEnum;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputStateDriver))]
 [RequireComponent(typeof(GroundCheckRuntime))]
-public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
+public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
 {
     [Header("Refs (Scene/Prefab)")] [SerializeField]
     private PlayerView _view;

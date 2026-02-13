@@ -9,7 +9,10 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 {
     [Header("Anim & FX")]
     [SerializeField] private Animator _anim;
-    [SerializeField] private FxBank bank;
+    
+    [SerializeField] private FxBank bankNormal;
+    [SerializeField] private FxBank bankSmall;
+    [SerializeField] private FxBank bankHead;
 
     [SerializeField] private RuntimeAnimatorController _controllerNormal;
     [SerializeField] private RuntimeAnimatorController _controllerSmall;
@@ -57,15 +60,22 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     private const float MAT_START_VAL = 1.5f;
     private const float MAT_END_VAL = 0f;
 
+    private PlayerSize _currentSize = PlayerSize.Normal; // Tamaño por defecto
+    
     public GameObject Decal => _decal;
     public DecalProjector RangeIndicator => _rangeIndicator;
     public LineRenderer ArcRenderer => _arcRenderer;
     public Animator Animator => _anim;
     public Color AimAllowed => _aimAllowed;
     public Color AimNotAllowed => _aimNotAllowed;
+    public FxBank BankNormal => bankNormal;
+    public FxBank BankSmall => bankSmall;
+    public FxBank BankHead => bankHead;
 
     private void Awake()
     {
+        _currentSize = PlayerSize.Normal;
+        
         _thresholdPropID = Shader.PropertyToID(THRESHOLD_NAME);
         
         // Instanciamos material para poder modificarlo individualmente sin alterar el asset
@@ -152,9 +162,57 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         _bandageMatInst.SetFloat(_thresholdPropID, MAT_END_VAL);
     }
 
+    // ---------------- AUDIO ----------------
+
+    /// <summary>
+    /// Reproduce un sonido del banco correspondiente al tamaño actual del jugador.
+    /// </summary>
+    /// <param name="key">La clave del sonido en el FxBank</param>
+    /// <param name="position">Si se pasa posición, será 3D. Si es null, será 2D.</param>
+    public void PlaySfx(string key, Vector3? position = null)
+    {
+        FxBank currentBank = GetBankForCurrentSize();
+
+        if (currentBank == null)
+        {
+            Debug.LogWarning($"PlayerView: No hay un FxBank asignado para el tamaño {_currentSize}");
+            return;
+        }
+
+        if (position.HasValue)
+        {
+            currentBank.Play3D(key, position.Value); //
+        }
+        else
+        {
+            currentBank.Play2D(key); //
+        }
+    }
+
+    /// <summary>
+    /// Detiene un sonido loopeable usando la clave del tamaño actual.
+    /// </summary>
+    public void StopSfx(string key)
+    {
+        GetBankForCurrentSize()?.Stop(key); // Usando el método Stop que agregamos antes
+    }
+
+    private FxBank GetBankForCurrentSize()
+    {
+        return _currentSize switch
+        {
+            PlayerSize.Normal => bankNormal,
+            PlayerSize.Small  => bankSmall,
+            PlayerSize.Head   => bankHead,
+            _                 => null
+        };
+    }
+    
     // ---------------- SIZE ----------------
     private void OnSizeChanged(PlayerSize newSize)
     {
+        _currentSize = newSize;
+        
         if (_anim == null) return;
 
         // 1. Guardar estados

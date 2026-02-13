@@ -21,6 +21,8 @@ public sealed class AttractState : State, IBandageRestrictor
     {
         Debug.Log("AttractState!");
         
+        _ctx.View.PlaySfx("Shoot");
+        
         _ctx.View.Animator.SetBool("PrePull", true);
         
         if (!_ctx.TryGetAttractTarget(out _box))

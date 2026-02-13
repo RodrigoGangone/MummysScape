@@ -12,19 +12,22 @@ public sealed class WalkState : State
 
     public override void OnEnter()
     {
+        _ctx.View.PlaySfx("Walk");
         _ctx.View.Animator.SetBool("Walk", true);
-        
         // Matamos la inercia física al entrar para tener control total inmediato
         _ctx.Rb.velocity = Vector3.zero; 
     }
 
     public override void OnExit()
     {
+        _ctx.View.StopSfx("Walk");
         _ctx.View.Animator.SetBool("Walk", false);
     }
 
 public override void OnFixedUpdate()
 {
+    Debug.Log("WalkState");
+    
     Vector2 mv = _ctx.Input.Move;
     
     // Si no hay input, frenamos inmediatamente.
