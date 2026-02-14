@@ -19,8 +19,8 @@ public sealed class PushState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
-        _ctx.View.PlaySfx("Push02");
-        //_ctx.View.PlaySfx("WalkPush");
+        //_ctx.View.PlaySfx("Push02");
+        _ctx.View.PlaySfx("WalkPush");
         
         Debug.Log("PushState!");
         if (!_ctx.TryGetPushTarget(out _box, out _, out _))
@@ -33,13 +33,14 @@ public sealed class PushState : State, IBandageRestrictor
     
         // CAMBIO AQUÍ: true = mover física, false = SIN vendas
         _box.SetPushAttractMode(true, false); 
-        
+        _box.bank.Play3D("MoveBox", _box.transform.position);
         _ctx.View.Animator.SetBool("Push", true);
     }
 
     public override void OnExit()
     {
         _box?.StopImmediate();
+        _box.bank.Stop("MoveBox");
         // Al salir, desactivamos física. El segundo parámetro da igual (por defecto true), 
         // porque al ser enabled=false, la lógica visual hará UnWrap de todas formas.
         _box?.SetPushAttractMode(false); 

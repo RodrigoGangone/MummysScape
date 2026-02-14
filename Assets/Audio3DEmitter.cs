@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[DisallowMultipleComponent]
 public class Audio3DEmitter : MonoBehaviour
 {
     [Header("Bank")]

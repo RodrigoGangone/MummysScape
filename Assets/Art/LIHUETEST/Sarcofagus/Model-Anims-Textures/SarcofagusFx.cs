@@ -19,6 +19,7 @@ public class SarcofagusFx : MonoBehaviour
     [SerializeField] private string keySound02;
     [SerializeField] private string keySound03;
     [SerializeField] private string keySound04;
+    [SerializeField] private string keySound05;
 
     private const string KEY_BOUNCE_SOUND = "Bounce";
     
@@ -63,4 +64,5 @@ public class SarcofagusFx : MonoBehaviour
     public void PlaySound2() => bank.Play2D(keySound02);
     public void PlaySound3() => bank.Play2D(keySound03);
     public void PlaySound4() => bank.Play2D(keySound04);
+    public void PlaySound5() => bank.Play2D(keySound05);
 }

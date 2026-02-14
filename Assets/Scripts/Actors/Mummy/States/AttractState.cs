@@ -33,6 +33,7 @@ public sealed class AttractState : State, IBandageRestrictor
 
         // 1. Iniciamos la física de la caja
         _box.SetPushAttractMode(true, true);
+        _box.bank.Play3D("MoveBox", _box.transform.position);
         
         // 2. Iniciamos VISUAL de la venda (Reutilizamos la View)
         // Le mandamos el transform de la caja y su posición central
@@ -49,6 +50,7 @@ public sealed class AttractState : State, IBandageRestrictor
     public override void OnExit()
     {
         _box?.StopImmediate();
+        _box.bank.Stop("MoveBox");
         _box?.SetPushAttractMode(false); // Esto dispara el UnWrap
         _box = null;
         

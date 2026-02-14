@@ -13,6 +13,7 @@ AnimatorState:
   m_Transitions: []
   m_StateMachineBehaviours:
   - {fileID: -2029459984841259517}
+  - {fileID: -2969885565126023028}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -49,6 +50,20 @@ AnimatorStateMachine:
   m_ExitPosition: {x: 800, y: 120, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: -8013534729096832249}
+--- !u!114 &-2969885565126023028
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: Gibberish
+  triggerTime: 0.55
 --- !u!114 &-2029459984841259517
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -61,8 +76,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventName: 
-  triggerTime: 1
+  eventName: Plaf
+  triggerTime: 0.45
 --- !u!91 &9100000
 AnimatorController:
   m_ObjectHideFlags: 0

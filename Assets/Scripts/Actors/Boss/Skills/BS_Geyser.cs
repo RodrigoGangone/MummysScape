@@ -11,7 +11,7 @@ public class BS_Geyser : BossSkillSO
 
     [Header("FX de viaje")]
     [SerializeField] private ParticleSystem travelParticlesPrefab;
-    [Min(0.1f)] [SerializeField] private float travelSpeed = 10f;
+    [Min(0.1f)] [SerializeField] private float travelSpeed = 10f; 
 
     private GeyserPointProvider Provider => FindObjectOfType<GeyserPointProvider>();
 
@@ -70,6 +70,7 @@ public class BS_Geyser : BossSkillSO
                 foreach (var g in selection.Where(g => g != null)) g.ActivateIntenseMode(null);
             });
 
+        
         // El estado puede salir aquí; el FX continúa en background.
     }
 

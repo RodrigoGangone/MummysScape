@@ -17,6 +17,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     [SerializeField] private PlayerController player;
     [SerializeField] private Animator animator;
+    [SerializeField] private FxBank bank;
     [SerializeField] public FocusOnActivation focus;
     
     [Header("FSM")] public StateMachinePlayer stateMachine;
@@ -29,6 +30,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     // IBossContext
     public Transform Transform => transform;
     public Animator Animator => animator;
+    public FxBank Bank => bank;
     public PlayerContext Player => player.Ctx;
     public int CurrentStageIndex => _stageIndex;
     public BossConfigSO Config => config;

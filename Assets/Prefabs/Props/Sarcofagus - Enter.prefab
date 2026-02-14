@@ -40715,8 +40715,6 @@ PlayableDirector:
     value: {fileID: 8494411703232438533}
   - key: {fileID: -6085686901025820330, guid: ac2d80d38b3c8164384257a5d46d8f63, type: 2}
     value: {fileID: 706550166425417461}
-  - key: {fileID: -5824838204944140532, guid: ac2d80d38b3c8164384257a5d46d8f63, type: 2}
-    value: {fileID: 0}
   m_ExposedReferences:
     m_References: []
 --- !u!1 &3272508662834399403
@@ -90485,6 +90483,7 @@ MonoBehaviour:
   keySound02: Open
   keySound03: Reveal
   keySound04: Fall
+  keySound05: Shake
 --- !u!114 &4650535316902770501
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -90665,6 +90664,22 @@ MonoBehaviour:
         - m_Target: {fileID: 6357266839566988333}
           m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
           m_MethodName: PlaySound4
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: Sound5
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6357266839566988333}
+          m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
+          m_MethodName: PlaySound5
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -125924,6 +125939,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 52055310635e501499da94f930a84009, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1151622932787023655}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 52055310635e501499da94f930a84009, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2280122318148471390}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 52055310635e501499da94f930a84009, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7433708795819764916}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 52055310635e501499da94f930a84009, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1292017422379990937}
   m_SourcePrefab: {fileID: 100100000, guid: 52055310635e501499da94f930a84009, type: 3}
 --- !u!1 &8494411703232438533 stripped
 GameObject:
@@ -125951,6 +125975,89 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &2280122318148471390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8494411703232438533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a1199243ee0d664892dbed486eab9a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animationEvents:
+  - eventName: Plaf
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 7433708795819764916}
+          m_TargetAssemblyTypeName: Audio3DEmitter, Assembly-CSharp
+          m_MethodName: Play
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: Gibberish
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1292017422379990937}
+          m_TargetAssemblyTypeName: Audio3DEmitter, Assembly-CSharp
+          m_MethodName: Play
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+--- !u!114 &7433708795819764916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8494411703232438533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86d765dceeae00d4d99e352683cb1905, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _bank: {fileID: 11400000, guid: c03db0b43baca814689d987b18ba92ee, type: 2}
+  _key: Plaf
+  _loop: 0
+  _playOnStart: 0
+  _drawGizmos: 1
+  _extraRadius: 0
+  _gizmoColor: {r: 1, g: 0.6, b: 0, a: 0.25}
+--- !u!114 &1292017422379990937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8494411703232438533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86d765dceeae00d4d99e352683cb1905, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _bank: {fileID: 11400000, guid: c03db0b43baca814689d987b18ba92ee, type: 2}
+  _key: Gibberish
+  _loop: 0
+  _playOnStart: 0
+  _drawGizmos: 1
+  _extraRadius: 0
+  _gizmoColor: {r: 1, g: 0.6, b: 0, a: 0.25}
 --- !u!4 &8942436564657069565 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 376812584562803113, guid: 52055310635e501499da94f930a84009, type: 3}
