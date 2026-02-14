@@ -136,21 +136,25 @@ public class UIManager : MonoBehaviour
         _endGamePanel.SetActive(true);
 
         // 1. Configurar Botones
-        // Retry y Menu siempre activos
         _btnEndGameRetry.gameObject.SetActive(true);
         _btnEndGameMenu.gameObject.SetActive(true);
 
-        // Next Level solo activo si ganamos Y no es el último nivel (asumiendo MAX_LVLS = 3)
-        bool showNextButton = isWin && (levelIndex < 3); // Cambia 3 por Utils.MAX_LVLS si tienes la const
+        // SOLUCIÓN: Comparamos si el siguiente índice existe en el Build Settings
+        // SceneManager.sceneCountInBuildSettings nos da el total de escenas.
+        int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
+        bool hasNextLevel = nextSceneIndex < SceneManager.sceneCountInBuildSettings;
+
+        // Solo mostramos el botón si ganamos Y hay una escena a la cual ir
+        bool showNextButton = isWin && hasNextLevel; 
         _btnEndGameNextLvl.gameObject.SetActive(showNextButton);
 
-        // 2. Configurar Animator (Titulo / Decoración)
+        // 2. Configurar Animator...
         if (isWin)
         {
             _mummyUI.SetTrigger("Win");
-            // Si el botón Next no está (juego terminado), seleccionamos Menu o Retry
-            var firstSelect = showNextButton ? _btnEndGameNextLvl : _btnEndGameMenu;
-            SetSelected(_winFirstSelected ?? firstSelect);
+            // Si no hay siguiente nivel, seleccionamos el menú por defecto
+            Selectable first = showNextButton ? _btnEndGameNextLvl : _btnEndGameMenu;
+            SetSelected(first);
         }
         else
         {
@@ -158,10 +162,8 @@ public class UIManager : MonoBehaviour
             SetSelected(_loseFirstSelected ?? _btnEndGameRetry);
         }
 
-        // 3. Iniciar Animación de Gemas
         StartCoroutine(EndGameUIFlow());
     }
-
     private IEnumerator EndGameUIFlow()
     {
         // A. Reset Inicial
