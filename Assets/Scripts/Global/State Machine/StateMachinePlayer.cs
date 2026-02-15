@@ -54,4 +54,30 @@ public class StateMachinePlayer : MonoBehaviour
     {
         return _currentState is T;
     }
+    
+    private void OnEnable()
+    {
+        // Usamos el tipo <PlayerSize> porque el evento envía el nuevo tamaño
+        GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerEnum.PlayerSize>(OnSizeChangedHandler);
+    }
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerEnum.PlayerSize>(OnSizeChangedHandler);
+    }
+
+// El método DEBE recibir el PlayerSize aunque no lo uses directamente aquí, 
+// ya que el Guard consultará el context.Model.Size actualizado.
+    private void OnSizeChangedHandler(PlayerEnum.PlayerSize newSize)
+    {
+        if (_currentState == null || _guard == null) return;
+
+        // Validamos: ¿Es legal estar en '_currentId' con el 'newSize' que acaba de llegar?
+        // Pasamos 'null' como 'from' para que el Guard use la lógica de SizeRules.Can
+        if (!_guard.Can(null, _currentId))
+        {
+            Debug.Log($"[StateMachine] {_currentId} no es válido para tamaño {newSize}. Reseteando a Idle.");
+            ChangeState(PlayerEnum.PlayerStateId.Idle);
+        }
+    }
 }
