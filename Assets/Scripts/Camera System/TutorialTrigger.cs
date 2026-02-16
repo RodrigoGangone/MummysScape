@@ -8,19 +8,18 @@ using static PauseUtils;
 [RequireComponent(typeof(BoxCollider))]
 public class TutorialTrigger : MonoBehaviour, IPausable
 {
-    [Header("Referencias")] [SerializeField]
-    private TutorialFocusPoint focusPoint;
-
+    [Header("Referencias")] 
+    [SerializeField] private TutorialFocusPoint focusPoint;
     [SerializeField] private ParticleSystem[] braziers;
     private VideoPlayer _tutorialVideo;
 
-    [Header("Configuración de Áreas")] [SerializeField]
-    private Vector3 sizeA = Vector3.one;
-
+    [Header("Configuración de Áreas")] 
+    [SerializeField] private Vector3 sizeA = Vector3.one;
     [SerializeField] private Vector3 sizeB = Vector3.one * 2f;
     [SerializeField] private Vector3 centerOffsetA = Vector3.zero;
     [SerializeField] private Vector3 centerOffsetB = Vector3.zero;
 
+    [Header("Audio")]
     [SerializeField] private FxBank _bank;
     [SerializeField] private string keySound;
     
@@ -30,6 +29,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private bool _paused;
     private bool _isPlaying;
     
+    // Referencia directa al estado de guardado
     private bool IsTutorialAlreadySeen => Save.IsTutorialSeen(focusPoint.Id);
     
     private void Awake()
@@ -37,6 +37,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         _boxCollider = GetComponent<BoxCollider>();
         _tutorialVideo = GetComponentInChildren<VideoPlayer>();
 
+        // Ajustar el colisionador según si ya se completó el tutorial
         SetColliderShape(!IsTutorialAlreadySeen);
         ToggleEffects(false);
     }
@@ -45,9 +46,8 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     {
         if (!other.CompareTag("PlayerFather") || IsTutorialAlreadySeen) return;
 
-        if (!Save.IsTutorialSeen(focusPoint.Id))
-            ExecuteTutorialSequence(focusPoint.Time);
-
+        // Si es la primera vez, lanzamos la secuencia completa
+        ExecuteTutorialSequence();
         SetColliderShape(false);
     }
 
@@ -61,9 +61,10 @@ public class TutorialTrigger : MonoBehaviour, IPausable
             _isPromptActive = true;
         }
 
-        if (!_paused && !_isPlaying &&Input.GetButtonDown(FocusManager.Instance.TutorialKey))
+        // Re-visualización del tutorial (sin mensaje, según lógica de FocusManager)
+        if (!_paused && !_isPlaying && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
         {
-            ExecuteTutorialSequence(focusPoint.Time);
+            ExecuteTutorialSequence();
             _isPlaying = true;
         }
     }
@@ -76,23 +77,35 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         _isPromptActive = false;
     }
 
-    private void ExecuteTutorialSequence(float tutorialTime)
+    private void ExecuteTutorialSequence()
     {
-        Debug.Log("TutorialTrigger");
+        if (focusPoint == null) return;
+
         _bank.Play2D(keySound);
         
+        // Enviamos la petición al FocusManager que ahora maneja los mensajes opcionales
         FocusManager.Instance.RequestTutorial(focusPoint);
 
         if (_effectRoutine != null) StopCoroutine(_effectRoutine);
 
-        _effectRoutine = StartCoroutine(TutorialDurationRoutine(tutorialTime));
+        // CÁLCULO DE TIEMPO DINÁMICO:
+        // Si no se ha visto, sumamos el tiempo de cámara + duración del mensaje.
+        // Si ya se vio, solo usamos el tiempo de la cámara.
+        float totalDuration = focusPoint.Time;
+        if (!IsTutorialAlreadySeen && !string.IsNullOrEmpty(focusPoint.Message))
+        {
+            totalDuration += focusPoint.MessageDuration;
+        }
+
+        _effectRoutine = StartCoroutine(TutorialDurationRoutine(totalDuration));
     }
 
-    private IEnumerator TutorialDurationRoutine(float time)
+    private IEnumerator TutorialDurationRoutine(float duration)
     {
         ToggleEffects(true);
 
-        yield return WaitForSecondsPausable(time, () => _paused);
+        // Espera pausabe que respeta el estado del juego
+        yield return WaitForSecondsPausable(duration, () => _paused);
 
         ToggleEffects(false);
 
@@ -102,11 +115,9 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     private void ToggleEffects(bool active)
     {
-        
         foreach (var brazier in braziers)
         {
             if (brazier == null) continue;
-
             if (active) brazier.Play();
             else brazier.Stop();
         }
@@ -126,19 +137,17 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     public void OnPauseChanged(bool paused) => _paused = paused;
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 
     #region Gizmo
-
     private void OnDrawGizmos()
     {
+        if (focusPoint == null) return;
         Gizmos.matrix = transform.localToWorldMatrix;
         Gizmos.color = !IsTutorialAlreadySeen ? Color.green : new Color(0, 1, 0, 0.2f);
         Gizmos.DrawWireCube(centerOffsetA, sizeA);
         Gizmos.color = IsTutorialAlreadySeen ? Color.yellow : new Color(1, 0.92f, 0.016f, 0.2f);
         Gizmos.DrawWireCube(centerOffsetB, sizeB);
     }
-
     #endregion
 }

@@ -22,6 +22,11 @@ public class FocusManager : MonoBehaviour, IPausable
         public float Duration;
         public float ZoomAmount;
         public AnimationCurve ZoomCurve; 
+        
+        // --- Parámetros de Mensaje Opcionales ---
+        public string Message;      
+        public Color MessageColor;  
+        public float MessageDuration; 
 
         public Action OnComplete;
     }
@@ -49,37 +54,47 @@ public class FocusManager : MonoBehaviour, IPausable
 
     public void OnPauseChanged(bool paused) => _paused = paused;
 
+    // Métodos públicos con parámetros opcionales para no romper llamadas existentes
     public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration, float zoomAmount,
-        AnimationCurve zoomCurve)
+        AnimationCurve zoomCurve, string message = "", Color? color = null, float msgDuration = 1.5f)
     {
-        AddRequestInternal(9999, cameraPos, lookAt, duration, zoomAmount, zoomCurve, null);
+        AddRequestInternal(9999, cameraPos, lookAt, duration, zoomAmount, zoomCurve, null, message, color ?? Color.white, msgDuration);
     }
     
     public void RequestRevealFocus(int orderIndex, Transform cameraPos, Transform lookAt, float duration, float zoomAmt,
         AnimationCurve curve, Action onFinishedCallback)
     {
+        // En reveal focus pasamos mensaje vacío por defecto
         AddRequestInternal(orderIndex, cameraPos, lookAt, duration, zoomAmt, curve, onFinishedCallback);
     }
 
     public void RequestTutorial(TutorialFocusPoint point)
     {
         if (point == null) return;
+
+        // Verificamos si el tutorial ya fue visto usando tu sistema de Save
         bool seen = Save.IsTutorialSeen(point.Id);
 
         if (seen)
         {
+            // Si ya se vio, solo hacemos el focus de cámara sin mostrar el mensaje de nuevo
             AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, point.ZoomAmount, point.ZoomCurve,
-                null);
+                null, string.Empty, Color.white, 0f);
         }
         else
         {
+            // Si es la primera vez, pasamos el mensaje y marcamos como visto al terminar
             AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, point.ZoomAmount, point.ZoomCurve,
-                () => { Save.MarkTutorialSeen(point.Id); });
+                () => { Save.MarkTutorialSeen(point.Id); }, 
+                point.Message, 
+                point.TextColor, 
+                point.MessageDuration);
         }
     }
-
+    
+    // Método interno unificado con parámetros opcionales al final
     private void AddRequestInternal(int index, Transform camT, Transform lookAt, float duration, float zoomAmt,
-        AnimationCurve curve, Action onComplete)
+        AnimationCurve curve, Action onComplete, string message = "", Color? msgColor = null, float msgDuration = 1.5f)
     {
         if (camT == null) return;
 
@@ -92,6 +107,9 @@ public class FocusManager : MonoBehaviour, IPausable
             Duration = duration,
             ZoomAmount = zoomAmt,
             ZoomCurve = curve, 
+            Message = message,
+            MessageColor = msgColor ?? Color.white,
+            MessageDuration = msgDuration,
             OnComplete = onComplete,
         };
 
@@ -127,12 +145,11 @@ public class FocusManager : MonoBehaviour, IPausable
 
             focusCam.LookAt = req.LookAt;
             focusCam.PreviousStateIsValid = false;
-
             focusCam.m_Lens.FieldOfView = originalFOV;
             focusCam.Priority = 100;
 
+            // 1. Fase de Movimiento y Zoom
             float elapsed = 0f;
-
             float targetFOV = originalFOV - req.ZoomAmount;
 
             while (elapsed < req.Duration)
@@ -145,15 +162,25 @@ public class FocusManager : MonoBehaviour, IPausable
 
                 elapsed += Time.deltaTime;
                 float t = elapsed / req.Duration;
-
                 float curveValue = req.ZoomCurve.Evaluate(t);
-
                 focusCam.m_Lens.FieldOfView = Mathf.Lerp(originalFOV, targetFOV, curveValue);
 
                 yield return null;
             }
 
             focusCam.m_Lens.FieldOfView = targetFOV;
+
+            // 2. Fase de Mensaje (Solo si existe un texto)
+            if (!string.IsNullOrEmpty(req.Message))
+            {
+                GameEventManager.Instance.levelEvents.OnShowFocusMessage.Raise(req.Message, req.MessageColor);
+                
+                // Esperamos el tiempo de lectura respetando la pausa
+                yield return WaitForSecondsPausable(req.MessageDuration, () => _paused);
+                
+                GameEventManager.Instance.levelEvents.OnHideFocusMessage.Raise();
+            }
+
             req.OnComplete?.Invoke();
 
             if (_pendingRequests.Count > 0)
