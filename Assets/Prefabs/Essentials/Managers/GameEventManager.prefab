@@ -47,8 +47,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bossEvents:
-    OnStageChanged: {fileID: 0}
-    OnDeath: {fileID: 0}
+    OnDamaged: {fileID: 11400000, guid: 30180795ab015c948bad1f31710e2e4a, type: 2}
+    OnDeath: {fileID: 11400000, guid: a8dc8003889b40943bb2b6a0592082e4, type: 2}
+    OnStageCompleted: {fileID: 11400000, guid: 0253e019938af614fabd824a8426273e, type: 2}
   playerEvents:
     OnBandagesCountChanged: {fileID: 11400000, guid: c16a33d0f4dfdda45a2e4cfd4e388b71, type: 2}
     OnSizeChanged: {fileID: 11400000, guid: e09b9beee18ed2449bb90b53140fd548, type: 2}

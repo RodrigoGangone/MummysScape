@@ -1,6 +1,7 @@
 using UnityEngine;
 using static BossCommonState;
 using System;
+using System.Collections;
 
 /// <summary>
 /// Actor genérico del Jefe. Integra Config por Stages, GOAP, y tu FSM existente.
@@ -26,6 +27,11 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     private LayerMask losObstacleMask;
 
     [SerializeField] private float losRayHeight = 1.5f;
+    
+    [Header("Cinematic Death")]
+    [SerializeField] private GameObject deathImpactFx;
+    [SerializeField] private Transform headSocket;
+    [SerializeField] private float delayBeforePlatform = 2.0f;
 
     // IBossContext
     public Transform Transform => transform;
@@ -64,12 +70,12 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     
     private bool _paused;    // Pausa de Menú
     private bool _isLocked;  // Pausa de Focus/Cinemática
-    
-    // Eventos opcionales
+
+    // Eventos locales para comunicación interna
     public event Action<int> OnStageChanged;
     public event Action OnDeath;
     public event Action OnDamaged;
-
+    
     private void Awake()
     {
         if (animator == null) animator = GetComponentInChildren<Animator>();
@@ -88,8 +94,6 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
         stateMachine.ChangeState(Entry);
 
-        //PlayerPrefsManager.BindRegistry(registry);
-
         _goap = new GoapBrain();
         _stageIndex = 0;
     }
@@ -104,7 +108,6 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         var wm = BuildWorldModel();
         var intent = _goap.DecideNextIntent(wm, this, _runtimePrimarySkill, _runtimeSecondarySkill);
 
-        // Evitar “thrashing”: solo disparar si cambió
         if (intent != _lastIntent)
         {
             _lastIntent = intent;
@@ -127,13 +130,13 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
         if (_stageIndex >= config.StageCount)
         {
-            // Sin más stages: muerte
             _stageIndex = config.StageCount;
             OnDeath?.Invoke();
-            //enabled = false;
         }
         else
+        {
             OnStageChanged?.Invoke(_stageIndex);
+        }
     }
 
     private bool HasLineOfSight(Vector3 from, Vector3 to)
@@ -153,130 +156,127 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         return new WorldModel(this, los);
     }
 
-    #region Uso de Skills (llamados desde estados)
+    #region Uso de Skills
 
     private bool TryUseSkillA()
     {
-        Debug.Log("TryExecuteA");
         var wm = BuildWorldModel();
         return _runtimePrimarySkill != null && _runtimePrimarySkill.TryExecute(wm, this, _time);
     }
 
     private bool TryUseSkillB()
     {
-        Debug.Log("TryExecuteB");
         var wm = BuildWorldModel();
         return _runtimeSecondarySkill != null && _runtimeSecondarySkill.TryExecute(wm, this, _time);
     }
 
     #endregion
 
-
-    /// <summary>
-    /// Puente simbólico → tu FSM. Mapea el intent string a tus estados reales.
-    /// </summary>
     private void TriggerFsm(string intentOrEvent)
     {
         switch (intentOrEvent)
         {
-            case "Entry":
-                stateMachine.ChangeState(Entry);
-                break;
-            case "Idle":
-                stateMachine.ChangeState(Idle);
-                break;
-            case "Chase":
-                stateMachine.ChangeState(Chase);
-                break;
-            case "Damaged":
-                stateMachine.ChangeState(Damaged);
-                break;
-            case "Primary":
-                stateMachine.ChangeState(Primary);
-                break;
-            case "Secondary":
-                stateMachine.ChangeState(Secondary);
-                break;
-            case "Die":
-                stateMachine.ChangeState(Die);
-                break;
+            case "Entry": stateMachine.ChangeState(Entry); break;
+            case "Idle": stateMachine.ChangeState(Idle); break;
+            case "Chase": stateMachine.ChangeState(Chase); break;
+            case "Damaged": stateMachine.ChangeState(Damaged); break;
+            case "Primary": stateMachine.ChangeState(Primary); break;
+            case "Secondary": stateMachine.ChangeState(Secondary); break;
+            case "Die": stateMachine.ChangeState(Die); break;
             default:
                 Debug.LogWarning($"[BossActor] Intent desconocido: {intentOrEvent}");
                 break;
         }
-
-        _lastIntent = intentOrEvent; // ← sincroniza el “recuerdo” del planner con la FSM
+        _lastIntent = intentOrEvent;
     }
 
+    private void StartDeathSequence() => StartCoroutine(DeathSequenceCo());
+
+    private IEnumerator DeathSequenceCo()
+    {
+        NotifyDie(); 
+        _isLocked = true;
+        UpdateControlState(); 
+
+        // 1. HIT-STOP (Estilo Mario Odyssey)
+        // Congelamos el tiempo pero seguimos usando tiempo real para la corrutina
+        float originalTimeScale = Time.timeScale;
+        Time.timeScale = 0.05f; // Casi detenido
+    
+        // 2. DISPARAR EFECTOS (Shake largo y Aberración)
+        GameEventManager.Instance.bossEvents.OnDeath.Raise(); 
+    
+        if (deathImpactFx != null && headSocket != null)
+            Instantiate(deathImpactFx, headSocket.position, Quaternion.identity);
+
+        // Esperamos un instante en "tiempo real" mientras el juego está casi congelado
+        yield return new WaitForSecondsRealtime(0.15f); 
+        Time.timeScale = originalTimeScale; // Restauramos el tiempo
+
+        // 3. ANIMACIÓN DE MUERTE
+        stateMachine.ChangeState(Die); 
+
+        // 4. PAUSA DRAMÁTICA Y PLATAFORMA
+        yield return new WaitForSeconds(delayBeforePlatform);
+        GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
+    }
+
+    private void UpdateControlState()
+    {
+        if (_paused) { /* ... lógica de pausa ... */ return; }
+
+        // IMPORTANTE: Permitir que el Animator siga activo si está muriendo (IsDie)
+        // Esto evita que el Boss se quede estático al recibir el golpe.
+        bool shouldFreezeByLock = _isLocked && !IsEntry && !IsDie;
+
+        if (animator != null) animator.enabled = !shouldFreezeByLock;
+        if (stateMachine != null) stateMachine.enabled = !shouldFreezeByLock;
+    }
+    
     private void OnEnable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
-        
+    
         OnPrimarySkill += TryUseSkillA;
         OnSecondarySkill += TryUseSkillB;
 
         OnDamaged += NotifyDamaged;
         OnDamaged += AdvanceStage;
+        OnDamaged += () => GameEventManager.Instance.bossEvents.OnDamaged.Raise();
 
-        OnDeath += NotifyDie;
+        OnDeath += StartDeathSequence;
+
+        // ELIMINADO: OnStageChanged += (stage) => GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(stage);
+        // No queremos que OnStageCompleted se dispare inmediatamente en la muerte, 
+        // sino que espere al final de la Corrutina.
     }
-
     private void OnDisable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
         
+        OnPrimarySkill -= TryUseSkillA;
+        OnSecondarySkill -= TryUseSkillB;
+
         OnDamaged -= NotifyDamaged;
         OnDamaged -= AdvanceStage;
 
-        OnDeath -= NotifyDie;
+        OnDeath -= StartDeathSequence;
     }
     
     public void OnPauseChanged(bool paused)
     {
         _paused = paused;
-        
         animator.enabled = !paused;
         stateMachine.enabled = !paused;
-        _goap.Paused = paused;
+        if (_goap != null) _goap.Paused = paused;
     }
     
     public void OnLockChanged(bool locked)
     {
         _isLocked = locked;
         UpdateControlState();
-    }
-    
-    /// <summary>
-    /// Gestiona el estado de congelamiento del Boss.
-    /// </summary>
-    private void UpdateControlState()
-    {
-        // 1. SI HAY PAUSA (Menú):
-        // Se congela todo sin excepción.
-        if (_paused)
-        {
-            if (animator != null) animator.enabled = false;
-            if (stateMachine != null) stateMachine.enabled = false;
-            if (_goap != null) _goap.Paused = true;
-            return;
-        }
-
-        // 2. SI HAY LOCK (Cinemática / Focus):
-        // Aquí está la corrección: Solo congelamos si el Boss YA TERMINÓ su Entry.
-        // Si IsEntry es true, significa que el Boss está actuando en la cinemática,
-        // por lo tanto debe poder moverse y ejecutar su estado BS_Entry.
-        bool shouldFreezeByLock = _isLocked && !IsEntry;
-
-        if (animator != null) animator.enabled = !shouldFreezeByLock;
-        
-        // La FSM también debe seguir corriendo en Entry para detectar cuándo terminar la intro
-        if (stateMachine != null) stateMachine.enabled = !shouldFreezeByLock;
-
-        // El Brain puede pausarse siempre en Lock, ya que de todas formas
-        // en Entry devuelve 'Intent.None', pero por seguridad lo linkeamos igual.
-        if (_goap != null) _goap.Paused = shouldFreezeByLock;
     }
 }
 

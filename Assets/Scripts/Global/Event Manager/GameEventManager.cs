@@ -9,8 +9,9 @@ public class GameEventManager : MonoBehaviour
     [Serializable]
     public struct BossEvents
     {
-        public GameEvent OnStageChanged;
+        public GameEvent OnDamaged;
         public GameEvent OnDeath;
+        public GameEvent OnStageCompleted;
     }
 
     [Serializable]
