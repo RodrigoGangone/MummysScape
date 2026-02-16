@@ -14,14 +14,14 @@ public class WaterSplash : MonoBehaviour
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Box") ||
             other.gameObject.layer == LayerMask.NameToLayer("Player") ||
-            other.gameObject.layer == LayerMask.NameToLayer("Pickable"))
+            other.gameObject.layer == LayerMask.NameToLayer("BandageMound"))
         {
             _waterSplashFX.transform.position = other.transform.position + _offset;
 
             _waterSplashFX.Play();
         }
 
-        if (other.gameObject.layer == LayerMask.NameToLayer("Pickable"))
+        if (other.gameObject.layer == LayerMask.NameToLayer("BandageMound"))
             other.gameObject.SetActive(false);
 
         if (other.gameObject.CompareTag("PlayerFather"))

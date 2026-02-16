@@ -18,6 +18,7 @@ public class SmashObject : MonoBehaviour
     [SerializeField] private Collider _fatherCollider;
 
     [SerializeField] private ParticleSystem _destroyFx;
+    [SerializeField] private FxBank bank;
     
     // Variable para evitar que se rompa dos veces si le pegas muy rápido
     private bool _isBroken = false; 
@@ -25,6 +26,9 @@ public class SmashObject : MonoBehaviour
     private void Start()
     {
         _bubbles.SetActive(_inWater);
+        
+        if(_inWater)
+            bank.Play3D("Bubble", transform.position);
 
         _standingTable.Tables = _tables;
         _standingTable.ArrangeTables += () =>
@@ -40,7 +44,7 @@ public class SmashObject : MonoBehaviour
         _isBroken = true;
 
         _destroyFx.Play();
-
+        bank.Play3D("Break", transform.position);
         _fatherView.enabled = false;
         _fatherCollider.enabled = false;
         _triggerCollider.enabled = false;
@@ -49,6 +53,7 @@ public class SmashObject : MonoBehaviour
 
         if (_inWater)
         {
+            bank.Stop("Bubble");
             ActivateTables();
             StartCoroutine(MoveTablesWithDelay());
         }
@@ -90,5 +95,20 @@ public class SmashObject : MonoBehaviour
         }
 
         table.transform.rotation = targetPosition.rotation;
+    }
+    
+    private void OnDrawGizmosSelected()
+    {
+        if (bank == null) return;
+
+        // Visualizamos el rango de las burbujas (en Cyan)
+        if (_inWater)
+        {
+            bank.DrawGizmo(transform.position, "Bubble", Color.cyan);
+        }
+
+        // Visualizamos el rango de la rotura (en Rojo)
+        // Esto es útil para saber qué tan lejos se oirá el "CRASH"
+        bank.DrawGizmo(transform.position, "Break", Color.red);
     }
 }

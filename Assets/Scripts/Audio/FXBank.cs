@@ -71,6 +71,20 @@ public class FxBank : ScriptableObject
             AudioManager.Instance.StopLoop(key);
         }
     }
+    
+    public void DrawGizmo(Vector3 position, string key, Color color)
+    {
+        var entry = Get(key);
+        if (entry == null) return;
+
+        Gizmos.color = color;
+        // Dibujamos el rango máximo
+        Gizmos.DrawWireSphere(position, entry.maxDistance);
+    
+        // Opcional: una esfera sólida muy pequeña en el centro
+        Gizmos.color = new Color(color.r, color.g, color.b, 0.3f);
+        Gizmos.DrawSphere(position, 0.2f);
+    }
 }
 
 [Serializable]
