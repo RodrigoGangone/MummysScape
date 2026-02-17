@@ -143,6 +143,7 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
 
     private void OnEnable()
     {
+        // 1. Registro normal de eventos
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
         GameEventManager.Instance.levelEvents.OnDeath.Register(Kill);

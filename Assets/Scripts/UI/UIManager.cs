@@ -6,35 +6,24 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
-
-// Tu lógica de guardado estática
-using static Save;
-
-using System;
-using System.Collections;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using TMPro; // Necesario para los mensajes en pantalla
-
-// Tu lógica de guardado estática
+using TMPro;
 using static Save;
 
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private Animator _mummyUI; 
 
-    [Header("UI TUTORIAL")]
+    [Header("Configuración de Escenas")]
+    [Tooltip("El índice de la escena que funciona como HUB / Selector.")]
+    [SerializeField] private int selectorSceneIndex = 1;
+
+    [Header("UI TUTORIAL / PROMPT")]
     [SerializeField] private GameObject _interaction;
     [SerializeField] private Image _interactionBtn;
     [SerializeField] private Sprite btnA;
     [SerializeField] private Sprite btnY;
 
-    [Header("UI FOCUS MESSAGES (Opcional)")]
+    [Header("UI FOCUS MESSAGES")]
     [SerializeField] private GameObject _focusMessagePanel;
     [SerializeField] private TextMeshProUGUI _focusText;
     [SerializeField] private CanvasGroup _focusMessageCG; 
@@ -53,21 +42,20 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Selectable _pauseFirstSelected;
     [SerializeField] private Selectable _optionsFirstSelected;
 
-    [Header("UI END GAME (Unified)")]
+    [Header("UI END GAME (Resumen)")]
     [SerializeField] private GameObject _endGamePanel; 
     [SerializeField] private Button _btnEndGameRetry;    
     [SerializeField] private Button _btnEndGameMenu;     
-    [SerializeField] private Button _btnEndGameNextLvl;  
+    [SerializeField] private Button _btnEndGameNextLvl; 
     [SerializeField] private Selectable _winFirstSelected;  
     [SerializeField] private Selectable _loseFirstSelected; 
-
     [SerializeField] private Image[] _uiSlotsFills;     
     [SerializeField] private GameObject[] _gemIcons;    
     [SerializeField] private float _delayBeforeRefill = 2f;
 
-    [Header("NEXT LEVEL TRANSITION")]
-    [SerializeField] private GameObject _nextLvlTransitionPanel; 
-    private float _fakeTimer = 5f;
+    [Header("TRANSITION / LOADING")]
+    [SerializeField] private GameObject _nextLvlTransitionPanel; // PanelNextLevel
+    [SerializeField] private float _fakeTimer = 3f;
 
     // Variables internas
     private bool _isPaused;
@@ -85,8 +73,6 @@ public class UIManager : MonoBehaviour
         GameEventManager.Instance.levelEvents.OnDeath.Register(Lose);
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(HandlePauseChanged);
         GameEventManager.Instance.levelEvents.OnPrompt.Register<bool, buttonType>(ShowInteractionInput);
-        
-        // Registro de eventos de Focus
         GameEventManager.Instance.levelEvents.OnShowFocusMessage.Register<string, Color>(ShowFocusMessage);
         GameEventManager.Instance.levelEvents.OnHideFocusMessage.Register(HideFocusMessage);
     }
@@ -97,33 +83,29 @@ public class UIManager : MonoBehaviour
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Lose);
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(HandlePauseChanged);
         GameEventManager.Instance.levelEvents.OnPrompt.Unregister<bool, buttonType>(ShowInteractionInput);
-        
-        // Unregister de eventos de Focus
         GameEventManager.Instance.levelEvents.OnShowFocusMessage.Unregister<string, Color>(ShowFocusMessage);
         GameEventManager.Instance.levelEvents.OnHideFocusMessage.Unregister(HideFocusMessage);
     }
 
     private void Start()
     {
+        // Botones de Pausa
         AddButtonProps(_btnResume, () => GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false));
         AddButtonProps(_btnRetry, RetryLevel);
         AddButtonProps(_btnOptions, ShowOptionsPanel);
         AddButtonProps(_btnExit, GoToMainMenu);
         AddButtonProps(_btnBackOptions, BackFromOptions);
 
+        // Botones de Fin de Juego
         AddButtonProps(_btnEndGameRetry, RetryLevel); 
         AddButtonProps(_btnEndGameMenu, GoToMainMenu);
-        AddButtonProps(_btnEndGameNextLvl, ShowNextLvlTransition);
+        AddButtonProps(_btnEndGameNextLvl, () => StartLoadingTransition(selectorSceneIndex));
 
         _pauseMaterial.SetFloat(PAUSE_FILL, 0f);
         _optionsMaterial.SetFloat(PAUSE_FILL, 0f);
 
         _postProcess = FindObjectOfType<Volume>();
         if (_postProcess != null) _postProcess.profile.TryGet(out _blur);
-        
-        // Inicializar panel de mensajes oculto
-        if (_focusMessageCG != null) _focusMessageCG.alpha = 0;
-        if (_focusMessagePanel != null) _focusMessagePanel.SetActive(false);
     }
 
     private void Update()
@@ -131,56 +113,21 @@ public class UIManager : MonoBehaviour
         if (Input.GetButtonDown("Pause")) Toggle();
     }
 
-    // --- LÓGICA DE MENSAJES DE FOCO ---
-
-    private void ShowFocusMessage(string message, Color color)
-    {
-        if (_focusMessagePanel == null || _focusText == null) return;
-
-        _focusText.text = message;
-        _focusText.color = color;
-        
-        if (_messageFadeRoutine != null) StopCoroutine(_messageFadeRoutine);
-        _messageFadeRoutine = StartCoroutine(FadeMessage(1f));
-    }
-
-    private void HideFocusMessage()
-    {
-        if (_focusMessagePanel == null) return;
-        
-        if (_messageFadeRoutine != null) StopCoroutine(_messageFadeRoutine);
-        _messageFadeRoutine = StartCoroutine(FadeMessage(0f));
-    }
-
-    private IEnumerator FadeMessage(float targetAlpha)
-    {
-        if (_focusMessageCG == null)
-        {
-            _focusMessagePanel.SetActive(targetAlpha > 0);
-            yield break;
-        }
-
-        if (targetAlpha > 0) _focusMessagePanel.SetActive(true);
-
-        float startAlpha = _focusMessageCG.alpha;
-        float elapsed = 0f;
-
-        while (elapsed < _fadeDuration)
-        {
-            elapsed += Time.unscaledDeltaTime; 
-            _focusMessageCG.alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsed / _fadeDuration);
-            yield return null;
-        }
-
-        _focusMessageCG.alpha = targetAlpha;
-        if (targetAlpha <= 0) _focusMessagePanel.SetActive(false);
-    }
-
-    // --- LOGICA UNIFICADA WIN / LOSE ---
+    // --- LÓGICA DE CARGA Y WIN ---
 
     public void Win(int index)
     {
-        Transition.TriggerFadeIn(() => { SetupEndGamePanel(true, index); });
+        if (index >= 0)
+        {
+            // FLUJO DESDE NIVEL: FadeIn -> Mostrar resumen de victoria
+            Transition.TriggerFadeIn(() => { SetupEndGamePanel(true, index); });
+        }
+        else
+        {
+            // FLUJO DESDE SELECTOR: FadeIn -> Mostrar pantalla de carga (Momia) -> Cargar Nivel
+            int targetScene = Mathf.Abs(index);
+            Transition.TriggerFadeIn(() => { StartLoadingTransition(targetScene); });
+        }
     }
 
     public void Lose()
@@ -188,22 +135,34 @@ public class UIManager : MonoBehaviour
         Transition.TriggerFadeIn(() => { SetupEndGamePanel(false, -1); });
     }
 
+    private void StartLoadingTransition(int targetScene)
+    {
+        // Aseguramos que el panel de resumen esté apagado
+        _endGamePanel.SetActive(false);
+        
+        // Activamos la pantalla de carga (PanelNextLevel)
+        if (_nextLvlTransitionPanel != null) _nextLvlTransitionPanel.SetActive(true);
+        
+        StartCoroutine(LoadingRoutine(targetScene));
+    }
+
+    private IEnumerator LoadingRoutine(int targetScene)
+    {
+        yield return new WaitForSecondsRealtime(_fakeTimer);
+        Transition.FadeInAndLoadScene(targetScene);
+    }
+
     private void SetupEndGamePanel(bool isWin, int levelIndex)
     {
         _endGamePanel.SetActive(true);
         _btnEndGameRetry.gameObject.SetActive(true);
         _btnEndGameMenu.gameObject.SetActive(true);
-
-        int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
-        bool hasNextLevel = nextSceneIndex < SceneManager.sceneCountInBuildSettings;
-        bool showNextButton = isWin && hasNextLevel; 
-        _btnEndGameNextLvl.gameObject.SetActive(showNextButton);
+        _btnEndGameNextLvl.gameObject.SetActive(isWin); 
 
         if (isWin)
         {
             _mummyUI.SetTrigger("Win");
-            Selectable first = showNextButton ? _btnEndGameNextLvl : _btnEndGameMenu;
-            SetSelected(first);
+            SetSelected(_winFirstSelected ?? _btnEndGameNextLvl);
         }
         else
         {
@@ -213,6 +172,8 @@ public class UIManager : MonoBehaviour
 
         StartCoroutine(EndGameUIFlow());
     }
+
+    // --- ANIMACIONES DE UI (Barras y Gemas) ---
 
     private IEnumerator EndGameUIFlow()
     {
@@ -226,7 +187,6 @@ public class UIManager : MonoBehaviour
             if (slot == null) continue;
             float elapsed = 0f;
             float duration = 0.5f;
-
             while (elapsed < duration)
             {
                 elapsed += Time.unscaledDeltaTime;
@@ -242,29 +202,44 @@ public class UIManager : MonoBehaviour
     {
         for (int i = 0; i < _gemIcons.Length; i++)
         {
-            int gemNum = i + 1; 
-            if (_gemIcons[i] != null && WasGemPicked(gemNum))
-            {
-                _gemIcons[i].SetActive(true);
-            }
+            if (_gemIcons[i] != null && WasGemPicked(i + 1)) _gemIcons[i].SetActive(true);
         }
     }
 
-    // --- NAVEGACIÓN Y UTILIDADES ---
+    // --- MENSAJES DE FOCO ---
 
-    private void ShowNextLvlTransition()
+    private void ShowFocusMessage(string message, Color color)
     {
-        if(_nextLvlTransitionPanel != null) _nextLvlTransitionPanel.SetActive(true);
-        _endGamePanel.SetActive(false); 
-        StartCoroutine(LoadNextSceneRoutine());
+        if (_focusText == null) return;
+        _focusText.text = message;
+        _focusText.color = color;
+        if (_messageFadeRoutine != null) StopCoroutine(_messageFadeRoutine);
+        _messageFadeRoutine = StartCoroutine(FadeMessage(1f));
     }
 
-    private IEnumerator LoadNextSceneRoutine()
+    private void HideFocusMessage()
     {
-        yield return new WaitForSecondsRealtime(_fakeTimer);
-        int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
-        Transition.FadeInAndLoadScene(nextSceneIndex);
+        if (_messageFadeRoutine != null) StopCoroutine(_messageFadeRoutine);
+        _messageFadeRoutine = StartCoroutine(FadeMessage(0f));
     }
+
+    private IEnumerator FadeMessage(float targetAlpha)
+    {
+        if (_focusMessageCG == null) { _focusMessagePanel.SetActive(targetAlpha > 0); yield break; }
+        if (targetAlpha > 0) _focusMessagePanel.SetActive(true);
+        float startAlpha = _focusMessageCG.alpha;
+        float elapsed = 0f;
+        while (elapsed < _fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime; 
+            _focusMessageCG.alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsed / _fadeDuration);
+            yield return null;
+        }
+        _focusMessageCG.alpha = targetAlpha;
+        if (targetAlpha <= 0) _focusMessagePanel.SetActive(false);
+    }
+
+    // --- PAUSA Y NAVEGACIÓN ---
 
     private void RetryLevel()
     {
@@ -278,46 +253,19 @@ public class UIManager : MonoBehaviour
         Transition.FadeInAndLoadScene(0);
     }
 
-    private void AddButtonProps(Button button, Action mainAction, params Action[] additionalActions)
-    {
-        if (button == null) return;
-        button.onClick.AddListener(() =>
-        {
-            mainAction?.Invoke();
-            if (additionalActions != null)
-                foreach (var action in additionalActions) action?.Invoke();
-        });
-    }
-
-    private static void SetSelected(Selectable selectable)
-    {
-        if (selectable == null || EventSystem.current == null) return;
-        EventSystem.current.SetSelectedGameObject(null);
-        EventSystem.current.SetSelectedGameObject(selectable.gameObject);
-    }
-    
-    private void Toggle() 
-    {
-        if (_pauseCharging) return;
-        GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(!_isPaused);
-    }
-    
     private void HandlePauseChanged(bool paused)
     {
         if (_isPaused == paused) return;
         _isPaused = paused;
-
         if (paused)
         {
             _optionsPanel.SetActive(false);
             _endGamePanel.SetActive(false); 
-            if(_nextLvlTransitionPanel) _nextLvlTransitionPanel.SetActive(false);
         }
         else
         {
             _pausePanel.SetActive(false);
             _optionsPanel.SetActive(false);
-            _optionsMaterial.SetFloat(PAUSE_FILL, 0f);
             if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
         }
         StartCoroutine(LoadPauseBandage());
@@ -326,58 +274,61 @@ public class UIManager : MonoBehaviour
     private IEnumerator LoadPauseBandage()
     {
         _pauseCharging = true;
-        if (_postProcess.profile.TryGet(out _blur)) _blur.active = !_blur.active;
-
-        var startValue = _pauseMaterial.GetFloat(PAUSE_FILL);
-        var endValue = (startValue == 1f) ? 0f : 1f;
-        var elapsed = 0f;
-
+        if (_blur != null) _blur.active = _isPaused;
+        float start = _pauseMaterial.GetFloat(PAUSE_FILL);
+        float end = _isPaused ? 1f : 0f;
+        float elapsed = 0f;
         while (elapsed < 0.5f)
         {
             elapsed += Time.unscaledDeltaTime;
-            _pauseMaterial.SetFloat(PAUSE_FILL, Mathf.Lerp(startValue, endValue, elapsed / 0.5f));
+            _pauseMaterial.SetFloat(PAUSE_FILL, Mathf.Lerp(start, end, elapsed / 0.5f));
             yield return null;
         }
-
         _pauseCharging = false;
-        if (endValue == 1f)
-        {
-            _pausePanel.SetActive(true);
-            SetSelected(_pauseFirstSelected ?? _btnResume);
-        }
-        _pauseMaterial.SetFloat(PAUSE_FILL, endValue);
+        if (_isPaused) { _pausePanel.SetActive(true); SetSelected(_pauseFirstSelected ?? _btnResume); }
+        _pauseMaterial.SetFloat(PAUSE_FILL, end);
     }
-    
+
+    private void Toggle() { if (!_pauseCharging) GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(!_isPaused); }
     private void ShowOptionsPanel() { if (!_pauseCharging) StartCoroutine(LoadOptionsBandage(true)); }
     private void BackFromOptions() { if (!_pauseCharging) StartCoroutine(LoadOptionsBandage(false)); }
     
     private IEnumerator LoadOptionsBandage(bool open)
     {
         _pauseCharging = true;
-        float startValue = open ? 0f : 1f;
-        float endValue = open ? 1f : 0f;
+        float start = open ? 0f : 1f;
+        float end = open ? 1f : 0f;
         float elapsed = 0f;
-
-        if (!open) _optionsPanel.SetActive(false);
-        else _pausePanel.SetActive(false);
-
+        if (!open) _optionsPanel.SetActive(false); else _pausePanel.SetActive(false);
         while (elapsed < 0.5f)
         {
             elapsed += Time.unscaledDeltaTime;
-            _optionsMaterial.SetFloat(PAUSE_FILL, Mathf.Lerp(startValue, endValue, elapsed / 0.5f));
+            _optionsMaterial.SetFloat(PAUSE_FILL, Mathf.Lerp(start, end, elapsed / 0.5f));
             yield return null;
         }
-        _optionsMaterial.SetFloat(PAUSE_FILL, endValue);
+        _optionsMaterial.SetFloat(PAUSE_FILL, end);
         _pauseCharging = false;
-
         if (open) { _optionsPanel.SetActive(true); SetSelected(_optionsFirstSelected); }
         else { _pausePanel.SetActive(true); SetSelected(_pauseFirstSelected ?? _btnResume); }
     }
-    
+
     public void ShowInteractionInput(bool value, buttonType button)
     {
+        if (_interactionBtn == null) return;
         _interactionBtn.sprite = button switch { buttonType.A => btnA, buttonType.Y => btnY, _ => _interactionBtn.sprite };
         _interaction.SetActive(value);
+    }
+
+    private void AddButtonProps(Button button, Action action)
+    {
+        if (button != null) button.onClick.AddListener(() => action?.Invoke());
+    }
+
+    private static void SetSelected(Selectable selectable)
+    {
+        if (selectable == null || EventSystem.current == null) return;
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(selectable.gameObject);
     }
 }
 
