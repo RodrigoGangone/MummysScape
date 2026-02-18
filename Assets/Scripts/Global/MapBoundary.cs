@@ -16,8 +16,18 @@ public class MapBoundary : MonoBehaviour
     [Header("--- Lógica Vertical ---")] [SerializeField]
     private float minYLimit = -20f;
 
+    [Header("--- Visuales y Brazo ---")] [SerializeField]
+    private ParticleSystem warningParticle;
+
+    [SerializeField] private Animator monsterArmAnimator;
+
+    [Header("--- Efecto 'Comido' ---")] [SerializeField]
+    private Transform killTarget; // El punto central/boca
+
+    [SerializeField] private float dragSpeed = 12f; // Velocidad de succión
+    [SerializeField] private float shrinkSpeed = 2f; // Para que se haga pequeño mientras entra
+
     [CanBeNull] private Transform Player;
-    [CanBeNull] private ParticleSystem warningParticle;
 
     private bool _isPlayerDead;
     private Vector3 _debugThreatPos;
@@ -28,12 +38,21 @@ public class MapBoundary : MonoBehaviour
     private void Start()
     {
         Player = FindObjectOfType<PlayerController>()?.Ctx?.Tf;
-        warningParticle = GetComponentInChildren<ParticleSystem>();
+
+        if (warningParticle == null) warningParticle = GetComponentInChildren<ParticleSystem>();
+        if (monsterArmAnimator == null) monsterArmAnimator = GetComponentInChildren<Animator>();
     }
 
     private void Update()
     {
-        if (Player == null || _isPlayerDead) return;
+        if (Player == null) return;
+
+        // Si ya murió, ejecutamos el arrastre visual constantemente
+        if (_isPlayerDead)
+        {
+            ApplyEatingEffect();
+            return;
+        }
 
         var centerPos = transform.position;
         var centerPosXZ = new Vector3(centerPos.x, 0, centerPos.z);
@@ -46,15 +65,32 @@ public class MapBoundary : MonoBehaviour
         ManageZoneState(distXZ, playerHeight, dirToPlayer);
     }
 
-    private void ManageZoneState(float dist, float height, Vector3 dir)
+    private void ApplyEatingEffect()
     {
-        if (height < minYLimit)
+        if (killTarget == null) return;
+
+        // 1. Movimiento hacia la 'boca' (killTarget)
+        Player.position = Vector3.MoveTowards(Player.position, killTarget.position, dragSpeed * Time.deltaTime);
+
+        // 2. Rotación para dar efecto de descontrol
+        Player.Rotate(Vector3.forward, 180f * Time.deltaTime);
+
+        // 3. Efecto extra: Ir reduciendo el tamaño (opcional, da sensación de ser tragado)
+        if (Player.localScale.x > 0.1f)
         {
-            TriggerDeath();
-            return;
+            Player.localScale -= Vector3.one * (shrinkSpeed * Time.deltaTime);
         }
 
-        if (dist > warningRadius)
+        // 4. Si llega al centro, lo ocultamos finalmente
+        if (Vector3.Distance(Player.position, killTarget.position) < 0.2f)
+        {
+            Player.gameObject.SetActive(false);
+        }
+    }
+
+    private void ManageZoneState(float dist, float height, Vector3 dir)
+    {
+        if (height < minYLimit || dist > warningRadius)
         {
             TriggerDeath();
             return;
@@ -62,20 +98,30 @@ public class MapBoundary : MonoBehaviour
 
         if (dist > safeRadius)
         {
-            if (!warningParticle.isPlaying) warningParticle.Play();
+            if (warningParticle && !warningParticle.isPlaying) warningParticle.Play();
 
             float threatDist = (warningRadius + killRadius) / 2f;
             Vector3 targetPos = transform.position + (dir * threatDist);
             targetPos.y = height;
 
-            warningParticle.transform.position = targetPos;
-            warningParticle.transform.LookAt(Player.position);
+            // Posicionamiento de visuales de amenaza
+            if (warningParticle)
+            {
+                warningParticle.transform.position = targetPos;
+                warningParticle.transform.LookAt(Player.position);
+            }
+
+            if (monsterArmAnimator)
+            {
+                monsterArmAnimator.transform.position = targetPos;
+                monsterArmAnimator.transform.LookAt(Player.position);
+            }
 
             _debugThreatPos = targetPos;
         }
         else
         {
-            if (warningParticle.isPlaying)
+            if (warningParticle && warningParticle.isPlaying)
                 warningParticle.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         }
     }
@@ -83,13 +129,20 @@ public class MapBoundary : MonoBehaviour
     private void TriggerDeath()
     {
         if (_isPlayerDead) return;
-
         _isPlayerDead = true;
 
         if (warningParticle) warningParticle.Stop();
 
+        // Disparamos la animación del brazo
+        if (monsterArmAnimator)
+        {
+            monsterArmAnimator.SetTrigger("Kill");
+        }
+
+        // Lanzamos el evento de muerte global
         GameEventManager.Instance.levelEvents.OnDeath.Raise();
     }
+
 
     #region Gizmos Visuales
 
