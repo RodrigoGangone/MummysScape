@@ -75,6 +75,8 @@ public class KnockBackState : State
         _timer = 0f;
         _isActive = true;
         _ctx.Rb.isKinematic = true;
+        
+        _ctx.View._koFX.Play();
     }
 
     public override void OnUpdate()
@@ -107,5 +109,8 @@ public class KnockBackState : State
         _ctx.Rb.isKinematic = false;
         _ctx.Rb.velocity = Vector3.zero;
         _isActive = false;
+        
+        _ctx.View._koFX.Stop();
+
     }
 }

@@ -62,6 +62,7 @@ MonoBehaviour:
   _avatarHead: {fileID: 9000000, guid: 40057147eadf3b4458da33b27456b085, type: 3}
   _smashFX: {fileID: 4237376819328207346}
   _dropFX: {fileID: 6122208962132014375}
+  _koFX: {fileID: 0}
   _decal: {fileID: 1851146678593742490}
   _rangeIndicator: {fileID: 6772962616540694524}
   _arcRenderer: {fileID: 8908897486662507778}
@@ -211,7 +212,7 @@ Transform:
   m_GameObject: {fileID: 4115387779308222670}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0.012628615, y: 1.856, z: -0.10714221}
+  m_LocalPosition: {x: 0, y: 0.57, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -226,7 +227,7 @@ ParticleSystem:
   m_GameObject: {fileID: 4115387779308222670}
   serializedVersion: 8
   lengthInSec: 5
-  simulationSpeed: 1
+  simulationSpeed: 2
   stopAction: 0
   cullingMode: 0
   ringBufferMode: 0

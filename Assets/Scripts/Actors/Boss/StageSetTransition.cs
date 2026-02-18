@@ -9,12 +9,18 @@ using static PauseUtils;
 [DisallowMultipleComponent]
 public class StageSetTransition : MonoBehaviour, IPausable
 {
+    [Header("Boss Handler")]
+    [SerializeField] private BossActor boss;
+    [SerializeField] private float delayToReactivateBoss = 1.5f;
+    [SerializeField] private bool activateBossOnStart = true;
+    
     [Header("Stage Roots (empties contenedores)")]
     [Tooltip("Un Transform por stage, en orden. Cada uno agrupa los assets de ese stage.")]
     [SerializeField]
     private List<Transform> stageRoots = new();
 
     [Header("Animación")]
+    [SerializeField] private float delayBeforeStart = 2.0f; // <--- NUEVA VARIABLE
     [SerializeField] private float downOffsetY = -10f;
     [SerializeField] private float downDuration = 0.6f;
     [SerializeField] private float upDuration = 0.8f;
@@ -44,6 +50,12 @@ public class StageSetTransition : MonoBehaviour, IPausable
 
             if (active) SetPos(t, _basePos[t]);
         }
+        
+        if (boss != null && activateBossOnStart)
+        {
+            boss.gameObject.SetActive(false);
+            StartCoroutine(InitialBossActivation());
+        }
     }
 
     private void OnEnable()
@@ -63,6 +75,18 @@ public class StageSetTransition : MonoBehaviour, IPausable
         GameEventManager.Instance.bossEvents.OnStageCompleted.Unregister<int>(OnBossStageChanged);
     }
 
+    private IEnumerator InitialBossActivation()
+    {
+        // Esperamos el delay inicial antes de que el Boss aparezca por primera vez
+        yield return new WaitForSeconds(delayToReactivateBoss);
+        
+        if (boss != null)
+        {
+            boss.gameObject.SetActive(true);
+            Debug.Log("[StageHandler] Boss activado por primera vez.");
+        }
+    }
+    
     /// <summary>
     /// Callback del evento global OnStageCompleted.
     /// </summary>
@@ -93,6 +117,14 @@ public class StageSetTransition : MonoBehaviour, IPausable
 
     private IEnumerator TransitionSequence(int fromIndex, int toIndex)
     {
+        // 0) ESPERA INICIAL (El delay que pediste)
+        float timer = 0;
+        while (timer < delayBeforeStart)
+        {
+            if (!_paused) timer += Time.deltaTime;
+            yield return null;
+        }
+
         var fromRoot = IsValidIndex(fromIndex) ? stageRoots[fromIndex] : null;
         var toRoot = IsValidIndex(toIndex) ? stageRoots[toIndex] : null;
 

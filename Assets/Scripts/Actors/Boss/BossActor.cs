@@ -29,9 +29,8 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     [SerializeField] private float losRayHeight = 1.5f;
     
     [Header("Cinematic Death")]
-    [SerializeField] private GameObject deathImpactFx;
+    [SerializeField] private ParticleSystem deathImpactFx;
     [SerializeField] private Transform headSocket;
-    [SerializeField] private float delayBeforePlatform = 2.0f;
 
     // IBossContext
     public Transform Transform => transform;
@@ -207,7 +206,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         GameEventManager.Instance.bossEvents.OnDeath.Raise(); 
     
         if (deathImpactFx != null && headSocket != null)
-            Instantiate(deathImpactFx, headSocket.position, Quaternion.identity);
+            deathImpactFx.Play();
 
         // Esperamos un instante en "tiempo real" mientras el juego está casi congelado
         yield return new WaitForSecondsRealtime(0.15f); 
@@ -215,9 +214,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
         // 3. ANIMACIÓN DE MUERTE
         stateMachine.ChangeState(Die); 
-
-        // 4. PAUSA DRAMÁTICA Y PLATAFORMA
-        yield return new WaitForSeconds(delayBeforePlatform);
+        
         GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
     }
 
