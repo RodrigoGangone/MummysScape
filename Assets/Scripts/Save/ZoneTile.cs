@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro; // Necesario para los textos de las gemas
 
 [RequireComponent(typeof(Collider))]
 public class ZoneTile : MonoBehaviour
@@ -6,24 +8,32 @@ public class ZoneTile : MonoBehaviour
     [Header("Configuración de Zona")]
     [Tooltip("A qué escena (Build Index) viaja este portal.")]
     [SerializeField] private int targetBuildIndex;
-    [SerializeField] private bool isFirstZone; 
+    [SerializeField] private bool isFirstZone;
 
-    [Header("Requisitos")]
+    [Header("Requisitos de Desbloqueo")]
     [Tooltip("El nivel (índice) del Boss anterior que debe estar completado.")]
     [SerializeField] private int requiredBossLevelIndex;
     [Tooltip("Cantidad TOTAL de gemas requeridas (Suma global de todo el juego).")]
     [SerializeField] private int requiredTotalGems;
 
-    [Header("Referencias Visuales")]
+    [Header("Referencias Visuales - Escenario")]
     [SerializeField] private ParticleSystem portalFx;
     [SerializeField] private Material lockedMaterial;
+
+    [Header("Referencias Visuales - UI Flotante")]
+    [Tooltip("El objeto padre (Canvas o Panel) que contiene los iconos.")]
+    [SerializeField] private GameObject infoCanvasPanel; 
+    [SerializeField] private TextMeshProUGUI gemCountText; // Texto ej: "5/10"
+    [SerializeField] private Image bossIconImage;          // Imagen del Escorpión
+    [SerializeField] private Color statusLockedColor = Color.red;
+    [SerializeField] private Color statusUnlockedColor = Color.green;
 
     // --- SECCIÓN REVEAL (Cuando se desbloquea automáticamente) ---
     [Header("Focus Reveal (Animación de Desbloqueo)")]
     [SerializeField] private Transform revealCamPos;
     [SerializeField] private float revealDuration = 3.0f;
     [Tooltip("Zoom suave para mostrar panorámicamente que se abrió el camino.")]
-    [SerializeField] private float revealZoomAmount = 2.0f; 
+    [SerializeField] private float revealZoomAmount = 2.0f;
     [SerializeField] private AnimationCurve revealZoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     // --- SECCIÓN ENTRY (Cuando el jugador entra) ---
@@ -58,12 +68,16 @@ public class ZoneTile : MonoBehaviour
 #endif
     // ==========================================
 
-    bool _isUnlocked;
-    bool _playerInside;
+    private bool _isUnlocked;
+    private bool _playerInside;
 
     void Start()
     {
-        // --- 0. DEBUG: Resetear estado 'Seen' ---
+        // 0. Ocultar la UI flotante al inicio
+        if (infoCanvasPanel != null) 
+            infoCanvasPanel.SetActive(false);
+
+        // --- DEBUG: Resetear estado 'Seen' ---
 #if UNITY_EDITOR
         if (debugResetSeenOnPlay)
         {
@@ -79,7 +93,7 @@ public class ZoneTile : MonoBehaviour
         {
             ApplyLockedMaterial();
             if (portalFx != null) portalFx.Stop();
-            return;
+            return; 
         }
 
         // --- 3. Estado Desbloqueado ---
@@ -90,20 +104,17 @@ public class ZoneTile : MonoBehaviour
         {
             if (FocusManager.Instance != null)
             {
-                // Usamos los parámetros de REVEAL
                 FocusManager.Instance.RequestRevealFocus(
                     targetBuildIndex, // Prioridad
                     revealCamPos != null ? revealCamPos : transform,
                     transform, // LookAt por defecto al objeto
                     revealDuration,
-                    revealZoomAmount, // <--- Zoom específico de Reveal
-                    revealZoomCurve,  // <--- Curva específica de Reveal
+                    revealZoomAmount, 
+                    revealZoomCurve,  
                     () => Save.MarkZoneRevealSeen(targetBuildIndex)
                 );
             }
         }
-        
-        GameEventManager.Instance?.levelEvents.OnPrompt.Raise(false, buttonType.A);
     }
 
     void CheckUnlockConditions()
@@ -136,9 +147,75 @@ public class ZoneTile : MonoBehaviour
     {
         if (_isUnlocked && _playerInside)
         {
-            if (Input.GetButtonDown("Space"))
+            if (Input.GetButtonDown("Space")) // O tu input system preferido
                 EnterZone();
         }
+    }
+
+    // --- Lógica de UI Flotante ---
+    
+    void UpdateFloatingUI()
+    {
+        if (infoCanvasPanel == null) return;
+
+        // 1. Actualizar Gemas
+        int currentGems = Save.GetGlobalGemCount();
+        bool hasEnoughGems = currentGems >= requiredTotalGems;
+
+        if (gemCountText != null)
+        {
+            gemCountText.text = $"{currentGems} / {requiredTotalGems}";
+            gemCountText.color = hasEnoughGems ? statusUnlockedColor : statusLockedColor;
+        }
+
+        // 2. Actualizar Boss (Escorpión)
+        bool bossDefeated = Save.IsLevelCompleted(requiredBossLevelIndex);
+
+        if (bossIconImage != null)
+        {
+            // Opcional: Cambiar color del icono según estado
+            bossIconImage.color = bossDefeated ? statusUnlockedColor : statusLockedColor;
+            
+            // Opcional: Si prefieres que se vea gris/transparente si no está vencido:
+            // bossIconImage.color = bossDefeated ? Color.white : new Color(1,1,1, 0.3f);
+        }
+    }
+
+    // --- Interacción y Triggers ---
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!other.CompareTag("PlayerFather")) return;
+        _playerInside = true;
+
+        // Refrescar estado por si consiguió gemas recién
+        CheckUnlockConditions(); 
+
+        // Mostrar UI Flotante
+        if (infoCanvasPanel != null)
+        {
+            UpdateFloatingUI();
+            infoCanvasPanel.SetActive(true);
+        }
+
+        // Mostrar Prompt de botón "A" (Space) SOLO si está desbloqueado
+        if (_isUnlocked)
+        {
+            GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.A);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("PlayerFather")) return;
+        _playerInside = false;
+
+        // Ocultar UI Flotante
+        if (infoCanvasPanel != null)
+            infoCanvasPanel.SetActive(false);
+
+        // Ocultar Prompt
+        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.A);
     }
 
     void EnterZone()
@@ -149,13 +226,12 @@ public class ZoneTile : MonoBehaviour
             Transform camPos = entryFocusPos != null ? entryFocusPos : transform;
             Transform lookAt = entryLookAt != null ? entryLookAt : transform;
             
-            // Usamos los parámetros de ENTRY
             FocusManager.Instance.RequestObjectFocus(
                 camPos, 
                 lookAt, 
                 entryDuration,
-                entryZoomAmount, // <--- Zoom específico de Entry
-                entryZoomCurve   // <--- Curva específica de Entry
+                entryZoomAmount, 
+                entryZoomCurve   
             );
         }
 
@@ -172,25 +248,12 @@ public class ZoneTile : MonoBehaviour
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         foreach (var r in renderers)
         {
+            // Evitamos cambiar el material del Canvas/UI si por error son hijos del renderer
+            if (r.GetComponent<CanvasRenderer>() != null) continue;
+
             Material[] mats = new Material[r.sharedMaterials.Length];
             for (int i = 0; i < mats.Length; i++) mats[i] = lockedMaterial;
             r.materials = mats;
         }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!other.CompareTag("PlayerFather")) return;
-        _playerInside = true;
-
-        if (_isUnlocked)
-            GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.A);
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (!other.CompareTag("PlayerFather")) return;
-        _playerInside = false;
-        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.A);
     }
 }
