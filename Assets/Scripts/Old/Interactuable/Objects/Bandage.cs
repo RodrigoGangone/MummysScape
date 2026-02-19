@@ -13,6 +13,7 @@ public class Bandage : MonoBehaviour, IPausable
     private Collider _collider;
     private bool _paused;
     private Material _instancedMaterial;
+    private Breakable _sourceJar;
     
     private const int AMOUNT = 1;
     private static readonly int IsActive = Shader.PropertyToID("_isActive");
@@ -21,25 +22,21 @@ public class Bandage : MonoBehaviour, IPausable
     {
         _collider = GetComponent<Collider>();
         if (meshRenderer != null) _instancedMaterial = meshRenderer.material;
-
-        // Por defecto usa el tiempo base al nacer
-        SetupPickupDelay(defaultDelay);
     }
 
-    // Cambiamos a PUBLIC para que otros scripts lo llamen
-    public void SetupPickupDelay(float duration)
+    public void SetupPickupDelay(float duration, Breakable source = null)
     {
+        _sourceJar = source;
         if (_collider != null) _collider.enabled = false;
         if (_instancedMaterial != null) _instancedMaterial.SetFloat(IsActive, 0);
 
-        StopAllCoroutines(); // Evitamos que se solapen si se llama dos veces
+        StopAllCoroutines(); 
         StartCoroutine(EnableColliderRoutine(duration));
     }
 
     private IEnumerator EnableColliderRoutine(float duration)
     {
         yield return WaitForSecondsPausable(duration, () => _paused);
-
         if (_collider != null) _collider.enabled = true;
         if (_instancedMaterial != null) _instancedMaterial.SetFloat(IsActive, 1);
     }
@@ -47,13 +44,13 @@ public class Bandage : MonoBehaviour, IPausable
     private void OnTriggerStay (Collider collision)
     {
         if (!collision.gameObject.CompareTag("PlayerFather")) return;
-
         var ctrl = collision.gameObject.GetComponentInParent<PlayerController>();
-        
-        if (ctrl != null && ctrl.TryCollectBandage(AMOUNT))
-        {
-            Destroy(gameObject);
-        }
+        if (ctrl != null && ctrl.TryCollectBandage(AMOUNT)) Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        if (_sourceJar != null) _sourceJar.NotifyItemPickedUp();
     }
 
     public void OnPauseChanged(bool paused) => _paused = paused;

@@ -62,10 +62,11 @@ public sealed class DropBandageState : State
         // SOLUCIÓN AL TODO:
         // Buscamos el script del pickup en el objeto instanciado e invocamos un retraso.
         // Asumo que tu script se llama 'BandagePickup' o similar.
-        var pickupScript = bandage.GetComponent<BandagePickup>(); 
+        var pickupScript = bandage.GetComponent<Bandage>(); 
+        
         if (pickupScript != null)
         {
-            pickupScript.DisablePickupForSeconds(1.0f); // Inmune por 1 segundo
+            pickupScript.SetupPickupDelay(2.0f); 
         }
     }
 
