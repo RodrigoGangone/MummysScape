@@ -9,10 +9,10 @@ using static PauseUtils;
 public class FocusManager : MonoBehaviour, IPausable
 {
     public static FocusManager Instance { get; private set; }
-    
+
     [SerializeField] private CinemachineVirtualCamera focusCam;
     [SerializeField] private float bufferBetweenFocus = 0.5f;
-    
+
     private class FocusRequest
     {
         public int PriorityIndex;
@@ -21,22 +21,25 @@ public class FocusManager : MonoBehaviour, IPausable
         public Transform LookAt;
         public float Duration;
         public float ZoomAmount;
-        public AnimationCurve ZoomCurve; 
-        
-        // --- Parámetros de Mensaje Opcionales ---
-        public string Message;      
-        public Color MessageColor;  
-        public float MessageDuration; 
+        public AnimationCurve ZoomCurve;
+
+        public string Message;
+        public Color MessageColor;
+        public float MessageDuration;
 
         public Action OnComplete;
     }
 
     private List<FocusRequest> _pendingRequests = new();
     private bool _isCollectingRequests;
+    private bool _isSequenceRunning; // Bandera para control de estado
     private bool _paused;
 
     private const string TUTORIAL_BUTTON_NAME = "Accept";
     public string TutorialKey => TUTORIAL_BUTTON_NAME;
+
+    // Propiedad pública para que GemCounterAnimator consulte el estado
+    public bool IsBusy => _isCollectingRequests || _pendingRequests.Count > 0 || _isSequenceRunning;
 
     private void Awake()
     {
@@ -44,7 +47,8 @@ public class FocusManager : MonoBehaviour, IPausable
         {
             Destroy(gameObject);
             return;
-        }
+        } // --- Parámetros de Mensaje Opcionales ---
+
 
         Instance = this;
     }
@@ -58,9 +62,10 @@ public class FocusManager : MonoBehaviour, IPausable
     public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration, float zoomAmount,
         AnimationCurve zoomCurve, string message = "", Color? color = null, float msgDuration = 1.5f)
     {
-        AddRequestInternal(9999, cameraPos, lookAt, duration, zoomAmount, zoomCurve, null, message, color ?? Color.white, msgDuration);
+        AddRequestInternal(9999, cameraPos, lookAt, duration, zoomAmount, zoomCurve, null, message,
+            color ?? Color.white, msgDuration);
     }
-    
+
     public void RequestRevealFocus(int orderIndex, Transform cameraPos, Transform lookAt, float duration, float zoomAmt,
         AnimationCurve curve, Action onFinishedCallback)
     {
@@ -85,13 +90,13 @@ public class FocusManager : MonoBehaviour, IPausable
         {
             // Si es la primera vez, pasamos el mensaje y marcamos como visto al terminar
             AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, point.ZoomAmount, point.ZoomCurve,
-                () => { Save.MarkTutorialSeen(point.Id); }, 
-                point.Message, 
-                point.TextColor, 
+                () => { Save.MarkTutorialSeen(point.Id); },
+                point.Message,
+                point.TextColor,
                 point.MessageDuration);
         }
     }
-    
+
     // Método interno unificado con parámetros opcionales al final
     private void AddRequestInternal(int index, Transform camT, Transform lookAt, float duration, float zoomAmt,
         AnimationCurve curve, Action onComplete, string message = "", Color? msgColor = null, float msgDuration = 1.5f)
@@ -106,7 +111,7 @@ public class FocusManager : MonoBehaviour, IPausable
             LookAt = lookAt,
             Duration = duration,
             ZoomAmount = zoomAmt,
-            ZoomCurve = curve, 
+            ZoomCurve = curve,
             Message = message,
             MessageColor = msgColor ?? Color.white,
             MessageDuration = msgDuration,
@@ -130,6 +135,7 @@ public class FocusManager : MonoBehaviour, IPausable
 
     private IEnumerator PlaySequenceRoutine()
     {
+        _isSequenceRunning = true;
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FocusManager", true);
 
         float originalFOV = focusCam.m_Lens.FieldOfView;
@@ -148,7 +154,6 @@ public class FocusManager : MonoBehaviour, IPausable
             focusCam.m_Lens.FieldOfView = originalFOV;
             focusCam.Priority = 100;
 
-            // 1. Fase de Movimiento y Zoom
             float elapsed = 0f;
             float targetFOV = originalFOV - req.ZoomAmount;
 
@@ -164,20 +169,15 @@ public class FocusManager : MonoBehaviour, IPausable
                 float t = elapsed / req.Duration;
                 float curveValue = req.ZoomCurve.Evaluate(t);
                 focusCam.m_Lens.FieldOfView = Mathf.Lerp(originalFOV, targetFOV, curveValue);
-
                 yield return null;
             }
 
             focusCam.m_Lens.FieldOfView = targetFOV;
 
-            // 2. Fase de Mensaje (Solo si existe un texto)
             if (!string.IsNullOrEmpty(req.Message))
             {
                 GameEventManager.Instance.levelEvents.OnShowFocusMessage.Raise(req.Message, req.MessageColor);
-                
-                // Esperamos el tiempo de lectura respetando la pausa
                 yield return WaitForSecondsPausable(req.MessageDuration, () => _paused);
-                
                 GameEventManager.Instance.levelEvents.OnHideFocusMessage.Raise();
             }
 
@@ -191,6 +191,7 @@ public class FocusManager : MonoBehaviour, IPausable
         focusCam.Priority = 0;
         focusCam.LookAt = null;
 
+        _isSequenceRunning = false;
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FocusManager", false);
     }
 }

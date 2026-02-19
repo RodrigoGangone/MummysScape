@@ -93,6 +93,8 @@ public static class Save
     public static bool IsLevelRevealSeen(int index)   => IsSeen(PrefKeys.SeenLevelReveal(index));
     public static void MarkZoneRevealSeen(int index) => MarkAsSeen(PrefKeys.SeenZoneReveal(index));
     public static bool IsZoneRevealSeen(int index)   => IsSeen(PrefKeys.SeenZoneReveal(index));
+    public static int GetSeenGemsCount() => Get(PrefKeys.SeenGemsCount(), 0);
+    public static void UpdateSeenGemsCount(int count) => Set(PrefKeys.SeenGemsCount(), count);
 
     #endregion
 

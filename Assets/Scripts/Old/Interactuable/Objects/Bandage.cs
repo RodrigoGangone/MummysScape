@@ -7,6 +7,9 @@ public class Bandage : MonoBehaviour, IPausable
     [Header("Visuals")]
     [SerializeField] private Renderer meshRenderer;
 
+    [Header("Settings")]
+    [SerializeField] private float defaultDelay = 2f;
+    
     private Collider _collider;
     private bool _paused;
     private Material _instancedMaterial;
@@ -17,21 +20,19 @@ public class Bandage : MonoBehaviour, IPausable
     private void Awake()
     {
         _collider = GetComponent<Collider>();
-        if (meshRenderer != null)
-        {
-            _instancedMaterial = meshRenderer.material;
-        }
+        if (meshRenderer != null) _instancedMaterial = meshRenderer.material;
+
+        // Por defecto usa el tiempo base al nacer
+        SetupPickupDelay(defaultDelay);
     }
 
-    private void OnEnable() => DisablePickupForSeconds(2f);
-
-    private void DisablePickupForSeconds(float duration)
+    // Cambiamos a PUBLIC para que otros scripts lo llamen
+    public void SetupPickupDelay(float duration)
     {
         if (_collider != null) _collider.enabled = false;
-        
         if (_instancedMaterial != null) _instancedMaterial.SetFloat(IsActive, 0);
 
-        StopAllCoroutines();
+        StopAllCoroutines(); // Evitamos que se solapen si se llama dos veces
         StartCoroutine(EnableColliderRoutine(duration));
     }
 
@@ -39,8 +40,7 @@ public class Bandage : MonoBehaviour, IPausable
     {
         yield return WaitForSecondsPausable(duration, () => _paused);
 
-        _collider.enabled = true;
-        
+        if (_collider != null) _collider.enabled = true;
         if (_instancedMaterial != null) _instancedMaterial.SetFloat(IsActive, 1);
     }
 

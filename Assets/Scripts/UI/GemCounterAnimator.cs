@@ -1,7 +1,5 @@
-using System;
-using UnityEngine;
-using UnityEngine.UI;
 using System.Collections;
+using UnityEngine;
 using TMPro;
 using Random = UnityEngine.Random;
 
@@ -10,7 +8,7 @@ public class GemCounterAnimator : MonoBehaviour
     [Header("Referencias")] 
     public Camera mainCamera;
     public RectTransform canvasRect;
-    public RectTransform targetGemUI; // El icono de la gema en la esquina
+    public RectTransform targetGemUI; 
     public TextMeshProUGUI totalGemsText;
     public Transform playerTransform;
 
@@ -19,23 +17,39 @@ public class GemCounterAnimator : MonoBehaviour
 
     [Header("Configuración")] 
     public float travelDuration = 0.8f;
-    public float curveHeight = 100f; // Altura del arco para que no sea línea recta
+    public float curveHeight = 100f; 
     public float delayBetweenGems = 0.15f;
+    public float initialWaitTime = 2.0f; // Tiempo de espera tras los focos
     public Vector3 iconPunchScale = new Vector3(1.3f, 1.3f, 1.3f);
 
-    private const string GEMS_KEY = "LastSeenGemsCount";
-
-    void Start()
+    IEnumerator Start()
     {
-        // El sistema de guardado de Mummy's Escape
-        int actualTotal = Save.GetGlobalGemCount();
-        int lastSeenGems = PlayerPrefs.GetInt(GEMS_KEY, 0);
+        if (mainCamera == null) mainCamera = Camera.main;
+
+        // 1. Esperamos a que todos los Tiles manden sus peticiones en su Start()
+        yield return new WaitForEndOfFrame();
+
+        // 2. Si el FocusManager está ocupado con revelaciones, esperamos
+        if (FocusManager.Instance != null && FocusManager.Instance.IsBusy)
+        {
+            while (FocusManager.Instance.IsBusy)
+            {
+                yield return null;
+            }
+
+            // Buffer extra tras las cámaras para que el jugador se ubique
+            yield return new WaitForSeconds(initialWaitTime);
+        }
+
+        // 3. Lógica de gemas usando tu sistema Save
+        int actualTotal = Save.GetGlobalGemCount(); 
+        int lastSeenGems = Save.GetSeenGemsCount();
 
         if (actualTotal > lastSeenGems)
         {
             int gemsToAnimate = actualTotal - lastSeenGems;
             totalGemsText.text = lastSeenGems.ToString();
-            StartCoroutine(SequenceRoutine(lastSeenGems, gemsToAnimate, actualTotal));
+            yield return StartCoroutine(SequenceRoutine(lastSeenGems, gemsToAnimate, actualTotal));
         }
         else
         {
@@ -45,12 +59,11 @@ public class GemCounterAnimator : MonoBehaviour
 
     private IEnumerator SequenceRoutine(int startCount, int amount, int finalTotal)
     {
-        yield return new WaitForSeconds(0.5f);
+        // Pequeño delay inicial antes de que salgan las gemas
+        yield return new WaitForSeconds(0.3f);
 
-        // Convertimos la posición de la momia (mundo) a la UI una sola vez al inicio
-        Vector2 spawnBasePos = WorldToCanvasPosition(playerTransform.position + Vector3.up * 1.5f);
-        
-        // Calculamos la posición real del icono de destino dentro del Canvas
+        Vector3 pPos = (playerTransform != null) ? playerTransform.position : Vector3.zero;
+        Vector2 spawnBasePos = WorldToCanvasPosition(pPos + Vector3.up * 1.5f);
         Vector2 destinationPos = GetCanvasPosition(targetGemUI);
 
         int currentCount = startCount;
@@ -66,33 +79,29 @@ public class GemCounterAnimator : MonoBehaviour
             {
                 currentCount++;
                 totalGemsText.text = currentCount.ToString();
+                StopCoroutine(nameof(PunchIcon));
                 StartCoroutine(PunchIcon());
             }));
 
             yield return new WaitForSeconds(delayBetweenGems);
         }
 
-        PlayerPrefs.SetInt(GEMS_KEY, finalTotal);
-        PlayerPrefs.Save();
+        // Guardamos el progreso visto
+        Save.UpdateSeenGemsCount(finalTotal);
     }
 
     private IEnumerator AnimateSingleGem(RectTransform gem, Vector2 targetPos, System.Action onComplete)
     {
         float elapsed = 0;
         Vector2 startPos = gem.anchoredPosition;
-
-        // Calculamos un punto medio para crear un arco
         Vector2 midPoint = Vector2.Lerp(startPos, targetPos, 0.5f) + Vector2.up * curveHeight;
 
         while (elapsed < travelDuration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / travelDuration;
+            float tStep = t * t * (3f - 2f * t); // Ease Out
 
-            // Suavizado (Ease Out)
-            float tStep = t * t * (3f - 2f * t);
-
-            // Trayectoria curva (Curva de Bezier simple)
             Vector2 m1 = Vector2.Lerp(startPos, midPoint, tStep);
             Vector2 m2 = Vector2.Lerp(midPoint, targetPos, tStep);
             gem.anchoredPosition = Vector2.Lerp(m1, m2, tStep);
@@ -111,8 +120,6 @@ public class GemCounterAnimator : MonoBehaviour
         targetGemUI.localScale = Vector3.one;
     }
 
-    // --- FUNCIONES DE CONVERSIÓN ---
-
     private Vector2 WorldToCanvasPosition(Vector3 worldPos)
     {
         Vector2 screenPoint = mainCamera.WorldToScreenPoint(worldPos);
@@ -122,7 +129,6 @@ public class GemCounterAnimator : MonoBehaviour
 
     private Vector2 GetCanvasPosition(RectTransform element)
     {
-        // Esta función asegura que el destino sea exacto sin importar los anchors
         Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(null, element.position);
         RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, null, out Vector2 localPoint);
         return localPoint;
