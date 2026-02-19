@@ -44,6 +44,8 @@ public class Breakable : MonoBehaviour
         if (withDrop && drop != null)
         {
             var spawnedDrop = Instantiate(drop, transform.position, transform.rotation);
+            GameEventManager.Instance.levelEvents.OnRequestBandageSpawn.Raise(transform.position);
+            
             if (spawnedDrop.TryGetComponent<Bandage>(out var bandage))
             {
                 bandage.SetupPickupDelay(dropActivationDelay, this);

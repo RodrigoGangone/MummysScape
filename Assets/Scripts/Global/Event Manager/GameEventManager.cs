@@ -31,6 +31,7 @@ public class GameEventManager : MonoBehaviour
     {
         public GameEvent OnWin;
         public GameEvent OnDeath;
+        public GameEvent OnRequestBandageSpawn;
         public GameEvent OnPrompt;
         public GameEvent OnShowFocusMessage;
         public GameEvent OnHideFocusMessage;

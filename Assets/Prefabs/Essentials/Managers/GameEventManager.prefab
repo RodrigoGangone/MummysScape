@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8245628366326523347}
   - component: {fileID: 2939013598129468616}
   - component: {fileID: 5370672377176515946}
+  - component: {fileID: 3308295721562865594}
   m_Layer: 0
   m_Name: GameEventManager
   m_TagString: Untagged
@@ -61,6 +62,7 @@ MonoBehaviour:
   levelEvents:
     OnWin: {fileID: 11400000, guid: 1be7c8f7b7822e6498560ad44a98fef9, type: 2}
     OnDeath: {fileID: 11400000, guid: 7b0b59825b6200a449c18cefc41aa39c, type: 2}
+    OnRequestBandageSpawn: {fileID: 11400000, guid: 990a861f652766f46bfaa8fa003f461b, type: 2}
     OnPrompt: {fileID: 11400000, guid: f7b828538c6c9414d98fb0f3c72087a7, type: 2}
     OnShowFocusMessage: {fileID: 11400000, guid: 3634cbc542b9bbb49a0e5c0d4250e8d6, type: 2}
     OnHideFocusMessage: {fileID: 11400000, guid: ca6e7e0340b948a42b0008f37390c3be, type: 2}
@@ -98,3 +100,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _inspectorLocks: []
+--- !u!114 &3308295721562865594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3610847831028506359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b1d447bc7d858b4da5c3fc4fd61018a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxBandagesInScene: 5

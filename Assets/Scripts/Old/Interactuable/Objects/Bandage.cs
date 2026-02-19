@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using static PauseUtils;
@@ -6,9 +7,6 @@ public class Bandage : MonoBehaviour, IPausable
 {
     [Header("Visuals")]
     [SerializeField] private Renderer meshRenderer;
-
-    [Header("Settings")]
-    [SerializeField] private float defaultDelay = 2f;
     
     private Collider _collider;
     private bool _paused;
@@ -54,4 +52,14 @@ public class Bandage : MonoBehaviour, IPausable
     }
 
     public void OnPauseChanged(bool paused) => _paused = paused;
+
+    private void OnEnable()
+    {
+        GameEventManager.Instance.levelEvents.OnRequestBandageSpawn.Raise(gameObject, true);
+    }
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.levelEvents.OnRequestBandageSpawn.Raise(gameObject, false);
+    }
 }
