@@ -422,6 +422,8 @@ public class PlayerPrefsRegistryEditor : Editor
 
         potentialKeys.Add("gemTotal.Global");
 
+        potentialKeys.Add(PrefKeys.SeenGemsCount());
+        
         for (int i = 0; i <= 50; i++)
         {
             potentialKeys.Add($"level.completed.index.{i}");
