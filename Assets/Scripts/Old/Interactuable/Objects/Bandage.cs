@@ -22,7 +22,7 @@ public class Bandage : MonoBehaviour, IPausable
         if (meshRenderer != null) _instancedMaterial = meshRenderer.material;
     }
 
-    public void SetupPickupDelay(float duration, Breakable source = null)
+    public void SetupPickupDelay(float duration = 2, Breakable source = null)
     {
         _sourceJar = source;
         if (_collider != null) _collider.enabled = false;

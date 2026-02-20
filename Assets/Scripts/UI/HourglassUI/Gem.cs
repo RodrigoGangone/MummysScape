@@ -3,6 +3,7 @@ using UnityEngine;
 public class Gem : MonoBehaviour
 {
     [SerializeField] private int gemNum;
+    [SerializeField] private GameObject fxGemPick;
     [SerializeField] private FxBank gemBank;
     private static readonly int IsPickedProp = Shader.PropertyToID("_IsPicked");
 
@@ -26,6 +27,8 @@ public class Gem : MonoBehaviour
         Save.MarkGemPicked(gemNum);
 
         GameEventManager.Instance.levelEvents.OnPickedGem.Raise(gemNum);
+
+        Instantiate(fxGemPick, transform.position, Quaternion.identity, null);
         
         gameObject.SetActive(false);
     }

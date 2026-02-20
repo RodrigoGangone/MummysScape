@@ -90,7 +90,13 @@ public class BandageProjectile : MonoBehaviour, IPausable
 
         if (((1 << other.gameObject.layer) & collisionLayers) != 0)
         {
-            if (drop != null) Instantiate(drop, transform.position, Quaternion.identity);
+            if (drop != null)
+            {
+                var bandage = Instantiate(drop, transform.position, Quaternion.identity);
+                
+                bandage.GetComponent<Bandage>().SetupPickupDelay();
+            }
+            
             ReleaseToPool();
         }
     }

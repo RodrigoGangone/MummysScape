@@ -52,6 +52,8 @@ public class KnockBackState : State
 
                 GameObject bandage = Object.Instantiate(_bandagePrefab, spawnPos, Random.rotation);
 
+                bandage.GetComponent<Bandage>().SetupPickupDelay();
+                
                 // Si el prefab tiene Rigidbody, le damos un empujón explosivo
                 if (bandage.TryGetComponent<Rigidbody>(out var rb))
                 {
