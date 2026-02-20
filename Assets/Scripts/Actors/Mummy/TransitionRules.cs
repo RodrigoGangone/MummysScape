@@ -23,7 +23,7 @@ public static class TransitionRules
             { PlayerStateId.Attract,     new[]{ PlayerStateId.Idle, PlayerStateId.KnockBack,PlayerStateId.Dead } },
             { PlayerStateId.Swing,       new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.KnockBack,PlayerStateId.Dead } },
             { PlayerStateId.QuickTravel, new[]{ PlayerStateId.Idle, PlayerStateId.Dead } },
-            { PlayerStateId.KnockBack,   new[]{ PlayerStateId.Idle, PlayerStateId.Walk,PlayerStateId.Fall, PlayerStateId.Dead } },
+            { PlayerStateId.KnockBack,   new[]{ PlayerStateId.Idle, PlayerStateId.Fall, PlayerStateId.Dead } },
             { PlayerStateId.Dead,        Array.Empty<PlayerStateId>() },
         };
 
