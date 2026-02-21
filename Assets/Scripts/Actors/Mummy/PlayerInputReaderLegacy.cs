@@ -1,5 +1,10 @@
 using UnityEngine;
 
+/// <summary> 
+/// Lector de Inputs (Legacy): Implementa la interfaz IPlayerInput utilizando el sistema clásico de Unity, 
+/// procesando ejes de movimiento, sticks de control y el estado de los botones de acción. 
+/// </summary>
+
 public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
 {
     private bool _aimDown, _shootDown, _dropDown, _spaceDown;
@@ -7,7 +12,7 @@ public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
     
     private void Update()
     {
-        float aimRt = Input.GetAxis("AimRT");   // RT como eje 0..1 (o -1..1)
+        float aimRt = Input.GetAxis("AimRT"); 
 
         bool mouseAimDown = Input.GetMouseButtonDown(1);
         bool triggerAimDown = aimRt > 0.5f && _lastAimRt <= 0.5f;
@@ -15,27 +20,22 @@ public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
         if (mouseAimDown || triggerAimDown)
             _aimDown = true;
             
-        _lastAimRt = aimRt; // Actualizamos para el siguiente frame
+        _lastAimRt = aimRt;
         
         if (Input.GetMouseButtonDown(0) || Input.GetButtonDown("Shoot"))     
             _shootDown = true;
         
-        // Drop (Q o Botón B/Círculo)
         if (Input.GetKeyDown(KeyCode.Q) || Input.GetButtonDown("Drop"))     
             _dropDown  = true;
         
-        // Space (Space o Botón A/X)
         if (Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Space")) 
             _spaceDown = true;
 
-        // --- Stick Derecho ---
         AimMove = new Vector2(Input.GetAxis("RightStickX"), Input.GetAxis("RightStickY"));
     }
-
-    // --- IMPLEMENTACIÓN DE INTERFAZ ---
-
+    
     public Vector2 Move => new(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-    public Vector2 AimMove { get; private set; } // Propiedad para el stick derecho 
+    public Vector2 AimMove { get; private set; } 
 
     public bool ConsumeAimHeld()     { var v = _aimDown;    _aimDown  = false; return v; }
     public bool ConsumeShootDown()   { var v = _shootDown;  _shootDown  = false; return v; }

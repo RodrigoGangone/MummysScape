@@ -1,12 +1,12 @@
-using System;
 using System.Collections;
-using System.Net;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
-using UnityEngine.Timeline;
 
+/// <summary> 
+/// Gestor de Transición: Administra la entrada y salida de niveles, coordinando cinemáticas (Timeline), 
+/// persistencia de guardado y lógica diferenciada entre el Hub y los niveles de juego. 
+/// </summary>
 public class Portal : MonoBehaviour
 {
     [Tooltip("¿Este portal es el inicio del nivel (donde aparece la momia)?")] [SerializeField]
@@ -23,7 +23,7 @@ public class Portal : MonoBehaviour
 
     [SerializeField] private PlayableDirector directorExit;
 
-    [SerializeField] private float moveDuration = 1.0f; // Tiempo de transición
+    [SerializeField] private float moveDuration = 1.0f;
     [SerializeField] private Transform winTarget;
 
     [Tooltip("Solo es necesario si estamos configurando un sarcofagus de inicio de nivel")] [SerializeField]
@@ -40,15 +40,14 @@ public class Portal : MonoBehaviour
     {
         if (!enterLevel) return;
 
-        // ESTO FALTA EN TU CÓDIGO: Reclamar el bloqueo de entrada
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, true);
 
         Focus.Activate();
         OpenAnim();
 
-        // Asegúrate de que directorEnter no sea nulo antes de darle Play
         if (directorEnter != null) directorEnter.Play();
     }
+
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG) || enterLevel) return;
@@ -86,7 +85,6 @@ public class Portal : MonoBehaviour
     private IEnumerator MoveAndOrientPlayer(PlayerController player)
     {
         float timer = 0f;
-
 
         Vector3 startPos = player.Ctx.Tf.position;
 
@@ -136,24 +134,15 @@ public class Portal : MonoBehaviour
     public void WinUI()
     {
         if (!isSelectorPortal)
-        {
-            // COMPORTAMIENTO NIVEL: Envía index positivo para registrar victoria
             GameEventManager.Instance.levelEvents.OnWin.Raise(SceneManager.GetActiveScene().buildIndex);
-        }
         else
-        {
-            // COMPORTAMIENTO SELECTOR: Envía index NEGATIVO para indicar "Carga Directa"
-            // Esto evita que CompleteLevel registre nada (porque validaremos el index)
             GameEventManager.Instance.levelEvents.OnWin.Raise(-sceneIndex);
-        }
     }
 
     private void CompleteLevel(int index)
     {
-        // Si el index es negativo, significa que venimos del selector. NO REGISTRAMOS PREFS.
         if (index < 0) return;
 
-        // Aquí va tu lógica de Save:
         Save.CompleteLevel(index);
         Debug.Log("Progreso registrado para nivel: " + index);
     }

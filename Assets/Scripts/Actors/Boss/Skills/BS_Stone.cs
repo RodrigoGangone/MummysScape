@@ -1,5 +1,13 @@
 using UnityEngine;
 
+/// <summary>
+/// Skill de Boss: Calcula una trayectoria parabólica (Bézier) hacia una posición 
+/// predicha del Player para instanciar y lanzar un proyectil de piedra.
+///
+/// TODO: Es una implementacion vieja para lanzar el proyectil, se guarda dentro 
+/// TODO: del proyecto para reutilizarlo en proximos enemigos
+/// </summary>
+
 [CreateAssetMenu(menuName = "Boss/Skills/Scorpion/Stone Skill")]
 public class BS_Stone : BossSkillSO
 {
@@ -31,11 +39,9 @@ public class BS_Stone : BossSkillSO
             return;
         }
 
-        // --- 1) Posición de salida ---
         Transform launchTf = FindDescendantByName(ctx.Transform, launchSocketName) ?? ctx.Transform;
         Vector3 startPos = launchTf.TransformPoint(localSpawnOffset);
 
-        // --- 2) Predicción de impacto (desacoplada del tiempo de vuelo) ---
         var player = ctx.Player;
         Vector3 playerPos = player.Tf.position;
         Rigidbody playerRb = player.Rb;
@@ -46,19 +52,16 @@ public class BS_Stone : BossSkillSO
 
         if (impactScatterRadius > 0f)
         {
-            Vector2 rnd = Random.insideUnitCircle * impactScatterRadius; // círculo en XZ
+            Vector2 rnd = Random.insideUnitCircle * impactScatterRadius;
             endPos += new Vector3(rnd.x, 0f, rnd.y);
         }
 
-        // --- 3) Control point de la Bézier (punto medio elevado) ---
         Vector3 mid = 0.5f * (startPos + endPos);
         Vector3 control = mid + Vector3.up * arcHeight;
 
-        // --- 4) Escalado por Stage (velocidad = 1 / duración) ---
         float stageMul = GetStageSpeedMultiplier(wm);
         float flightDuration = Mathf.Max(0.05f, baseFlightDuration / stageMul);
 
-        // --- 5) Instanciar y lanzar ---
         GameObject go = Instantiate(stonePrefab, startPos, Quaternion.identity);
         var proj = go.GetComponent<StoneProjectile>();
         if (proj == null) proj = go.AddComponent<StoneProjectile>();
@@ -67,16 +70,15 @@ public class BS_Stone : BossSkillSO
 
     private static float GetStageSpeedMultiplier(in WorldModel wm)
     {
-        // Intenta leer el StageStatsSO actual y tomar su speedMultiplier
         try
         {
             var stats = wm.Config != null ? wm.Config.GetStage(wm.StageIndex) : null;
             if (stats != null && stats.speedMultiplier > 0.001f)
                 return stats.speedMultiplier;
         }
-        catch { /* por seguridad ante nulls o índices fuera de rango */ }
+        catch {  }
 
-        return 1f; // fallback
+        return 1f; 
     }
 
     private static Transform FindDescendantByName(Transform root, string name)

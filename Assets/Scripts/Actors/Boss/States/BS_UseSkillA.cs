@@ -1,17 +1,16 @@
-using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using static Utils;
 
-/// <summary> Estado que ejecuta Skill A y vuelve a Idle. </summary>
+/// <summary>
+/// Estado de Habilidad Primaria: Gestiona el ciclo del primer slot de ataque, asegurando que el Boss 
+/// mire al jugador y limpiando proyectiles residuales al finalizar la ejecución.
+/// </summary>
+
 public sealed class BS_UseSkillA : State
 {
     private readonly BossActor _actor;
 
-    public BS_UseSkillA(BossActor actor)
-    {
-        _actor = actor;
-    }
+    public BS_UseSkillA(BossActor actor) => _actor = actor;
 
     public override void OnEnter()
     {
@@ -29,9 +28,7 @@ public sealed class BS_UseSkillA : State
         t.LookAt(p);
     }
 
-    public override void OnFixedUpdate()
-    {
-    }
+    public override void OnFixedUpdate() { }
 
     public override void OnExit()
     {
@@ -40,6 +37,6 @@ public sealed class BS_UseSkillA : State
         var chargingProjectile = _actor.Transform.GetComponentInChildren<ChargeableProjectile>();
 
         if (chargingProjectile != null)
-            GameObject.Destroy(chargingProjectile.gameObject);
+            Object.Destroy(chargingProjectile.gameObject);
     }
 }

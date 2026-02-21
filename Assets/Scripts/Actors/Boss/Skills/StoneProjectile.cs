@@ -1,15 +1,14 @@
 using System;
-using System.Collections;
-using static PauseUtils;
 using UnityEngine;
 
 /// <summary>
-/// Mueve la piedra a lo largo de una Bézier cuadrática y detecta impacto.
-/// - Utiliza un SphereCast unificado en Update para detectar paredes y al jugador.
-/// - Empuja al Player al impactar (si tiene Rigidbody) solo en el plano XZ.
-/// - Respeta ocultamiento: no golpea a través de paredes (wallMask).
-/// - Stun simple: deshabilita el script Player por un tiempo y lo vuelve a habilitar.
+/// Lógica de Proyectil: Controla el desplazamiento por curva Bézier, detecta impactos 
+/// mediante SphereCast y aplica fuerzas físicas (push) al Player si es alcanzado.
+///
+/// TODO: Es una implementacion vieja para lanzar el proyectil, se guarda dentro 
+/// TODO: del proyecto para reutilizarlo en proximos enemigos
 /// </summary>
+
 public class StoneProjectile : MonoBehaviour, IPausable
 {
     [Header("Detección")]
@@ -25,25 +24,19 @@ public class StoneProjectile : MonoBehaviour, IPausable
     [Header("Empujón al Player")]
     [SerializeField, Min(0f)] private float pushForce = 12f;
     [SerializeField] private ForceMode pushForceMode = ForceMode.Impulse;
-
-    [Header("Stun simple")]
-    [SerializeField, Min(0.01f)] private float stunDuration = 1.0f;
-
+    
     [Header("Fx/Visual")]
     [SerializeField] private GameObject view;
     [SerializeField] private GameObject fxImpact;
 
     private bool _paused;
     private event Action<Vector3> OnHit;
-    // Bézier y tiempo
     private Vector3 p0, p1, p2;
     private float duration;
     private float t;
 
-    // Contexto
     private IBossContext _ctx;
 
-    // Estado
     private bool _hit;
     private Vector3 _lastPos;
 
@@ -122,9 +115,7 @@ public class StoneProjectile : MonoBehaviour, IPausable
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, hitRadius);
     }
-
-    // ================== Helpers de impacto ==================
-
+    
     void OnHitPlayer(Collider other)
     {
         if (_hit) return;
@@ -132,7 +123,6 @@ public class StoneProjectile : MonoBehaviour, IPausable
         
         OnHit?.Invoke(other.transform.position);
 
-        // var player = other.GetComponentInParent<Player>();
         var hitRb = other.attachedRigidbody ? other.attachedRigidbody : other.GetComponentInParent<Rigidbody>();
 
         if (hitRb != null)
@@ -140,25 +130,12 @@ public class StoneProjectile : MonoBehaviour, IPausable
             Vector3 targetCenter = GetTargetCenter(other);
             Vector3 impactDir = targetCenter - transform.position;
 
-            // <<< CAMBIO CLAVE: EMPUJE SOLO EN XZ >>>
-            // 1. Creamos un vector de empuje "plano" anulando la componente Y.
             Vector3 pushDir = new Vector3(impactDir.x, 0f, impactDir.z);
 
-            // 2. Nos aseguramos de que haya una dirección horizontal antes de aplicar la fuerza.
-            //    Esto evita un error si el impacto es perfectamente vertical.
             if (pushDir.sqrMagnitude > 0.001f)
-            {
-                // 3. Normalizamos el vector plano y aplicamos la fuerza.
                 hitRb.AddForce(pushDir.normalized * pushForce, pushForceMode);
-            }
         }
-        //
-        // if (player != null)
-        // {
-        //     StartCoroutine(SimpleStun(player, stunDuration));
-        // }
-
-        Debug.Log("[BS_Stone] Impacto con Player (stun simple y empuje XZ aplicado).");
+        
         if(view != null) view.SetActive(false);
     }
 
@@ -186,15 +163,6 @@ public class StoneProjectile : MonoBehaviour, IPausable
         var rb = col.attachedRigidbody ? col.attachedRigidbody : col.GetComponentInParent<Rigidbody>();
         return rb != null ? rb.worldCenterOfMass : col.bounds.center;
     }
-
-    // private IEnumerator SimpleStun(Player player, float seconds)
-    // {
-    //     player.enabled = false;
-    //     yield return WaitForSecondsPausable(seconds, () => _paused);
-    //     player.enabled = true;
-    //     Destroy(gameObject);
-    // }
-
     void SpawnFX(Vector3 pos) => Instantiate(fxImpact, pos, Quaternion.identity);
     
     public void OnPauseChanged(bool paused) => _paused = paused;

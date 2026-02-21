@@ -2,10 +2,11 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-/// <summary>
-/// TimerService
-/// Servicio simple de timers basado en coroutines. Devuelve un handle cancelable.
+/// <summary> 
+/// Servicio de Tiempo: Provee una infraestructura ligera de temporizadores basados en corrutinas 
+/// para gestionar eventos con duración, como el tiempo límite del estado "Head". 
 /// </summary>
+
 public sealed class TimerService : MonoBehaviour
 {
     public sealed class Handle { internal Coroutine Co; public bool IsActive => Co != null; }

@@ -2,6 +2,11 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary> 
+/// Efecto de Reensamblaje: Reconstruye visualmente objetos destruidos moviendo sus piezas 
+/// de vuelta a sus coordenadas locales originales mediante interpolación suave. 
+/// </summary>
+
 public class ReassemblePieces : MonoBehaviour
 {
     private struct PieceData
@@ -19,7 +24,6 @@ public class ReassemblePieces : MonoBehaviour
 
     void Awake()
     {
-        // Guardamos la posición local inicial de cada pieza
         MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
         foreach (MeshRenderer mr in renderers)
         {
@@ -38,10 +42,8 @@ public class ReassemblePieces : MonoBehaviour
 
     private IEnumerator ReassembleRoutine()
     {
-        // 1. Espera antes de empezar a volar
         yield return new WaitForSeconds(WaitBeforeFlyBack);
 
-        // 2. Desactivar físicas
         foreach (var piece in pieces)
         {
             if (piece.transform.TryGetComponent<Rigidbody>(out var rb))
@@ -51,7 +53,6 @@ public class ReassemblePieces : MonoBehaviour
             }
         }
 
-        // 3. Animación de regreso
         float elapsed = 0;
         while (elapsed < AssembleDuration)
         {
@@ -67,7 +68,5 @@ public class ReassemblePieces : MonoBehaviour
             }
             yield return null;
         }
-        
-        // No hay Destroy(gameObject) aquí, lo hará el Breakable.cs
     }
 }

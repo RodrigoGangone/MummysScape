@@ -2,6 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
+/// <summary> 
+/// Núcleo de Audio: Singleton central que administra el pool de AudioSources, gestiona los buses 
+/// de salida del Mixer y permite la reproducción global de clips 2D y 3D. 
+/// </summary>
+
 public sealed class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
@@ -20,12 +25,11 @@ public sealed class AudioManager : MonoBehaviour
 
     private Dictionary<AudioBus, BusConfig> _busLookup;
     private readonly Dictionary<AudioBus, float> _busVolumes = new();
-    private readonly Dictionary<string, AudioSource> _activeLoops = new Dictionary<string, AudioSource>();
-    private List<AudioSource> _sfxPool = new List<AudioSource>();
+    private readonly Dictionary<string, AudioSource> _activeLoops = new();
+    private List<AudioSource> _sfxPool = new();
     
     private void Awake()
     {
-        // Singleton simple
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -43,14 +47,12 @@ public sealed class AudioManager : MonoBehaviour
 
     private void CreateSfxPool()
     {
-        // Creamos los 10 AudioSources hijos para los efectos
         for (int i = 0; i < _sfxPoolSize; i++)
         {
             GameObject go = new GameObject($"SfxSource_{i}");
             go.transform.SetParent(this.transform);
             AudioSource src = go.AddComponent<AudioSource>();
             
-            // Configuración básica para SFX 2D
             src.playOnAwake = false;
             src.spatialBlend = 0f; 
             
@@ -60,14 +62,11 @@ public sealed class AudioManager : MonoBehaviour
     
     private AudioSource GetAvailableSfxSource()
     {
-        // 1. Buscar uno que no esté reproduciendo nada
         foreach (var src in _sfxPool)
         {
             if (!src.isPlaying) return src;
         }
-
-        // 2. Opcional: Si todos están ocupados, podrías "robar" el más viejo, 
-        // pero aquí simplemente devolvemos el primero (se reiniciará)
+        
         return _sfxPool[0];
     }
     
@@ -116,7 +115,6 @@ public sealed class AudioManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(config.mixerParameter))
         {
-            // 0..1 -> dB (aprox -80 a 0)
             float dB = volume01 > 0.0001f ? Mathf.Log10(volume01) * 20f : -80f;
             _settings.mixer.SetFloat(config.mixerParameter, dB);
         }
@@ -152,7 +150,6 @@ public sealed class AudioManager : MonoBehaviour
         StopLoop(key);
         AudioSource src = null;
 
-        // Lógica especial para SFX para permitir polifonía
         if (bus == AudioBus.Sfx)
         {
             src = GetAvailableSfxSource();
@@ -170,13 +167,11 @@ public sealed class AudioManager : MonoBehaviour
 
         if (src == null) return;
 
-        // Configurar y reproducir
         src.clip = clip;
         src.loop = loop;
         src.volume = volume;
         src.pitch = pitch;
         
-        // Aseguramos que tenga el grupo del mixer correcto (importante si se acaba de crear)
         var group = GetMixerGroup(bus);
         if (group != null) src.outputAudioMixerGroup = group;
 
@@ -229,9 +224,6 @@ public sealed class AudioManager : MonoBehaviour
 
     #endregion
 
-    /// <summary>
-    /// Detiene un sonido loopeable activo por su key.
-    /// </summary>
     public void StopLoop(string key)
     {
         if (string.IsNullOrEmpty(key)) return;
@@ -241,7 +233,7 @@ public sealed class AudioManager : MonoBehaviour
             if (src != null)
             {
                 src.Stop();
-                // Si es un objeto 3D temporal creado por PlayClip3D, destruimos el GameObject
+
                 if (src.gameObject.name.StartsWith("Loop3D_"))
                 {
                     Destroy(src.gameObject);

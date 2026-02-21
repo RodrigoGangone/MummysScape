@@ -6,6 +6,10 @@ using Cinemachine;
 using System.Linq;
 using static PauseUtils;
 
+/// <summary> 
+/// Orquestador de Foco: Sistema centralizado que gestiona colas de peticiones para dirigir la cámara hacia 
+/// objetivos, controlando parámetros de zoom, duración y mensajes de interfaz asociados. 
+/// </summary>
 public class FocusManager : MonoBehaviour, IPausable
 {
     public static FocusManager Instance { get; private set; }
@@ -32,13 +36,12 @@ public class FocusManager : MonoBehaviour, IPausable
 
     private List<FocusRequest> _pendingRequests = new();
     private bool _isCollectingRequests;
-    private bool _isSequenceRunning; // Bandera para control de estado
+    private bool _isSequenceRunning;
     private bool _paused;
 
     private const string TUTORIAL_BUTTON_NAME = "Accept";
     public string TutorialKey => TUTORIAL_BUTTON_NAME;
 
-    // Propiedad pública para que GemCounterAnimator consulte el estado
     public bool IsBusy => _isCollectingRequests || _pendingRequests.Count > 0 || _isSequenceRunning;
 
     private void Awake()
@@ -47,18 +50,11 @@ public class FocusManager : MonoBehaviour, IPausable
         {
             Destroy(gameObject);
             return;
-        } // --- Parámetros de Mensaje Opcionales ---
-
+        }
 
         Instance = this;
     }
 
-    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
-
-    public void OnPauseChanged(bool paused) => _paused = paused;
-
-    // Métodos públicos con parámetros opcionales para no romper llamadas existentes
     public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration, float zoomAmount,
         AnimationCurve zoomCurve, string message = "", Color? color = null, float msgDuration = 1.5f)
     {
@@ -69,7 +65,6 @@ public class FocusManager : MonoBehaviour, IPausable
     public void RequestRevealFocus(int orderIndex, Transform cameraPos, Transform lookAt, float duration, float zoomAmt,
         AnimationCurve curve, Action onFinishedCallback)
     {
-        // En reveal focus pasamos mensaje vacío por defecto
         AddRequestInternal(orderIndex, cameraPos, lookAt, duration, zoomAmt, curve, onFinishedCallback);
     }
 
@@ -77,18 +72,15 @@ public class FocusManager : MonoBehaviour, IPausable
     {
         if (point == null) return;
 
-        // Verificamos si el tutorial ya fue visto usando tu sistema de Save
         bool seen = Save.IsTutorialSeen(point.Id);
 
         if (seen)
         {
-            // Si ya se vio, solo hacemos el focus de cámara sin mostrar el mensaje de nuevo
             AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, point.ZoomAmount, point.ZoomCurve,
                 null, string.Empty, Color.white, 0f);
         }
         else
         {
-            // Si es la primera vez, pasamos el mensaje y marcamos como visto al terminar
             AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, point.ZoomAmount, point.ZoomCurve,
                 () => { Save.MarkTutorialSeen(point.Id); },
                 point.Message,
@@ -97,7 +89,6 @@ public class FocusManager : MonoBehaviour, IPausable
         }
     }
 
-    // Método interno unificado con parámetros opcionales al final
     private void AddRequestInternal(int index, Transform camT, Transform lookAt, float duration, float zoomAmt,
         AnimationCurve curve, Action onComplete, string message = "", Color? msgColor = null, float msgDuration = 1.5f)
     {
@@ -194,4 +185,8 @@ public class FocusManager : MonoBehaviour, IPausable
         _isSequenceRunning = false;
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FocusManager", false);
     }
+
+    public void OnPauseChanged(bool paused) => _paused = paused;
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }

@@ -1,11 +1,16 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary> 
+/// Controlador de Bandage: Administra la cantidad máxima de vendas activas en la escena utilizando 
+/// una lógica FIFO (First-In, First-Out) para desactivar los ítems más antiguos y optimizar el rendimiento. 
+/// </summary>
+
 public class BandageManager : MonoBehaviour
 {
     [SerializeField] private int maxBandagesInScene = 5;
 
-    private List<GameObject> activeBandages = new List<GameObject>();
+    private List<GameObject> activeBandages = new();
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnRequestBandageSpawn.Register<GameObject, bool>(HandleBandageUpdate);
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnRequestBandageSpawn.Unregister<GameObject, bool>(HandleBandageUpdate);
 
@@ -13,10 +18,8 @@ public class BandageManager : MonoBehaviour
     {
         if (isActive)
         {
-            // Lógica FIFO: Si está lleno, apagamos la más vieja
             if (activeBandages.Count >= maxBandagesInScene)
             {
-                // Al hacer esto, la venda llamará a este mismo método con 'isActive = false'
                 activeBandages[0].SetActive(false);
             }
 
@@ -27,7 +30,6 @@ public class BandageManager : MonoBehaviour
         }
         else
         {
-            // Si la venda se apaga, la removemos de la lista
             if (activeBandages.Contains(bandage))
             {
                 activeBandages.Remove(bandage);

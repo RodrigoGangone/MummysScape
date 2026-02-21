@@ -1,6 +1,11 @@
 using UnityEngine;
 using static Save;
 
+/// <summary> 
+/// Monitor de Progreso: Sincroniza los materiales de la interfaz de gemas con los datos de 
+/// persistencia, actualizando el estado de "recogido" en tiempo real durante la partida. 
+/// </summary>
+
 public class UIGemManager : MonoBehaviour
 {
     [SerializeField] private Material[] _gemMaterials;

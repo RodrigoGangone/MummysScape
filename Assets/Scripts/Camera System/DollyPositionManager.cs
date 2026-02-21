@@ -2,20 +2,25 @@ using UnityEngine;
 using Cinemachine;
 using System.Collections;
 
+/// <summary>
+/// SISTEMA DESCARTADO
+/// Gestor de Dolly: Controla el movimiento de cámaras sobre rieles (Dolly Tracks), administrando transiciones 
+/// suaves de posición y velocidad para recorridos cinematográficos o seguimiento específico. 
+/// </summary>
+
 public class DollyPositionManager : MonoBehaviour
 {
 [System.Serializable]
     public struct DollyTrackCamera
     {
         [Header("Configuración de VCam")]
-        public string id;                 // Ej: "Ground", "Water"
-        public CinemachineVirtualCamera vcam; // La vcam específica para este track
+        public string id;           
+        public CinemachineVirtualCamera vcam;
 
         [Header("Configuración de movimiento")]
         [Tooltip("Velocidad de transición entre waypoints para esta cámara")]
         public float transitionSpeed;
 
-        // Almacenados en Awake 
         [HideInInspector] public CinemachineTrackedDolly dolly;
     }
 
@@ -29,7 +34,6 @@ public class DollyPositionManager : MonoBehaviour
     private int currentTrackIndex = -1;
     private Coroutine moveRoutine;
 
-    // Para bloquear cambios por zonas cuando hay plano especial
     public bool ZonesLocked { get; private set; }
 
     private void Awake()
@@ -53,18 +57,13 @@ public class DollyPositionManager : MonoBehaviour
                 continue;
             }
 
-            // Asignar prioridad base
             cameras[i].vcam.Priority = basePriority;
 
-            // Obtener y configurar el componente Dolly
             cameras[i].dolly = cameras[i].vcam.GetCinemachineComponent<CinemachineTrackedDolly>();
             if (cameras[i].dolly != null)
             {
                 cameras[i].dolly.m_PositionUnits = CinemachinePathBase.PositionUnits.PathUnits;
                 
-                // --- NUEVO ---
-                // Habilitamos AutoDolly por defecto en todas las cámaras inactivas.
-                // Asumimos que están configuradas para seguir al player.
                 cameras[i].dolly.m_AutoDolly.m_Enabled = true;
             }
             else
@@ -73,25 +72,17 @@ public class DollyPositionManager : MonoBehaviour
             }
         }
 
-        // Activar la primera cámara de la lista por defecto
         currentTrackIndex = 0;
-        if (cameras.Length > 0) // Chequeo de seguridad
+        if (cameras.Length > 0)
         {
             var firstCam = cameras[currentTrackIndex];
             firstCam.vcam.Priority = activePriority;
 
-            // --- NUEVO ---
-            // Deshabilitamos AutoDolly SÓLO en la cámara que empieza activa.
             if (firstCam.dolly != null)
-            {
                 firstCam.dolly.m_AutoDolly.m_Enabled = false;
-            }
         }
     }
-    // ------------------------------------------------------------------
-    //  API (Multi-track)
-    //  Usada por CameraZoneTrigger
-    // ------------------------------------------------------------------
+
     public void SetZoneDollyPosition(string trackId, int waypointIndex)
     {
         if (ZonesLocked) return;
@@ -103,92 +94,45 @@ public class DollyPositionManager : MonoBehaviour
             return;
         }
 
-        // Cambia la cámara activa (prioridad)
         SetActiveCamera(idx);
 
-        // Mueve la cámara activa a su waypoint
         MoveActiveCameraToWaypoint(waypointIndex);
     }
 
-    // ------------------------------------------------------------------
-    //  API (Compatibilidad)
-    //  Mueve la cámara que YA esté activa
-    // ------------------------------------------------------------------
     public void SetZoneDollyPosition(int waypointIndex)
     {
         if (ZonesLocked) return;
-        if (currentTrackIndex < 0) return; // No hay cámara activa
+        if (currentTrackIndex < 0) return;
 
         MoveActiveCameraToWaypoint(waypointIndex);
     }
 
-    // ------------------------------------------------------------------
-    //  API para FocusManager
-    // ------------------------------------------------------------------
-
-    public void SetZonesLocked(bool locked)
-    {
-        ZonesLocked = locked;
-
-        if (locked && moveRoutine != null)
-        {
-            StopCoroutine(moveRoutine);
-            moveRoutine = null;
-        }
-    }
-
-    /**
-     * Activa o desactiva la cámara de gameplay actual.
-     * 'FocusManager' llamará a esto con 'false' para ceder
-     * prioridad a la 'focusCam'.
-     */
-    public void ActivateGameplayCamera(bool active)
-    {
-        if (currentTrackIndex < 0 || currentTrackIndex >= cameras.Length) return;
-
-        // Si 'active' es true, le da prioridad 'activePriority' (10)
-        // Si 'active' es false, le da prioridad 0 (para ceder a la focus cam)
-        cameras[currentTrackIndex].vcam.Priority = active ? activePriority : 0;
-    }
-
-
-    // ------------------------------------------------------------------
-    //  Helpers
-    // ------------------------------------------------------------------
-
     private void SetActiveCamera(int index)
     {
-        if (index == currentTrackIndex) return; // Ya es la activa
+        if (index == currentTrackIndex) return; 
         if (index < 0 || index >= cameras.Length) return;
 
-        // 1. Desactiva la cámara anterior (si hay)
         if (currentTrackIndex >= 0)
         {
             var oldCam = cameras[currentTrackIndex];
             oldCam.vcam.Priority = basePriority;
 
-            // --- NUEVO ---
-            // HABILITAR AutoDolly en la cámara que se vuelve inactiva
             if (oldCam.dolly != null)
             {
                 oldCam.dolly.m_AutoDolly.m_Enabled = true;
             }
         }
 
-        // 2. Detiene cualquier movimiento en curso
         if (moveRoutine != null)
         {
             StopCoroutine(moveRoutine);
             moveRoutine = null;
         }
 
-        // 3. Activa la nueva cámara
         currentTrackIndex = index;
         var newCam = cameras[currentTrackIndex];
         newCam.vcam.Priority = activePriority;
 
-        // --- NUEVO ---
-        // DESHABILITAR AutoDolly en la cámara que se vuelve activa
         if (newCam.dolly != null)
         {
             newCam.dolly.m_AutoDolly.m_Enabled = false;

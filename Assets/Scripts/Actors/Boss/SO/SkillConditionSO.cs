@@ -1,10 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Condición abstracta para comporner lógica de disponibilidad de una habilidad (distancia, LOS, stage, etc.)
+/// Filtro Lógico: Clase base para crear condiciones modulares (como distancia o línea de visión) 
+/// que determinan si una habilidad específica puede ser activada en un momento dado.
 /// </summary>
+
 public abstract class SkillConditionSO : ScriptableObject
 {
     public abstract bool Evaluate(in WorldModel wm, IBossContext ctx);

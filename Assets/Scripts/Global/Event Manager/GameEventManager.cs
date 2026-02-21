@@ -1,6 +1,10 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
+
+/// <summary> 
+/// Repositorio Global de Eventos: Singleton persistente que centraliza todas las instancias de 
+/// GameEvents del proyecto, organizándolas en categorías lógicas (Boss, Player, Level). 
+/// </summary>
 
 public class GameEventManager : MonoBehaviour
 {
@@ -35,7 +39,7 @@ public class GameEventManager : MonoBehaviour
         public GameEvent OnPrompt;
         public GameEvent OnShowFocusMessage;
         public GameEvent OnHideFocusMessage;
-        public GameEvent OnPauseChanged; // bool: true = pausa, false = resume
+        public GameEvent OnPauseChanged;
         public GameEvent OnRespawn;
         public GameEvent OnPickedGem;
     }

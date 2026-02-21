@@ -1,15 +1,10 @@
-using System;
 using Cinemachine;
 using UnityEngine;
 
-//// <summary>
-//// BoxPushAttract
-//// - Caja dinámica: fuera de interacción congela XZ; en Push/Attract libera XZ.
-//// - GroundCheck: 4 raycasts a esquinas o BoxCast (configurable).
-//// - IsGroundedForPushAttract() true si el soporte bajo la caja pertenece a _groundMask
-////   (ej.: layers "Box", "Floor", "Interactable") y supera el umbral configurado.
-//// - Gizmos: verde = soportado.
-//// </summary>
+/// <summary> 
+/// Lógica de Caja Dinámica: Controla el comportamiento físico de objetos empujables y atraíbles, 
+/// gestionando restricciones de movimiento XZ y validación de soporte de suelo multirrayo. 
+/// </summary>
 [RequireComponent(typeof(Rigidbody), typeof(BoxCollider))]
 public sealed class BoxPushAttract : MonoBehaviour
 {
@@ -27,15 +22,9 @@ public sealed class BoxPushAttract : MonoBehaviour
     [Range(0, 4)] [SerializeField] private int _minSupportedCorners = 1;
     [SerializeField] private bool _useBoxCast = false;
     [SerializeField] private float _boxCastInset = 0.01f;
-
-    [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
-    [SerializeField] private Color _okColor = new(0.2f, 1f, 0.2f, 0.9f);
-    [SerializeField] private Color _badColor = new(1f, 0.2f, 0.2f, 0.9f);
-
-    [Header("Fx")] 
     
-    [SerializeField] public FxBank bank;
-    
+    [Header("Fx")] [SerializeField] public FxBank bank;
+
     private CinemachineImpulseSource _impulseSource;
     [SerializeField] private float _shakeForce;
 
@@ -79,20 +68,13 @@ public sealed class BoxPushAttract : MonoBehaviour
 
     public float GetAttachDuration() => _wrapHandler != null ? _wrapHandler.WrapDuration : 0f;
 
-    /// <summary>
-    /// Habilita/deshabilita el modo libre en XZ.
-    /// <param name="enabled">True para liberar física.</param>
-    /// <param name="useBandages">True para activar la animación de vendas (Attract), False para solo física (Push).</param>
-    /// </summary>
     public void SetPushAttractMode(bool enabled, bool useBandages = true)
     {
-        // 1. Lógica Visual
         if (enabled && useBandages)
         {
             _wrapHandler.Wrap();
         }
 
-        // 2. Lógica Física (Constraints) - Se mantiene igual
         _rb.constraints = enabled ? FreeXZConstraints : IdleConstraints;
 
         if (!enabled)
@@ -104,9 +86,6 @@ public sealed class BoxPushAttract : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Devuelve true si la base de la caja está soportada por _groundMask.
-    /// </summary>
     public bool IsGroundedForPushAttract()
     {
         if (_useBoxCast)
@@ -114,7 +93,6 @@ public sealed class BoxPushAttract : MonoBehaviour
         return GroundCheckCorners(out _);
     }
 
-    /// <summary>Mueve la caja por delta en XZ (sólo si está en modo libre).</summary>
     public void MoveBy(in Vector3 deltaWorld)
     {
         if ((_rb.constraints & (RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ)) != 0)
@@ -127,7 +105,6 @@ public sealed class BoxPushAttract : MonoBehaviour
         _rb.velocity = Vector3.zero;
     }
 
-    // ---------- Ground Check (4 esquinas) ----------
     private bool GroundCheckCorners(out int supported)
     {
         supported = 0;
@@ -172,21 +149,15 @@ public sealed class BoxPushAttract : MonoBehaviour
         return _gcSupported;
     }
 
-    /// <summary>
-    /// Distancia horizontal (XZ) desde worldPoint a la superficie del BoxCollider.
-    /// Usa Collider.ClosestPoint para medir contra la geometría real.
-    /// </summary>
     public float HorizontalDistanceTo(Vector3 worldPoint)
     {
         if (_col == null) _col = GetComponent<BoxCollider>();
-        // proyectamos la consulta al plano XZ del centro de la caja
         Vector3 query = new(worldPoint.x, _col.bounds.center.y, worldPoint.z);
         Vector3 closest = _col.ClosestPoint(query);
         Vector2 v = new(closest.x - query.x, closest.z - query.z);
         return v.magnitude;
     }
 
-    // ---------- Ground Check (BoxCast) ----------
     private bool GroundCheckBoxCast()
     {
         if (!_col) return false;
@@ -216,6 +187,12 @@ public sealed class BoxPushAttract : MonoBehaviour
         }
     }
 
+    #region Gizmos
+
+    [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
+    [SerializeField] private Color _okColor = new(0.2f, 1f, 0.2f, 0.9f);
+    [SerializeField] private Color _badColor = new(1f, 0.2f, 0.2f, 0.9f);
+    
     private void OnDrawGizmosSelected() => OnDrawGizmos();
 
     private void OnDrawGizmos()
@@ -247,4 +224,6 @@ public sealed class BoxPushAttract : MonoBehaviour
             Gizmos.DrawSphere(_gcHitPoints[i], 0.03f);
         }
     }
+
+    #endregion
 }

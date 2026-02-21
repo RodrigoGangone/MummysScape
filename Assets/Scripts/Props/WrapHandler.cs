@@ -2,35 +2,37 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 
+/// <summary> 
+/// Animador de Material (Wrap): Controla visualmente el efecto de "envolvimiento" mediante 
+/// MaterialPropertyBlocks, optimizando el rendimiento al animar propiedades de shader sin instanciar materiales. 
+/// </summary>
 public class WrapHandler : MonoBehaviour
 {
     [Header("Configuración Shader")]
     [Tooltip("Nombre de la propiedad en Shader Graph (ej: _Offset, _Fill)")]
-    [SerializeField] private string _propertyName = "_Offset";
+    [SerializeField]
+    private string _propertyName = "_Offset";
 
-    [FormerlySerializedAs("_unWrapValue")]
-    [FormerlySerializedAs("_initValue")]
-    [Header("Valores")] 
-    
-    [SerializeField] private float _unwrapValue;
+    [FormerlySerializedAs("_unWrapValue")] [FormerlySerializedAs("_initValue")] [Header("Valores")] [SerializeField]
+    private float _unwrapValue;
+
     [SerializeField] private float _wrapValue;
-    
-    [Header("Tiempos")]
-    [SerializeField] private float _wrapDuration = 0.5f;   // Tiempo 0 a 1
-    [SerializeField] private float _unwrapDuration = 0.5f; // Tiempo 1 a 0
+
+    [Header("Tiempos")] [SerializeField] private float _wrapDuration = 0.5f;
+    [SerializeField] private float _unwrapDuration = 0.5f;
 
     public float WrapDuration => _wrapDuration;
-    
-    [Header("Referencias")]
-    [SerializeField] private Renderer[] _renderers;
+
+    [Header("Referencias")] [SerializeField]
+    private Renderer[] _renderers;
 
     [SerializeField] private FxBank bank;
-    
+
     private MaterialPropertyBlock _propBlock;
     private int _propID;
     private Coroutine _currentCoroutine;
-    
-    private float _currentValue = 0f; 
+
+    private float _currentValue = 0f;
 
     private void Awake()
     {
@@ -44,12 +46,10 @@ public class WrapHandler : MonoBehaviour
     [ContextMenu("Wrap (0 -> 1)")]
     public void Wrap()
     {
-        // Si ya hay una animación corriendo, la paramos y empezamos desde donde quedó
         if (_currentCoroutine != null) StopCoroutine(_currentCoroutine);
-        
-        // Iniciamos corrutina hacia 1
+
         _currentCoroutine = StartCoroutine(AnimateToValue(_wrapValue, _wrapDuration));
-        
+
         bank.Play3D("Wrap", transform.position);
     }
 
@@ -57,20 +57,17 @@ public class WrapHandler : MonoBehaviour
     public void UnWrap()
     {
         if (_currentCoroutine != null) StopCoroutine(_currentCoroutine);
-        
-        // Iniciamos corrutina hacia 0
+
         _currentCoroutine = StartCoroutine(AnimateToValue(_unwrapValue, _unwrapDuration));
-        
+
         bank.Play3D("UnWrap", transform.position);
     }
 
-    // Corrutina Genérica para ir de "Lo que sea que tenga ahora" -> "Objetivo"
     private IEnumerator AnimateToValue(float targetValue, float duration)
     {
         float startValue = _currentValue;
         float timer = 0f;
 
-        // Evitamos división por cero si la duración es muy pequeña
         if (duration <= 0.01f)
         {
             _currentValue = targetValue;
@@ -82,15 +79,13 @@ public class WrapHandler : MonoBehaviour
         {
             timer += Time.deltaTime;
             float t = timer / duration;
-            
-            // Lerp desde donde estaba (startValue) hasta donde quiero ir (targetValue)
+
             _currentValue = Mathf.Lerp(startValue, targetValue, t);
-            
+
             ApplyValue(_currentValue);
             yield return null;
         }
 
-        // Asegurar valor final exacto
         _currentValue = targetValue;
         ApplyValue(_currentValue);
     }

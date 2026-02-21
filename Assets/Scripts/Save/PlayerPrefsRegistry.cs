@@ -2,6 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary> 
+/// Registro de Depuración: ScriptableObject que permite visualizar y filtrar en el Inspector 
+/// qué datos están guardados actualmente en el disco duro basándose en prefijos. 
+/// </summary>
+
 [CreateAssetMenu(menuName = "Prefs/PlayerPrefsRegistry")]
 public class PlayerPrefsRegistry : ScriptableObject
 {

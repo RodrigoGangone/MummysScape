@@ -18,7 +18,6 @@ using UnityEngine.InputSystem;
 #endif
 public sealed class InputSchemeManager : MonoBehaviour
 {
-    // Nombres EXACTOS tal como los ve el PlayerInput.currentControlScheme
     public const string KeyboardMouseSchemeName = "Keyboard&Mouse";
     public const string JoystickSchemeName      = "Joystick";
     public const string GamepadSchemeName       = "Gamepad";
@@ -27,7 +26,6 @@ public sealed class InputSchemeManager : MonoBehaviour
 
     public InputScheme CurrentScheme { get; private set; } = InputScheme.KeyboardMouse;
 
-    /// <summary>Evento disparado cuando cambia el esquema de entrada.</summary>
     public event Action<InputScheme> SchemeChanged;
 
 #if ENABLE_INPUT_SYSTEM
@@ -66,7 +64,7 @@ public sealed class InputSchemeManager : MonoBehaviour
         if (_playerInput != null)
         {
             _playerInput.onControlsChanged += HandleControlsChanged;
-            UpdateSchemeFromPlayerInput(_playerInput); // estado inicial
+            UpdateSchemeFromPlayerInput(_playerInput); 
         }
 #endif
     }
@@ -115,7 +113,6 @@ public sealed class InputSchemeManager : MonoBehaviour
         if (schemeName == JoystickSchemeName || schemeName == GamepadSchemeName)
             return InputScheme.Joystick;
 
-        // fallback, por si en el futuro agregas otro scheme raro
         return InputScheme.KeyboardMouse;
     }
 #endif

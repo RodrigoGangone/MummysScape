@@ -25057,6 +25057,7 @@ GameObject:
   - component: {fileID: 1764984614384463204}
   - component: {fileID: 920143314770563316}
   - component: {fileID: 5777358543505136336}
+  - component: {fileID: 4993881107227872699}
   m_Layer: 0
   m_Name: SarcofagusBase
   m_TagString: Untagged
@@ -25129,6 +25130,28 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &4993881107227872699
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1795617703435846447}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 3245536499270963056, guid: 040afd1b24c6f6246bbaaacacf99281a, type: 3}
 --- !u!1 &1810038859865545412
 GameObject:
   m_ObjectHideFlags: 0
@@ -45621,6 +45644,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enterLevel: 1
+  isSelectorPortal: 0
+  sceneIndex: 0
   directorEnter: {fileID: 3810503225307446747}
   directorExit: {fileID: 0}
   moveDuration: 1
@@ -45668,6 +45693,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  message: 
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  messageDuration: 2.5
 --- !u!114 &706550166425417461
 MonoBehaviour:
   m_ObjectHideFlags: 0

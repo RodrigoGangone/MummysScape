@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// Gestiona las solicitudes de bloqueo. 
-/// Prioridad de ejecución configurada: Después de GameEventManager.
+/// <summary> 
+/// Gestor de Bloqueos: Singleton que administra un conjunto de llaves (Lock IDs) para deshabilitar al 
+/// jugador de forma acumulativa, asegurando que el control solo vuelva cuando todos los sistemas lo liberen. 
 /// </summary>
+
 public class PlayerLock : MonoBehaviour
 {
     public static PlayerLock Instance;
@@ -23,13 +24,10 @@ public class PlayerLock : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             
-            // Suscripción al evento de carga de escena para limpieza total
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
-        {
             Destroy(gameObject);
-        }
     }
 
     private void OnDestroy()
@@ -37,25 +35,12 @@ public class PlayerLock : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    // Se ejecuta apenas la nueva escena está lista
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         ClearAllLocks();
         Debug.Log($"[PlayerLock] Escena '{scene.name}' limpia. HashSet reseteado.");
     }
-
-    private void OnEnable()
-    {
-        // Gracias a la prioridad de ejecución, GameEventManager.Instance ya es válido aquí
-        GameEventManager.Instance.playerEvents.OnLockRequested.Register<string, bool>(HandleLockRequest);
-    }
-
-    private void OnDisable()
-    {
-        if (GameEventManager.Instance != null)
-            GameEventManager.Instance.playerEvents.OnLockRequested.Unregister<string, bool>(HandleLockRequest);
-    }
-
+    
     private void HandleLockRequest(string lockID, bool shouldLock)
     {
         bool changed = false;
@@ -86,4 +71,8 @@ public class PlayerLock : MonoBehaviour
     {
         GameEventManager.Instance.playerEvents.OnLocked.Raise(IsLocked);
     }
+    
+    private void OnEnable() => GameEventManager.Instance.playerEvents.OnLockRequested.Register<string, bool>(HandleLockRequest);
+    private void OnDisable() => GameEventManager.Instance.playerEvents.OnLockRequested.Unregister<string, bool>(HandleLockRequest);
+
 }

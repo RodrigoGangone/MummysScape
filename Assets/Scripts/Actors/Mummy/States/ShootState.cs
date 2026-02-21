@@ -1,5 +1,7 @@
-using UnityEngine;
-using static PlayerEnum;
+/// <summary> 
+/// Estado de Disparo: Activa la animación y los efectos sonoros de lanzamiento de vendas, sirviendo 
+/// como el disparador visual para la creación de proyectiles físicos. 
+/// </summary>
 
 public sealed class ShootState : State, IBandageRestrictor
 {

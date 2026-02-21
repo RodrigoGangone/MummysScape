@@ -1,6 +1,11 @@
 using static PlayerEnum;
 using UnityEngine;
 
+/// <summary> 
+/// Estado de Viaje Rápido: Conecta al personaje con el sistema de teletransporte (Hippos), cediendo 
+/// el control de la posición a la secuencia de transporte hasta que el viaje finalice. 
+/// </summary>
+
 public class QuickTravelState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
@@ -10,8 +15,6 @@ public class QuickTravelState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
-        Debug.Log("QuickTravelState! ------------ Enter");
-
         if (!_ctx.TryGetQuickTravel(_ctx.Tf, out _hippoTravel))
         {
             StateMachine.ChangeState(PlayerStateId.Idle);
@@ -19,8 +22,6 @@ public class QuickTravelState : State, IBandageRestrictor
         }
 
         _hippoTravel.BeginTravel(_ctx.Tf);
-
-        //APAGAR VIEW DEL PLAYER
     }
 
     public override void OnUpdate()
@@ -35,7 +36,5 @@ public class QuickTravelState : State, IBandageRestrictor
 
     public override void OnExit()
     {
-        Debug.Log("QuickTravelState! ------------ Exit");
-        //ENCENDER VIEW DEL PLAYER
     }
 }

@@ -1,13 +1,18 @@
 using System.Collections;
 using UnityEngine;
 
+/// <summary> 
+/// Capa de Ambiente: Gestiona sonidos de fondo loopeables (viento, ecos) con soporte para 
+/// fundidos (fades) de volumen, permitiendo cambios dinámicos en la atmósfera del nivel. 
+/// </summary>
+
 [RequireComponent(typeof(AudioSource))]
 public class AmbientLayer2D : MonoBehaviour
 {
     [Header("Banco de ambiente (FxBank)")]
     [SerializeField] private FxBank ambienceBank;
 
-    [SerializeField] private string key;          // ej: "Wind", "Sand", "TempleLow"
+    [SerializeField] private string key; 
     [SerializeField] private float defaultVolume = 1f;
     [SerializeField] private float defaultFadeTime = 1f;
 
@@ -21,9 +26,8 @@ public class AmbientLayer2D : MonoBehaviour
         _src = GetComponent<AudioSource>();
         _src.playOnAwake = false;
         _src.loop = true;
-        _src.spatialBlend = 0f; // 2D
+        _src.spatialBlend = 0f;
 
-        // 👉 Enchufar al bus Ambient del mixer
         if (AudioManager.Instance != null)
         {
             var group = AudioManager.Instance.GetMixerGroup(AudioBus.Ambient);
@@ -49,7 +53,7 @@ public class AmbientLayer2D : MonoBehaviour
             return;
         }
 
-        _baseVolumeFromBank = entry.volume;   // 👈 volumen propio de ESA entrada
+        _baseVolumeFromBank = entry.volume;  
         
         _src.clip = entry.clip;
         _src.pitch = entry.pitch;

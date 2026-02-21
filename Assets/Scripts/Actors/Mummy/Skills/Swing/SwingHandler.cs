@@ -1,5 +1,11 @@
 using UnityEngine;
 
+/// <summary> 
+/// Controlador de Física de Balanceo: Administra el ciclo de vida de un SpringJoint para simular 
+/// un péndulo, gestionando el anclaje local, la tensión del cable y el control de velocidad 
+/// tangencial para un movimiento fluido. 
+/// </summary>
+
 public class SwingHandler : MonoBehaviour
 {
     public SpringJoint SpringJoint { get; private set; }
@@ -19,27 +25,21 @@ public class SwingHandler : MonoBehaviour
     [SerializeField, Min(0f)] private float _gravityAssist = 2f;
     [SerializeField, Min(0f)] private float _tangentialBrake = 5f;
 
-    // Propiedades públicas
     public float MaxTangentialSpeed => _maxTangentialSpeed;
 
     private Rigidbody _hookRb;
     private Rigidbody _playerRb;
     
-    // Guardamos el punto local para saber dónde crear el Joint más tarde
     private Vector3 _currentLocalAnchor; 
 
     private void OnDisable() => Detach();
 
-    // FASE 1: PREPARACIÓN (Solo guardamos datos físicos, la View dibuja)
-    // Se llama en OnEnter del SwingState
     public void PreparePhysicsData(Rigidbody hookRb, Vector3 worldHookPoint)
     {
         _hookRb = hookRb;
-        // Calculamos el punto local respecto al gancho
         _currentLocalAnchor = hookRb.transform.InverseTransformPoint(worldHookPoint);
     }
 
-    // FASE 2: ACTIVACIÓN FÍSICA (Se llama cuando el State dice que pasó el tiempo)
     public void EnablePhysics(Rigidbody playerRb)
     {
         if (!playerRb || !_hookRb) return;
@@ -50,10 +50,9 @@ public class SwingHandler : MonoBehaviour
 
         SpringJoint.autoConfigureConnectedAnchor = false;
         SpringJoint.connectedBody = _hookRb;
-        SpringJoint.connectedAnchor = _currentLocalAnchor; // Usamos el anchor guardado en PreparePhysicsData
+        SpringJoint.connectedAnchor = _currentLocalAnchor; 
         SpringJoint.anchor = Vector3.zero;
 
-        // Configuración física
         float dMin = Mathf.Min(_minDistance, _maxDistance);
         float dMax = Mathf.Max(_minDistance, _maxDistance);
         SpringJoint.minDistance = dMin;
@@ -65,7 +64,6 @@ public class SwingHandler : MonoBehaviour
 
     public void Detach()
     {
-        // Limpieza Física
         if (SpringJoint)
         {
             Destroy(SpringJoint);
@@ -75,14 +73,10 @@ public class SwingHandler : MonoBehaviour
         _hookRb = null;
     }
 
-    // --- Helpers de Movimiento ---
-
-    /// <summary>Dirección normalizada del cable desde el player hacia el hook.</summary>
     public Vector3 GetRopeDirWorld()
     {
         if (!_hookRb) return Vector3.up;
 
-        // Calculamos la posición del gancho en el mundo usando el anchor local guardado
         Vector3 worldAnchor = _hookRb.transform.TransformPoint(_currentLocalAnchor);
         
         Vector3 playerPos = _playerRb ? _playerRb.worldCenterOfMass : transform.position;

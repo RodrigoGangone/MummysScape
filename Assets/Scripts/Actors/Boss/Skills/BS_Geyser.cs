@@ -2,6 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// Skill de Boss: Identifica geysers dentro de un radio cercano al Player y dispara un 
+/// efecto visual que, al llegar a destino, activa el "Intense Mode" de dichos geysers.
+/// </summary>
+
 [CreateAssetMenu(menuName = "Boss/Skills/Scorpion/Geyser Skill (Solo Geysers)")]
 public class BS_Geyser : BossSkillSO
 {
@@ -28,7 +33,6 @@ public class BS_Geyser : BossSkillSO
             return;
         }
 
-        // Radio efectivo
         float radius = baseRadius;
         if (scaleRadiusWithStage && wm.Config != null)
         {
@@ -39,7 +43,6 @@ public class BS_Geyser : BossSkillSO
 
         Vector3 playerPos = ctx.Player.Tf.position;
 
-        // 1) Detectar geysers cercanos
         List<Geyser> selection =
             Provider.geysers
              .Where(g => g != null)
@@ -55,10 +58,8 @@ public class BS_Geyser : BossSkillSO
             return;
         }
 
-        // Origen de viaje (viewScorpion del boss, p.defaultTravelOrigin o transform del boss)
         var origin = (Provider.defaultTravelOrigin != null ? Provider.defaultTravelOrigin : ctx.Transform);
 
-        // 2) Enviar una partícula por geyser seleccionado
         Provider.RunTravelFXToGeysers(
             selection,
             travelParticlesPrefab,
@@ -66,12 +67,9 @@ public class BS_Geyser : BossSkillSO
             origin,
             onArrived: () =>
             {
-                // 3) Activar los Geysers correspondientes (por unos segundos, según su propia lógica interna)
                 foreach (var g in selection.Where(g => g != null)) g.ActivateIntenseMode(null);
             });
 
-        
-        // El estado puede salir aquí; el FX continúa en background.
     }
 
     private static float PlanarDistanceXZ(Vector3 a, Vector3 b)

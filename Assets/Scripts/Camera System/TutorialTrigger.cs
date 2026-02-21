@@ -1,9 +1,12 @@
-using System;
 using UnityEngine;
 using System.Collections;
-using UnityEngine.Serialization;
 using UnityEngine.Video;
 using static PauseUtils;
+
+/// <summary> 
+/// Controlador de Tutorial: Gestiona la activación de tutoriales en escena, coordinando efectos visuales, 
+/// videos y la validación de persistencia para evitar la repetición de guías ya completadas. 
+/// </summary>
 
 [RequireComponent(typeof(BoxCollider))]
 public class TutorialTrigger : MonoBehaviour, IPausable
@@ -29,7 +32,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private bool _paused;
     private bool _isPlaying;
     
-    // Referencia directa al estado de guardado
     private bool IsTutorialAlreadySeen => Save.IsTutorialSeen(focusPoint.Id);
     
     private void Awake()
@@ -37,7 +39,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         _boxCollider = GetComponent<BoxCollider>();
         _tutorialVideo = GetComponentInChildren<VideoPlayer>();
 
-        // Ajustar el colisionador según si ya se completó el tutorial
         SetColliderShape(!IsTutorialAlreadySeen);
         ToggleEffects(false);
     }
@@ -46,7 +47,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     {
         if (!other.CompareTag("PlayerFather") || IsTutorialAlreadySeen) return;
 
-        // Si es la primera vez, lanzamos la secuencia completa
         ExecuteTutorialSequence();
         SetColliderShape(false);
     }
@@ -61,7 +61,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
             _isPromptActive = true;
         }
 
-        // Re-visualización del tutorial (sin mensaje, según lógica de FocusManager)
         if (!_paused && !_isPlaying && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
         {
             ExecuteTutorialSequence();
@@ -83,14 +82,10 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
         _bank.Play2D(keySound);
         
-        // Enviamos la petición al FocusManager que ahora maneja los mensajes opcionales
         FocusManager.Instance.RequestTutorial(focusPoint);
 
         if (_effectRoutine != null) StopCoroutine(_effectRoutine);
 
-        // CÁLCULO DE TIEMPO DINÁMICO:
-        // Si no se ha visto, sumamos el tiempo de cámara + duración del mensaje.
-        // Si ya se vio, solo usamos el tiempo de la cámara.
         float totalDuration = focusPoint.Time;
         if (!IsTutorialAlreadySeen && !string.IsNullOrEmpty(focusPoint.Message))
         {
@@ -104,7 +99,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     {
         ToggleEffects(true);
 
-        // Espera pausabe que respeta el estado del juego
         yield return WaitForSecondsPausable(duration, () => _paused);
 
         ToggleEffects(false);
@@ -139,7 +133,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 
-    #region Gizmo
+    #region Gizmos
     private void OnDrawGizmos()
     {
         if (focusPoint == null) return;

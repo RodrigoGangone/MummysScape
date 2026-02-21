@@ -1,6 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+
+/// <summary> 
+/// Comportamiento Billboard: Asegura que el objeto esté siempre orientado hacia la cámara principal, 
+/// siendo esencial para indicadores de interfaz o iconos que deben ser legibles en el mundo 3D. 
+/// </summary>
 
 public class FaceCamera : MonoBehaviour
 {

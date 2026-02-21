@@ -1,6 +1,10 @@
 using System.IO;
-using UnityEngine;
 using UnityEngine.SceneManagement;
+
+/// <summary> 
+/// API de Guardado: Fachada de alto nivel que organiza la persistencia en capas (Gemas, Niveles, Tutoriales), 
+/// abstrayendo la complejidad de las claves de guardado para el resto del juego. 
+/// </summary>
 
 public static class Save
 {

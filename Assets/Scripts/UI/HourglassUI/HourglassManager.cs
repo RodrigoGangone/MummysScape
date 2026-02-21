@@ -1,11 +1,11 @@
 using Cinemachine;
 using UnityEngine;
 
-/// <summary>
-/// HourglassManager
-/// - Administra el Fill de TOP/BOTTOM.
-/// - Se detiene completamente si hay PAUSA o LOCK.
+/// <summary> 
+/// Visualizador de Tiempo: Administra la representación 3D de un reloj de arena, controlando el 
+/// flujo de materiales de "líquido/arena" y efectos de latido (heartbeat) sincronizados con el conteo. 
 /// </summary>
+
 [DisallowMultipleComponent]
 public sealed class HourglassManager : MonoBehaviour, IPausable
 {
@@ -47,7 +47,6 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
     private CinemachineImpulseSource _impulseSource; 
     [SerializeField] float _shakeForce = 0.2f; 
     
-    // --- Internos ---
     static readonly int FillID = Shader.PropertyToID("_Fill");
     MaterialPropertyBlock _mpbTop, _mpbBot;
     ParticleSystem[] _sandFx;
@@ -56,58 +55,24 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
 
     bool _bootstrapped; int _lastBandages = -1;
 
-    // heartbeat runtime
     Vector3 _baseScale; bool _hasBaseScale;
     float _beatTimer, _pulseTimer; bool _pulsing;
 
-    // ⏸️ Estados de Pausa
-    private bool _paused;     // Menú
-    private bool _isLocked;   // Cinemática
+    private bool _paused;     
+    private bool _isLocked; 
 
-    // ---------------- Ciclo de vida ----------------
     void Awake()
     {
         _mpbTop = new MaterialPropertyBlock();
         _mpbBot = new MaterialPropertyBlock();
         CacheSandFx();
 
-        // Estado visual por defecto: líquidos visibles, baseSand oculta
         SetLiquidsVisible(true);
         SetBaseSandActive(false);
     }
-
-    void OnEnable()
-    {
-        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-        // 🔹 REGISTRAMOS EL LOCKED
-        GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
-        
-        GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Register<int>(OnBandagesChanged);
-        GameEventManager.Instance.levelEvents.OnDeath.Register(OnCountDownEnded);
-    }
-
-    void OnDisable()
-    {
-        if (GameEventManager.Instance == null) return;
-
-        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
-        // 🔹 DES-REGISTRAMOS EL LOCKED
-        GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
-
-        GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Unregister<int>(OnBandagesChanged);
-        GameEventManager.Instance.levelEvents.OnDeath.Unregister(OnCountDownEnded);
-        HeartbeatStop();
-        FxReset();
-    }
-
+    
     void Update()
     {
-        // DEBUG: teclas directas (TODO: quitar cuando no se usen)
-        if (Input.GetKeyDown(KeyCode.J)) GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Raise(0);
-        if (Input.GetKeyDown(KeyCode.K)) GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Raise(1);
-
-        // 🔹 AQUÍ ESTÁ LA MAGIA: Si está pausado O bloqueado, no procesamos tiempo.
-        // Al no procesar tiempo, '_t' no aumenta, por lo tanto no llegamos al final de la animación (Muerte).
         if (!_isAnimating || _paused || _isLocked) return;
 
         _t += Time.deltaTime;
@@ -123,21 +88,17 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
             HeartbeatStop();
             FxReset();
 
-            // Se terminó la animación actual
             if (_isCountdown && !_endRaised)
             {
                 _endRaised = true;
 
-                // Como ya no estamos en countdown, ocultamos baseSand aquí también
                 SetBaseSandActive(false);
 
                 GameEventManager.Instance.levelEvents.OnDeath.Raise();
             }
         }
     }
-
-    // ---------------- Eventos de Pausa / Lock ----------------
-
+    
     public void OnPauseChanged(bool paused)
     {
         _paused = paused;
@@ -156,21 +117,17 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
 
         if (isFrozen)
         {
-            // Congelar efectos visuales de arena
             FxPause();
         }
         else
         {
-            // Reanudar SOLO si estábamos en countdown y animando
             if (_isAnimating && _isCountdown)
             {
                 FxPlay();
             }
         }
     }
-
-    // ---------------- Lógica General ----------------
-
+    
     void OnBandagesChanged(int count)
     {
         if (!_bootstrapped)
@@ -181,7 +138,6 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
             return;
         }
         
-        // --- SONIDOS DE VENDAS ---
         if (count < _lastBandages) bank.Play2D("UnWrap");
         else if (count > _lastBandages) bank.Play2D("Wrap");
         
@@ -198,18 +154,15 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
 
         bank.Play2D("Break");
         
-        // Al finalizar: ocultar líquidos y baseSand
         SetLiquidsVisible(false);
         SetBaseSandActive(false);
     }
 
-    // ---------------- Estados ----------------
     void StartCountdown()
     {
         _isCountdown = true;
         _endRaised = false;
 
-        // Visuales para countdown
         SetLiquidsVisible(true);
         SetBaseSandActive(true);
 
@@ -223,7 +176,6 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
     {
         _isCountdown = false;
 
-        // Visuales fuera de countdown: líquidos visibles, baseSand oculta
         SetLiquidsVisible(true);
         SetBaseSandActive(false);
 
@@ -239,7 +191,6 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
         _isCountdown = false;
         _isAnimating = false;
 
-        // Visuales fuera de countdown en snap inicial
         SetLiquidsVisible(true);
         SetBaseSandActive(false);
 
@@ -249,7 +200,6 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
         _endRaised = false;
     }
 
-    // ---------------- Arena (anim Fill) ----------------
     void BeginAnim(float from, float to, float duration)
     {
         _from = Mathf.Clamp01(from);
@@ -277,7 +227,6 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
         }
     }
 
-    // ---------------- Heartbeat ----------------
     void HeartbeatTick(float countdownProgress01)
     {
         if (_heartbeatTarget == null) return;
@@ -287,7 +236,6 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
 
         _beatTimer += Time.deltaTime;
         
-        // AQUÍ ES EL MOMENTO DEL LATIDO (Beat Start)
         if (_beatTimer >= interval) 
         { 
             _beatTimer = 0f; 
@@ -329,7 +277,6 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
         _beatTimer = 0f; _pulseTimer = 0f; _pulsing = false;
     }
 
-    // ---------------- FX Arena: Play / Pause / Reset ----------------
     void CacheSandFx()
     {
         _sandFx = (_sandFxRoot == null) ? null : _sandFxRoot.GetComponentsInChildren<ParticleSystem>(true);
@@ -356,7 +303,6 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
         foreach (var ps in _sandFx) if (ps) ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
 
-    // ---------------- FX Final (Explosión) ----------------
     void ExplosionPlay()
     {
         if (_endExplosionFx == null) return;
@@ -370,7 +316,6 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
         _endExplosionFx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
 
-    // ---------------- Helpers visuales ----------------
     void SetBaseSandActive(bool active)
     {
         if (_baseSand && _baseSand.activeSelf != active) _baseSand.SetActive(active);
@@ -380,5 +325,25 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
     {
         if (_topLiquidRenderer)    _topLiquidRenderer.enabled    = visible;
         if (_bottomLiquidRenderer) _bottomLiquidRenderer.enabled = visible;
+    }
+    
+    void OnEnable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+        GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
+        
+        GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Register<int>(OnBandagesChanged);
+        GameEventManager.Instance.levelEvents.OnDeath.Register(OnCountDownEnded);
+    }
+
+    void OnDisable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+        GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
+
+        GameEventManager.Instance.playerEvents.OnBandagesCountChanged.Unregister<int>(OnBandagesChanged);
+        GameEventManager.Instance.levelEvents.OnDeath.Unregister(OnCountDownEnded);
+        HeartbeatStop();
+        FxReset();
     }
 }

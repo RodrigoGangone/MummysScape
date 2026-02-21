@@ -1,8 +1,6 @@
-/// <summary>
-/// Enums base del Player:
-/// - PlayerSize: tamaño según cantidad de vendas.
-/// - PlayerStateId: IDs para tu StateMachine.
-/// - PlayerActionId: acciones disponibles (validables por SizeRules).
+/// <summary> 
+/// Diccionario de Estados: Centraliza las enumeraciones fundamentales del jugador, definiendo 
+/// los estados de la FSM (PlayerStateId) y los niveles de tamaño (PlayerSize) basados en el inventario. 
 /// </summary>
 
 public static class PlayerEnum

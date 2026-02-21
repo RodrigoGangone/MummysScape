@@ -1,259 +1,220 @@
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro; // Necesario para los textos de las gemas
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Collider))]
 public class ZoneTile : MonoBehaviour
 {
     [Header("Configuración de Zona")]
-    [Tooltip("A qué escena (Build Index) viaja este portal.")]
     [SerializeField] private int targetBuildIndex;
     [SerializeField] private bool isFirstZone;
 
     [Header("Requisitos de Desbloqueo")]
-    [Tooltip("El nivel (índice) del Boss anterior que debe estar completado.")]
     [SerializeField] private int requiredBossLevelIndex;
-    [Tooltip("Cantidad TOTAL de gemas requeridas (Suma global de todo el juego).")]
     [SerializeField] private int requiredTotalGems;
 
-    [Header("Referencias Visuales - Escenario")]
+    [Header("Referencias de Pilares (Props)")]
+    [SerializeField] private Renderer[] gemVisuals; 
+    [SerializeField] private GameObject bossScorpionParent;
+
+    [Header("Referencias del Portal (Estructura)")]
+    [SerializeField] private GameObject portalStructure;
+
+    [Header("Materiales de Bloqueo")]
+    [Tooltip("Material para la estructura del portal cuando está bloqueado.")]
+    [SerializeField] private Material lockedPortalMaterial;
+    [Tooltip("Material para las gemas y el escorpión cuando están bloqueados (LockedProp).")]
+    [SerializeField] private Material lockedPropMaterial;
+
+    [Header("Efectos y Cámara")]
     [SerializeField] private ParticleSystem portalFx;
-    [SerializeField] private Material lockedMaterial;
-
-    [Header("Referencias Visuales - UI Flotante")]
-    [Tooltip("El objeto padre (Canvas o Panel) que contiene los iconos.")]
-    [SerializeField] private GameObject infoCanvasPanel; 
-    [SerializeField] private TextMeshProUGUI gemCountText; // Texto ej: "5/10"
-    [SerializeField] private Image bossIconImage;          // Imagen del Escorpión
-    [SerializeField] private Color statusLockedColor = Color.red;
-    [SerializeField] private Color statusUnlockedColor = Color.green;
-
-    // --- SECCIÓN REVEAL (Cuando se desbloquea automáticamente) ---
-    [Header("Focus Reveal (Animación de Desbloqueo)")]
     [SerializeField] private Transform revealCamPos;
     [SerializeField] private float revealDuration = 3.0f;
-    [Tooltip("Zoom suave para mostrar panorámicamente que se abrió el camino.")]
     [SerializeField] private float revealZoomAmount = 2.0f;
     [SerializeField] private AnimationCurve revealZoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-
-    // --- SECCIÓN ENTRY (Cuando el jugador entra) ---
-    [Header("Focus Entry (Animación al Entrar)")]
-    [SerializeField] private Transform entryFocusPos;
-    [SerializeField] private Transform entryLookAt;
-    [SerializeField] private float entryDuration = 2.0f;
-    [Tooltip("Zoom más intenso hacia el portal al entrar.")]
-    [SerializeField] private float entryZoomAmount = 4.0f;
-    [SerializeField] private AnimationCurve entryZoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     [Header("Sistema")]
     [SerializeField] private UIManager uiManager;
 
-    // ==========================================
-    // SECCIÓN DEBUG (Solo en Editor)
-    // ==========================================
-#if UNITY_EDITOR
-    [Header("--- DEBUG TOOLS ---")]
-    [Tooltip("Si es true, borra la key 'Seen' al iniciar, forzando la animación de cámara.")]
-    [SerializeField] private bool debugResetSeenOnPlay;
-
-    [Tooltip("Si es true, la zona estará abierta ignorando Boss y Gemas.")]
-    [SerializeField] private bool debugForceUnlock;
-
-    [ContextMenu("Borrar Datos de ESTA Zona")]
-    void ClearZoneData()
-    {
-        PlayerPrefs.DeleteKey($"seen.zone_reveal.{targetBuildIndex}");
-        Debug.Log($"[ZoneTile Debug] Reset 'Seen' para zona {targetBuildIndex}");
-    }
-#endif
-    // ==========================================
-
     private bool _isUnlocked;
     private bool _playerInside;
 
+    // Diccionarios para guardar los materiales originales de cada grupo
+    private Dictionary<Renderer, Material[]> _originalPortalMaterials = new Dictionary<Renderer, Material[]>();
+    private Dictionary<Renderer, Material[]> _originalPropMaterials = new Dictionary<Renderer, Material[]>();
+
+    void Awake()
+    {
+        // 1. Cachear materiales originales del Portal
+        CacheMaterials(portalStructure, _originalPortalMaterials);
+
+        // 2. Cachear materiales originales de las Gemas
+        foreach (var renderer in gemVisuals)
+        {
+            if (renderer != null && !_originalPropMaterials.ContainsKey(renderer))
+                _originalPropMaterials.Add(renderer, renderer.sharedMaterials);
+        }
+
+        // 3. Cachear materiales originales del Escorpión
+        CacheMaterials(bossScorpionParent, _originalPropMaterials);
+    }
+
+    private void CacheMaterials(GameObject parent, Dictionary<Renderer, Material[]> dictionary)
+    {
+        if (parent == null) return;
+        Renderer[] renderers = parent.GetComponentsInChildren<Renderer>();
+        foreach (var r in renderers)
+        {
+            if (r.GetComponent<CanvasRenderer>() != null) continue;
+            if (!dictionary.ContainsKey(r))
+                dictionary.Add(r, r.sharedMaterials);
+        }
+    }
+
     void Start()
     {
-        // 0. Ocultar la UI flotante al inicio
-        if (infoCanvasPanel != null) 
-            infoCanvasPanel.SetActive(false);
+        RefreshStatus();
 
-        // --- DEBUG: Resetear estado 'Seen' ---
-#if UNITY_EDITOR
-        if (debugResetSeenOnPlay)
+        if (_isUnlocked && !Save.IsZoneRevealSeen(targetBuildIndex))
         {
-            PlayerPrefs.DeleteKey($"seen.zone_reveal.{targetBuildIndex}");
+            TriggerRevealAnimation();
         }
-#endif
+    }
 
-        // --- 1. Chequeo de condiciones ---
+    public void RefreshStatus()
+    {
         CheckUnlockConditions();
+        UpdateAllVisuals();
 
-        // --- 2. Estado Bloqueado ---
-        if (!_isUnlocked)
+        if (portalFx != null)
         {
-            ApplyLockedMaterial();
-            if (portalFx != null) portalFx.Stop();
-            return; 
-        }
-
-        // --- 3. Estado Desbloqueado ---
-        if (portalFx != null) portalFx.Play();
-
-        // --- 4. Lógica de Revelación (Cola de Foco) ---
-        if (!Save.IsZoneRevealSeen(targetBuildIndex))
-        {
-            if (FocusManager.Instance != null)
-            {
-                FocusManager.Instance.RequestRevealFocus(
-                    targetBuildIndex, // Prioridad
-                    revealCamPos != null ? revealCamPos : transform,
-                    transform, // LookAt por defecto al objeto
-                    revealDuration,
-                    revealZoomAmount, 
-                    revealZoomCurve,  
-                    () => Save.MarkZoneRevealSeen(targetBuildIndex)
-                );
-            }
+            if (_isUnlocked && !portalFx.isPlaying) portalFx.Play();
+            else if (!_isUnlocked) portalFx.Stop();
         }
     }
 
     void CheckUnlockConditions()
     {
-#if UNITY_EDITOR
-        if (debugForceUnlock)
-        {
-            _isUnlocked = true;
-            return;
-        }
-#endif
+        if (isFirstZone) { _isUnlocked = true; return; }
 
-        if (isFirstZone)
-        {
-            _isUnlocked = true;
-            return;
-        }
-
-        // A. ¿Boss vencido?
         bool bossDefeated = Save.IsLevelCompleted(requiredBossLevelIndex);
-
-        // B. ¿Suficientes gemas globales?
         int currentGems = Save.GetGlobalGemCount();
         bool enoughGems = currentGems >= requiredTotalGems;
 
         _isUnlocked = bossDefeated && enoughGems;
     }
 
+    void UpdateAllVisuals()
+    {
+        // --- 1. Lógica del Portal ---
+        ApplyVisualLogic(_originalPortalMaterials, _isUnlocked, lockedPortalMaterial);
+
+        // --- 2. Lógica del Escorpión ---
+        bool bossDefeated = Save.IsLevelCompleted(requiredBossLevelIndex);
+        ApplyVisualLogicForScorpion(bossDefeated);
+
+        // --- 3. Lógica de las Gemas (Proporcional) ---
+        UpdateGemsVisuals();
+    }
+
+    private void ApplyVisualLogic(Dictionary<Renderer, Material[]> cache, bool unlocked, Material lockedMat)
+    {
+        foreach (var entry in cache)
+        {
+            Renderer r = entry.Key;
+            if (unlocked)
+            {
+                r.materials = entry.Value; // Restaura originales
+            }
+            else
+            {
+                r.materials = CreateLockedArray(entry.Value.Length, lockedMat);
+            }
+        }
+    }
+
+    private void ApplyVisualLogicForScorpion(bool defeated)
+    {
+        if (bossScorpionParent == null) return;
+        Renderer[] renderers = bossScorpionParent.GetComponentsInChildren<Renderer>();
+        foreach (var r in renderers)
+        {
+            if (_originalPropMaterials.TryGetValue(r, out Material[] originals))
+            {
+                r.materials = defeated ? originals : CreateLockedArray(originals.Length, lockedPropMaterial);
+            }
+        }
+    }
+
+    private void UpdateGemsVisuals()
+    {
+        int currentGems = Save.GetGlobalGemCount();
+        float progress = Mathf.Clamp01((float)currentGems / requiredTotalGems);
+        int gemsToUnlock = Mathf.FloorToInt(progress * gemVisuals.Length);
+
+        for (int i = 0; i < gemVisuals.Length; i++)
+        {
+            Renderer r = gemVisuals[i];
+            if (r == null) continue;
+
+            if (i < gemsToUnlock)
+            {
+                if (_originalPropMaterials.TryGetValue(r, out Material[] originals))
+                    r.materials = originals;
+            }
+            else
+            {
+                r.materials = CreateLockedArray(r.sharedMaterials.Length, lockedPropMaterial);
+            }
+        }
+    }
+
+    private Material[] CreateLockedArray(int length, Material lockedMat)
+    {
+        Material[] mats = new Material[length];
+        for (int i = 0; i < length; i++) mats[i] = lockedMat;
+        return mats;
+    }
+
     private void Update()
     {
-        if (_isUnlocked && _playerInside)
-        {
-            if (Input.GetButtonDown("Space")) // O tu input system preferido
-                EnterZone();
-        }
+        if (_isUnlocked && _playerInside && Input.GetButtonDown("Space"))
+            EnterZone();
     }
-
-    // --- Lógica de UI Flotante ---
-    
-    void UpdateFloatingUI()
-    {
-        if (infoCanvasPanel == null) return;
-
-        // 1. Actualizar Gemas
-        int currentGems = Save.GetGlobalGemCount();
-        bool hasEnoughGems = currentGems >= requiredTotalGems;
-
-        if (gemCountText != null)
-        {
-            gemCountText.text = $"{currentGems} / {requiredTotalGems}";
-            gemCountText.color = hasEnoughGems ? statusUnlockedColor : statusLockedColor;
-        }
-
-        // 2. Actualizar Boss (Escorpión)
-        bool bossDefeated = Save.IsLevelCompleted(requiredBossLevelIndex);
-
-        if (bossIconImage != null)
-        {
-            // Opcional: Cambiar color del icono según estado
-            bossIconImage.color = bossDefeated ? statusUnlockedColor : statusLockedColor;
-            
-            // Opcional: Si prefieres que se vea gris/transparente si no está vencido:
-            // bossIconImage.color = bossDefeated ? Color.white : new Color(1,1,1, 0.3f);
-        }
-    }
-
-    // --- Interacción y Triggers ---
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("PlayerFather")) return;
         _playerInside = true;
-
-        // Refrescar estado por si consiguió gemas recién
-        CheckUnlockConditions(); 
-
-        // Mostrar UI Flotante
-        if (infoCanvasPanel != null)
-        {
-            UpdateFloatingUI();
-            infoCanvasPanel.SetActive(true);
-        }
-
-        // Mostrar Prompt de botón "A" (Space) SOLO si está desbloqueado
-        if (_isUnlocked)
-        {
-            GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.A);
-        }
+        RefreshStatus();
+        if (_isUnlocked) GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.A);
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag("PlayerFather")) return;
         _playerInside = false;
-
-        // Ocultar UI Flotante
-        if (infoCanvasPanel != null)
-            infoCanvasPanel.SetActive(false);
-
-        // Ocultar Prompt
         GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.A);
+    }
+
+    void TriggerRevealAnimation()
+    {
+        if (FocusManager.Instance != null)
+        {
+            FocusManager.Instance.RequestRevealFocus(
+                targetBuildIndex,
+                revealCamPos != null ? revealCamPos : transform,
+                transform,
+                revealDuration,
+                revealZoomAmount,
+                revealZoomCurve,
+                () => Save.MarkZoneRevealSeen(targetBuildIndex)
+            );
+        }
     }
 
     void EnterZone()
     {
-        // 1. Focus Entry (Animación de entrada)
-        if (FocusManager.Instance != null)
-        {
-            Transform camPos = entryFocusPos != null ? entryFocusPos : transform;
-            Transform lookAt = entryLookAt != null ? entryLookAt : transform;
-            
-            FocusManager.Instance.RequestObjectFocus(
-                camPos, 
-                lookAt, 
-                entryDuration,
-                entryZoomAmount, 
-                entryZoomCurve   
-            );
-        }
-
-        // 2. Load Scene
         if (uiManager != null)
             uiManager.GetComponent<SceneTransitionManager>().FadeInAndLoadScene(targetBuildIndex);
-    }
-
-    // --- Helpers Visuales ---
-
-    private void ApplyLockedMaterial()
-    {
-        if (lockedMaterial == null) return;
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        foreach (var r in renderers)
-        {
-            // Evitamos cambiar el material del Canvas/UI si por error son hijos del renderer
-            if (r.GetComponent<CanvasRenderer>() != null) continue;
-
-            Material[] mats = new Material[r.sharedMaterials.Length];
-            for (int i = 0; i < mats.Length; i++) mats[i] = lockedMaterial;
-            r.materials = mats;
-        }
     }
 }

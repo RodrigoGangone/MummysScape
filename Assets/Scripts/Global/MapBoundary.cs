@@ -1,11 +1,15 @@
-using System;
-using System.Collections; // Necesario para la Corrutina
+using System.Collections;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Playables;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+
+/// <summary> 
+/// Sistema de Límites de Mapa: Gestiona las zonas de seguridad y muerte mediante radios concéntricos, 
+/// coordinando advertencias visuales y la ejecución de la secuencia de derrota por "Monster Arm". 
+/// </summary>
 
 public class MapBoundary : MonoBehaviour
 {
@@ -119,7 +123,6 @@ public class MapBoundary : MonoBehaviour
     
     public void OnDeathPlayer()
     {
-        // Iniciamos la corrutina para el arrastre
         StartCoroutine(EatPlayerRoutine());
         
         if (GameEventManager.Instance != null)
@@ -130,16 +133,13 @@ public class MapBoundary : MonoBehaviour
     {
         if (killTarget == null || Player == null) yield break;
 
-        // Mientras el jugador no haya llegado al centro (con un pequeño margen de error)
         while (Vector3.Distance(Player.position, killTarget.position) > 0.1f)
         {
-            // Movimiento fluido hacia la boca
             Player.position = Vector3.MoveTowards(Player.position, killTarget.position, dragSpeed * Time.deltaTime);
             
-            // Opcional: Rotación de descontrol (puedes comentarlo si el Timeline ya lo rota)
             Player.Rotate(Vector3.forward, 180f * Time.deltaTime);
 
-            yield return null; // Espera al siguiente frame
+            yield return null; 
         }
     }
 

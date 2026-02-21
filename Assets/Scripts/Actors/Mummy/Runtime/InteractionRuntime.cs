@@ -1,15 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-//// <summary>
-//// InteractionRuntime
-//// - PushChecker: 2 rayos frontales (ya existente).
-//// - SwingChecker: OverlapBox (ya existente).
-//// - AttractChecker: 1 raycast tipo Line-of-Sight a Y=1, rango [min,max], layer Interactable,
-////   requiere componente BoxPushAttract y que la caja esté grounded.
-////   Gizmos: VERDE si válido, ROJO si no.
-//// </summary>
+/// <summary> 
+/// Centro de Interacciones: Gestiona múltiples mecánicas de detección como empuje (Push), atracción (Attract), 
+/// balanceo (Swing) y apuntado (Aim). Utiliza una combinación de Raycasts, OverlapBox 
+/// y cálculos de trayectoria parabólica, incorporando lógica de oclusión para evitar interacciones a través de paredes.
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class InteractionRuntime : MonoBehaviour
 {
@@ -46,10 +42,9 @@ public sealed class InteractionRuntime : MonoBehaviour
 
     [Header("Quick Travel")] [SerializeField]
     private float radiusTiny;
-    
-    [Header("Smash")]
-    [SerializeField] public float smashRange = 3f; 
-    [SerializeField] public LayerMask smashLayer; 
+
+    [Header("Smash")] [SerializeField] public float smashRange = 3f;
+    [SerializeField] public LayerMask smashLayer;
 
     // propiedad para que los States lean el mismo valor (exponen datos, no lógica)
     public float AttractMinDistance => _attractMinDistance;
@@ -60,22 +55,21 @@ public sealed class InteractionRuntime : MonoBehaviour
     public float AimMaxDistance => _aimMaxDistance;
     public float AimMaxHeight => _maxAimHeight;
     public bool IsAimValid { get; private set; }
-    
-    [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
-    [SerializeField] private Color _hitColor = new(0.2f, 1f, 0.2f, 0.9f);
-    [SerializeField] private Color _missColor = new(1f, 0.2f, 0.2f, 0.9f);
 
-    // cache push gizmos
+
     private Vector3 _oLeft, _oRight, _dLeft, _dRight;
     private bool _leftHitInteract, _rightHitInteract;
     private Vector3 _leftHitPoint, _rightHitPoint;
 
-    // cache attract gizmos
     private Vector3 _aOrigin, _aEnd, _aHitPoint;
     private bool _aEligible;
 
-
     // -------------------- PUSH --------------------
+
+    /// <summary> 
+    /// Detecta objetivos de empuje mediante rayos frontales duales, validando que el objeto 
+    /// sea una caja interactuable válida y esté apoyada en el suelo. 
+    /// </summary>
     public bool TryGetPushTarget(Transform playerTf, out BoxPushAttract target, out RaycastHit hitLeft,
         out RaycastHit hitRight)
     {
@@ -114,19 +108,21 @@ public sealed class InteractionRuntime : MonoBehaviour
     }
 
     // -------------------- SWING --------------------
+
+    /// <summary> 
+    /// Busca puntos de balanceo (Hooks) mediante un área de colisión local, verificando que 
+    /// no existan obstáculos (paredes) que bloqueen la línea de visión hacia el objetivo. 
+    /// </summary>
     public bool TryGetSwingTarget(Transform playerTf, out Rigidbody target)
     {
         target = null;
 
-        // centro local del player
         Vector3 center = playerTf.TransformPoint(origin);
-        // usa rotacion del player
         Collider[] hits = Physics.OverlapBox(center, halfExtents, playerTf.rotation, _interactMask);
 
         float minDist = float.MaxValue;
         Rigidbody nearest = null;
 
-        // Obtenemos la mask de "Wall" localmente (asegúrate que tu layer se llame exactamente "Wall")
         int wallMask = LayerMask.GetMask("Wall");
 
         foreach (var hit in hits)
@@ -137,21 +133,15 @@ public sealed class InteractionRuntime : MonoBehaviour
 
             float dist = Vector3.Distance(playerTf.position, rb.position);
 
-            // OPTIMIZACIÓN: Si ya encontramos uno más cerca, ni nos molestamos en tirar el Raycast
             if (dist >= minDist) continue;
 
-            // LOGICA DE OCLUSIÓN:
-            // Lanzamos un rayo desde el player hacia el objetivo
             Vector3 direction = (rb.position - playerTf.position).normalized;
 
-            // Si el raycast golpea algo en la layer "Wall" antes de llegar a la distancia del objeto...
             if (Physics.Raycast(playerTf.position, direction, dist, wallMask))
             {
-                // ... significa que hay una pared en medio, pasamos al siguiente.
                 continue;
             }
 
-            // Si pasa todas las pruebas, es el nuevo candidato
             minDist = dist;
             nearest = rb;
         }
@@ -162,9 +152,10 @@ public sealed class InteractionRuntime : MonoBehaviour
     }
 
     // -------------------- ATTRACT --------------------
-    /// <summary>
-    /// Raycast tipo LOS frente al player (Y=1) en rango [min,max] contra Interactable.
-    /// Requiere BoxPushAttract y que la caja esté grounded para atraer.
+
+    /// <summary> 
+    /// Identifica cajas para atraer a distancia mediante un rayo de visión, validando que 
+    /// se encuentre dentro del rango permitido y en contacto con la superficie. 
     /// </summary>
     public bool TryGetAttractTarget(Transform playerTf, out BoxPushAttract target)
     {
@@ -185,7 +176,6 @@ public sealed class InteractionRuntime : MonoBehaviour
         }
 
         const float EPS = 0.001f;
-        // 🔴 No permitir adquisición si está en la distancia mínima o por debajo
         if (h.distance <= (_attractMinDistance + EPS))
         {
             _aEligible = false;
@@ -206,38 +196,40 @@ public sealed class InteractionRuntime : MonoBehaviour
 
     // -------------------- AIM --------------------
 
-// -------------------- AIM --------------------
-
-    // ¡¡MÉTODO MODIFICADO!!
-    // Ahora recibe "aimScreenPosition" desde el AimState
-// En InteractionRuntime.cs
-
-public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3 hitPoint, out Vector3 hitNormal)
+    /// <summary> 
+    /// Calcula una trayectoria parabólica basada en la posición del cursor, simulando el arco 
+    /// paso a paso para detectar el punto exacto de impacto mediante SphereCast. 
+    /// </summary>
+    public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3 hitPoint, out Vector3 hitNormal)
     {
         hitPoint = default;
         hitNormal = Vector3.up;
-        SimpleShootData.Path = null; 
+        SimpleShootData.Path = null;
 
-        // --- 1) Origen y Raycast ---
-        Vector3 start = _shootOriginTransform != null ? _shootOriginTransform.position : playertf.position + Vector3.up * 1.0f;
+        Vector3 start = _shootOriginTransform != null
+            ? _shootOriginTransform.position
+            : playertf.position + Vector3.up * 1.0f;
         Ray ray = Camera.main.ScreenPointToRay(aimScreenPosition);
-        Vector3 desired = Physics.Raycast(ray, out RaycastHit camHit, 200f, _aimCollisionMask, QueryTriggerInteraction.Ignore)
+        Vector3 desired =
+            Physics.Raycast(ray, out RaycastHit camHit, 200f, _aimCollisionMask, QueryTriggerInteraction.Ignore)
                 ? camHit.point
                 : ray.GetPoint(50f);
 
-        // --- 2) Cálculos ---
         Vector3 toDesired = desired - start;
         Vector3 dirXZ = new Vector3(toDesired.x, 0f, toDesired.z);
         float distXZ = dirXZ.magnitude;
-        if (distXZ > 1e-3f) dirXZ.Normalize(); else dirXZ = playertf.forward;
+        if (distXZ > 1e-3f) dirXZ.Normalize();
+        else dirXZ = playertf.forward;
 
-        // --- 3) Validación Inicial ---
         bool isValid = true;
-        if (distXZ > _aimMaxDistance) isValid = false;
-        if (toDesired.y > _maxAimHeight) isValid = false;
 
-        // --- 4) Generación del Arco ---
-        float L = distXZ; 
+        if (distXZ > _aimMaxDistance)
+            isValid = false;
+
+        if (toDesired.y > _maxAimHeight)
+            isValid = false;
+
+        float L = distXZ;
         float height = toDesired.y;
         int steps = Mathf.Max(6, _simMaxSteps);
         var points = new List<Vector3>(steps + 1);
@@ -259,7 +251,8 @@ public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3
             float dist = dir.magnitude;
             if (dist > 0.001f)
             {
-                if (Physics.SphereCast(prev, _arcRadius, dir, out RaycastHit h, dist, _aimCollisionMask, QueryTriggerInteraction.Ignore))
+                if (Physics.SphereCast(prev, _arcRadius, dir, out RaycastHit h, dist, _aimCollisionMask,
+                        QueryTriggerInteraction.Ignore))
                 {
                     Vector3 hitVector = h.point - start;
                     float hitDistXZ = new Vector3(hitVector.x, 0f, hitVector.z).magnitude;
@@ -269,9 +262,10 @@ public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3
                     hitNormal = h.normal;
                     points.Add(hitPoint);
                     collisionFound = true;
-                    break; 
+                    break;
                 }
             }
+
             points.Add(p);
             prev = p;
         }
@@ -283,15 +277,16 @@ public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3
             if (distXZ > _aimMaxDistance) isValid = false;
             hitPoint = points[points.Count - 1];
         }
-        
+
         IsAimValid = isValid;
 
         return isValid;
     }
     // -------------------- QuickTravel --------------------
 
-    /// <summary>
-    /// Busca un PortalSmash dentro del círculo del Smash y retorna el más cercano.
+    /// <summary> 
+    /// Localiza el componente de transporte (HippoTravel) más cercano al jugador dentro de 
+    /// un radio de búsqueda reducido. 
     /// </summary>
     public bool TryGetQuickTravel(Transform playerTransform, out HippoTravel portal)
     {
@@ -325,33 +320,43 @@ public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3
         portal = best;
         return portal != null;
     }
-    
-#if UNITY_EDITOR
-    private void OnDrawGizmosSelected()
-    {
-        if (!_drawGizmos) return;
 
-        Transform tf = transform;
-        Vector3 center = tf.TransformPoint(origin);
-        Quaternion rot = tf.rotation;
+    #region Unity Editor
 
-        Collider[] hits = Physics.OverlapBox(center, halfExtents, rot, _interactMask);
-        bool anyHook = false;
-        foreach (var hit in hits)
-        {
-            if (hit.CompareTag("Hook"))
-            {
-                anyHook = true;
-                break;
-            }
-        }
+// #if UNITY_EDITOR
+//     private void OnDrawGizmosSelected()
+//     {
+//         if (!_drawGizmos) return;
+//
+//         Transform tf = transform;
+//         Vector3 center = tf.TransformPoint(origin);
+//         Quaternion rot = tf.rotation;
+//
+//         Collider[] hits = Physics.OverlapBox(center, halfExtents, rot, _interactMask);
+//         bool anyHook = false;
+//         foreach (var hit in hits)
+//         {
+//             if (hit.CompareTag("Hook"))
+//             {
+//                 anyHook = true;
+//                 break;
+//             }
+//         }
+//
+//         Gizmos.color = anyHook ? _hitColor : _missColor;
+//         Gizmos.matrix = Matrix4x4.TRS(center, rot, Vector3.one);
+//         Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2);
+//         Gizmos.matrix = Matrix4x4.identity;
+//     }
+// #endif
 
-        Gizmos.color = anyHook ? _hitColor : _missColor;
-        Gizmos.matrix = Matrix4x4.TRS(center, rot, Vector3.one);
-        Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2);
-        Gizmos.matrix = Matrix4x4.identity;
-    }
-#endif
+    #endregion
+
+    #region Gizmos
+
+    [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
+    [SerializeField] private Color _hitColor = new(0.2f, 1f, 0.2f, 0.9f);
+    [SerializeField] private Color _missColor = new(1f, 0.2f, 0.2f, 0.9f);
 
     private void OnDrawGizmos()
     {
@@ -377,7 +382,7 @@ public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3
 
 
         //AIM
-        
+
         // 2. DIBUJAR TRAYECTORIA Y PUNTO DE IMPACTO
         if (SimpleShootData.Path != null && SimpleShootData.Path.Count > 1)
         {
@@ -393,4 +398,6 @@ public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3
             Gizmos.DrawSphere(impactPoint, 0.25f);
         }
     }
+
+    #endregion
 }

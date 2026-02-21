@@ -1,16 +1,19 @@
 using UnityEngine;
 using static PlayerEnum;
 
+/// <summary> 
+/// Estado de Atracción: Ejecuta la mecánica de "tirar" de una caja mediante vendas, coordinando la 
+/// animación de envolver (Wrap), el desplazamiento físico del objeto y la rotación del jugador. 
+/// </summary>
+
 public sealed class AttractState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
     private BoxPushAttract _box;
 
-    // Constantes
     private const float MIN_PULL_SPEED_FLOOR = 0.05f;
     private const float ROT_LERP = 1f;
 
-    // Variable para controlar el delay
     private float _moveUnlockTime;
 
     private WrapHandler _currentWrapHandler;
@@ -19,8 +22,6 @@ public sealed class AttractState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
-        Debug.Log("AttractState!");
-        
         _ctx.View.PlaySfx("Shoot");
         
         _ctx.View.Animator.SetBool("PrePull", true);
@@ -31,17 +32,11 @@ public sealed class AttractState : State, IBandageRestrictor
             return;
         }
 
-        // 1. Iniciamos la física de la caja
         _box.SetPushAttractMode(true, true);
         _box.bank.Play3D("MoveBox", _box.transform.position);
         
-        // 2. Iniciamos VISUAL de la venda (Reutilizamos la View)
-        // Le mandamos el transform de la caja y su posición central
-        // Esto asegura que la linea salga de la mano correcta y vaya a la caja
         _ctx.View.StartBandage(_box.transform, _box.transform.position, 0.4f);
 
-        // 3. Calculamos tiempos
-        // Esperamos ese tiempo antes de mover la caja
         _moveUnlockTime = Time.time + 0.4f;
 
         _currentWrapHandler = _box.GetComponent<WrapHandler>();
@@ -51,10 +46,9 @@ public sealed class AttractState : State, IBandageRestrictor
     {
         _box?.StopImmediate();
         _box.bank.Stop("MoveBox");
-        _box?.SetPushAttractMode(false); // Esto dispara el UnWrap
+        _box?.SetPushAttractMode(false);
         _box = null;
         
-        // Limpiamos visuales de la venda
         _ctx.View.StopBandage();
         
         _currentWrapHandler.UnWrap();
@@ -67,7 +61,6 @@ public sealed class AttractState : State, IBandageRestrictor
 
     public override void OnFixedUpdate()
     {
-        // --- Chequeos de validación (Salidas) ---
         if (!_ctx.IsGrounded())
         {
             StateMachine.ChangeState(PlayerStateId.Fall);
@@ -84,13 +77,11 @@ public sealed class AttractState : State, IBandageRestrictor
             return;
         }
 
-        // --- Lógica de Dirección y Rotación ---
         Vector3 playerPos = _ctx.Tf.position;
         Vector3 boxPos    = _box.transform.position;
         Vector3 toPlayer  = new Vector3(playerPos.x - boxPos.x, 0f, playerPos.z - boxPos.z);
         Vector3 dirPull   = toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : Vector3.zero;
 
-        // Siempre rotamos al player hacia la caja
         Vector3 toBox = -dirPull;
         if (toBox.sqrMagnitude > 0.0001f)
         {
@@ -99,7 +90,6 @@ public sealed class AttractState : State, IBandageRestrictor
             _ctx.Rb.MoveRotation(smooth);
         }
 
-        // --- Lógica de Espera (Wait for Wrap Visual) ---
         if (Time.time < _moveUnlockTime)
         {
             _ctx.View.Animator.SetBool("Pull", true);
@@ -107,7 +97,6 @@ public sealed class AttractState : State, IBandageRestrictor
             return; 
         }
 
-        // --- Lógica de Movimiento (Solo se ejecuta tras finalizar el Wrap Visual) ---
         float min    = _ctx.AttractMinDistance;
         float max    = _ctx.AttractMaxDistance;
         float distXZ = _box.HorizontalDistanceTo(playerPos);

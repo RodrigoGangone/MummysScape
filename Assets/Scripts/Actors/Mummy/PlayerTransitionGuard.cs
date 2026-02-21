@@ -1,11 +1,11 @@
 using System;
 using static PlayerEnum;
 
-/// <summary>
-/// PlayerTransitionGuard
-/// Valida la transición A->B con: matriz de transiciones + SizeRules.
-/// No duplica lógica en los States. Abreviado y testeable.
+/// <summary> 
+/// Validador de Transiciones: Cruza los datos del modelo con las matrices de reglas (Transition & Size Rules) 
+/// para autorizar o denegar el paso de un estado a otro en la FSM. 
 /// </summary>
+
 public sealed class PlayerTransitionGuard : IStateTransitionGuard
 {
     private readonly PlayerContext _ctx;

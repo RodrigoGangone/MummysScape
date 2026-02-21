@@ -2,6 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary> 
+/// Interruptor por Impacto: Detecta colisiones de proyectiles ("Bullet") para activar secuencias 
+/// de movimiento en plataformas y ejecutar efectos visuales de intensidad en materiales. 
+/// </summary>
+
 public class ActivateObjectsBullet : MonoBehaviour
 {
     [SerializeField] private List<GameObject> _platformsAll;

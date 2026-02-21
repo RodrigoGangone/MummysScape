@@ -2,6 +2,11 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.Rendering.Universal;
 
+/// <summary> 
+/// Estado de Apuntado: Gestiona la visualización de la trayectoria parabólica y el indicador de rango (Decal), 
+/// calculando la validez del objetivo y orientando al personaje hacia el punto de impacto. 
+/// </summary>
+
 public class AimState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
@@ -12,9 +17,8 @@ public class AimState : State, IBandageRestrictor
     private Coroutine _scaleCoroutine;
     private Vector3 _targetScale;
 
-    // --- VARIABLES PARA EL MATERIAL ---
-    private Material _lineMaterialInstance; // Aquí guardamos la instancia
-    private int _colorPropertyID;           // ID numérico de la propiedad "_Color"
+    private Material _lineMaterialInstance;
+    private int _colorPropertyID;          
 
     private const float ANIM_DURATION = 0.2f;
     private const float DECAL_BOX_DEPTH = 50f;
@@ -30,7 +34,6 @@ public class AimState : State, IBandageRestrictor
         _rangeIndicator = _ctx.View.RangeIndicator;
         _arcRenderer = _ctx.View.ArcRenderer;
         
-        // Cacheamos el ID del shader una sola vez para optimizar
         _colorPropertyID = Shader.PropertyToID("_Color");
     }
 
@@ -43,13 +46,10 @@ public class AimState : State, IBandageRestrictor
         _aimScreenPos = new Vector2(Screen.width / 2, Screen.height / 2);
         _lastMousePos = Input.mousePosition;
 
-        // --- MANEJO DE MATERIAL ---
         if (_arcRenderer != null)
         {
             _arcRenderer.enabled = false;
             
-            // ALERTA: Al acceder a .material, Unity crea la instancia automáticamente.
-            // Guardamos esta referencia para reusarla y no crear copias nuevas en Update.
             if (_lineMaterialInstance == null)
             {
                 _lineMaterialInstance = _arcRenderer.material;
@@ -99,7 +99,6 @@ public class AimState : State, IBandageRestrictor
 
         _lastMousePos = mousePos;
 
-        // Llamamos al método modificado que devuelve true/false pero siempre genera path
         bool hasValidTarget = _ctx.TryGetAim(_aimScreenPos, out var pos, out var normal);
 
         if (hasValidTarget)
@@ -120,7 +119,6 @@ public class AimState : State, IBandageRestrictor
             }
         }
 
-        // Pasamos el estado de validez
         SetArc(hasValidTarget);
         SetDecalVisible(hasValidTarget);
     }
@@ -158,7 +156,6 @@ public class AimState : State, IBandageRestrictor
 
                 if (_lineMaterialInstance != null)
                 {
-                    // AQUI EL CAMBIO: Leemos los colores desde tu PlayerView (donde pusiste el HDR)
                     Color targetColor = hasValidTarget ? _ctx.View.AimAllowed : _ctx.View.AimNotAllowed;
                     
                     _lineMaterialInstance.SetColor(_colorPropertyID, targetColor);
@@ -170,7 +167,6 @@ public class AimState : State, IBandageRestrictor
             }
         }
     }
-    // ... (El resto de métodos SetDecalVisible, SetDecal y AnimateScale siguen igual) ...
     private void SetDecalVisible(bool visible)
     {
         if (_decal && _decal.activeSelf != visible)

@@ -1,20 +1,20 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Audio;
 
-/// <summary>
-/// Controla la música 2D con prioridad y crossfade.
-/// Usa un FxBank con bus = Music (is3D = false).
+/// <summary> 
+/// Gestor de Música: Controla la reproducción de pistas 2D con un sistema de prioridades y 
+/// crossfade automático entre dos fuentes para transiciones fluidas de ambiente. 
 /// </summary>
+
 public class MusicManager : MonoBehaviour
 {
     public static MusicManager Instance { get; private set; }
 
     [Header("Banco de música (FxBank)")] [SerializeField]
     private FxBank musicBank;
-    
+
     [Header("Config")] [SerializeField] private float defaultFadeTime = 1.5f;
-    [SerializeField] private string startKey = ""; // ej: "MainTheme"
+    [SerializeField] private string startKey = "";
 
     private AudioSource _sourceA;
     private AudioSource _sourceB;
@@ -55,7 +55,6 @@ public class MusicManager : MonoBehaviour
         _currentSource = _sourceA;
         _nextSource = _sourceB;
 
-        // Enchufar al bus Music del mixer
         if (AudioManager.Instance != null)
         {
             var group = AudioManager.Instance.GetMixerGroup(AudioBus.Music);
@@ -80,9 +79,6 @@ public class MusicManager : MonoBehaviour
         src.volume = 0f;
     }
 
-    /// <summary>
-    /// Reproduce un tema por key con prioridad y crossfade.
-    /// </summary>
     public void PlayMusic(string key, int priority = 0, float fadeTime = -1f, bool forceRestart = false)
     {
         if (musicBank == null)
@@ -101,38 +97,30 @@ public class MusicManager : MonoBehaviour
         if (fadeTime < 0f)
             fadeTime = defaultFadeTime;
 
-        // Si la nueva prioridad es menor a la actual, ignoramos
         if (!forceRestart && priority < _currentPriority)
             return;
 
-        // Si es el mismo tema y no queremos reiniciar, no hacemos nada
         if (!forceRestart && _currentSource != null && _currentSource.clip == entry.clip)
             return;
 
         _currentPriority = priority;
         _currentKey = key;
 
-        // Preparar el source de destino
         _nextSource.clip = entry.clip;
         _nextSource.pitch = entry.pitch;
 
-        // El volumen lo vamos a animar desde 0 hasta entry.volume en el crossfade
         _nextSource.volume = 0f;
         _nextTargetVolume = entry.volume;
         _currentTargetVolume = _currentSource != null ? _currentSource.volume : 1f;
 
         _nextSource.Play();
 
-        // Lanzar crossfade
         if (_fadeCoroutine != null)
             StopCoroutine(_fadeCoroutine);
 
         _fadeCoroutine = StartCoroutine(CrossfadeCoroutine(fadeTime));
     }
 
-    /// <summary>
-    /// Apaga la música actual con fade.
-    /// </summary>
     public void StopMusic(float fadeTime = -1f)
     {
         if (fadeTime < 0f)
@@ -151,10 +139,10 @@ public class MusicManager : MonoBehaviour
         float t = 0f;
 
         float startVolCurrent = _currentSource.volume;
-        float targetVolCurrent = 0f; // el actual baja a 0
+        float targetVolCurrent = 0f;
 
-        float startVolNext = 0f; // el nuevo arranca en 0
-        float targetVolNext = _nextTargetVolume; // y sube al volumen del Bank
+        float startVolNext = 0f;
+        float targetVolNext = _nextTargetVolume;
 
         while (t < duration)
         {
@@ -172,14 +160,12 @@ public class MusicManager : MonoBehaviour
         _currentSource.Stop();
 
         _nextSource.volume = targetVolNext;
-        _currentTargetVolume = targetVolNext; // por si después querés usarlo
+        _currentTargetVolume = targetVolNext;
 
-        // Swap referencias
         (_currentSource, _nextSource) = (_nextSource, _currentSource);
 
         _fadeCoroutine = null;
     }
-
 
     private IEnumerator FadeOutAllCoroutine(float duration)
     {

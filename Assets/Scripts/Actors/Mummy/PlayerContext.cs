@@ -1,10 +1,10 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
-/// <summary>
-/// PlayerContext
-/// Reúne refs estables y proveedores dinámicos para que los States no dependan de públicos.
+/// <summary> 
+/// Contenedor de Dependencias: Provee a los estados de la FSM un acceso seguro y simplificado a 
+/// las referencias del mundo, sistemas de detección y componentes del jugador sin generar acoplamiento directo. 
 /// </summary>
+
 public sealed class PlayerContext
 {
     public readonly Transform Tf;
@@ -63,7 +63,6 @@ public sealed class PlayerContext
     public float KnockbackDuration;
     public bool HasExternalImpact => Observer.HasKnockback;
 
-    /// <summary>Convierte input (x,y) a dirección de mundo relativa a cámara (plano XZ).</summary>
     public Vector3 CameraRelativeDir(float h, float v)
     {
         var cam = Cam;
@@ -76,7 +75,6 @@ public sealed class PlayerContext
         return (fwd * v + right * h).normalized;
     }
 
-    /// <summary>Conveniencia: corre el PushChecker de InteractionRuntime.</summary>
     public bool TryGetPushTarget(out BoxPushAttract target, out RaycastHit left, out RaycastHit right)
     {
         target = null;
@@ -85,7 +83,6 @@ public sealed class PlayerContext
         return _interactions != null && _interactions.TryGetPushTarget(Tf, out target, out left, out right);
     }
 
-    /// <summary>Conveniencia: Attract checker (LOS a 1..5u frente al player).</summary>
     public bool TryGetAttractTarget(out BoxPushAttract target)
     {
         target = null;

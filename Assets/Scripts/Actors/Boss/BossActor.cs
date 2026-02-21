@@ -4,17 +4,15 @@ using System;
 using System.Collections;
 
 /// <summary>
-/// Actor genérico del Jefe. Integra Config por Stages, GOAP, y tu FSM existente.
-/// - Implementa IBossContext para desacoplar Skills / GOAP de la clase concreta.
-/// - Avanza de Stage cuando colisiona con objetos "Box".
-/// - Cuando no quedan Stages, dispara "Die".
-/// - Construye WorldModel (distancia, LOS, stage, config) y consulta al GOAP para decidir la intención.
+/// Controlador Central: Integra el sistema de estados (FSM), el planificador de decisiones (GOAP) 
+/// y el contexto de batalla, gestionando además la progresión de fases y la secuencia de muerte.
 /// </summary>
+
 [DisallowMultipleComponent]
 public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 {
-    [Header("Config & Refs")] [SerializeField]
-    private BossConfigSO config;
+    [Header("Config & Refs")] 
+    [SerializeField] private BossConfigSO config;
 
     [SerializeField] private PlayerController player;
     [SerializeField] private Animator animator;
@@ -23,16 +21,14 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     
     [Header("FSM")] public StateMachinePlayer stateMachine;
 
-    [Header("Percepción")] [Tooltip("Layers que bloquean la visión y largo del LoS")] [SerializeField]
-    private LayerMask losObstacleMask;
-
+    [Header("Percepción")] [Tooltip("Layers que bloquean la visión y largo del LoS")]
+    [SerializeField] private LayerMask losObstacleMask;
     [SerializeField] private float losRayHeight = 1.5f;
     
     [Header("Cinematic Death")]
     [SerializeField] private ParticleSystem deathImpactFx;
     [SerializeField] private Transform headSocket;
 
-    // IBossContext
     public Transform Transform => transform;
     public Animator Animator => animator;
     public FxBank Bank => bank;
@@ -40,11 +36,10 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     public int CurrentStageIndex => _stageIndex;
     public BossConfigSO Config => config;
 
-    // Runtime
     private GoapBrain _goap;
-    private int _stageIndex; // 0..N-1
-    private float _time; // cache Time.time
-    private string _lastIntent = ""; // para evitar spam de triggers
+    private int _stageIndex; 
+    private float _time; 
+    private string _lastIntent = "";
 
     private BossSkillSO _runtimePrimarySkill;
     private BossSkillSO _runtimeSecondarySkill;
@@ -67,10 +62,9 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     public Func<bool> OnPrimarySkill;
     public Func<bool> OnSecondarySkill;
     
-    private bool _paused;    // Pausa de Menú
-    private bool _isLocked;  // Pausa de Focus/Cinemática
+    private bool _paused;    
+    private bool _isLocked;  
 
-    // Eventos locales para comunicación interna
     public event Action<int> OnStageChanged;
     public event Action OnDeath;
     public event Action OnDamaged;
@@ -197,22 +191,17 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         _isLocked = true;
         UpdateControlState(); 
 
-        // 1. HIT-STOP (Estilo Mario Odyssey)
-        // Congelamos el tiempo pero seguimos usando tiempo real para la corrutina
         float originalTimeScale = Time.timeScale;
-        Time.timeScale = 0.05f; // Casi detenido
+        Time.timeScale = 0.05f;
     
-        // 2. DISPARAR EFECTOS (Shake largo y Aberración)
         GameEventManager.Instance.bossEvents.OnDeath.Raise(); 
     
         if (deathImpactFx != null && headSocket != null)
             deathImpactFx.Play();
 
-        // Esperamos un instante en "tiempo real" mientras el juego está casi congelado
         yield return new WaitForSecondsRealtime(0.15f); 
-        Time.timeScale = originalTimeScale; // Restauramos el tiempo
+        Time.timeScale = originalTimeScale; 
 
-        // 3. ANIMACIÓN DE MUERTE
         stateMachine.ChangeState(Die); 
         
         GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
@@ -220,10 +209,9 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private void UpdateControlState()
     {
-        if (_paused) { /* ... lógica de pausa ... */ return; }
+        if (_paused)
+            return;
 
-        // IMPORTANTE: Permitir que el Animator siga activo si está muriendo (IsDie)
-        // Esto evita que el Boss se quede estático al recibir el golpe.
         bool shouldFreezeByLock = _isLocked && !IsEntry && !IsDie;
 
         if (animator != null) animator.enabled = !shouldFreezeByLock;
@@ -243,10 +231,6 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         OnDamaged += () => GameEventManager.Instance.bossEvents.OnDamaged.Raise();
 
         OnDeath += StartDeathSequence;
-
-        // ELIMINADO: OnStageChanged += (stage) => GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(stage);
-        // No queremos que OnStageCompleted se dispare inmediatamente en la muerte, 
-        // sino que espere al final de la Corrutina.
     }
     private void OnDisable()
     {

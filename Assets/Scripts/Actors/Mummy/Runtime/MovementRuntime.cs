@@ -1,11 +1,12 @@
 using UnityEngine;
 using static PlayerEnum;
 
-/// <summary>
-/// MovementRuntime
-/// Ajusta MoveSpeed/TurnSpeed según Size. Se inicializa con el Size del Model,
-/// y luego escucha GameEvent OnSizeChanged para cambios en runtime.
+/// <summary> 
+/// Adaptador de Movimiento: Ajusta dinámicamente la velocidad de desplazamiento y rotación del jugador 
+/// en función de su tamaño actual (PlayerSize). Se sincroniza con el PlayerModel 
+/// y reacciona en tiempo real a cambios de escala mediante el sistema de eventos globales.
 /// </summary>
+
 public sealed class MovementRuntime : MonoBehaviour
 {
     [SerializeField] private MovementBySizeConfig _config;
@@ -28,15 +29,8 @@ public sealed class MovementRuntime : MonoBehaviour
         TurnSpeed = turn;
     }
     
-    private void OnEnable()
-    {
-        GameEventManager.Instance.playerEvents.OnSizeChanged
-            .Register<PlayerSize>(Recompute);
-    }
+    private void OnEnable() => GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(Recompute);
 
-    private void OnDisable()
-    {
-        GameEventManager.Instance.playerEvents.OnSizeChanged
-            .Unregister<PlayerSize>(Recompute);
-    }
+    private void OnDisable() => GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(Recompute);
+    
 }

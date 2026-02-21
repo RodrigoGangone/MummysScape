@@ -1,5 +1,10 @@
 using UnityEngine;
 
+/// <summary> 
+/// Detector de Geyser: Actúa como puente de colisión para notificar al componente Geyser principal 
+/// cuando el jugador entra o sale de su área de influencia, gestionando el emparentamiento dinámico. 
+/// </summary>
+
 public class GeyserTrigger : MonoBehaviour
 {
     private Geyser _geyser;

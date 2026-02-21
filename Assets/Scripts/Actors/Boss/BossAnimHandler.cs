@@ -1,6 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+
+/// <summary>
+/// Puente de Animación: Traduce los eventos de los clips de Animator (Animation Events) en acciones 
+/// de código, como notificar el fin de un estado, instanciar efectos o disparar proyectiles.
+/// </summary>
 
 public class BossAnimHandler : MonoBehaviour
 {

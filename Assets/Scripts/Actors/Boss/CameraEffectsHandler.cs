@@ -4,6 +4,11 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using Cinemachine;
 
+/// <summary>
+/// Gestor de Feedback: Controla los efectos visuales de cámara (shakes e impulsos) y el post-procesado 
+/// (aberración cromática y desenfoque) para dar impacto visual a momentos críticos del combate.
+/// </summary>
+
 public class CameraEffectsHandler : MonoBehaviour
 {
     [Header("Cinemachine Impulse")]
@@ -34,12 +39,9 @@ public class CameraEffectsHandler : MonoBehaviour
 
     private void OnBossDeathEffects()
     {
-        // 1. SHAKE: Para aumentar la duración, ajusta el "Time Envelope" 
-        // en el componente Impulse Source del Inspector.
         if (impulseSource != null)
             impulseSource.GenerateImpulse(deathImpulseForce);
         
-        // 2. BLUR + CHROMATIC (Duración extendida para el impacto)
         StartCoroutine(ImpactVfxCo(0.8f)); 
     }
 
@@ -53,7 +55,7 @@ public class CameraEffectsHandler : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
-            float curve = Mathf.Sin(t * Mathf.PI); // Curva de campana
+            float curve = Mathf.Sin(t * Mathf.PI); 
             
             if (_dof != null) _dof.focalLength.value = curve * blurIntensity;
             if (_chromatic != null) _chromatic.intensity.value = curve * chromaticIntensity;

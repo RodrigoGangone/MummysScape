@@ -1,5 +1,10 @@
 using UnityEngine;
 
+/// <summary> 
+/// Lógica de Coleccionable: Gestiona la recolección de gemas, sincronizando su estado visual con 
+/// el sistema de guardado y disparando eventos globales de recolección. 
+/// </summary>
+
 public class Gem : MonoBehaviour
 {
     [SerializeField] private int gemNum;

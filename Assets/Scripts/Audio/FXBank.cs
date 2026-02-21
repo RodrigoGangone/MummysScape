@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary> 
+/// Base de Datos de Sonidos: ScriptableObject que organiza colecciones de efectos (FxEntry) por categorías, 
+/// permitiendo su ejecución mediante claves (keys) y configurando parámetros de espacialización. 
+/// </summary>
 [CreateAssetMenu(fileName = "FxBank", menuName = "Audio/Fx Bank")]
 public class FxBank : ScriptableObject
 {
@@ -9,7 +13,7 @@ public class FxBank : ScriptableObject
     public AudioBus bus = AudioBus.Sfx;
 
     [Header("Listado de FX de esta subcategoría")]
-    public List<FxEntry> entries = new List<FxEntry>();
+    public List<FxEntry> entries = new();
 
     private Dictionary<string, FxEntry> _lookup;
 
@@ -61,9 +65,6 @@ public class FxBank : ScriptableObject
             entry.is3D ? entry.spatialBlend : 0f, entry.maxDistance);
     }
 
-    /// <summary>
-    /// Detiene el sonido asociado a esta key si está en loop.
-    /// </summary>
     public void Stop(string key)
     {
         if (AudioManager.Instance != null)
@@ -71,20 +72,22 @@ public class FxBank : ScriptableObject
             AudioManager.Instance.StopLoop(key);
         }
     }
-    
+
+    #region Gizmos
+
     public void DrawGizmo(Vector3 position, string key, Color color)
     {
         var entry = Get(key);
         if (entry == null) return;
 
         Gizmos.color = color;
-        // Dibujamos el rango máximo
         Gizmos.DrawWireSphere(position, entry.maxDistance);
-    
-        // Opcional: una esfera sólida muy pequeña en el centro
+
         Gizmos.color = new Color(color.r, color.g, color.b, 0.3f);
         Gizmos.DrawSphere(position, 0.2f);
     }
+
+    #endregion
 }
 
 [Serializable]

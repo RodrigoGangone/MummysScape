@@ -1,18 +1,11 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using static PlayerEnum.PlayerStateId;
 
-/// <summary>
-/// PlayerInputStateDriver
-/// Traduce inputs crudos a Estados destino y ejecuta StateMachine.ChangeState.
-/// Priorización:
-/// 1) Ambiente: Fall si no está en suelo.
-/// 2) Space (hold): Head->Smash; si no, Attract si hay target al frente.
-/// 3) Edge: E->Shoot; Q->DropBandage.
-/// 4) Movimiento: Walk/Idle según deadzone.
-/// Todas las transiciones pasan por el Guard (TransitionRules + SizeRules).
+/// <summary> 
+/// Driver de Decisiones: Traduce los inputs crudos en solicitudes de cambio de estado para la FSM, 
+/// aplicando una jerarquía de prioridades (caída > acciones > movimiento). 
 /// </summary>
+
 [DisallowMultipleComponent]
 [RequireComponent(typeof(StateMachinePlayer))]
 public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
@@ -37,7 +30,6 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
         if (_sm == null) _sm = GetComponent<StateMachinePlayer>();
     }
 
-    //TODO: ver que hacer con los "if" previos a pasar de state,ya que provocan entrar al state 1 vez por frame.
     private void Update()
     {
         if (_ctx == null || _sm == null || _input == null || _paused || _locked) return;
@@ -53,10 +45,8 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
         var mv = _input.Move;
         bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
 
-        // 1) Ambiente: caída/swing 
         if (!_ctx.IsGrounded())
         {
-            // Si ya estoy en Swing: lo mantengo mientras se sostenga Space.
             if (_sm.IsCurrent(Swing))
             {
                 if (!_input.IsSpaceHeld())
@@ -64,23 +54,20 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
                     _sm.ChangeState(Fall);
                 }
 
-                return; // No procesar otros estados en el aire.
+                return; 
             }
 
-            // Permitir entrar a Swing desde Fall (con Space hold y target válido).
             if (_input.IsSpaceHeld() && _ctx.TryGetSwingTarget(out _))
             {
                 _sm.ChangeState(Swing);
                 return;
             }
 
-            // Caso contrario: caer.
             if (!_sm.IsCurrent(Fall))
                 _sm.ChangeState(Fall);
             return;
         }
 
-        // 2) Space press => Smash (Head). Si el guard/SizeRules no dejan, sigue el flujo.
         if (_input.ConsumeSpaceDown())
         {
             if (_ctx.TryGetQuickTravel(_ctx.Tf, out _))
@@ -92,39 +79,31 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
             if (_sm.ChangeState(Smash)) return;
         }
 
-        // 3) Space hold => Swing > Attract (según target frente)
         if (_input.IsSpaceHeld())
         {
             if (_sm.IsCurrent(Swing) || _sm.IsCurrent(Attract)) return;
 
-            if (_ctx.TryGetSwingTarget(out _)) // Small: el guard lo permite; otros tamaños lo bloquean
+            if (_ctx.TryGetSwingTarget(out _))
             {
                 _sm.ChangeState(Swing);
                 return;
             }
 
-            if (_ctx.TryGetAttractTarget(out _)) // Normal: permitido; otros tamaños bloquean
+            if (_ctx.TryGetAttractTarget(out _)) 
             {
                 _sm.ChangeState(Attract);
                 return;
             }
         }
 
-// 4) Aim & Shoot
         if (_input.IsAimHeld())
         {
-            // Protección: Si ya estamos disparando, no interrumpir
             if (_sm.IsCurrent(Shoot)) return;
 
-            // Entramos a Aim (esto hará que AimState se ejecute y actualice IsAimValid en cada frame)
             _sm.ChangeState(Aim);
 
-            // Si presionamos disparar...
             if (_input.ConsumeShootDown())
             {
-                // ... YA NO CALCULAMOS NADA.
-                // Solo preguntamos: ¿El último cálculo dijo que era válido?
-                // Esto funciona perfecto con Joystick porque AimState ya hizo el trabajo sucio.
                 if (_ctx.IsAimValid)
                 {
                     _sm.ChangeState(Shoot);
@@ -142,14 +121,12 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
             if (_sm.ChangeState(DropBandage)) return;
         }
 
-        // 5) Push si me estoy moviendo y tengo caja válida enfrente
         if (moving && _ctx.TryGetPushTarget(out _, out _, out _))
         {
             if (_sm.IsCurrent(Push)) return;
             if (_sm.ChangeState(Push)) return;
         }
 
-        // 6) Walk / Idle
         if (moving) _sm.ChangeState(Walk);
         else _sm.ChangeState(Idle);
     }

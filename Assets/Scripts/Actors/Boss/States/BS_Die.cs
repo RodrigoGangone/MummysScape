@@ -1,6 +1,10 @@
 using static Utils;
 
-/// <summary> Estado de muerte. </summary>
+/// <summary>
+/// Estado de Muerte: Dispara el trigger de animación final del Boss al agotarse sus etapas 
+/// de resistencia.
+/// </summary>
+
 public sealed class BS_Die : State
 {
     private readonly BossActor _actor;

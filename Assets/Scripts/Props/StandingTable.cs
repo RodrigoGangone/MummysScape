@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using static PlayerEnum;
 
+/// <summary> 
+/// Plataforma Colapsable: Gestiona superficies que caen por gravedad tras un tiempo de espera 
+/// si el jugador posee el tamaño "Normal", incluyendo una rutina de reposicionamiento automático. 
+/// </summary>
+
 [DefaultExecutionOrder(-50)]
 public class  StandingTable : MonoBehaviour
 {
-    //TODO: REFACTORIZAR ESTE SCRIPT URGENTEMENTE 
-    
     private PlayerContext _playerContext;
     private List<GameObject> _tables = new();
 

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using static PlayerEnum;
 
-/// <summary>
-/// TransitionRules
-/// Define todas las transiciones permitidas entre estados y mapea State->Action.
-/// Fuente única de verdad para la matriz de estados (legible y auditable).
+/// <summary> 
+/// Matriz de Transiciones: Establece el mapa de conexiones permitidas entre estados (A -> B), 
+/// funcionando como la "fuente de verdad" para la lógica de flujo de la State Machine. 
 /// </summary>
+
 public static class TransitionRules
 {
     private static readonly IReadOnlyDictionary<PlayerStateId, PlayerStateId[]> _allowed =

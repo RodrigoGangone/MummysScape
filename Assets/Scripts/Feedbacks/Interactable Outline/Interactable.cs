@@ -1,26 +1,18 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static PlayerEnum; 
 
-using System.Collections.Generic;
-using UnityEngine;
-using static PlayerEnum; // Importante para que reconozca PlayerSize
-
-/// <summary>
-/// Gestiona el feedback visual (outline) de un objeto interactuable.
-/// Se enciende/apaga desde PlayerInteractionManager y actualiza su
-/// color (funcional/inoperable) escuchando el GameEvent OnSizeChanged.
+/// <summary> 
+/// Feedback de Interacción: Controla el realce visual (outline) de los objetos, cambiando su color 
+/// dinámicamente según si el tamaño actual del jugador permite operar el objeto. 
 /// </summary>
+
 public class Interactable : MonoBehaviour
 {
     [Header("Configuración de Operable (SIMPLE)")]
-    // --- SIMPLIFICADO ---
-    // Reemplazamos la lista de Mappings por 3 booleanos.
-    // Es más fácil de configurar en el Inspector.
     [SerializeField] private bool _operableByHead = false;
     [SerializeField] private bool _operableBySmall = false;
     [SerializeField] private bool _operableByNormal = false;
-    // --- FIN SIMPLIFICADO ---
 
     [Header("Configuración de Material")]
     [SerializeField] [ColorUsage(true, true)]
@@ -34,14 +26,13 @@ public class Interactable : MonoBehaviour
     private const string _materialNameToFind = "InteractableOutline_Ma";
     private const string _materialNameToFindForBox = "InteractableOutline_Ma_Box";
 
-    private List<Material> _materials = new List<Material>();
+    private List<Material> _materials = new();
     
     private PlayerSize _currentReportedPlayerSize;
     private bool _isOutlineOn = false;
 
     private void Start()
     {
-        // 1. Encontrar todos los materiales de outline en los hijos
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         foreach (var renderer in renderers)
         {
@@ -54,41 +45,15 @@ public class Interactable : MonoBehaviour
             }
         }
     }
-    
-    private void OnEnable()
-    {
-        // Nos suscribimos al GameEvent global
-        if (GameEventManager.Instance != null)
-        {
-            GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(OnPlayerSizeChanged);
-        }
-    }
-
-    private void OnDisable()
-    {
-        // Nos desuscribimos
-        if (GameEventManager.Instance != null)
-        {
-            GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(OnPlayerSizeChanged);
-        }
-    }
-
-    /// <summary>
-    /// Llamado por el GameEvent 'OnSizeChanged'
-    /// </summary>
+         
     private void OnPlayerSizeChanged(PlayerSize newSize)
     {
         _currentReportedPlayerSize = newSize;
         
-        // Si el outline está encendido, actualiza su color inmediatamente
         if (_isOutlineOn)
-        {
             SetColor();
-        }
     }
     
-    // --- API Pública (para PlayerInteractionManager) ---
-
     public void OnMaterial()
     {
         if (_isOutlineOn) return; 
@@ -113,15 +78,10 @@ public class Interactable : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Ajusta el color del outline basado en el tamaño actual.
-    /// </summary>
     private void SetColor()
     {
         if (_materials.Count == 0) return;
 
-        // --- LÓGICA SIMPLIFICADA ---
-        // Usamos un switch en lugar de un bucle foreach
         bool isOperable = false;
         switch (_currentReportedPlayerSize)
         {
@@ -135,7 +95,6 @@ public class Interactable : MonoBehaviour
                 isOperable = _operableByNormal;
                 break;
         }
-        // --- FIN LÓGICA SIMPLIFICADA ---
 
         Color colorToSet = isOperable ? _functional : _inoperable;
 
@@ -144,4 +103,8 @@ public class Interactable : MonoBehaviour
             material.SetColor(_color, colorToSet);
         }
     }
+    
+    private void OnEnable() => GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(OnPlayerSizeChanged);
+    private void OnDisable() => GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(OnPlayerSizeChanged);
+
 }

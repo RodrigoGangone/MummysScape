@@ -1,8 +1,12 @@
 using System.Collections;
 using System.Linq;
 using UnityEngine;
-using static Utils;
 using static PauseUtils;
+
+/// <summary> 
+/// Plataforma Vertical: Controla el movimiento ascendente y descendente mediante Transform, integrando 
+/// lógica de espera en waypoints y estados de bloqueo por eventos o cinemáticas. 
+/// </summary>
 
 public class MoveVerticalPlatform : MonoBehaviour, IPausable
 {
@@ -22,29 +26,23 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     [SerializeField] private float glowDuration = 2f;
     [SerializeField] private float glowIntensity = 0.15f;
     
-    // Estado interno
     private int _targetWaypointIndex = 0;
     private bool _isMoving;
-    private bool _isWaitingAtWaypoint = false;
+    private bool _isWaitingAtWaypoint;
     
-    // ⏸️ Estados de Pausa
-    private bool _isGloballyPaused = false; // Pausa de Menú
-    private bool _isLocked = false;         // Pausa de Evento/Cinemática
+    private bool _isGloballyPaused; 
+    private bool _isLocked;         
 
     private Material[] _platformMaterials;
     private Coroutine _waitCoroutine;
 
-    // Componentes
     private AudioSource _movingAudio;
-    // ❌ Rigidbody eliminado
 
     private void Start()
     {
         _platformMaterials = GetMaterialsFromChildren();
         _isMoving = isMovingOnStart;
         
-        // ❌ Eliminada configuración de Rigidbody
-
         if (waypoints.Length == 0)
         {
             Debug.LogWarning("MovingPlatform no tiene waypoints asignados. Se desactivará.", this);
@@ -52,17 +50,14 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
             return;
         }
 
-        // Posicionamiento directo por Transform
         transform.position = waypoints[0].position; 
 
         if (_isMoving)
             _targetWaypointIndex = 1;
     }
 
-    // 🔄 Cambiado a Update para movimiento visual suave sin físicas
     private void Update()
     {
-        // 🔹 CONDICIÓN: Se detiene con Pausa O Lock
         bool shouldMove = !_isGloballyPaused 
                           && !_isLocked
                           && !_isWaitingAtWaypoint 
@@ -82,7 +77,6 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     {
         Transform target = waypoints[_targetWaypointIndex];
         
-        // Usamos transform.position en lugar de _rb.position
         float distance = Vector3.Distance(transform.position, target.position);
         const float slowDownRadius = 1f;
 
@@ -93,10 +87,8 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
             speedFactor = Mathf.Lerp(0.1f, 1f, t);
         }
 
-        // Usamos deltaTime porque estamos en Update
         float step = speed * speedFactor * Time.deltaTime;
         
-        // Movemos el transform directamente
         transform.position = Vector3.MoveTowards(transform.position, target.position, step);
 
         if (Vector3.Distance(transform.position, target.position) < 0.001f)
@@ -285,8 +277,6 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     #endregion
 
     #region Player Collision Logic (Requerido para Transform)
-    // ⚠️ IMPORTANTE: Al mover por Transform, el jugador NO se moverá con la plataforma
-    // automáticamente (se resbalará). Necesitas emparentarlo.
     
     private void OnTriggerEnter(Collider other)
     {
@@ -301,7 +291,6 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         if (other.CompareTag("Player"))
         {
             other.transform.SetParent(null);
-            // Opcional: DontDestroyOnLoad puede requerir lógica extra si tu player es persistente
         }
     }
     #endregion

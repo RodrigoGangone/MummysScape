@@ -1,11 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// Stats por stage. Mantiene multiplicadores y parámetros que afectan a todo el boss
-/// y a las habilidades (p.ej. multiplicador de cooldown).
+/// Estadísticas de Fase: Almacena los multiplicadores de dificultad (velocidad y enfriamiento) 
+/// que se aplican al Boss y sus habilidades a medida que avanza el combate.
 /// </summary>
-/// 
-
 
 [CreateAssetMenu(fileName = "StageStats", menuName = "Boss/Stage Stats")]
 public class StageStatsSO : ScriptableObject

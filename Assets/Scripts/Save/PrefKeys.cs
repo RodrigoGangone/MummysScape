@@ -4,7 +4,10 @@ using System.IO;
 using UnityEngine.SceneManagement;
 using static PrefFamily;
 
-//
+/// <summary> 
+/// Diccionario de Claves: Centraliza la generación de strings para el guardado utilizando enums 
+/// y slugs, garantizando que no existan errores de escritura al acceder a los datos. 
+/// </summary>
 
 public enum PrefFamily { Gems, GemTotals, LevelCompleted, Time, VolumeSound, VolumeFX, Seen }
 public enum VolumeSoundId { Master, Music, Voice, Ambient }
