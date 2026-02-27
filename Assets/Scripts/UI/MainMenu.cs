@@ -32,9 +32,14 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private CanvasGroup _canvasGroup;
     [SerializeField] private PlayableDirector director;
 
+    [Header("FEEDBACKS")] 
+    [SerializeField] private Animator sarcofagusAnim;
+
     private const string MATERIAL_POWER_PARAM = "_Power";
     private bool _isTransitioning;
     private static List<string> FrameRateText => new(FPS.Keys);
+    
+    private SceneTransitionManager Transition => GetComponent<SceneTransitionManager>();
 
     private void Awake()
     {
@@ -97,6 +102,8 @@ public class MainMenu : MonoBehaviour
             null, null, null, 
             () => director.Play()));
     }
+    
+    public void InitSelector() => Transition.FadeInAndLoadScene(2);
 
     // --- CORRUTINA UNIFICADA ---
 
@@ -173,6 +180,12 @@ public class MainMenu : MonoBehaviour
         if (selectable == null || EventSystem.current == null) return;
         EventSystem.current.SetSelectedGameObject(null);
         EventSystem.current.SetSelectedGameObject(selectable.gameObject);
+    }
+
+    public void SelectFeedback()
+    {
+        if(Save.IsCinematicSeen("mainMenuCinematic"))
+            sarcofagusAnim.Play("Reck_L_WakeUp");
     }
 
     private void QuitGame()
