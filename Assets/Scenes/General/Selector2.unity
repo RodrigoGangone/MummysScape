@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.3101084, g: 0.3992942, b: 0.41601688, a: 1}
+  m_IndirectSpecularColor: {r: 0.31265932, g: 0.39998147, b: 0.4160671, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -3918,7 +3918,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1922525160810501105, guid: 091c377b6eb614341bd1e549866c9aac, type: 3}
       propertyPath: sceneIndex
-      value: 9
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 1922525160810501105, guid: 091c377b6eb614341bd1e549866c9aac, type: 3}
       propertyPath: isSelectorPortal
@@ -56743,7 +56743,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 346092743}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.22089022, y: -0.14625345, z: 0.033523276, w: 0.96368754}
+  m_LocalRotation: {x: 0.22089021, y: -0.14625344, z: 0.03352327, w: 0.96368754}
   m_LocalPosition: {x: -42.63599, y: 19.96, z: -41.0204}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -92840,7 +92840,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1922525160810501105, guid: 091c377b6eb614341bd1e549866c9aac, type: 3}
       propertyPath: sceneIndex
-      value: 10
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 1922525160810501105, guid: 091c377b6eb614341bd1e549866c9aac, type: 3}
       propertyPath: isSelectorPortal
@@ -159562,13 +159562,12 @@ MonoBehaviour:
   isFirstZone: 0
   requiredBossLevelIndex: 0
   requiredTotalGems: 0
+  gemVisuals: []
+  bossScorpionParent: {fileID: 0}
+  portalStructure: {fileID: 0}
+  lockedPortalMaterial: {fileID: 0}
+  lockedPropMaterial: {fileID: 0}
   portalFx: {fileID: 1027849987}
-  lockedMaterial: {fileID: 2100000, guid: 6b1f9673e34791d4392122193eeb4b81, type: 2}
-  infoCanvasPanel: {fileID: 1517957493}
-  gemCountText: {fileID: 650899823}
-  bossIconImage: {fileID: 0}
-  statusLockedColor: {r: 1, g: 0, b: 0, a: 1}
-  statusUnlockedColor: {r: 0, g: 1, b: 0, a: 1}
   revealCamPos: {fileID: 1497177302}
   revealDuration: 5
   revealZoomAmount: 2
@@ -159596,37 +159595,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  entryFocusPos: {fileID: 1497177302}
-  entryLookAt: {fileID: 1065462655}
-  entryDuration: 5
-  entryZoomAmount: 4
-  entryZoomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   uiManager: {fileID: 1615060013}
-  debugResetSeenOnPlay: 1
-  debugForceUnlock: 1
 --- !u!65 &1065462657
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -233865,6 +233834,7 @@ MonoBehaviour:
   travelDuration: 0.8
   curveHeight: 100
   delayBetweenGems: 0.15
+  initialWaitTime: 2
   iconPunchScale: {x: 1.3, y: 1.3, z: 1.3}
 --- !u!114 &1517957497
 MonoBehaviour:
@@ -333966,7 +333936,8 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 26e3d791d13096240b46b6968aa69711, type: 2}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 1461041899346150243, guid: 68450a5dee1dcc94d8701fdc01dead9b, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 7023098965965212090, guid: 68450a5dee1dcc94d8701fdc01dead9b, type: 3}
       insertIndex: 0
@@ -334008,13 +333979,12 @@ MonoBehaviour:
   isFirstZone: 0
   requiredBossLevelIndex: 0
   requiredTotalGems: 0
+  gemVisuals: []
+  bossScorpionParent: {fileID: 0}
+  portalStructure: {fileID: 0}
+  lockedPortalMaterial: {fileID: 0}
+  lockedPropMaterial: {fileID: 0}
   portalFx: {fileID: 1693352818}
-  lockedMaterial: {fileID: 2100000, guid: 6b1f9673e34791d4392122193eeb4b81, type: 2}
-  infoCanvasPanel: {fileID: 0}
-  gemCountText: {fileID: 0}
-  bossIconImage: {fileID: 0}
-  statusLockedColor: {r: 1, g: 0, b: 0, a: 1}
-  statusUnlockedColor: {r: 0, g: 1, b: 0, a: 1}
   revealCamPos: {fileID: 958060420}
   revealDuration: 5
   revealZoomAmount: 2
@@ -334042,37 +334012,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  entryFocusPos: {fileID: 958060420}
-  entryLookAt: {fileID: 2106030645}
-  entryDuration: 5
-  entryZoomAmount: 4
-  entryZoomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   uiManager: {fileID: 1615060013}
-  debugResetSeenOnPlay: 1
-  debugForceUnlock: 1
 --- !u!65 &2106030647
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -338913,7 +338853,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2145690058}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.22089022, y: -0.14625345, z: 0.033523276, w: 0.96368754}
+  m_LocalRotation: {x: 0.22089021, y: -0.14625344, z: 0.03352327, w: 0.96368754}
   m_LocalPosition: {x: -42.63599, y: 19.96, z: -41.0204}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
