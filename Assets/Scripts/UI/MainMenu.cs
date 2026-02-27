@@ -1,46 +1,40 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
+using UnityEngine.Playables;
 using UnityEngine.UI;
 using static Utils;
 
 public class MainMenu : MonoBehaviour
 {
-    [Header("PANEL MAIN MENU")] 
+    [Header("PANEL MAIN MENU")]
     [SerializeField] private GameObject _mainMenuPanel;
-
+    [SerializeField] private Material _mainMaterial; 
     [SerializeField] private Button _btnPlay;
     [SerializeField] private Button _btnOptions;
     [SerializeField] private Button _btnExit;
 
-    [Header("PANEL OPTIONS")] 
+    [Header("PANEL OPTIONS")]
     [SerializeField] private GameObject _optionsPanel;
-    
+    [SerializeField] private Material _optionsMaterial; 
     [SerializeField] private Button _btnDeletePrefs;
     [SerializeField] private TMP_Dropdown _frameRateSpinner;
+    [SerializeField] private Button _btnBackToMain;
 
-    // Selectables iniciales por panel
     [Header("FIRST SELECTED")]
     [SerializeField] private Selectable _mainFirstSelected;
     [SerializeField] private Selectable _optionsFirstSelected;
-    
+
     [Header("UI ROOT")]
-    [Tooltip("CanvasGroup del Canvas del main menu")]
     [SerializeField] private CanvasGroup _canvasGroup;
-    
-    
-    private const string INITIAL_TUTORIAL_ID = "mainMenuCinematic";
-    //----------------------------------------------------------------------------------------------------
-    
+    [SerializeField] private PlayableDirector director;
+
+    private const string MATERIAL_POWER_PARAM = "_Power";
+    private bool _isTransitioning;
     private static List<string> FrameRateText => new(FPS.Keys);
-    [SerializeField] private Button _btnBackToMain;
-    private SceneTransitionManager Transition => GetComponent<SceneTransitionManager>();
-    private DepthOfField _blur;
-    private Volume _postProcess;
 
     private void Awake()
     {
@@ -48,100 +42,137 @@ public class MainMenu : MonoBehaviour
         AddButtonProps(_btnOptions, ShowOptions);
         AddButtonProps(_btnDeletePrefs, PlayerPrefsManager.ClearAll);
         AddButtonProps(_btnExit, QuitGame);
+        AddButtonProps(_btnBackToMain, ShowMain);
 
+        _frameRateSpinner.ClearOptions();
         _frameRateSpinner.AddOptions(FrameRateText);
         _frameRateSpinner.onValueChanged.AddListener(delegate { OnDropdownValueChanged(_frameRateSpinner); });
-
-        AddButtonProps(_btnBackToMain, ShowMain);
-    }
-
-    private void AddButtonProps(Button button, Action mainAction, params Action[] additionalActions)
-    {
-        button.onClick.AddListener(() =>
-        {
-            mainAction?.Invoke();
-
-            if (additionalActions == null) return;
-            foreach (var action in additionalActions)
-            {
-                action?.Invoke();
-            }
-        });
     }
 
     private void Start()
     {
-        //_postProcess = FindObjectOfType<Volume>();
-        //
-        //if (_postProcess.profile.TryGet(out _blur))
-        //    _blur.active = !_blur.active;
-
         CheckOptions();
         
-        // Al arrancar la escena, asegurar botón inicial del panel principal
+        // 1 = Abierto, 0 = Cerrado
+        _mainMaterial.SetFloat(MATERIAL_POWER_PARAM, 1f); // Inicia visible
+        _optionsMaterial.SetFloat(MATERIAL_POWER_PARAM, 0f); // Inicia oculto
+        
+        _mainMenuPanel.SetActive(true);
+        _optionsPanel.SetActive(false);
+
         SetSelected(_mainFirstSelected ?? _btnPlay);
         SetMenuInteractable(true);
     }
-    
-    //Metodo para quitar la interaccion con los botones del menu principal
+
+    // --- FLUJOS DE NAVEGACIÓN ---
+
+    private void ShowOptions()
+    {
+        if (_isTransitioning) return;
+        // De Main (Visible=1) a Options (Visible=1)
+        StartCoroutine(PanelTransitionRoutine(
+            _mainMenuPanel, _mainMaterial, 
+            _optionsPanel, _optionsMaterial, 
+            _optionsFirstSelected));
+    }
+
+    private void ShowMain()
+    {
+        if (_isTransitioning) return;
+        // De Options (Visible=1) a Main (Visible=1)
+        StartCoroutine(PanelTransitionRoutine(
+            _optionsPanel, _optionsMaterial, 
+            _mainMenuPanel, _mainMaterial, 
+            _mainFirstSelected));
+    }
+
+    private void OnPlayClicked()
+    {
+        if (_isTransitioning) return;
+        SetMenuInteractable(false);
+
+        // Cerramos el menú (1 -> 0) y disparamos el director
+        StartCoroutine(PanelTransitionRoutine(
+            _mainMenuPanel, _mainMaterial, 
+            null, null, null, 
+            () => director.Play()));
+    }
+
+    // --- CORRUTINA UNIFICADA ---
+
+    private IEnumerator PanelTransitionRoutine(
+        GameObject toHide, Material matToHide, 
+        GameObject toShow, Material matToShow, 
+        Selectable nextSelect, 
+        Action midAction = null)
+    {
+        _isTransitioning = true;
+
+        // 1. CERRAR panel actual (1 -> 0)
+        if (toHide != null) toHide.SetActive(false);
+
+        // 2. INTERCAMBIO (Punto ciego: todo está en 0)
+        if (matToHide != null) yield return LerpMaterial(matToHide, 1f, 0f);
+        
+        midAction?.Invoke(); 
+        
+
+        // 3. ABRIR panel nuevo (0 -> 1)
+        if (toShow != null && matToShow != null) 
+        {
+            yield return LerpMaterial(matToShow, 0f, 1f);
+            if (nextSelect != null) SetSelected(nextSelect);
+        }
+        if (toShow != null) toShow.SetActive(true);
+
+        _isTransitioning = false;
+    }
+
+    private IEnumerator LerpMaterial(Material mat, float start, float end)
+    {
+        float elapsed = 0f;
+        float duration = 0.5f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            mat.SetFloat(MATERIAL_POWER_PARAM, Mathf.Lerp(start, end, elapsed / duration));
+            yield return null;
+        }
+        mat.SetFloat(MATERIAL_POWER_PARAM, end);
+    }
+
+    // --- UTILIDADES (Sin cambios significativos) ---
+
     private void SetMenuInteractable(bool interactable)
     {
         if (_canvasGroup == null) return;
-
         _canvasGroup.interactable = interactable;
         _canvasGroup.blocksRaycasts = interactable;
     }
 
     private void CheckOptions()
     {
-        _frameRateSpinner.value =
-            _frameRateSpinner.options.FindIndex(option =>
-                option.text == PlayerPrefs.GetString(SELECTED_FPS_KEY, "60 FPS"));
-    }
-
-    private void ShowMain()
-    {
-        _mainMenuPanel.SetActive(true);
-        _optionsPanel.SetActive(false);
-
-        _btnBackToMain.gameObject.SetActive(false);
-        
-        // Siempre que vuelvo al main panel, fijo el botón inicial
-        SetSelected(_mainFirstSelected ?? _btnPlay);
+        string currentFPS = PlayerPrefs.GetString(SELECTED_FPS_KEY, "60 FPS");
+        _frameRateSpinner.value = _frameRateSpinner.options.FindIndex(option => option.text == currentFPS);
     }
 
     private void OnDropdownValueChanged(TMP_Dropdown dropdown)
     {
         string selectedFPSKey = dropdown.options[dropdown.value].text;
         Application.targetFrameRate = FPS[selectedFPSKey];
-        Debug.Log("FPS SELECCIONADO " + selectedFPSKey);
-    }
-    
-    private void OnPlayClicked()
-    {
-        // Bloquea interacción con toda la UI
-        SetMenuInteractable(false);
-
-        // Limpia el seleccionado para que no haya navegación posible
-        if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
-
-        //TODO: ACA IMPLEMENTAR SI DAR PLAY A LA ANIMACION O SOLO PLANO DE CAMARA
-        
-        //if (!Save.IsTutorialSeen(INITIAL_TUTORIAL_ID))
-        
-        // Transición de escena
-        Transition.FadeInAndLoadScene(2);
+        PlayerPrefs.SetString(SELECTED_FPS_KEY, selectedFPSKey);
     }
 
-    private void ShowOptions()
+    private void AddButtonProps(Button button, Action action)
     {
-        _mainMenuPanel.SetActive(false);
-        _optionsPanel.SetActive(true);
+        if (button != null) button.onClick.AddListener(() => action?.Invoke());
+    }
 
-        _btnBackToMain.gameObject.SetActive(true);
-        
-        // Siempre que abro Options, fijo el selectable inicial
-        SetSelected(_optionsFirstSelected ?? _btnBackToMain);
+    private static void SetSelected(Selectable selectable)
+    {
+        if (selectable == null || EventSystem.current == null) return;
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(selectable.gameObject);
     }
 
     private void QuitGame()
@@ -151,13 +182,5 @@ public class MainMenu : MonoBehaviour
 #else
         Application.Quit();
 #endif
-    }
-    
-    private static void SetSelected(Selectable selectable)
-    {
-        if (selectable == null) return;
-        if (EventSystem.current == null) return;
-
-        EventSystem.current.SetSelectedGameObject(selectable.gameObject);
     }
 }
