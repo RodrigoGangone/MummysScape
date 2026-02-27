@@ -64,5 +64,6 @@ public static class PrefKeys
     public static string SeenLevelReveal(int buildIndex) => $"{Prefix[Seen]}level_reveal.{buildIndex}";
     public static string SeenZoneReveal(int buildIndex)  => $"{Prefix[Seen]}zone_reveal.{buildIndex}";
     public static string SeenGemsCount() => $"{Prefix[Seen]}gems_count";
+    public static string SeenCinematic(string cinematicId) => $"{Prefix[Seen]}cinematic.{cinematicId}";
     //public static string TimeKey(TimeId id) => $"{Prefix[Time]}{id.ToString().ToLowerInvariant()}";
 }

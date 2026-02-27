@@ -99,6 +99,8 @@ public static class Save
     public static bool IsZoneRevealSeen(int index)   => IsSeen(PrefKeys.SeenZoneReveal(index));
     public static int GetSeenGemsCount() => Get(PrefKeys.SeenGemsCount(), 0);
     public static void UpdateSeenGemsCount(int count) => Set(PrefKeys.SeenGemsCount(), count);
+    public static void MarkCinematicSeen(string id) => MarkAsSeen(PrefKeys.SeenCinematic(id));
+    public static bool IsCinematicSeen(string id)   => IsSeen(PrefKeys.SeenCinematic(id));
 
     #endregion
 

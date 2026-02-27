@@ -379,10 +379,13 @@ public class PlayerPrefsRegistryEditor : Editor
 
     string GetGroupHeader(string key)
     {
-        if (key.StartsWith("level.")) return "--- LEVELS ---";
+        // Las cinemáticas primero, para que no caigan en "SEEN (OTHERS)"
+        if (key.StartsWith("seen.cinematic.")) return "--- CINEMATICS ---"; 
+        if (key.StartsWith("seen.tutorial.")) return "--- SEEN (TUTORIALS) ---";
         if (key.StartsWith("seen.level")) return "--- SEEN (REVEALS) ---";
-        if (key.StartsWith("seen.tutorial")) return "--- SEEN (TUTORIALS) ---";
         if (key.StartsWith("seen.")) return "--- SEEN (OTHERS) ---";
+    
+        if (key.StartsWith("level.")) return "--- LEVELS ---";
         if (key.StartsWith("gem.")) return "--- GEMS ---";
         if (key.StartsWith("gemTotal.")) return "--- GEM TOTALS ---";
         if (key.StartsWith("volume.")) return "--- AUDIO / SETTINGS ---";
@@ -393,6 +396,7 @@ public class PlayerPrefsRegistryEditor : Editor
     {
         // Define el orden: Menor número = Aparece más arriba
         if (key.StartsWith("level.")) return 0; // 1. Niveles
+        if (key.StartsWith("seen.cinematic.")) return 5;  // <--- Peso específico
         if (key.StartsWith("seen.level")) return 10; // 2. Seen Reveals
         if (key.StartsWith("seen.tutorial")) return 11; // 3. Seen Tutorials
         if (key.StartsWith("seen.")) return 12; // 4. Seen Otros
@@ -407,12 +411,13 @@ public class PlayerPrefsRegistryEditor : Editor
     // ---------------------------------------------------------
 
     // (Pego aquí la lógica de escaneo actualizada del paso anterior para asegurar que esté completa)
-    void PerformSmartDiscovery()
+void PerformSmartDiscovery()
     {
         var registry = (PlayerPrefsRegistry)target;
         int found = 0;
         var potentialKeys = new HashSet<string>();
 
+        // 1. Detección por Escena Actual (Gemas y Totales)
         string currentScene = SceneManager.GetActiveScene().name;
         if (!string.IsNullOrEmpty(currentScene))
         {
@@ -420,8 +425,8 @@ public class PlayerPrefsRegistryEditor : Editor
             potentialKeys.Add($"gemTotal.{currentScene}");
         }
 
+        // 2. Detección de Progresión Global
         potentialKeys.Add("gemTotal.Global");
-
         potentialKeys.Add(PrefKeys.SeenGemsCount());
         
         for (int i = 0; i <= 50; i++)
@@ -431,11 +436,27 @@ public class PlayerPrefsRegistryEditor : Editor
             potentialKeys.Add($"seen.zone_reveal.{i}");
         }
 
+        // 3. Detección de Tutoriales (Busca componentes en la escena/prefabs)
         var allTutorialPoints = Resources.FindObjectsOfTypeAll<TutorialFocusPoint>();
         foreach (var t in allTutorialPoints)
             if (!string.IsNullOrEmpty(t.Id))
                 potentialKeys.Add($"seen.tutorial.{t.Id}");
 
+        // 4. NUEVO: Detección de Cinemáticas (Busca IDs en los CinematicObserver)
+        var observers = Resources.FindObjectsOfTypeAll<CinematicObserver>();
+        foreach (var obs in observers)
+        {
+            // Usamos SerializedObject para leer el campo privado 'cinematicId'
+            var soObs = new SerializedObject(obs);
+            var idProp = soObs.FindProperty("cinematicId");
+            if (idProp != null && !string.IsNullOrEmpty(idProp.stringValue))
+            {
+                // Formato definido en PrefKeys: seen.cinematic.{id}
+                potentialKeys.Add($"seen.cinematic.{idProp.stringValue}");
+            }
+        }
+
+        // 5. Ajustes de Audio
         potentialKeys.Add("volume.sound.master");
         potentialKeys.Add("volume.sound.music");
         potentialKeys.Add("volume.fx.sfx");
@@ -443,8 +464,10 @@ public class PlayerPrefsRegistryEditor : Editor
         potentialKeys.Add("volume.sound.music.mute");
         potentialKeys.Add("volume.fx.sfx.mute");
 
+        // 6. Cruce con el disco (PlayerPrefs) y Filtro del Registry
         foreach (var key in potentialKeys)
         {
+            // Solo lo añadimos si existe en el disco y si este Registry lo acepta (Matches)
             if (PlayerPrefs.HasKey(key) && registry.Matches(key))
             {
                 registry.UpdateEntry(key, GetValueAsString(key));
@@ -452,6 +475,7 @@ public class PlayerPrefsRegistryEditor : Editor
             }
         }
 
+        // 7. Feedback visual
         if (found > 0)
         {
             EditorUtility.SetDirty(registry);
@@ -459,9 +483,11 @@ public class PlayerPrefsRegistryEditor : Editor
             Repaint();
             ShowToast($"{found} claves importadas.");
         }
-        else ShowToast("Sin datos nuevos.");
+        else 
+        {
+            ShowToast("Sin datos nuevos en disco.");
+        }
     }
-
     // ... (Helpers SimulateData, UpdateDiskValue, SyncValuesFromDisk... se mantienen igual) ...
     // Copio las esenciales para que compile:
 

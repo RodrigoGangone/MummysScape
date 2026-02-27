@@ -32,6 +32,8 @@ public class MainMenu : MonoBehaviour
     [Tooltip("CanvasGroup del Canvas del main menu")]
     [SerializeField] private CanvasGroup _canvasGroup;
     
+    
+    private const string INITIAL_TUTORIAL_ID = "mainMenuCinematic";
     //----------------------------------------------------------------------------------------------------
     
     private static List<string> FrameRateText => new(FPS.Keys);
@@ -69,10 +71,10 @@ public class MainMenu : MonoBehaviour
 
     private void Start()
     {
-        _postProcess = FindObjectOfType<Volume>();
-
-        if (_postProcess.profile.TryGet(out _blur))
-            _blur.active = !_blur.active;
+        //_postProcess = FindObjectOfType<Volume>();
+        //
+        //if (_postProcess.profile.TryGet(out _blur))
+        //    _blur.active = !_blur.active;
 
         CheckOptions();
         
@@ -123,8 +125,12 @@ public class MainMenu : MonoBehaviour
         // Limpia el seleccionado para que no haya navegación posible
         if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
 
+        //TODO: ACA IMPLEMENTAR SI DAR PLAY A LA ANIMACION O SOLO PLANO DE CAMARA
+        
+        //if (!Save.IsTutorialSeen(INITIAL_TUTORIAL_ID))
+        
         // Transición de escena
-        Transition.FadeInAndLoadScene(1);
+        Transition.FadeInAndLoadScene(2);
     }
 
     private void ShowOptions()
