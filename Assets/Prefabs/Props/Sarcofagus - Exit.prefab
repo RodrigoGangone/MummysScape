@@ -45628,11 +45628,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enterLevel: 0
+  isSelectorPortal: 0
+  sceneIndex: 0
   directorEnter: {fileID: 0}
   directorExit: {fileID: 1162922022393787200}
   moveDuration: 2
   winTarget: {fileID: 8183560707422345618}
   fakeMummy: {fileID: 0}
+  viewMummy: {fileID: 0}
   anim: {fileID: 4797485692898047505}
 --- !u!114 &8327508785484449685
 MonoBehaviour:
@@ -45675,6 +45678,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  message: 
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  messageDuration: 2.5
 --- !u!114 &7163751912731866487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45694,6 +45700,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: b584e2560de3ae346a3d70f2b4a6f5de, type: 2}
     - {fileID: 11400000, guid: 854256da8e897ed43b0b08f053bae53c, type: 2}
     - {fileID: 11400000, guid: 86a592e7e63f7304fa0228f34ea747b1, type: 2}
+    - {fileID: 11400000, guid: 044c9d54d1bb563488b8224c8df0e027, type: 2}
     m_Events:
     - m_PersistentCalls:
         m_Calls:
@@ -45756,6 +45763,20 @@ MonoBehaviour:
         - m_Target: {fileID: 1922525160810501105}
           m_TargetAssemblyTypeName: Portal, Assembly-CSharp
           m_MethodName: CloseAnim
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1922525160810501105}
+          m_TargetAssemblyTypeName: Portal, Assembly-CSharp
+          m_MethodName: DisableView
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -90504,6 +90525,7 @@ MonoBehaviour:
   keySound02: Open
   keySound03: Mystic
   keySound04: Fall
+  keySound05: 
 --- !u!114 &4650535316902770501
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120839,7 +120861,7 @@ PlayableDirector:
   m_SceneBindings:
   - key: {fileID: 7259522221103560354, guid: d1f440f875064164389d2505caa25be0, type: 2}
     value: {fileID: 7163751912731866487}
-  - key: {fileID: -1468502494068362474, guid: d1f440f875064164389d2505caa25be0, type: 2}
+  - key: {fileID: 0}
     value: {fileID: 0}
   m_ExposedReferences:
     m_References: []
