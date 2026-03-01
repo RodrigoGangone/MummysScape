@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.31713435, g: 0.40130538, b: 0.41646737, a: 1}
+  m_IndirectSpecularColor: {r: 0.3221954, g: 0.40338895, b: 0.4177757, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -364718,7 +364718,19 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1162922022393787200, guid: 091c377b6eb614341bd1e549866c9aac, type: 3}
+      propertyPath: m_SceneBindings.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1162922022393787200, guid: 091c377b6eb614341bd1e549866c9aac, type: 3}
+      propertyPath: m_SceneBindings.Array.data[2].key
+      value: 
+      objectReference: {fileID: -1468502494068362474, guid: d1f440f875064164389d2505caa25be0, type: 2}
+    - target: {fileID: 1162922022393787200, guid: 091c377b6eb614341bd1e549866c9aac, type: 3}
       propertyPath: m_SceneBindings.Array.data[1].value
+      value: 
+      objectReference: {fileID: 1482245284}
+    - target: {fileID: 1162922022393787200, guid: 091c377b6eb614341bd1e549866c9aac, type: 3}
+      propertyPath: m_SceneBindings.Array.data[2].value
       value: 
       objectReference: {fileID: 1482245284}
     - target: {fileID: 1922525160810501105, guid: 091c377b6eb614341bd1e549866c9aac, type: 3}
