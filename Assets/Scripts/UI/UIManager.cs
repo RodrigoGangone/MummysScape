@@ -275,18 +275,42 @@ public class UIManager : MonoBehaviour
     {
         _pauseCharging = true;
         if (_blur != null) _blur.active = _isPaused;
-        float start = _pauseMaterial.GetFloat(PAUSE_FILL);
+
+        // Obtenemos los valores iniciales de ambos materiales
+        float startPause = _pauseMaterial.GetFloat(PAUSE_FILL);
+        float startOptions = _optionsMaterial.GetFloat(PAUSE_FILL); 
+    
         float end = _isPaused ? 1f : 0f;
         float elapsed = 0f;
+
         while (elapsed < 0.5f)
         {
             elapsed += Time.unscaledDeltaTime;
-            _pauseMaterial.SetFloat(PAUSE_FILL, Mathf.Lerp(start, end, elapsed / 0.5f));
+            float t = elapsed / 0.5f;
+
+            // Transición del material de pausa
+            _pauseMaterial.SetFloat(PAUSE_FILL, Mathf.Lerp(startPause, end, t));
+
+            // Si estamos quitando la pausa, también ocultamos el material de opciones
+            if (!_isPaused)
+            {
+                _optionsMaterial.SetFloat(PAUSE_FILL, Mathf.Lerp(startOptions, 0f, t));
+            }
+
             yield return null;
         }
+
         _pauseCharging = false;
-        if (_isPaused) { _pausePanel.SetActive(true); SetSelected(_pauseFirstSelected ?? _btnResume); }
+    
+        if (_isPaused) 
+        { 
+            _pausePanel.SetActive(true); 
+            SetSelected(_pauseFirstSelected ?? _btnResume); 
+        }
+    
+        // Nos aseguramos de que los valores queden exactos al final de la transición
         _pauseMaterial.SetFloat(PAUSE_FILL, end);
+        if (!_isPaused) _optionsMaterial.SetFloat(PAUSE_FILL, 0f); 
     }
 
     private void Toggle() { if (!_pauseCharging) GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(!_isPaused); }
