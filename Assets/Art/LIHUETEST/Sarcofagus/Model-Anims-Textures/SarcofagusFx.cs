@@ -12,6 +12,7 @@ public class SarcofagusFx : MonoBehaviour
     [SerializeField] private ParticleSystem fx5;
     [SerializeField] private ParticleSystem fx6;
     [SerializeField] private ParticleSystem fx7;
+    [SerializeField] private ParticleSystem fx8;
 
     [SerializeField] private FxBank bank;
 
@@ -58,6 +59,11 @@ public class SarcofagusFx : MonoBehaviour
     public void PlayFx7()
     {
         fx7.Play();
+    }
+    
+    public void PlayFx8()
+    {
+        fx8.Play();
     }
 
     public void PlaySound1() => bank.Play2D(keySound01);
