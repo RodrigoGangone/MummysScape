@@ -6,7 +6,6 @@ using UnityEngine.Rendering.Universal;
 /// Estado de Apuntado: Gestiona la visualización de la trayectoria parabólica y el indicador de rango (Decal), 
 /// calculando la validez del objetivo y orientando al personaje hacia el punto de impacto. 
 /// </summary>
-
 public class AimState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
@@ -18,14 +17,18 @@ public class AimState : State, IBandageRestrictor
     private Vector3 _targetScale;
 
     private Material _lineMaterialInstance;
-    private int _colorPropertyID;          
+    private int _colorPropertyID;
 
     private const float ANIM_DURATION = 0.2f;
     private const float DECAL_BOX_DEPTH = 50f;
-    
-    private Vector2 _aimScreenPos; 
-    private Vector3 _lastMousePos; 
+
+    private Vector2 _aimScreenPos;
+    private Vector3 _lastMousePos;
     private const float AIM_SENSITIVITY = 500;
+
+    // --- NEW: rotar solo cuando el aim se mueve ---
+    private bool _canRotateByAim;
+    private const float AIM_ROTATE_DEADZONE_SQR = 0.25f; // subilo si hay jitter (1f, 4f, etc)
 
     public AimState(PlayerContext ctx)
     {
@@ -33,7 +36,7 @@ public class AimState : State, IBandageRestrictor
         _decal = _ctx.View.Decal;
         _rangeIndicator = _ctx.View.RangeIndicator;
         _arcRenderer = _ctx.View.ArcRenderer;
-        
+
         _colorPropertyID = Shader.PropertyToID("_Color");
     }
 
@@ -46,14 +49,15 @@ public class AimState : State, IBandageRestrictor
         _aimScreenPos = new Vector2(Screen.width / 2, Screen.height / 2);
         _lastMousePos = Input.mousePosition;
 
+        // NEW
+        _canRotateByAim = false;
+
         if (_arcRenderer != null)
         {
             _arcRenderer.enabled = false;
-            
+
             if (_lineMaterialInstance == null)
-            {
                 _lineMaterialInstance = _arcRenderer.material;
-            }
         }
 
         if (_rangeIndicator == null) return;
@@ -65,14 +69,12 @@ public class AimState : State, IBandageRestrictor
         _targetScale = new Vector3(diameter, diameter, DECAL_BOX_DEPTH);
         _rangeIndicator.gameObject.SetActive(true);
 
-        _scaleCoroutine = _ctx.View.StartCoroutine(AnimateScale(_rangeIndicator.transform,
-            _targetScale,
-            ANIM_DURATION));
+        _scaleCoroutine = _ctx.View.StartCoroutine(
+            AnimateScale(_rangeIndicator.transform, _targetScale, ANIM_DURATION)
+        );
     }
 
-    public override void OnUpdate()
-    {
-    }
+    public override void OnUpdate() { }
 
     public override void OnFixedUpdate()
     {
@@ -85,16 +87,21 @@ public class AimState : State, IBandageRestrictor
         Vector2 aimDelta = _ctx.Input.AimMove;
         Vector3 mousePos = Input.mousePosition;
 
-        if ((mousePos - _lastMousePos).sqrMagnitude > 0.1f)
+        bool mouseMoved = (mousePos - _lastMousePos).sqrMagnitude > AIM_ROTATE_DEADZONE_SQR;
+        bool stickMoved = aimDelta.sqrMagnitude > 0.01f;
+
+        if (mouseMoved)
         {
             _aimScreenPos = mousePos;
+            _canRotateByAim = true;
         }
-        else if (aimDelta.sqrMagnitude > 0.1f)
+        else if (stickMoved)
         {
             _aimScreenPos.x += aimDelta.x * AIM_SENSITIVITY * Time.deltaTime;
             _aimScreenPos.y += aimDelta.y * AIM_SENSITIVITY * Time.deltaTime;
             _aimScreenPos.x = Mathf.Clamp(_aimScreenPos.x, 0f, Screen.width);
             _aimScreenPos.y = Mathf.Clamp(_aimScreenPos.y, 0f, Screen.height);
+            _canRotateByAim = true;
         }
 
         _lastMousePos = mousePos;
@@ -105,17 +112,21 @@ public class AimState : State, IBandageRestrictor
         {
             SetDecal(pos, normal);
 
-            Vector3 direction = (pos - _ctx.Tf.position).normalized;
-            direction.y = 0;
-
-            if (direction != Vector3.zero)
+            // NEW: solo rotar después de que el aim se movió
+            if (_canRotateByAim)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
-                _ctx.Tf.rotation = Quaternion.RotateTowards(
-                    _ctx.Tf.rotation,
-                    targetRotation,
-                    1000 * Time.deltaTime
-                );
+                Vector3 direction = (pos - _ctx.Tf.position).normalized;
+                direction.y = 0;
+
+                if (direction != Vector3.zero)
+                {
+                    Quaternion targetRotation = Quaternion.LookRotation(direction);
+                    _ctx.Tf.rotation = Quaternion.RotateTowards(
+                        _ctx.Tf.rotation,
+                        targetRotation,
+                        1000 * Time.deltaTime
+                    );
+                }
             }
         }
 
@@ -137,36 +148,46 @@ public class AimState : State, IBandageRestrictor
 
         Vector3 exitScale = new Vector3(0, 0, DECAL_BOX_DEPTH);
 
-        _scaleCoroutine = _ctx.View.StartCoroutine(AnimateScale(_rangeIndicator.transform,
-            exitScale,
-            ANIM_DURATION,
-            true));
+        _scaleCoroutine = _ctx.View.StartCoroutine(
+            AnimateScale(_rangeIndicator.transform, exitScale, ANIM_DURATION, true)
+        );
+
         _ctx.View.Animator.SetBool("Aim", false);
     }
-    
+
     private void SetArc(bool hasValidTarget)
     {
-        if (_arcRenderer != null)
-        {
-            if (SimpleShootData.Path != null && SimpleShootData.Path.Count > 0)
-            {
-                _arcRenderer.enabled = true;
-                _arcRenderer.positionCount = SimpleShootData.Path.Count;
-                _arcRenderer.SetPositions(SimpleShootData.Path.ToArray());
+        if (_arcRenderer == null) return;
 
-                if (_lineMaterialInstance != null)
-                {
-                    Color targetColor = hasValidTarget ? _ctx.View.AimAllowed : _ctx.View.AimNotAllowed;
-                    
-                    _lineMaterialInstance.SetColor(_colorPropertyID, targetColor);
-                }
-            }
-            else
-            {
-                _arcRenderer.enabled = false;
-            }
+        var path = SimpleShootData.Path;
+
+        // Siempre dibujar, aunque sea un segmento mínimo
+        if (path == null || path.Count < 2)
+        {
+            _arcRenderer.enabled = true;
+            _arcRenderer.positionCount = 2;
+
+            Vector3 start = _ctx.View.handAnchor != null
+                ? _ctx.View.handAnchor.position
+                : _ctx.Tf.position + Vector3.up;
+
+            _arcRenderer.SetPosition(0, start);
+            _arcRenderer.SetPosition(1, start + _ctx.Tf.forward * 0.1f);
+        }
+        else
+        {
+            _arcRenderer.enabled = true;
+            _arcRenderer.positionCount = path.Count;
+            _arcRenderer.SetPositions(path.ToArray());
+        }
+
+        if (_lineMaterialInstance != null)
+        {
+            Color targetColor = hasValidTarget ? _ctx.View.AimAllowed : _ctx.View.AimNotAllowed;
+            _lineMaterialInstance.SetColor(_colorPropertyID, targetColor);
         }
     }
+
     private void SetDecalVisible(bool visible)
     {
         if (_decal && _decal.activeSelf != visible)
@@ -181,8 +202,7 @@ public class AimState : State, IBandageRestrictor
             _decal.transform.rotation = Quaternion.LookRotation(_ctx.Tf.right, normal);
     }
 
-    private IEnumerator AnimateScale(Transform targetTransform, Vector3 targetScale, float duration,
-        bool disableOnComplete = false)
+    private IEnumerator AnimateScale(Transform targetTransform, Vector3 targetScale, float duration, bool disableOnComplete = false)
     {
         Vector3 startScale = targetTransform.localScale;
         float timer = 0f;
@@ -199,6 +219,7 @@ public class AimState : State, IBandageRestrictor
         targetTransform.localScale = targetScale;
         if (disableOnComplete)
             targetTransform.gameObject.SetActive(false);
+
         _scaleCoroutine = null;
     }
 }
