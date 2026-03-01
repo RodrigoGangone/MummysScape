@@ -110,7 +110,7 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
 
         _rb.isKinematic = PlayerControlState.AnyBlocked;
 
-        if (paused && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot)))
+        if (paused && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot) || _sm.IsCurrent(PlayerStateId.Walk)))
             _sm.ChangeState(PlayerStateId.Idle);
 
         _sm.enabled = !paused;
@@ -126,6 +126,7 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
             _sm.ChangeState(PlayerStateId.Idle);
 
         _sm.enabled = !locked;
+        
         GetComponent<Collider>().enabled = !locked;
     }
 
