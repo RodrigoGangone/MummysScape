@@ -25088,6 +25088,7 @@ GameObject:
   - component: {fileID: 1764984614384463204}
   - component: {fileID: 920143314770563316}
   - component: {fileID: 5777358543505136336}
+  - component: {fileID: 5554993173813392521}
   m_Layer: 0
   m_Name: SarcofagusBase
   m_TagString: Untagged
@@ -25160,6 +25161,28 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &5554993173813392521
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1795617703435846447}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 3245536499270963056, guid: 040afd1b24c6f6246bbaaacacf99281a, type: 3}
 --- !u!1 &1810038859865545412
 GameObject:
   m_ObjectHideFlags: 0
@@ -45635,7 +45658,6 @@ MonoBehaviour:
   moveDuration: 2
   winTarget: {fileID: 8183560707422345618}
   fakeMummy: {fileID: 0}
-  viewMummy: {fileID: 0}
   anim: {fileID: 4797485692898047505}
 --- !u!114 &8327508785484449685
 MonoBehaviour:
@@ -45797,6 +45819,7 @@ GameObject:
   - component: {fileID: 1677332057673840451}
   - component: {fileID: 8182161229612659532}
   - component: {fileID: 4414977304671072947}
+  - component: {fileID: 388492085834692180}
   m_Layer: 0
   m_Name: SarcofagusLid
   m_TagString: Untagged
@@ -45869,6 +45892,28 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &388492085834692180
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4520043552121475871}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 1725217167436670552, guid: 040afd1b24c6f6246bbaaacacf99281a, type: 3}
 --- !u!1 &4546965043937862162
 GameObject:
   m_ObjectHideFlags: 0

@@ -272,6 +272,11 @@ public sealed class InteractionRuntime : MonoBehaviour
 
         SimpleShootData.Path = points;
 
+        if (SimpleShootData.Path == null || SimpleShootData.Path.Count < 2)
+        {
+            SimpleShootData.Path = new List<Vector3> { start, start + playertf.forward * 0.1f };
+        }
+        
         if (!collisionFound)
         {
             if (distXZ > _aimMaxDistance) isValid = false;

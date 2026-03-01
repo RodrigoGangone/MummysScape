@@ -51,7 +51,7 @@ public class Portal : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG) || enterLevel) return;
-        GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.A);
+        GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.Y);
     }
 
     private void OnTriggerStay(Collider other)
@@ -59,14 +59,14 @@ public class Portal : MonoBehaviour
         if (enterLevel) return;
         if (!other.CompareTag(PLAYER_TAG)) return;
 
-        if (Input.GetButtonDown("Space"))
+        if (Input.GetButtonDown("Accept"))
             StartWinSequence(other.gameObject.GetComponent<PlayerController>());
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG) || enterLevel) return;
-        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.A);
+        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
     }
 
     private void StartWinSequence(PlayerController player)
@@ -75,7 +75,7 @@ public class Portal : MonoBehaviour
 
         Focus.Activate();
 
-        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.A);
+        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
 
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, true);
 

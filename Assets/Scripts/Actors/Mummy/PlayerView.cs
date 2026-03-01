@@ -66,6 +66,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     public Animator Animator => _anim;
     public Color AimAllowed => _aimAllowed;
     public Color AimNotAllowed => _aimNotAllowed;
+    public Transform handAnchor => _handAnchorNormal;
 
     private void Awake()
     {
