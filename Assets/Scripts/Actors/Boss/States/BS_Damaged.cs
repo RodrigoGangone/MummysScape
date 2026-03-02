@@ -1,7 +1,12 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using static Utils;
+    
+/// <summary>
+/// Estado de Daño: Ejecuta la animación de impacto y suspende la toma de decisiones hasta que 
+/// la animación finaliza, notificando entonces la recuperación del Boss.
+/// </summary>
+
 public class BS_Damaged : State
 {
     private readonly BossActor _actor;

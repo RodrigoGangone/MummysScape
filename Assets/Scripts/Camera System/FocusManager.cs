@@ -1,26 +1,48 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
+using System.Linq;
+using static PauseUtils;
 
-public class FocusManager : MonoBehaviour
+/// <summary> 
+/// Orquestador de Foco: Sistema centralizado que gestiona colas de peticiones para dirigir la cámara hacia 
+/// objetivos, controlando parámetros de zoom, duración y mensajes de interfaz asociados. 
+/// </summary>
+public class FocusManager : MonoBehaviour, IPausable
 {
     public static FocusManager Instance { get; private set; }
 
-    [Header("Cámara de Foco")]
-    [Tooltip("Asegúrate de que esta cámara tenga Priority = 0 en el Inspector por defecto")]
     [SerializeField] private CinemachineVirtualCamera focusCam;
+    [SerializeField] private float bufferBetweenFocus = 0.5f;
 
-    // ELIMINADO: [SerializeField] private DollyPositionManager dollyCameraManager;
+    private class FocusRequest
+    {
+        public int PriorityIndex;
+        public Vector3 Position;
+        public Quaternion Rotation;
+        public Transform LookAt;
+        public float Duration;
+        public float ZoomAmount;
+        public AnimationCurve ZoomCurve;
 
-    [Header("Input de tutorial")]
+        public string Message;
+        public Color MessageColor;
+        public float MessageDuration;
+
+        public Action OnComplete;
+    }
+
+    private List<FocusRequest> _pendingRequests = new();
+    private bool _isCollectingRequests;
+    private bool _isSequenceRunning;
+    private bool _paused;
+
     private const string TUTORIAL_BUTTON_NAME = "Accept";
     public string TutorialKey => TUTORIAL_BUTTON_NAME;
 
-    private bool _isFocusing;
-    private Coroutine _focusRoutine;
-
-    private readonly Dictionary<string, bool> _tutorialLearned = new Dictionary<string, bool>();
+    public bool IsBusy => _isCollectingRequests || _pendingRequests.Count > 0 || _isSequenceRunning;
 
     private void Awake()
     {
@@ -29,117 +51,142 @@ public class FocusManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
     }
 
-    // ------------------------------------------------------------------
-    //  API PUBLICA (Sin cambios, compatible con tu código existente)
-    // ------------------------------------------------------------------
-
-    public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration)
+    public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration, float zoomAmount,
+        AnimationCurve zoomCurve, string message = "", Color? color = null, float msgDuration = 1.5f)
     {
-        if (_isFocusing) return;
-        if (cameraPos == null || lookAt == null) return;
-
-        _focusRoutine = StartCoroutine(FocusRoutine(cameraPos, lookAt, duration, null, false));
+        AddRequestInternal(9999, cameraPos, lookAt, duration, zoomAmount, zoomCurve, null, message,
+            color ?? Color.white, msgDuration);
     }
 
-    public void RequestTutorialFirstTime(TutorialFocusPoint point)
+    public void RequestRevealFocus(int orderIndex, Transform cameraPos, Transform lookAt, float duration, float zoomAmt,
+        AnimationCurve curve, Action onFinishedCallback)
     {
-        if (point == null) return;
-        string id = point.Id;
-        if (string.IsNullOrEmpty(id)) return;
-
-        if (_tutorialLearned.TryGetValue(id, out bool alreadyLearned) && alreadyLearned)
-            return;
-
-        if (_isFocusing) return;
-
-        _focusRoutine = StartCoroutine(FocusRoutine(
-            point.CameraPos,
-            point.LookAt,
-            point.MandatoryTime,
-            point,
-            markLearned: true
-        ));
+        AddRequestInternal(orderIndex, cameraPos, lookAt, duration, zoomAmt, curve, onFinishedCallback);
     }
 
-    public void RequestTutorialOptional(TutorialFocusPoint point)
+    public void RequestTutorial(TutorialFocusPoint point)
     {
         if (point == null) return;
-        string id = point.Id;
-        if (string.IsNullOrEmpty(id)) return;
 
-        if (!_tutorialLearned.TryGetValue(id, out bool learned) || !learned)
+        bool seen = Save.IsTutorialSeen(point.Id);
+
+        if (seen)
         {
-            RequestTutorialFirstTime(point);
-            return;
+            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, point.ZoomAmount, point.ZoomCurve,
+                null, string.Empty, Color.white, 0f);
+        }
+        else
+        {
+            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, point.ZoomAmount, point.ZoomCurve,
+                () => { Save.MarkTutorialSeen(point.Id); },
+                point.Message,
+                point.TextColor,
+                point.MessageDuration);
+        }
+    }
+
+    private void AddRequestInternal(int index, Transform camT, Transform lookAt, float duration, float zoomAmt,
+        AnimationCurve curve, Action onComplete, string message = "", Color? msgColor = null, float msgDuration = 1.5f)
+    {
+        if (camT == null) return;
+
+        var req = new FocusRequest
+        {
+            PriorityIndex = index,
+            Position = camT.position,
+            Rotation = camT.rotation,
+            LookAt = lookAt,
+            Duration = duration,
+            ZoomAmount = zoomAmt,
+            ZoomCurve = curve,
+            Message = message,
+            MessageColor = msgColor ?? Color.white,
+            MessageDuration = msgDuration,
+            OnComplete = onComplete,
+        };
+
+        _pendingRequests.Add(req);
+
+        if (!_isCollectingRequests)
+            StartCoroutine(CollectAndSortRoutine());
+    }
+
+    private IEnumerator CollectAndSortRoutine()
+    {
+        _isCollectingRequests = true;
+        yield return new WaitForEndOfFrame();
+        _pendingRequests = _pendingRequests.OrderBy(x => x.PriorityIndex).ToList();
+        yield return StartCoroutine(PlaySequenceRoutine());
+        _isCollectingRequests = false;
+    }
+
+    private IEnumerator PlaySequenceRoutine()
+    {
+        _isSequenceRunning = true;
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FocusManager", true);
+
+        float originalFOV = focusCam.m_Lens.FieldOfView;
+
+        while (_pendingRequests.Count > 0)
+        {
+            FocusRequest req = _pendingRequests[0];
+            _pendingRequests.RemoveAt(0);
+
+            focusCam.transform.position = req.Position;
+            if (req.LookAt != null) focusCam.transform.LookAt(req.LookAt);
+            else focusCam.transform.rotation = req.Rotation;
+
+            focusCam.LookAt = req.LookAt;
+            focusCam.PreviousStateIsValid = false;
+            focusCam.m_Lens.FieldOfView = originalFOV;
+            focusCam.Priority = 100;
+
+            float elapsed = 0f;
+            float targetFOV = originalFOV - req.ZoomAmount;
+
+            while (elapsed < req.Duration)
+            {
+                if (_paused)
+                {
+                    yield return null;
+                    continue;
+                }
+
+                elapsed += Time.deltaTime;
+                float t = elapsed / req.Duration;
+                float curveValue = req.ZoomCurve.Evaluate(t);
+                focusCam.m_Lens.FieldOfView = Mathf.Lerp(originalFOV, targetFOV, curveValue);
+                yield return null;
+            }
+
+            focusCam.m_Lens.FieldOfView = targetFOV;
+
+            if (!string.IsNullOrEmpty(req.Message))
+            {
+                GameEventManager.Instance.levelEvents.OnShowFocusMessage.Raise(req.Message, req.MessageColor);
+                yield return WaitForSecondsPausable(req.MessageDuration, () => _paused);
+                GameEventManager.Instance.levelEvents.OnHideFocusMessage.Raise();
+            }
+
+            req.OnComplete?.Invoke();
+
+            if (_pendingRequests.Count > 0)
+                yield return WaitForSecondsPausable(bufferBetweenFocus, () => _paused);
         }
 
-        if (_isFocusing) return;
-
-        _focusRoutine = StartCoroutine(FocusRoutine(
-            point.CameraPos,
-            point.LookAt,
-            point.OptionalTime,
-            point,
-            markLearned: false
-        ));
-    }
-
-    // ------------------------------------------------------------------
-    //  RUTINA CORE (Modificada para Priority System)
-    // ------------------------------------------------------------------
-
-    private IEnumerator FocusRoutine(
-        Transform cameraPos,
-        Transform lookAt,
-        float duration,
-        TutorialFocusPoint tutorialPoint,
-        bool markLearned)
-    {
-        _isFocusing = true;
-        
-        // 1. Bloqueamos al jugador (Input) para que no camine a otras zonas
-        Locked();
-
-        // 2. Configuramos la cámara "Fantasma" (FocusCam)
-        focusCam.transform.position = cameraPos.position;
-        focusCam.transform.rotation = cameraPos.rotation; 
-        focusCam.LookAt = lookAt; 
-        // focusCam.Follow = lookAt; // Descomentar si el objeto objetivo se mueve
-
-        // 3. ACTIVAR FOCO (Priority Override)
-        // Al poner 100, Cinemachine ignora cualquier cámara de las islas (que tendrán 10 o 20)
-        // y hace un blend suave hacia esta cámara.
-        focusCam.Priority = 100;
-
-        yield return new WaitForSeconds(duration);
-
-        // 4. DESACTIVAR FOCO (Restaurar)
-        // Al bajar a 0, Cinemachine busca automáticamente la siguiente cámara más alta
-        // (que será la VCam de la isla donde esté parado el jugador).
+        focusCam.m_Lens.FieldOfView = originalFOV;
         focusCam.Priority = 0;
-
-        focusCam.Follow = null;
         focusCam.LookAt = null;
 
-        // 5. Marcar tutorial como aprendido si corresponde
-        if (tutorialPoint != null && markLearned)
-        {
-            string id = tutorialPoint.Id;
-            if (!string.IsNullOrEmpty(id))
-                _tutorialLearned[id] = true;
-        }
-
-        // 6. Desbloqueamos al jugador
-        UnLocked();
-        
-        _isFocusing = false;
-        _focusRoutine = null;
+        _isSequenceRunning = false;
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FocusManager", false);
     }
 
-    // Asumo que estos métodos se comunican con tu sistema de eventos global
-    public void Locked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
-    public void UnLocked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
+    public void OnPauseChanged(bool paused) => _paused = paused;
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }

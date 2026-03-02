@@ -1,62 +1,42 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static PauseUtils;
 
 /// <summary>
-/// Controla el swap de tandas/escenas por "stages".
-/// - Baja el grupo actual hasta downOffsetY, lo apaga.
-/// - Activa el siguiente grupo en esa altura y lo sube hasta su altura base.
-/// - Puede funcionar solo (llamando Next/TransitionTo) o suscripto a BossActor.OnStageChanged.
-/// 
-/// Requisitos:
-/// - "stageRoots": lista de empties (uno por stage) que agrupan todos los assets del stage.
-/// - Cada empty debe estar en su altura base (por ej. y = 0) al iniciar.
+/// Gestor de Entorno: Coordina el intercambio físico y visual de las diferentes áreas o "sets" 
+/// del escenario mediante animaciones de desplazamiento al avanzar de fase en el combate.
 /// </summary>
+
 [DisallowMultipleComponent]
 public class StageSetTransition : MonoBehaviour, IPausable
 {
+    [Header("Boss Handler")] [SerializeField]
+    private BossActor boss;
+
+    [SerializeField] private float delayToReactivateBoss = 1.5f;
+    [SerializeField] private bool activateBossOnStart = true;
+
     [Header("Stage Roots (empties contenedores)")]
     [Tooltip("Un Transform por stage, en orden. Cada uno agrupa los assets de ese stage.")]
     [SerializeField]
     private List<Transform> stageRoots = new();
 
-    [Header("Enganche opcional con el Boss")]
-    [Tooltip("Si lo asignás, se suscribe a OnStageChanged / OnDeath del BossActor.")]
-    [SerializeField]
-    private BossActor bossActor; // opcional
-
-    [Header("Animación")]
-    [Tooltip("Altura hacia donde baja el grupo saliente (relativa a su posición base).")]
-    [SerializeField]
-    private float downOffsetY = -10f;
-
-    [Tooltip("Duración de la bajada del grupo saliente (segundos).")] [SerializeField]
-    private float downDuration = 0.6f;
-
-    [Tooltip("Duración de la subida del grupo entrante (segundos).")] [SerializeField]
-    private float upDuration = 0.8f;
-
-    [Tooltip("Curva de easing para la bajada.")] [SerializeField]
-    private AnimationCurve easeDown = AnimationCurve.EaseInOut(0, 0, 1, 1);
-
-    [Tooltip("Curva de easing para la subida.")] [SerializeField]
-    private AnimationCurve easeUp = AnimationCurve.EaseInOut(0, 0, 1, 1);
-
-    [Tooltip("Si es true, se anima la 'localPosition'. Si es false, se usa 'position' (mundo).")] [SerializeField]
-    private bool useLocalPosition = true;
+    [Header("Animación")] [SerializeField] private float delayBeforeStart = 2.0f;
+    [SerializeField] private float downOffsetY = -10f;
+    [SerializeField] private float downDuration = 0.6f;
+    [SerializeField] private float upDuration = 0.8f;
+    [SerializeField] private AnimationCurve easeDown = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [SerializeField] private AnimationCurve easeUp = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [SerializeField] private bool useLocalPosition = true;
 
     [Header("Estado")] [SerializeField] private int currentStageIndex = 0;
 
-    // Cache de posiciones base de cada root
     private Dictionary<Transform, Vector3> _basePos = new();
     private Coroutine _transitionCR;
-
     private bool _paused;
 
     private void Awake()
     {
-        // Cachear posiciones base y normalizar activos
         _basePos.Clear();
         for (int i = 0; i < stageRoots.Count; i++)
         {
@@ -65,154 +45,94 @@ public class StageSetTransition : MonoBehaviour, IPausable
 
             _basePos[t] = useLocalPosition ? t.localPosition : t.position;
 
-            // Activar solo el stage inicial
             bool active = (i == currentStageIndex);
-            if (t.gameObject.activeSelf != active)
-                t.gameObject.SetActive(active);
+            t.gameObject.SetActive(active);
 
-            // Asegurar que el activo esté en su base
             if (active) SetPos(t, _basePos[t]);
+        }
+
+        if (boss != null && activateBossOnStart)
+        {
+            boss.gameObject.SetActive(false);
+            StartCoroutine(InitialBossActivation());
         }
     }
 
     private void OnEnable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-
-        bossActor.OnStageChanged += OnBossStageChanged;
-        bossActor.OnDeath += OnBossDeath;
+        GameEventManager.Instance.bossEvents.OnStageCompleted.Register<int>(OnBossStageChanged);
     }
 
     private void OnDisable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
-        bossActor.OnStageChanged -= OnBossStageChanged;
-        bossActor.OnDeath -= OnBossDeath;
+        GameEventManager.Instance.bossEvents.OnStageCompleted.Unregister<int>(OnBossStageChanged);
     }
 
-    /// <summary>
-    /// Llamado por BossActor.OnStageChanged (si está asignado).
-    /// </summary>
-    private void OnBossStageChanged(int nextIndex)
+    private IEnumerator InitialBossActivation()
     {
-        TransitionTo(nextIndex);
-    }
+        yield return new WaitForSeconds(delayToReactivateBoss);
 
-    /// <summary>
-    /// Al morir el boss: AVANZAR al siguiente stage (victoria).
-    /// Si no hay siguiente configurado, no hace nada (evita bajar/apagar).
-    /// </summary>
-    private void OnBossDeath()
-    {
-        int next = currentStageIndex + 1;
-        if (IsValidIndex(next))
+        if (boss != null)
         {
-            TransitionTo(next);
-        }
-        else
-        {
-            Debug.LogWarning(
-                "[StageSetTransition] BossDeath: no hay un siguiente stage (plataforma de victoria) configurado.");
+            boss.gameObject.SetActive(true);
+            Debug.Log("[StageHandler] Boss activado por primera vez.");
         }
     }
 
-    /// <summary>
-    /// Cambia al siguiente stage (current + 1).
-    /// </summary>
-    [ContextMenu("Next Stage")]
-    public void Next()
-    {
-        TransitionTo(currentStageIndex + 1);
-    }
+    private void OnBossStageChanged(int nextIndex) => TransitionTo(nextIndex);
 
-    /// <summary>
-    /// Transiciona al índice pedido.
-    /// </summary>
     public void TransitionTo(int nextIndex)
     {
         if (nextIndex == currentStageIndex) return;
+
         if (!IsValidIndex(currentStageIndex))
         {
-            // Si no hay actual válido, forzamos inicio en next
             ForceSetInitialStage(nextIndex);
             return;
         }
 
-        // Si nextIndex es inválido, NO bajes ni apagues: simplemente no hagas nada.
         if (!IsValidIndex(nextIndex))
         {
-            Debug.LogWarning("[StageSetTransition] TransitionTo: índice de destino inválido, se ignora la transición.");
+            Debug.LogWarning("[StageSetTransition] Índice de destino inválido: " + nextIndex);
             return;
         }
 
-        StartTransition(currentStageIndex, nextIndex);
-    }
-
-    /// <summary>
-    /// Fija un stage como inicial (activa y posiciona), apagando el resto.
-    /// </summary>
-    public void ForceSetInitialStage(int index)
-    {
-        if (!IsValidIndex(index)) return;
-
-        // Apagar todos menos el index
-        for (int i = 0; i < stageRoots.Count; i++)
-        {
-            var t = stageRoots[i];
-            if (t == null) continue;
-
-            bool active = (i == index);
-            t.gameObject.SetActive(active);
-            if (active && _basePos.TryGetValue(t, out var p))
-                SetPos(t, p);
-        }
-
-        currentStageIndex = index;
-    }
-
-    private bool IsValidIndex(int idx) => idx >= 0 && idx < stageRoots.Count;
-
-    private void StartTransition(int fromIndex, int toIndex)
-    {
         if (_transitionCR != null) StopCoroutine(_transitionCR);
-        _transitionCR = StartCoroutine(TransitionSequence(fromIndex, toIndex));
+        _transitionCR = StartCoroutine(TransitionSequence(currentStageIndex, nextIndex));
     }
 
     private IEnumerator TransitionSequence(int fromIndex, int toIndex)
     {
+        float timer = 0;
+        while (timer < delayBeforeStart)
+        {
+            if (!_paused) timer += Time.deltaTime;
+            yield return null;
+        }
+
         var fromRoot = IsValidIndex(fromIndex) ? stageRoots[fromIndex] : null;
         var toRoot = IsValidIndex(toIndex) ? stageRoots[toIndex] : null;
 
-        // 1) BAJAR y APAGAR el saliente
         if (fromRoot != null && _basePos.TryGetValue(fromRoot, out var fromBase))
         {
             Vector3 fromStart = GetPos(fromRoot);
-            Vector3 fromEnd = new Vector3(fromBase.x, fromBase.y + downOffsetY, fromBase.z);
-
-            // Si por alguna razón el start no es la base, animamos desde donde esté hacia el end.
+            Vector3 fromEnd = fromBase + Vector3.up * downOffsetY;
             yield return AnimatePos(fromRoot, fromStart, fromEnd, downDuration, easeDown);
-
-            // Apagar
             fromRoot.gameObject.SetActive(false);
         }
 
-        // 2) PREPARAR el entrante en la altura baja y SUBIRLO a su base
         if (toRoot != null && _basePos.TryGetValue(toRoot, out var toBase))
         {
-            // Colocar en “debajo” y activar
-            Vector3 toStart = new Vector3(toBase.x, toBase.y + downOffsetY, toBase.z);
+            Vector3 toStart = toBase + Vector3.up * downOffsetY;
             SetPos(toRoot, toStart);
             toRoot.gameObject.SetActive(true);
 
             var focus = toRoot.GetComponent<FocusOnActivation>();
-            if (focus != null)
-            {
-                focus.Activate();
-            }
-            
-            // Subir a su base
-            yield return AnimatePos(toRoot, toStart, toBase, upDuration, easeUp);
+            if (focus != null) focus.Activate();
 
+            yield return AnimatePos(toRoot, toStart, toBase, upDuration, easeUp);
             currentStageIndex = toIndex;
         }
 
@@ -221,30 +141,26 @@ public class StageSetTransition : MonoBehaviour, IPausable
 
     private IEnumerator AnimatePos(Transform t, Vector3 start, Vector3 end, float duration, AnimationCurve curve)
     {
-        duration = Mathf.Max(0.0001f, duration);
         float time = 0f;
-
         while (time < duration)
         {
             if (_paused)
             {
-                yield return WaitWhilePaused(() => _paused);
+                yield return null;
                 continue;
             }
 
             time += Time.deltaTime;
             float t01 = Mathf.Clamp01(time / duration);
             float k = curve != null ? curve.Evaluate(t01) : t01;
-
-            Vector3 pos = Vector3.LerpUnclamped(start, end, k);
-            SetPos(t, pos);
-
+            SetPos(t, Vector3.LerpUnclamped(start, end, k));
             yield return null;
         }
 
         SetPos(t, end);
     }
 
+    private bool IsValidIndex(int idx) => idx >= 0 && idx < stageRoots.Count;
     private Vector3 GetPos(Transform t) => useLocalPosition ? t.localPosition : t.position;
 
     private void SetPos(Transform t, Vector3 p)
@@ -255,27 +171,16 @@ public class StageSetTransition : MonoBehaviour, IPausable
 
     public void OnPauseChanged(bool paused) => _paused = paused;
 
-    // Gizmos simples para visualizar posiciones base y “down”
-    private void OnDrawGizmosSelected()
+    public void ForceSetInitialStage(int index)
     {
-        if (stageRoots == null) return;
-
-        Gizmos.color = new Color(0f, 1f, 1f, 0.35f);
-        foreach (var t in stageRoots)
+        if (!IsValidIndex(index)) return;
+        for (int i = 0; i < stageRoots.Count; i++)
         {
-            if (t == null) continue;
-
-            var baseP = Application.isPlaying && _basePos.ContainsKey(t)
-                ? _basePos[t]
-                : (useLocalPosition ? t.localPosition : t.position);
-            var worldBase = useLocalPosition ? t.parent != null ? t.parent.TransformPoint(baseP) : baseP : baseP;
-
-            // Base
-            Gizmos.DrawCube(worldBase, Vector3.one * 0.4f);
-
-            // Down
-            var downP = worldBase + Vector3.up * downOffsetY;
-            Gizmos.DrawWireCube(downP, Vector3.one * 0.35f);
+            bool active = (i == index);
+            stageRoots[i].gameObject.SetActive(active);
+            if (active && _basePos.TryGetValue(stageRoots[i], out var p)) SetPos(stageRoots[i], p);
         }
+
+        currentStageIndex = index;
     }
 }

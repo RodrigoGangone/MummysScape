@@ -4,9 +4,12 @@ using System.IO;
 using UnityEngine.SceneManagement;
 using static PrefFamily;
 
-//
+/// <summary> 
+/// Diccionario de Claves: Centraliza la generación de strings para el guardado utilizando enums 
+/// y slugs, garantizando que no existan errores de escritura al acceder a los datos. 
+/// </summary>
 
-public enum PrefFamily { Gems, GemTotals, LevelCompleted, Time, VolumeSound, VolumeFX }
+public enum PrefFamily { Gems, GemTotals, LevelCompleted, Time, VolumeSound, VolumeFX, Seen }
 public enum VolumeSoundId { Master, Music, Voice, Ambient }
 public enum VolumeFxId    { Sfx, UI }
 public enum TimeId { Best, Last, Total } // agrega los que necesites
@@ -18,9 +21,10 @@ public static class PrefKeys
         { Gems,           "gem." },
         { GemTotals,      "gemTotal." },
         { LevelCompleted, "level.completed." },
-      //{ Time,           "time." },
+        { Time,           "time." }, 
         { VolumeSound,    "volume.sound." },
         { VolumeFX,       "volume.fx." },
+        { Seen,           "seen." } // <--- NUEVO
     };
 
     static string Scene
@@ -56,5 +60,10 @@ public static class PrefKeys
     public static string MuteFxKey(VolumeFxId id)
         => $"{Prefix[VolumeFX]}{Slug(id)}.mute";
     
+    public static string SeenTutorial(string tutorialId) => $"{Prefix[Seen]}tutorial.{tutorialId}";
+    public static string SeenLevelReveal(int buildIndex) => $"{Prefix[Seen]}level_reveal.{buildIndex}";
+    public static string SeenZoneReveal(int buildIndex)  => $"{Prefix[Seen]}zone_reveal.{buildIndex}";
+    public static string SeenGemsCount() => $"{Prefix[Seen]}gems_count";
+    public static string SeenCinematic(string cinematicId) => $"{Prefix[Seen]}cinematic.{cinematicId}";
     //public static string TimeKey(TimeId id) => $"{Prefix[Time]}{id.ToString().ToLowerInvariant()}";
 }

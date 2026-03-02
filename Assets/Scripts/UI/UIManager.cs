@@ -6,68 +6,75 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
+using TMPro;
+using static Save;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] private Animator _mummyUI;
+    [SerializeField] private Animator _mummyUI; 
 
-    [Header("UI Tutorial")] [SerializeField]
-    private GameObject _tutorialInput;
+    [Header("Configuración de Escenas")]
+    [Tooltip("El índice de la escena que funciona como HUB / Selector.")]
+    [SerializeField] private int selectorSceneIndex = 1;
 
-    [Header("UI PAUSE")] [SerializeField] private GameObject _pausePanel;
+    [Header("UI TUTORIAL / PROMPT")]
+    [SerializeField] private GameObject _interaction;
+    [SerializeField] private Image _interactionBtn;
+    [SerializeField] private Sprite btnA;
+    [SerializeField] private Sprite btnY;
+
+    [Header("UI FOCUS MESSAGES")]
+    [SerializeField] private GameObject _focusMessagePanel;
+    [SerializeField] private TextMeshProUGUI _focusText;
+    [SerializeField] private CanvasGroup _focusMessageCG; 
+    [SerializeField] private float _fadeDuration = 0.3f;
+
+    [Header("UI PAUSE / OPTIONS")]
+    [SerializeField] private GameObject _pausePanel;
     [SerializeField] private Material _pauseMaterial;
     [SerializeField] private GameObject _optionsPanel;
     [SerializeField] private Material _optionsMaterial;
     [SerializeField] private Button _btnResume;
-    [SerializeField] private Button _btnRetry;
+    [SerializeField] private Button _btnRetry; 
     [SerializeField] private Button _btnOptions;
-
-    [SerializeField] private Button _btnExit;
-
-    //(esto va junto al resto de botones del Pause / Options
+    [SerializeField] private Button _btnExit;   
     [SerializeField] private Button _btnBackOptions;
+    [SerializeField] private Selectable _pauseFirstSelected;
+    [SerializeField] private Selectable _optionsFirstSelected;
 
+    [Header("UI END GAME (Resumen)")]
+    [SerializeField] private GameObject _endGamePanel; 
+    [SerializeField] private Button _btnEndGameRetry;    
+    [SerializeField] private Button _btnEndGameMenu;     
+    [SerializeField] private Button _btnEndGameNextLvl; 
+    [SerializeField] private Selectable _winFirstSelected;  
+    [SerializeField] private Selectable _loseFirstSelected; 
+    [SerializeField] private Image[] _uiSlotsFills;     
+    [SerializeField] private GameObject[] _gemIcons;    
+    [SerializeField] private float _delayBeforeRefill = 2f;
+
+    [Header("TRANSITION / LOADING")]
+    [SerializeField] private GameObject _nextLvlTransitionPanel; // PanelNextLevel
+    [SerializeField] private float _fakeTimer = 3f;
+
+    // Variables internas
     private bool _isPaused;
-    private bool _pauseCharging; // Controla que no se spamee la animación
+    private bool _pauseCharging;
     private const string PAUSE_FILL = "_Power";
-
-    [Header("UI WIN")] [SerializeField] private GameObject _WinPanel;
-    [SerializeField] private Button _btnRetryW;
-    [SerializeField] private Button _btnMainMenuW;
-    [SerializeField] private Button _btnNextLvlW;
-
-    [Header("UI LOSE")] [SerializeField] private GameObject _LosePanel;
-    [SerializeField] private Button _btnRetryL;
-    [SerializeField] private Button _btnMainMenuL;
-
-    [Header("UI NEXT LVL")] [SerializeField]
-    private GameObject _NextLvlPanel;
-
-    // Selectables iniciales por panel
-    [Header("FIRST SELECTED")] [SerializeField]
-    private Selectable _pauseFirstSelected; // btn Resume
-
-    [SerializeField] private Selectable _optionsFirstSelected; // options
-
-    // **NUEVOS CAMPOS para WIN/LOSE**
-    [SerializeField] private Selectable _winFirstSelected;
-    [SerializeField] private Selectable _loseFirstSelected;
-
-    private float _fakeTimer = 5f;
-
+    private Coroutine _messageFadeRoutine;
+    
     private SceneTransitionManager Transition => GetComponent<SceneTransitionManager>();
-
     private DepthOfField _blur;
     private Volume _postProcess;
-
 
     private void OnEnable()
     {
         GameEventManager.Instance.levelEvents.OnWin.Register<int>(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Register(Lose);
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(HandlePauseChanged);
-        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Register<bool>(ShowTutorialInput);
+        GameEventManager.Instance.levelEvents.OnPrompt.Register<bool, buttonType>(ShowInteractionInput);
+        GameEventManager.Instance.levelEvents.OnShowFocusMessage.Register<string, Color>(ShowFocusMessage);
+        GameEventManager.Instance.levelEvents.OnHideFocusMessage.Register(HideFocusMessage);
     }
 
     private void OnDisable()
@@ -75,180 +82,170 @@ public class UIManager : MonoBehaviour
         GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(Win);
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Lose);
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(HandlePauseChanged);
-        GameEventManager.Instance.levelEvents.OnTutorialPrompt.Unregister<bool>(ShowTutorialInput);
+        GameEventManager.Instance.levelEvents.OnPrompt.Unregister<bool, buttonType>(ShowInteractionInput);
+        GameEventManager.Instance.levelEvents.OnShowFocusMessage.Unregister<string, Color>(ShowFocusMessage);
+        GameEventManager.Instance.levelEvents.OnHideFocusMessage.Unregister(HideFocusMessage);
     }
-
 
     private void Start()
     {
-        //Buttons OnClick
+        // Botones de Pausa
         AddButtonProps(_btnResume, () => GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false));
         AddButtonProps(_btnRetry, RetryLevel);
         AddButtonProps(_btnOptions, ShowOptionsPanel);
         AddButtonProps(_btnExit, GoToMainMenu);
         AddButtonProps(_btnBackOptions, BackFromOptions);
 
-        AddButtonProps(_btnNextLvlW, ShowNextLvlPanel);
-        AddButtonProps(_btnRetryW, RetryLevel);
-        AddButtonProps(_btnMainMenuW, GoToMainMenu);
+        // Botones de Fin de Juego
+        AddButtonProps(_btnEndGameRetry, RetryLevel); 
+        AddButtonProps(_btnEndGameMenu, GoToMainMenu);
+        AddButtonProps(_btnEndGameNextLvl, () => StartLoadingTransition(selectorSceneIndex));
 
-        AddButtonProps(_btnRetryL, RetryLevel);
-        AddButtonProps(_btnMainMenuL, GoToMainMenu);
-
-        // Inicializamos ambos materiales en 0
         _pauseMaterial.SetFloat(PAUSE_FILL, 0f);
-        _optionsMaterial.SetFloat(PAUSE_FILL, 0f); // ** NUEVO **
+        _optionsMaterial.SetFloat(PAUSE_FILL, 0f);
 
         _postProcess = FindObjectOfType<Volume>();
-        if (_postProcess != null)
-            _postProcess.profile.TryGet(out _blur);
+        if (_postProcess != null) _postProcess.profile.TryGet(out _blur);
     }
-
 
     private void Update()
     {
-        if (Input.GetButtonDown("Pause"))
+        if (Input.GetButtonDown("Pause") && !PlayerLock.Instance.IsLocked) 
             Toggle();
     }
 
-    private static void SetSelected(Selectable selectable)
+    // --- LÓGICA DE CARGA Y WIN ---
+
+    public void Win(int index)
     {
-        if (selectable == null) return;
-        if (EventSystem.current == null) return;
-
-        EventSystem.current.SetSelectedGameObject(null);
-        EventSystem.current.SetSelectedGameObject(selectable.gameObject);
-    }
-
-    private void Toggle()
-    {
-        if (_pauseCharging) return;
-
-        bool willPause = !_isPaused;
-        GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(willPause);
-    }
-
-    private void AddButtonProps(Button button, Action mainAction, params Action[] additionalActions)
-    {
-        button.onClick.AddListener(() =>
+        if (index >= 0)
         {
-            mainAction?.Invoke();
+            // FLUJO DESDE NIVEL: FadeIn -> Mostrar resumen de victoria
+            Transition.TriggerFadeIn(() => { SetupEndGamePanel(true, index); });
+        }
+        else
+        {
+            // FLUJO DESDE SELECTOR: FadeIn -> Mostrar pantalla de carga (Momia) -> Cargar Nivel
+            int targetScene = Mathf.Abs(index);
+            Transition.TriggerFadeIn(() => { StartLoadingTransition(targetScene); });
+        }
+    }
 
-            if (additionalActions == null) return;
-            foreach (var action in additionalActions)
+    public void Lose()
+    {
+        Transition.TriggerFadeIn(() => { SetupEndGamePanel(false, -1); });
+    }
+
+    private void StartLoadingTransition(int targetScene)
+    {
+        // Aseguramos que el panel de resumen esté apagado
+        _endGamePanel.SetActive(false);
+        
+        // Activamos la pantalla de carga (PanelNextLevel)
+        if (_nextLvlTransitionPanel != null) _nextLvlTransitionPanel.SetActive(true);
+        
+        StartCoroutine(LoadingRoutine(targetScene));
+    }
+
+    private IEnumerator LoadingRoutine(int targetScene)
+    {
+        yield return new WaitForSecondsRealtime(_fakeTimer);
+        Transition.FadeInAndLoadScene(targetScene);
+    }
+
+    private void SetupEndGamePanel(bool isWin, int levelIndex)
+    {
+        _endGamePanel.SetActive(true);
+        _btnEndGameRetry.gameObject.SetActive(true);
+        _btnEndGameMenu.gameObject.SetActive(true);
+        _btnEndGameNextLvl.gameObject.SetActive(isWin); 
+
+        if (isWin)
+        {
+            _mummyUI.SetTrigger("Win");
+            SetSelected(_winFirstSelected ?? _btnEndGameNextLvl);
+        }
+        else
+        {
+            _mummyUI.SetTrigger("Lose");
+            SetSelected(_loseFirstSelected ?? _btnEndGameRetry);
+        }
+
+        StartCoroutine(EndGameUIFlow());
+    }
+
+    // --- ANIMACIONES DE UI (Barras y Gemas) ---
+
+    private IEnumerator EndGameUIFlow()
+    {
+        foreach (var gem in _gemIcons) if (gem != null) gem.SetActive(false);
+        foreach (var slot in _uiSlotsFills) if (slot != null) slot.fillAmount = 0f;
+
+        yield return new WaitForSecondsRealtime(_delayBeforeRefill);
+
+        foreach (var slot in _uiSlotsFills)
+        {
+            if (slot == null) continue;
+            float elapsed = 0f;
+            float duration = 0.5f;
+            while (elapsed < duration)
             {
-                action?.Invoke();
+                elapsed += Time.unscaledDeltaTime;
+                slot.fillAmount = Mathf.Lerp(0f, 1f, elapsed / duration);
+                yield return null;
             }
-        });
+            slot.fillAmount = 1f;
+        }
+        CheckAndShowCollectedGems();
     }
 
-    private void HandlePauseChanged(bool paused)
+    private void CheckAndShowCollectedGems()
     {
-        if (_isPaused == paused) return;
-        _isPaused = paused;
-
-        if (paused)
+        for (int i = 0; i < _gemIcons.Length; i++)
         {
-            _optionsPanel.SetActive(false);
-            _WinPanel.SetActive(false);
-            _LosePanel.SetActive(false);
-            _NextLvlPanel.SetActive(false);
-
-            StartCoroutine(LoadPauseBandage());
-        }
-        else
-        {
-            _pausePanel.SetActive(false);
-            _optionsPanel.SetActive(false);
-
-            // ** CORRECCIÓN AQUÍ **
-            // Reseteamos el material de opciones a 0 instantáneamente.
-            // Al ocultarse el panel, no se ve el cambio brusco, pero asegura 
-            // que la próxima vez empiece la animación desde 0.
-            _optionsMaterial.SetFloat(PAUSE_FILL, 0f);
-
-            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
-
-            StartCoroutine(LoadPauseBandage());
+            if (_gemIcons[i] != null && WasGemPicked(i + 1)) _gemIcons[i].SetActive(true);
         }
     }
 
-    // Corutina del PAUSE
-    private IEnumerator LoadPauseBandage()
+    // --- MENSAJES DE FOCO ---
+
+    private void ShowFocusMessage(string message, Color color)
     {
-        _pauseCharging = true;
-
-        if (_postProcess.profile.TryGet(out _blur))
-            _blur.active = !_blur.active;
-
-        var startValue = _pauseMaterial.GetFloat(PAUSE_FILL);
-        var endValue = (startValue == 1f) ? 0f : 1f;
-        var elapsed = 0f;
-
-        while (elapsed < 0.5f)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            var currentValue = Mathf.Lerp(startValue, endValue, elapsed / 0.5f);
-            _pauseMaterial.SetFloat(PAUSE_FILL, currentValue);
-            yield return null;
-        }
-
-        _pauseCharging = false;
-
-        if (endValue == 1f)
-        {
-            _pausePanel.SetActive(true);
-            SetSelected(_pauseFirstSelected ?? _btnResume);
-        }
-
-        _pauseMaterial.SetFloat(PAUSE_FILL, endValue);
+        if (_focusText == null) return;
+        _focusText.text = message;
+        _focusText.color = color;
+        if (_messageFadeRoutine != null) StopCoroutine(_messageFadeRoutine);
+        _messageFadeRoutine = StartCoroutine(FadeMessage(1f));
     }
 
-    // ** NUEVA CORUTINA: LoadOptionsBandage **
-    // Funciona igual que la de Pausa pero maneja el material y panel de opciones
-    private IEnumerator LoadOptionsBandage(bool open)
+    private void HideFocusMessage()
     {
-        _pauseCharging = true; // Bloqueamos inputs mientras transiciona
+        if (_messageFadeRoutine != null) StopCoroutine(_messageFadeRoutine);
+        _messageFadeRoutine = StartCoroutine(FadeMessage(0f));
+    }
 
-        float startValue = open ? 0f : 1f;
-        float endValue = open ? 1f : 0f;
+    private IEnumerator FadeMessage(float targetAlpha)
+    {
+        if (_focusMessageCG == null) { _focusMessagePanel.SetActive(targetAlpha > 0); yield break; }
+        if (targetAlpha > 0) _focusMessagePanel.SetActive(true);
+        float startAlpha = _focusMessageCG.alpha;
         float elapsed = 0f;
-        float duration = 0.5f;
-
-        // Si cerramos opciones, primero ocultamos el panel para ver la animación de "vaciado"
-        if (!open)
+        while (elapsed < _fadeDuration)
         {
-            _optionsPanel.SetActive(false);
-        }
-        else
-        {
-            // Si abrimos opciones, ocultamos el panel de pausa para que no moleste atrás
-            _pausePanel.SetActive(false);
-        }
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float currentValue = Mathf.Lerp(startValue, endValue, elapsed / duration);
-            _optionsMaterial.SetFloat(PAUSE_FILL, currentValue);
+            elapsed += Time.unscaledDeltaTime; 
+            _focusMessageCG.alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsed / _fadeDuration);
             yield return null;
         }
+        _focusMessageCG.alpha = targetAlpha;
+        if (targetAlpha <= 0) _focusMessagePanel.SetActive(false);
+    }
 
-        _optionsMaterial.SetFloat(PAUSE_FILL, endValue);
-        _pauseCharging = false;
+    // --- PAUSA Y NAVEGACIÓN ---
 
-        if (open)
-        {
-            // Al terminar de cargar la animación, mostramos el panel de opciones
-            _optionsPanel.SetActive(true);
-            SetSelected(_optionsFirstSelected);
-        }
-        else
-        {
-            // Al terminar de descargar la animación, volvemos a mostrar el menú de pausa
-            _pausePanel.SetActive(true);
-            SetSelected(_pauseFirstSelected ?? _btnResume);
-        }
+    private void RetryLevel()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false);
+        Transition.FadeInAndLoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     private void GoToMainMenu()
@@ -257,67 +254,111 @@ public class UIManager : MonoBehaviour
         Transition.FadeInAndLoadScene(0);
     }
 
-    private void BackFromOptions()
+    private void HandlePauseChanged(bool paused)
     {
-        // Ya no hacemos SetActive directo, llamamos a la corutina con 'false'
-        if (!_pauseCharging)
-            StartCoroutine(LoadOptionsBandage(false));
-    }
-
-    private void ShowOptionsPanel()
-    {
-        // Ya no hacemos SetActive directo, llamamos a la corutina con 'true'
-        if (!_pauseCharging)
-            StartCoroutine(LoadOptionsBandage(true));
-    }
-
-    private void ShowNextLvlPanel()
-    {
-        _NextLvlPanel.SetActive(true);
-
-        _WinPanel.SetActive(false);
-        _LosePanel.SetActive(false);
-        _pausePanel.SetActive(false);
-
-        StartCoroutine(LoadNextSceneWithPanel());
-    }
-
-    private IEnumerator LoadNextSceneWithPanel()
-    {
-        yield return new WaitForSecondsRealtime(_fakeTimer);
-
-        int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
-        Transition.FadeInAndLoadScene(nextSceneIndex);
-    }
-
-    private void RetryLevel()
-    {
-        GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(false);
-        Transition.FadeInAndLoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    private void ShowTutorialInput(bool value) => _tutorialInput.SetActive(value);
-
-    public void Win(int index)
-    {
-        Transition.TriggerFadeIn(() =>
+        if (_isPaused == paused) return;
+        _isPaused = paused;
+        if (paused)
         {
-            if (index >= Utils.MAX_LVLS)
-                _btnNextLvlW.enabled = false;
-
-            _WinPanel.SetActive(true);
-            _mummyUI.SetTrigger("isWin");
-            SetSelected(_winFirstSelected ?? _btnNextLvlW);
-        });
-    }
-
-    public void Lose()
-    {
-        Transition.TriggerFadeIn(() =>
+            _optionsPanel.SetActive(false);
+            _endGamePanel.SetActive(false); 
+        }
+        else
         {
-            _LosePanel.SetActive(true);
-            _mummyUI.SetTrigger("isLose");
-            SetSelected(_loseFirstSelected ?? _btnRetryL);
-        });
+            _pausePanel.SetActive(false);
+            _optionsPanel.SetActive(false);
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+        }
+        StartCoroutine(LoadPauseBandage());
     }
+    
+    private IEnumerator LoadPauseBandage()
+    {
+        _pauseCharging = true;
+        if (_blur != null) _blur.active = _isPaused;
+
+        // Obtenemos los valores iniciales de ambos materiales
+        float startPause = _pauseMaterial.GetFloat(PAUSE_FILL);
+        float startOptions = _optionsMaterial.GetFloat(PAUSE_FILL); 
+    
+        float end = _isPaused ? 1f : 0f;
+        float elapsed = 0f;
+
+        while (elapsed < 0.5f)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / 0.5f;
+
+            // Transición del material de pausa
+            _pauseMaterial.SetFloat(PAUSE_FILL, Mathf.Lerp(startPause, end, t));
+
+            // Si estamos quitando la pausa, también ocultamos el material de opciones
+            if (!_isPaused)
+            {
+                _optionsMaterial.SetFloat(PAUSE_FILL, Mathf.Lerp(startOptions, 0f, t));
+            }
+
+            yield return null;
+        }
+
+        _pauseCharging = false;
+    
+        if (_isPaused) 
+        { 
+            _pausePanel.SetActive(true); 
+            SetSelected(_pauseFirstSelected ?? _btnResume); 
+        }
+    
+        // Nos aseguramos de que los valores queden exactos al final de la transición
+        _pauseMaterial.SetFloat(PAUSE_FILL, end);
+        if (!_isPaused) _optionsMaterial.SetFloat(PAUSE_FILL, 0f); 
+    }
+
+    private void Toggle() { if (!_pauseCharging) GameEventManager.Instance.levelEvents.OnPauseChanged.Raise(!_isPaused); }
+    private void ShowOptionsPanel() { if (!_pauseCharging) StartCoroutine(LoadOptionsBandage(true)); }
+    private void BackFromOptions() { if (!_pauseCharging) StartCoroutine(LoadOptionsBandage(false)); }
+    
+    private IEnumerator LoadOptionsBandage(bool open)
+    {
+        _pauseCharging = true;
+        float start = open ? 0f : 1f;
+        float end = open ? 1f : 0f;
+        float elapsed = 0f;
+        if (!open) _optionsPanel.SetActive(false); else _pausePanel.SetActive(false);
+        while (elapsed < 0.5f)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            _optionsMaterial.SetFloat(PAUSE_FILL, Mathf.Lerp(start, end, elapsed / 0.5f));
+            yield return null;
+        }
+        _optionsMaterial.SetFloat(PAUSE_FILL, end);
+        _pauseCharging = false;
+        if (open) { _optionsPanel.SetActive(true); SetSelected(_optionsFirstSelected); }
+        else { _pausePanel.SetActive(true); SetSelected(_pauseFirstSelected ?? _btnResume); }
+    }
+
+    public void ShowInteractionInput(bool value, buttonType button)
+    {
+        if (_interactionBtn == null) return;
+        _interactionBtn.sprite = button switch { buttonType.A => btnA, buttonType.Y => btnY, _ => _interactionBtn.sprite };
+        _interaction.SetActive(value);
+    }
+
+    private void AddButtonProps(Button button, Action action)
+    {
+        if (button != null) button.onClick.AddListener(() => action?.Invoke());
+    }
+
+    private static void SetSelected(Selectable selectable)
+    {
+        if (selectable == null || EventSystem.current == null) return;
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(selectable.gameObject);
+    }
+}
+
+public enum buttonType
+{
+    A,
+    Y
 }

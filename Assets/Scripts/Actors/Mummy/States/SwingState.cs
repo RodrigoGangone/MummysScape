@@ -42,12 +42,10 @@ public class SwingState : State, IBandageRestrictor
 
         // 4. Iniciar Visuales (View)
         // Delegamos el dibujado a la View
-        _ctx.View.StartBandage(hookRb.transform, hitPoint);
+        _ctx.View.StartBandage(hookRb.transform, hitPoint, 0.3f);
 
         // 5. Calcular Tiempos
-        // Obtenemos la duración de la animación desde la View
-        float travelDuration = _ctx.View.GetBandageDrawDuration();
-        _timeReachedTarget = Time.time + travelDuration; 
+        _timeReachedTarget = Time.time + 0.3f; 
     }
 
     public override void OnExit()

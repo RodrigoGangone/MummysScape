@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// GameEvent – versión corregida de registro tipado + soporte 2 parámetros
+/// <summary> 
+/// Nodo de Comunicación: ScriptableObject que actúa como un canal de señalización independiente, 
+/// permitiendo el registro de suscriptores con soporte para 0, 1 o 2 parámetros tipados. 
 /// </summary>
+
 [CreateAssetMenu(menuName = "Events/GameEvent")]
 public class GameEvent : ScriptableObject
 {

@@ -1,9 +1,10 @@
 using System;
 
-/// <summary>
-/// IStateTransitionGuard
-/// Contrato para validar si puede ocurrir una transición de estado A -> B.
+/// <summary> 
+/// Validador de Transiciones: Define el contrato para implementar lógica de seguridad que 
+/// permita o deniegue el cambio entre estados específicos de la máquina de estados.
 /// </summary>
+
 public interface IStateTransitionGuard
 {
     bool Can(Enum from, Enum to);

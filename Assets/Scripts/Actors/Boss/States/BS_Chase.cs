@@ -1,6 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+
+/// <summary>
+/// Estado de Persecución: Gestiona el movimiento del Boss hacia el jugador, ajustando su velocidad 
+/// según el multiplicador de la fase actual y manteniendo la rotación hacia el objetivo.
+/// </summary>
 
 public class BS_Chase : State
 {

@@ -1,8 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// Planner GOAP mínimo: devuelve una intención simbólica que el BossActor mapea a la FSM.
+/// Cerebro Lógico: Evalúa el "WorldModel" y la disponibilidad de habilidades para devolver la intención 
+/// simbólica que el BossActor utilizará para cambiar sus estados en la FSM.
 /// </summary>
+
 public sealed class GoapBrain
 {
     private static class Intent
@@ -17,7 +19,6 @@ public sealed class GoapBrain
     
     internal bool Paused;
 
-    // GoapBrain.DecideNextIntent
     public string DecideNextIntent(in WorldModel wm, IBossContext ctx, BossSkillSO runtimePrimary, BossSkillSO runtimeSecondary)
     {
         // Si el contexto no es un BossActor, no hay decisión posible.
@@ -30,7 +31,7 @@ public sealed class GoapBrain
         if (boss.IsEntry)            return Intent.None;
         if (boss.IsExecutingSkill)   return Intent.None;
 
-        // Priorizamos daño si aplica (si querés que no interrumpa skills, ponelo antes de IsExecutingSkill).
+        // Priorizamos daño si aplica.
         if (boss.IsDamaged)          return Intent.Damaged;
 
         // Cacheamos Time.time para evitar leerlo dos veces.

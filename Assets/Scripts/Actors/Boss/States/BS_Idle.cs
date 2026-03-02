@@ -1,7 +1,10 @@
-using UnityEngine;
 using static Utils;
 
-/// <summary> Estado Idle: sólo mantiene pose / mira al player si querés. </summary>
+/// <summary>
+/// Estado de Espera: Mantiene al Boss en su pose base mientras rota continuamente para 
+/// encarar la posición actual del jugador.
+/// </summary>
+
 public sealed class BS_Idle : State
 {
     private readonly BossActor _actor;

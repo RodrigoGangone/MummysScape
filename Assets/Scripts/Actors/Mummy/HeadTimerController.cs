@@ -3,11 +3,11 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using static PlayerEnum;
 
-/// <summary>
-/// HeadTimerController
-/// Inicia/cancela timer cuando el Size es Head. Escucha GameEvent OnSizeChanged.
-/// El PlayerController emite un bootstrap inicial para sincronizar la UI.
+/// <summary> 
+/// Controlador de Tiempo: Gestiona el temporizador y la barra de carga visual cuando el jugador 
+/// está en estado "Head", disparando eventos al agotarse el tiempo permitido. 
 /// </summary>
+
 public sealed class HeadTimerController : MonoBehaviour
 {
     [Header("Refs")]
@@ -26,23 +26,9 @@ public sealed class HeadTimerController : MonoBehaviour
 
     private TimerService.Handle _handle;
 
-    // (Opcional) Para aplicar estado inicial si el Controller no hace bootstrap:
     public void Bind(PlayerModel model)
     {
         HandleSize(model.Size);
-    }
-
-    private void OnEnable()
-    {
-        GameEventManager.Instance.playerEvents.OnSizeChanged
-            .Register<PlayerSize>(HandleSize);
-    }
-
-    private void OnDisable()
-    {
-        GameEventManager.Instance.playerEvents.OnSizeChanged
-            .Unregister<PlayerSize>(HandleSize);
-        _timers?.Cancel(_handle);
     }
 
     private void HandleSize(PlayerSize s)
@@ -62,5 +48,14 @@ public sealed class HeadTimerController : MonoBehaviour
                 onComplete: () => { if (_fill) _fill.fillAmount = 0f; _onExpired?.Invoke(); }
             );
         }
+    }
+    
+    private void OnEnable() => GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(HandleSize);
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(HandleSize);
+        
+        _timers?.Cancel(_handle);
     }
 }

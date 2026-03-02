@@ -1,13 +1,11 @@
 using UnityEngine;
 using static PlayerEnum;
 
-/// <summary>
-/// PushState
-/// Dueño de la interacción Player↔Caja mientras hay input de movimiento.
-/// - Mueve player y caja con el mismo delta.
-/// - Suelta si no hay suelo bajo la caja o se pierde el target.
-/// - Rotación suave.
+/// <summary> 
+/// Estado de Empuje: Sincroniza el movimiento del jugador con una caja interactuable, permitiendo 
+/// el desplazamiento conjunto siempre que se mantenga el contacto físico y el suelo bajo ambos. 
 /// </summary>
+
 public sealed class PushState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
@@ -19,6 +17,8 @@ public sealed class PushState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
+        _ctx.View.PlaySfx("WalkPush");
+        
         Debug.Log("PushState!");
         if (!_ctx.TryGetPushTarget(out _box, out _, out _))
         {
@@ -28,20 +28,20 @@ public sealed class PushState : State, IBandageRestrictor
 
         _halfSpeed = _ctx.MoveSpeed * 0.5f;
     
-        // CAMBIO AQUÍ: true = mover física, false = SIN vendas
         _box.SetPushAttractMode(true, false); 
-        
+        _box.bank.Play3D("MoveBox", _box.transform.position);
         _ctx.View.Animator.SetBool("Push", true);
     }
 
     public override void OnExit()
     {
         _box?.StopImmediate();
-        // Al salir, desactivamos física. El segundo parámetro da igual (por defecto true), 
-        // porque al ser enabled=false, la lógica visual hará UnWrap de todas formas.
+        _box.bank.Stop("MoveBox");
         _box?.SetPushAttractMode(false); 
         _box = null;
         
+        _ctx.View.StopSfx("WalkPush");
+
         _ctx.View.Animator.SetBool("Push", false);
     }
 

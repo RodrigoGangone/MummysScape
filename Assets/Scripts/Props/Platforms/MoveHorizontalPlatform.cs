@@ -1,8 +1,12 @@
 using System.Collections;
 using System.Linq;
 using UnityEngine;
-using static Utils;
 using static PauseUtils;
+
+/// <summary> 
+/// Plataforma Horizontal: Gestiona el desplazamiento lateral entre puntos, incorporando efectos visuales 
+/// de montículos de arena, materiales reactivos (glow) y sincronización de audio pausable. 
+/// </summary>
 
 public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 {
@@ -39,7 +43,6 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 
     private AudioSource _movingAudio;
 
-    // ⏸️ Estados
     private bool _paused;     
     private bool _isLocked;   
     private bool _holdAtWaypoint;
@@ -48,8 +51,6 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     {
         platformMaterials = GetMaterialsFromChildren();
         
-        // Se eliminó la configuración de Rigidbody.isKinematic
-
         if (waypoints.Length > 0 && isMoving)
         {
             if (Vector3.Distance(transform.position, waypoints[0].position) < 0.001f)
@@ -70,7 +71,6 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 
     private void Update()
     {
-        // Se detiene si hay pausa de menú o bloqueo de evento (Locked)
         bool shouldMove = !_paused 
                           && !_isLocked 
                           && !_holdAtWaypoint
@@ -182,7 +182,6 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         _currentWaypointIndex = _currentWaypointIndex > 0 ? _currentWaypointIndex - 1 : waypoints.Length - 1;
     }
 
-    // ---------------- SAND MOUND LOGIC ----------------
     private void ResetSandMoundPositions()
     {
         sandMoundForward.position = Vector3.MoveTowards(
@@ -216,7 +215,6 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         }
     }
     
-    // ---------------- VISUALS & GLOW ----------------
     private Material[] GetMaterialsFromChildren() =>
         GetComponentsInChildren<Renderer>().SelectMany(r => r.materials).ToArray();
 
@@ -241,9 +239,7 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
             yield return null;
         }
     }
-
-    // ---------------- EVENT HANDLERS ----------------
-
+    
     public void OnPauseChanged(bool paused)
     {
         _paused = paused;

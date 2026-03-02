@@ -41,7 +41,6 @@ public sealed class CursorByInputScheme : MonoBehaviour
 
     private void Start()
     {
-        // Por si el manager inicializa Instance después de nuestro Awake/OnEnable
         TrySubscribe();
     }
 
@@ -71,7 +70,6 @@ public sealed class CursorByInputScheme : MonoBehaviour
         manager.SchemeChanged += OnSchemeChanged;
         _subscribed = true;
 
-        // Aplicamos estado inicial
         OnSchemeChanged(manager.CurrentScheme);
 
         if (_debugLogs)
@@ -98,7 +96,6 @@ public sealed class CursorByInputScheme : MonoBehaviour
 
         ApplyCursorState(scheme);
 
-        // Reiniciamos la coroutine de refuerzo
         if (_enforceRoutine != null)
             StopCoroutine(_enforceRoutine);
 
@@ -135,7 +132,6 @@ public sealed class CursorByInputScheme : MonoBehaviour
 
     private IEnumerator EnforceCursorStateForFrames(InputScheme scheme, int frames)
     {
-        // Refuerza al final de varios frames para evitar que algo lo pise
         for (int i = 0; i < frames; i++)
         {
             yield return new WaitForEndOfFrame();

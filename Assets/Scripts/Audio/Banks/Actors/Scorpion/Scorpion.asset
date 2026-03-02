@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51f9e060baa0e5b4a9b40b4cdcb1d3ec, type: 3}
+  m_Name: Scorpion
+  m_EditorClassIdentifier: 
+  bus: 5
+  entries:
+  - key: Entry
+    clip: {fileID: 8300000, guid: 729651d9ee4f54447a12bf957308bac6, type: 3}
+    volume: 1
+    pitch: 0.5
+    loop: 0
+    is3D: 0
+    spatialBlend: 0
+    maxDistance: 0
+  - key: Charge
+    clip: {fileID: 8300000, guid: cabd0ce9d557fe247b14cacf27a409e7, type: 3}
+    volume: 0.01
+    pitch: 2
+    loop: 0
+    is3D: 0
+    spatialBlend: 0
+    maxDistance: 0
+  - key: Launch
+    clip: {fileID: 8300000, guid: 1e626823911862242af0e192c7546522, type: 3}
+    volume: 1
+    pitch: 0.5
+    loop: 0
+    is3D: 0
+    spatialBlend: 0
+    maxDistance: 0
+  - key: Dig
+    clip: {fileID: 8300000, guid: 3cddcc03c0cf89a40a506a9afd042c50, type: 3}
+    volume: 1
+    pitch: 0.5
+    loop: 0
+    is3D: 0
+    spatialBlend: 0
+    maxDistance: 0
+  - key: Death
+    clip: {fileID: 8300000, guid: bc60534d61b25ac4e8467fff6fbfb53b, type: 3}
+    volume: 1
+    pitch: 0.5
+    loop: 0
+    is3D: 0
+    spatialBlend: 0
+    maxDistance: 0

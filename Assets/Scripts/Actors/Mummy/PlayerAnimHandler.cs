@@ -1,7 +1,9 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+
+/// <summary> 
+/// Puente de Animación: Traduce eventos visuales de los clips de animación en acciones lógicas, 
+/// como la ejecución de áreas de impacto (Smash) o la activación de bloqueos de control. 
+/// </summary>
 
 public class PlayerAnimHandler : MonoBehaviour
 {
@@ -31,9 +33,9 @@ public class PlayerAnimHandler : MonoBehaviour
     
     public void UnLocked()
     {
-        GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Smash", false);
         _ctx.View.Animator.SetBool("Smash", false);
     }
 
-    public void Locked() => GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
+    public void Locked() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Smash", true);
 }

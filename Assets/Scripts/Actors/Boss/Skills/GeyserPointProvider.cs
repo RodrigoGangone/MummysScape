@@ -5,6 +5,11 @@ using System.Linq;
 using UnityEngine;
 using static PauseUtils;
 
+/// <summary>
+/// Proveedor de Escena: Centraliza la referencia de los geysers disponibles y gestiona 
+/// el pool y movimiento de las partículas que viajan hacia ellos para activarlos.
+/// </summary>
+
 public class GeyserPointProvider : MonoBehaviour, IPausable
 {
     [Tooltip("Geysers en escena. Se usarán sus transforms como destinos.")]
@@ -16,16 +21,13 @@ public class GeyserPointProvider : MonoBehaviour, IPausable
     [Header("Debug")]
     [SerializeField] private bool drawDebug = true;
 
-    // Pool muy simple de partículas
     private readonly List<ParticleSystem> _pool = new();
     private readonly List<int> _free = new();
 
-    // Debug gizmos
     private List<Transform> _lastTargets;
     private Transform _lastOrigin;
     private float _lastRadius;
 
-    // Recomendado: tolerancia al llegar al objetivo
     [SerializeField, Min(0.001f)] private float arrivalThreshold = 0.05f;
 
     private bool _paused;
@@ -55,11 +57,7 @@ public class GeyserPointProvider : MonoBehaviour, IPausable
         int idx = _pool.IndexOf(ps);
         if (idx >= 0 && !_free.Contains(idx)) _free.Add(idx);
     }
-
-    /// <summary>
-    /// Lanza exactamente N partículas hacia los N geysers seleccionados.
-    /// Cuando TODAS llegan, ejecuta onArrived.
-    /// </summary>
+    
     public Coroutine RunTravelFXToGeysers(
         IReadOnlyList<Geyser> selected,
         ParticleSystem prefab,
@@ -70,7 +68,6 @@ public class GeyserPointProvider : MonoBehaviour, IPausable
         var origin = explicitOrigin != null ? explicitOrigin :
                      (defaultTravelOrigin != null ? defaultTravelOrigin : transform);
 
-        // Guardamos para gizmos
         _lastTargets = selected.Where(g => g != null).Select(g => g.transform).ToList();
         _lastOrigin = origin;
 
@@ -91,7 +88,6 @@ public class GeyserPointProvider : MonoBehaviour, IPausable
     {
         var actives = new List<(ParticleSystem ps, Transform target)>(targets.Count);
 
-        // Emitís exactamente N
         foreach (var tf in targets)
         {
             if (tf == null) continue;
@@ -107,7 +103,6 @@ public class GeyserPointProvider : MonoBehaviour, IPausable
 
         while (remaining > 0)
         {
-            // Si está pausado: pausar todas las partículas, esperar y reanudar
             if (_paused)
             {
                 for (int i = 0; i < actives.Count; i++)
@@ -116,17 +111,14 @@ public class GeyserPointProvider : MonoBehaviour, IPausable
                     if (ps != null && ps.isPlaying) ps.Pause();
                 }
 
-                // Espera hasta que se libere la pausa global
                 yield return WaitWhilePaused(() => _paused);
 
-                // Reanudar emisión
                 for (int i = 0; i < actives.Count; i++)
                 {
                     var ps = actives[i].ps;
                     if (ps != null && !ps.isPlaying) ps.Play();
                 }
 
-                // Continuar siguiente frame ya reanudado
                 yield return null;
                 continue;
             }
@@ -165,18 +157,15 @@ public class GeyserPointProvider : MonoBehaviour, IPausable
     {
         if (!drawDebug || _lastTargets == null || _lastOrigin == null) return;
 
-        // Origen
         Gizmos.color = Color.yellow;
         Gizmos.DrawSphere(_lastOrigin.position, 0.18f);
 
-        // Radio de selección (si lo setea el SO)
         if (_lastRadius > 0f)
         {
             Gizmos.color = new Color(1f, 1f, 0f, 0.12f);
             Gizmos.DrawWireSphere(_lastOrigin.position, _lastRadius);
         }
 
-        // Líneas y marcadores de destino
         Gizmos.color = Color.cyan;
         foreach (var t in _lastTargets)
         {

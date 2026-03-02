@@ -1,10 +1,10 @@
 using UnityEngine;
 
-/// <summary>
-/// CameraProvider
-/// Proveedor de la cámara actual. Si no hay asignada, usa Camera.main.
-/// Permite SetCurrent(cam) en runtime si cambiás de cámara física.
+/// <summary> 
+/// Servicio de Cámara: Provee una referencia centralizada y accesible a la cámara principal del juego, 
+/// permitiendo el cambio dinámico de cámaras en tiempo real. 
 /// </summary>
+
 public interface ICameraProvider { Camera Current { get; } }
 
 public sealed class CameraProvider : MonoBehaviour, ICameraProvider

@@ -13,18 +13,22 @@ public sealed class SmashState : State, IBandageRestrictor
     public override void OnEnter()
     {
         Debug.Log("Smash!");
-        
         _ctx.View.Animator.SetBool("Smash", true);
-        
-        GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
-        //StateMachine.ChangeState(PlayerStateId.Idle);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Smash", true);
     }
 
-    public override void OnUpdate() { }
-    public override void OnFixedUpdate() { }
+    public override void OnUpdate()
+    {
+    }
+
+    public override void OnFixedUpdate()
+    {
+    }
 
     public override void OnExit()
     {
+        _ctx.View.PlaySfx("SmashExit");
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Smash", false);
         _ctx.View.Animator.SetBool("Smash", false);
     }
 }

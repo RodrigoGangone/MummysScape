@@ -1,7 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+/// <summary> 
+/// Base de Comportamiento: Clase abstracta que define el ciclo de vida estándar (Enter, Update, FixedUpdate, Exit) 
+/// para cada estado de la FSM, manteniendo una referencia al controlador de estados. 
+/// </summary>
 public abstract class State
 {
     public abstract void OnEnter();

@@ -1,5 +1,10 @@
 using UnityEngine;
 
+/// <summary> 
+/// Observador de Impactos: Detecta colisiones o triggers provenientes de fuentes externas y extrae 
+/// los datos de retroceso (Knockback) para que sean procesados por la máquina de estados. 
+/// </summary>
+
 public sealed class EnvironmentObserver : MonoBehaviour 
 {
     private KnockbackData? _pendingKnockback;
@@ -23,19 +28,17 @@ public sealed class EnvironmentObserver : MonoBehaviour
         }
     }
 
-    // --- NUEVO: Permite leer los datos sin borrarlos ---
     public KnockbackData PeekKnockback()
     {
         return _pendingKnockback.GetValueOrDefault();
     }
-    // --------------------------------------------------
 
     public KnockbackData ConsumeKnockback() 
     {
         if (!_pendingKnockback.HasValue) return default;
         
         var data = _pendingKnockback.Value;
-        _pendingKnockback = null; // Aquí es donde HasKnockback se vuelve FALSE
+        _pendingKnockback = null;
         return data;
     }
 }

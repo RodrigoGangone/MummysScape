@@ -2,10 +2,11 @@ using UnityEngine;
 using static PlayerEnum;
 using static PlayerEnum.PlayerSize;
 
-/// <summary>
-/// MovementBySizeConfig (SO)
-/// Tabla de velocidades por tamaño (diseño).
+/// <summary> 
+/// Configuración de Movimiento: Define los parámetros de diseño (velocidad y rotación) para 
+/// cada tamaño del jugador, permitiendo el balanceo de la movilidad desde el inspector. 
 /// </summary>
+
 [CreateAssetMenu(menuName = "MummysScape/MovementBySize")]
 public sealed class MovementBySizeConfig : ScriptableObject
 {

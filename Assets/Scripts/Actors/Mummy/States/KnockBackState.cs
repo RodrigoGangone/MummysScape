@@ -1,9 +1,14 @@
 using UnityEngine;
 
+/// <summary> 
+/// Estado de Retroceso: Desplaza al jugador por una curva Bézier al recibir daño, forzando la expulsión 
+/// de vendas del stock como un efecto visual de "drop" por impacto. 
+/// </summary>
+
 public class KnockBackState : State
 {
     private readonly PlayerContext _ctx;
-    private readonly GameObject _bandagePrefab; // Referencia al prefab
+    private readonly GameObject _bandagePrefab;
     
     private Vector3 _start, _end, _control;
     private float _duration, _timer;
@@ -11,7 +16,6 @@ public class KnockBackState : State
 
     public bool isActive => _isActive;
     
-    // Constructor actualizado: Ahora pide el prefab
     public KnockBackState(PlayerContext ctx, GameObject bandagePrefab) 
     {
         _ctx = ctx;
@@ -20,7 +24,6 @@ public class KnockBackState : State
 
     public override void OnEnter()
     {
-        // 1. VALIDACIÓN
         if (!_ctx.Observer.HasKnockback)
         {
             _isActive = false;
@@ -29,7 +32,6 @@ public class KnockBackState : State
 
         var data = _ctx.Observer.PeekKnockback();
         
-        // 2. SANITIZACIÓN
         if (data.Duration <= 0f)
         {
             _ctx.Observer.ConsumeKnockback(); 
@@ -37,27 +39,25 @@ public class KnockBackState : State
             return;
         }
 
-        // --- SPAWN DE VENDAS (DROP) ---
-        int stock = _ctx.Model.Bandages; // Obtenemos el stock actual
+        int stock = _ctx.Model.Bandages; 
         
         if (_bandagePrefab != null && stock > 0)
         {
-            Vector3 spawnOrigin = _ctx.Tf.position + Vector3.up; // Desde el "pecho" del player
+            Vector3 spawnOrigin = _ctx.Tf.position + Vector3.up; 
 
             for (int i = 0; i < stock; i++)
             {
-                // Generar posición con pequeña variación para que no salgan todas encimadas
                 Vector3 randomOffset = Random.insideUnitSphere * 0.5f;
                 Vector3 spawnPos = spawnOrigin + randomOffset;
 
                 GameObject bandage = Object.Instantiate(_bandagePrefab, spawnPos, Random.rotation);
 
-                // Si el prefab tiene Rigidbody, le damos un empujón explosivo
+                bandage.GetComponent<Bandage>().SetupPickupDelay();
+                
                 if (bandage.TryGetComponent<Rigidbody>(out var rb))
                 {
-                    // Fuerza aleatoria hacia arriba y los lados
                     Vector3 explosionDir = Random.onUnitSphere;
-                    explosionDir.y = Mathf.Abs(explosionDir.y); // Asegurar que salten hacia arriba
+                    explosionDir.y = Mathf.Abs(explosionDir.y);
                     rb.AddForce(explosionDir * 8f, ForceMode.Impulse); 
                 }
             }
@@ -75,6 +75,8 @@ public class KnockBackState : State
         _timer = 0f;
         _isActive = true;
         _ctx.Rb.isKinematic = true;
+        
+        _ctx.View._koFX.Play();
     }
 
     public override void OnUpdate()
@@ -107,5 +109,8 @@ public class KnockBackState : State
         _ctx.Rb.isKinematic = false;
         _ctx.Rb.velocity = Vector3.zero;
         _isActive = false;
+        
+        _ctx.View._koFX.Stop();
+
     }
 }

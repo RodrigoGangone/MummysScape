@@ -5,6 +5,11 @@ using UnityEngine.Serialization;
 using static PlayerEnum;
 using static PauseUtils;
 
+/// <summary> 
+/// Elevador de Arena: Controla el movimiento de una plataforma invisible entre waypoints, gestionando 
+/// modos de intensidad (Basic/Intense) y aplicando penalizaciones de vendas al jugador si no está en estado "Head". 
+/// </summary>
+
 public class Geyser : MonoBehaviour, IPausable
 {
     private PlayerContext _playerContext;
@@ -192,7 +197,6 @@ public class Geyser : MonoBehaviour, IPausable
     {
         _paused = paused;
 
-        // Partículas → Pausa/Resume si estaban activas
         if (_preUp1)
         {
             if (paused && _preUp1.isPlaying) _preUp1.Pause();

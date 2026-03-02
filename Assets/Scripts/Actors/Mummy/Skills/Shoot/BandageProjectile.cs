@@ -4,12 +4,19 @@ using UnityEngine;
 using UnityEngine.Pool;
 using static PauseUtils;
 
+/// <summary> 
+/// Lógica de Proyectil de Venda: Controla el desplazamiento físico de la venda a través de una 
+/// ruta de puntos, gestionando su propia física, detección de colisiones y ciclo de vida 
+/// mediante un pool de objetos. 
+/// </summary>
+
 [RequireComponent(typeof(Rigidbody))]
 public class BandageProjectile : MonoBehaviour, IPausable
 {
     [Header("Settings")] 
     [SerializeField] private LayerMask collisionLayers; 
     [SerializeField] private GameObject drop;
+    [SerializeField] private GameObject fxHit;
 
     private Rigidbody _rb;
     private Collider _collider;
@@ -21,7 +28,7 @@ public class BandageProjectile : MonoBehaviour, IPausable
         _rb = GetComponent<Rigidbody>();
         _rb.useGravity = false;
         
-        _collider = GetComponent<Collider>(); // Obtener el collider
+        _collider = GetComponent<Collider>();
     }
 
     public void SetPool(IObjectPool<BandageProjectile> pool) => _pool = pool;
@@ -90,7 +97,14 @@ public class BandageProjectile : MonoBehaviour, IPausable
 
         if (((1 << other.gameObject.layer) & collisionLayers) != 0)
         {
-            if (drop != null) Instantiate(drop, transform.position, Quaternion.identity);
+            if (drop != null)
+            {
+                var bandage = Instantiate(drop, transform.position, Quaternion.identity);
+                
+                bandage.GetComponent<Bandage>().SetupPickupDelay();
+                Instantiate(fxHit, transform.position, Quaternion.identity, null);
+            }
+            
             ReleaseToPool();
         }
     }
@@ -109,12 +123,9 @@ public class BandageProjectile : MonoBehaviour, IPausable
     
     public void OnPauseChanged(bool paused) => _paused = paused;
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-    private void OnDisable() 
-    {
-        if (GameEventManager.Instance != null)
-            GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
-    }
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }
+
 public static class SimpleShootData
 {
     public static List<Vector3> Path;

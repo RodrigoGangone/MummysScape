@@ -2,6 +2,11 @@ using System.Collections;
 using UnityEngine;
 using static PauseUtils;
 
+/// <summary> 
+/// Lógica de Proyectil: Gestiona el desplazamiento lineal, la detección de colisiones con obstáculos 
+/// y define los parámetros de impacto (stun y knockback) cuando el proyectil alcanza al Player.
+/// </summary>
+
 [RequireComponent(typeof(ParticleSystem))]
 public class ChargeableProjectile : MonoBehaviour, IPausable, IImpactSource
 {
@@ -26,6 +31,7 @@ public class ChargeableProjectile : MonoBehaviour, IPausable, IImpactSource
     private Collider _myCollider;
     private ParticleSystem _particleSystem;
     private bool _hasImpacted = false; 
+    
     private void Awake()
     {
         _myCollider = GetComponent<Collider>();
@@ -77,10 +83,11 @@ public class ChargeableProjectile : MonoBehaviour, IPausable, IImpactSource
         transform.rotation = Quaternion.LookRotation(_direction);
 
         _isLaunched = true;
+        
         StartCoroutine(LifetimeRoutine(lifetime));
     }
 
-    void Update()
+    private void Update()
     {
         if (_paused || !_isLaunched || _hasImpacted) return;
 
@@ -143,4 +150,23 @@ public class ChargeableProjectile : MonoBehaviour, IPausable, IImpactSource
     
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+
+    #region Gizmos
+    
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
+        Gizmos.DrawSphere(transform.position, hitRadius);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, hitRadius);
+
+        if (Application.isPlaying && _isLaunched)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(transform.position, transform.position + _direction * 2f);
+        }
+    }
+    
+    #endregion
 }

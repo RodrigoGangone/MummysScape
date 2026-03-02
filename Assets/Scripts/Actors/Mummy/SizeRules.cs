@@ -2,9 +2,9 @@ using static PlayerEnum;
 using static PlayerEnum.PlayerStateId;
 using static PlayerEnum.PlayerSize;
 
-/// <summary>
-/// SizeRules
-/// Fuente única de permisos por tamaño.
+/// <summary> 
+/// Matriz de Habilidades: Define de forma estática y centralizada qué estados de la FSM son 
+/// válidos para cada tamaño del personaje (Normal, Small, Head). 
 /// </summary>
 
 public class SizeRules

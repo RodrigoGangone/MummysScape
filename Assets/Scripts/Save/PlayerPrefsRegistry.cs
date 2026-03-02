@@ -2,6 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary> 
+/// Registro de Depuración: ScriptableObject que permite visualizar y filtrar en el Inspector 
+/// qué datos están guardados actualmente en el disco duro basándose en prefijos. 
+/// </summary>
+
 [CreateAssetMenu(menuName = "Prefs/PlayerPrefsRegistry")]
 public class PlayerPrefsRegistry : ScriptableObject
 {
@@ -10,12 +15,13 @@ public class PlayerPrefsRegistry : ScriptableObject
     public enum RegistryKeyPreset
     {
         None            = 0,
-        Gems            = 1 << 0, // "gem."
-        GemTotals       = 1 << 1, // "gemTotal."
-        LevelCompleted  = 1 << 2, // "level.completed."
-        Time            = 1 << 3, // "level.completed."
-        VolumeSound     = 1 << 4, // "level.completed."
-        VolumeFX        = 1 << 5, // "level.completed."
+        Gems            = 1 << 0,
+        GemTotals       = 1 << 1,
+        LevelCompleted  = 1 << 2,
+        Time            = 1 << 3,
+        VolumeSound     = 1 << 4,
+        VolumeFX        = 1 << 5,
+        Seen            = 1 << 6, // <--- NUEVO
         All             = ~0
     }
 
@@ -63,6 +69,7 @@ public class PlayerPrefsRegistry : ScriptableObject
         if (p.HasFlag(RegistryKeyPreset.Time))           Add(PrefFamily.Time);
         if (p.HasFlag(RegistryKeyPreset.VolumeSound))    Add(PrefFamily.VolumeSound);
         if (p.HasFlag(RegistryKeyPreset.VolumeFX))       Add(PrefFamily.VolumeFX);
+        if (p.HasFlag(RegistryKeyPreset.Seen))           Add(PrefFamily.Seen);
 
         return list.ToArray();
     }

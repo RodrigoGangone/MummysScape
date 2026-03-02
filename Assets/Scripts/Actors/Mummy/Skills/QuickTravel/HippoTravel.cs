@@ -1,6 +1,12 @@
 using System.Collections;
 using UnityEngine;
 
+/// <summary> 
+/// Ejecutor de Teletransporte: Gestiona la secuencia física y visual del viaje, incluyendo 
+/// la interpolación del jugador hacia el punto de entrada, la sincronización de animaciones 
+/// entre origen/destino y la reubicación final del Transform. 
+/// </summary>
+
 public class HippoTravel : MonoBehaviour, IPausable
 {
     [SerializeField] private HippoTravel teleportDestination;
@@ -39,7 +45,6 @@ public class HippoTravel : MonoBehaviour, IPausable
         playerSizeVisual = player.GetComponent<PlayerSizeVisual>();
         teleportDestination.AssignPlayerToDestination(playerSizeVisual);
 
-        // 1) Acercar al jugador a posHeadOpen (con pausa y rotación siempre aplicada)
         Vector3 p0 = player.position, p1 = posHeadOpen.position;
         Quaternion r0 = player.rotation, r1 = posHeadOpen.rotation;
 
@@ -63,11 +68,10 @@ public class HippoTravel : MonoBehaviour, IPausable
         player.position = p1;
         player.rotation = r1;
 
-        // 2) Abrir boca (start) + esperar 0.5s pausable
         if (HippoStartAnim) HippoStartAnim.SetTrigger("isOpen");
+        
         yield return PauseUtils.WaitForSecondsPausable(3f, () => _paused);
 
-        // 3) Mover a salida destino + cerrar boca (dest)
         var exit = teleportDestination.posHeadClose;
         player.position = exit.position;
         player.rotation = exit.rotation;

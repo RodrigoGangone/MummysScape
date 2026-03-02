@@ -1,7 +1,12 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.Rendering.Universal;
 
+/// <summary> 
+/// Estado de Apuntado: Gestiona la visualización de la trayectoria parabólica, el indicador de rango,
+/// y la interacción con objetos mediante SphereCast en el punto de impacto.
+/// </summary>
 public class AimState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
@@ -12,16 +17,22 @@ public class AimState : State, IBandageRestrictor
     private Coroutine _scaleCoroutine;
     private Vector3 _targetScale;
 
-    // --- VARIABLES PARA EL MATERIAL ---
-    private Material _lineMaterialInstance; // Aquí guardamos la instancia
-    private int _colorPropertyID;           // ID numérico de la propiedad "_Color"
+    private Material _lineMaterialInstance;
+    private int _colorPropertyID;
 
     private const float ANIM_DURATION = 0.2f;
     private const float DECAL_BOX_DEPTH = 50f;
-    
-    private Vector2 _aimScreenPos; 
-    private Vector3 _lastMousePos; 
+
+    private Vector2 _aimScreenPos;
+    private Vector3 _lastMousePos;
     private const float AIM_SENSITIVITY = 500;
+
+    private bool _canRotateByAim;
+    private const float AIM_ROTATE_DEADZONE_SQR = 0.25f;
+
+    // --- VARIABLES DE INTERACCIÓN ---
+    private Interactable _currentInteractable; 
+    private const float DETECTION_RADIUS = 0.6f; // Radio del SphereCast para detectar el objeto
 
     public AimState(PlayerContext ctx)
     {
@@ -29,8 +40,7 @@ public class AimState : State, IBandageRestrictor
         _decal = _ctx.View.Decal;
         _rangeIndicator = _ctx.View.RangeIndicator;
         _arcRenderer = _ctx.View.ArcRenderer;
-        
-        // Cacheamos el ID del shader una sola vez para optimizar
+
         _colorPropertyID = Shader.PropertyToID("_Color");
     }
 
@@ -39,21 +49,15 @@ public class AimState : State, IBandageRestrictor
         _ctx.View.Animator.SetBool("Aim", true);
 
         SimpleShootData.Path = null;
-
         _aimScreenPos = new Vector2(Screen.width / 2, Screen.height / 2);
         _lastMousePos = Input.mousePosition;
+        _canRotateByAim = false;
 
-        // --- MANEJO DE MATERIAL ---
         if (_arcRenderer != null)
         {
             _arcRenderer.enabled = false;
-            
-            // ALERTA: Al acceder a .material, Unity crea la instancia automáticamente.
-            // Guardamos esta referencia para reusarla y no crear copias nuevas en Update.
             if (_lineMaterialInstance == null)
-            {
                 _lineMaterialInstance = _arcRenderer.material;
-            }
         }
 
         if (_rangeIndicator == null) return;
@@ -65,68 +69,86 @@ public class AimState : State, IBandageRestrictor
         _targetScale = new Vector3(diameter, diameter, DECAL_BOX_DEPTH);
         _rangeIndicator.gameObject.SetActive(true);
 
-        _scaleCoroutine = _ctx.View.StartCoroutine(AnimateScale(_rangeIndicator.transform,
-            _targetScale,
-            ANIM_DURATION));
+        _scaleCoroutine = _ctx.View.StartCoroutine(
+            AnimateScale(_rangeIndicator.transform, _targetScale, ANIM_DURATION)
+        );
     }
 
-    public override void OnUpdate()
-    {
-    }
+    public override void OnUpdate() { }
 
     public override void OnFixedUpdate()
     {
+        // Posicionar el proyector de rango (el círculo en el suelo)
         if (_rangeIndicator != null && _rangeIndicator.gameObject.activeSelf)
         {
             Vector3 projectorPos = _ctx.Tf.position + Vector3.up * _ctx.AimMaxHeight;
             _rangeIndicator.transform.position = projectorPos;
         }
 
+        // Gestión de Input (Mouse vs Stick)
         Vector2 aimDelta = _ctx.Input.AimMove;
         Vector3 mousePos = Input.mousePosition;
 
-        if ((mousePos - _lastMousePos).sqrMagnitude > 0.1f)
+        bool mouseMoved = (mousePos - _lastMousePos).sqrMagnitude > AIM_ROTATE_DEADZONE_SQR;
+        bool stickMoved = aimDelta.sqrMagnitude > 0.01f;
+
+        if (mouseMoved)
         {
             _aimScreenPos = mousePos;
+            _canRotateByAim = true;
         }
-        else if (aimDelta.sqrMagnitude > 0.1f)
+        else if (stickMoved)
         {
             _aimScreenPos.x += aimDelta.x * AIM_SENSITIVITY * Time.deltaTime;
             _aimScreenPos.y += aimDelta.y * AIM_SENSITIVITY * Time.deltaTime;
             _aimScreenPos.x = Mathf.Clamp(_aimScreenPos.x, 0f, Screen.width);
             _aimScreenPos.y = Mathf.Clamp(_aimScreenPos.y, 0f, Screen.height);
+            _canRotateByAim = true;
         }
 
         _lastMousePos = mousePos;
 
-        // Llamamos al método modificado que devuelve true/false pero siempre genera path
+        // Cálculo del punto de impacto de la trayectoria
         bool hasValidTarget = _ctx.TryGetAim(_aimScreenPos, out var pos, out var normal);
 
         if (hasValidTarget)
         {
             SetDecal(pos, normal);
+            
+            // Lógica de detección de objetos interactuables
+            CheckInteractableAtTarget(pos);
 
-            Vector3 direction = (pos - _ctx.Tf.position).normalized;
-            direction.y = 0;
-
-            if (direction != Vector3.zero)
+            if (_canRotateByAim)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
-                _ctx.Tf.rotation = Quaternion.RotateTowards(
-                    _ctx.Tf.rotation,
-                    targetRotation,
-                    1000 * Time.deltaTime
-                );
+                Vector3 direction = (pos - _ctx.Tf.position).normalized;
+                direction.y = 0;
+
+                if (direction != Vector3.zero)
+                {
+                    Quaternion targetRotation = Quaternion.LookRotation(direction);
+                    _ctx.Tf.rotation = Quaternion.RotateTowards(
+                        _ctx.Tf.rotation,
+                        targetRotation,
+                        1000 * Time.deltaTime
+                    );
+                }
             }
         }
+        else
+        {
+            // Si el aim apunta al vacío, limpiamos el interactuable actual
+            ClearCurrentInteractable();
+        }
 
-        // Pasamos el estado de validez
         SetArc(hasValidTarget);
         SetDecalVisible(hasValidTarget);
     }
 
     public override void OnExit()
     {
+        // Limpiar el estado visual del objeto interactuable al salir
+        ClearCurrentInteractable();
+
         SetDecalVisible(false);
 
         if (_rangeIndicator == null) return;
@@ -139,38 +161,93 @@ public class AimState : State, IBandageRestrictor
 
         Vector3 exitScale = new Vector3(0, 0, DECAL_BOX_DEPTH);
 
-        _scaleCoroutine = _ctx.View.StartCoroutine(AnimateScale(_rangeIndicator.transform,
-            exitScale,
-            ANIM_DURATION,
-            true));
+        _scaleCoroutine = _ctx.View.StartCoroutine(
+            AnimateScale(_rangeIndicator.transform, exitScale, ANIM_DURATION, true)
+        );
+
         _ctx.View.Animator.SetBool("Aim", false);
     }
-    
-    private void SetArc(bool hasValidTarget)
-    {
-        if (_arcRenderer != null)
-        {
-            if (SimpleShootData.Path != null && SimpleShootData.Path.Count > 0)
-            {
-                _arcRenderer.enabled = true;
-                _arcRenderer.positionCount = SimpleShootData.Path.Count;
-                _arcRenderer.SetPositions(SimpleShootData.Path.ToArray());
 
-                if (_lineMaterialInstance != null)
+    // --- DETECCIÓN DE INTERACTUABLES ---
+
+    private void CheckInteractableAtTarget(Vector3 impactPoint)
+    {
+        // Usamos un pequeño SphereCast o OverlapSphere en el punto de impacto
+        Collider[] hitColliders = Physics.OverlapSphere(impactPoint, DETECTION_RADIUS);
+        Interactable foundInteractable = null;
+
+        foreach (var col in hitColliders)
+        {
+            // Comprobamos si tiene el componente de lógica de bala
+            if (col.TryGetComponent<ActivateObjectsBullet>(out var bulletLogic))
+            {
+                // Intentamos obtener el componente que maneja el material
+                if (col.TryGetComponent<Interactable>(out var interactableMat))
                 {
-                    // AQUI EL CAMBIO: Leemos los colores desde tu PlayerView (donde pusiste el HDR)
-                    Color targetColor = hasValidTarget ? _ctx.View.AimAllowed : _ctx.View.AimNotAllowed;
-                    
-                    _lineMaterialInstance.SetColor(_colorPropertyID, targetColor);
+                    foundInteractable = interactableMat;
+                    break;
                 }
             }
-            else
-            {
-                _arcRenderer.enabled = false;
-            }
+        }
+
+        // Si el objeto bajo la mira ha cambiado
+        if (foundInteractable != _currentInteractable)
+        {
+            // Apagar el anterior
+            if (_currentInteractable != null)
+                _currentInteractable.OffMaterial();
+
+            // Encender el nuevo
+            if (foundInteractable != null)
+                foundInteractable.OnMaterial();
+
+            _currentInteractable = foundInteractable;
         }
     }
-    // ... (El resto de métodos SetDecalVisible, SetDecal y AnimateScale siguen igual) ...
+
+    private void ClearCurrentInteractable()
+    {
+        if (_currentInteractable != null)
+        {
+            _currentInteractable.OffMaterial();
+            _currentInteractable = null;
+        }
+    }
+
+    // --- MÉTODOS VISUALES ---
+
+    private void SetArc(bool hasValidTarget)
+    {
+        if (_arcRenderer == null) return;
+
+        var path = SimpleShootData.Path;
+
+        if (path == null || path.Count < 2)
+        {
+            _arcRenderer.enabled = true;
+            _arcRenderer.positionCount = 2;
+
+            Vector3 start = _ctx.View.handAnchor != null
+                ? _ctx.View.handAnchor.position
+                : _ctx.Tf.position + Vector3.up;
+
+            _arcRenderer.SetPosition(0, start);
+            _arcRenderer.SetPosition(1, start + _ctx.Tf.forward * 0.1f);
+        }
+        else
+        {
+            _arcRenderer.enabled = true;
+            _arcRenderer.positionCount = path.Count;
+            _arcRenderer.SetPositions(path.ToArray());
+        }
+
+        if (_lineMaterialInstance != null)
+        {
+            Color targetColor = hasValidTarget ? _ctx.View.AimAllowed : _ctx.View.AimNotAllowed;
+            _lineMaterialInstance.SetColor(_colorPropertyID, targetColor);
+        }
+    }
+
     private void SetDecalVisible(bool visible)
     {
         if (_decal && _decal.activeSelf != visible)
@@ -185,8 +262,7 @@ public class AimState : State, IBandageRestrictor
             _decal.transform.rotation = Quaternion.LookRotation(_ctx.Tf.right, normal);
     }
 
-    private IEnumerator AnimateScale(Transform targetTransform, Vector3 targetScale, float duration,
-        bool disableOnComplete = false)
+    private IEnumerator AnimateScale(Transform targetTransform, Vector3 targetScale, float duration, bool disableOnComplete = false)
     {
         Vector3 startScale = targetTransform.localScale;
         float timer = 0f;
@@ -203,6 +279,7 @@ public class AimState : State, IBandageRestrictor
         targetTransform.localScale = targetScale;
         if (disableOnComplete)
             targetTransform.gameObject.SetActive(false);
+
         _scaleCoroutine = null;
     }
 }

@@ -1,82 +1,116 @@
 using System.IO;
-using UnityEngine;
 using UnityEngine.SceneManagement;
+
+/// <summary> 
+/// API de Guardado: Fachada de alto nivel que organiza la persistencia en capas (Gemas, Niveles, Tutoriales), 
+/// abstrayendo la complejidad de las claves de guardado para el resto del juego. 
+/// </summary>
 
 public static class Save
 {
-    // =========================
-    // TIER A — GENÉRICO (mínimo)
-    // =========================
-    private static void Set(string key, int v)        => PlayerPrefsManager.Set(key, v);
-    private static void Set(string key, float v)      => PlayerPrefsManager.Set(key, v);
-    private static void Set(string key, bool v)       => PlayerPrefsManager.SetBool(key, v);
-    private static T    Get<T>(string key, T def = default) => PlayerPrefsManager.Get(key, def);
+    private const string GLOBAL_ID = "Global";
 
-    // =========================
-    // TIER B — SEMÁNTICO (esencial)
-    // =========================
-    // ---- Gemas (escena actual) ----
+    #region TIER A: Core Wrappers (Genérico)
+    // Envolturas privadas para unificar el acceso a PlayerPrefsManager
+    private static void Set(string key, int value)      => PlayerPrefsManager.Set(key, value);
+    private static void Set(string key, float value)    => PlayerPrefsManager.Set(key, value);
+    private static void Set(string key, bool value)     => PlayerPrefsManager.SetBool(key, value);
+    private static T    Get<T>(string key, T def = default) => PlayerPrefsManager.Get(key, def);
+    #endregion
+
+    #region TIER B: Lógica de Gemas
+    
+    // --- Escritura ---
     public static void MarkGemPicked(int gemNum)
     {
-        string key = PrefKeys.Gem(gemNum);
+        // 1. Verificar si ya se recogió para evitar duplicados
+        string gemKey = PrefKeys.Gem(gemNum);
+        if (Get(gemKey, 0) != 0) return; 
         
-        if (Get(key, 0) != 0) return; // idempotente
+        // 2. Marcar gema individual
+        Set(gemKey, true);
         
-        Set(key, true);
-        Set(PrefKeys.GemTotal(), Get(PrefKeys.GemTotal(), 0) + 1);
-    }
-    
-    public static bool WasGemPicked(int gemNum) => Get(PrefKeys.Gem(gemNum), 0) > 0;
-    
-    // ---- Niveles ----
-    // Aviso
-    public static void CompleteLevel(int buildIndex)
-        => PlayerPrefsManager.SetBool(PrefKeys.LevelByIndex(buildIndex), true);
+        // 3. Sumar al total del NIVEL ACTUAL
+        string levelKey = PrefKeys.GemTotal(); 
+        Set(levelKey, Get(levelKey, 0) + 1);
 
-    // Consulto
-    public static bool IsLevelCompleted(int buildIndex)
-        => PlayerPrefsManager.GetBool(PrefKeys.LevelByIndex(buildIndex));
+        // 4. Sumar al total GLOBAL
+        string globalKey = PrefKeys.GemTotal(GLOBAL_ID);
+        Set(globalKey, Get(globalKey, 0) + 1);
+    }
+
+    // --- Lectura ---
+    public static bool WasGemPicked(int gemNum) 
+        => Get(PrefKeys.Gem(gemNum), 0) > 0;
     
-    // ---- Selector: progreso de OTRA escena por índice ----
+    public static int GetGlobalGemCount() 
+        => Get(PrefKeys.GemTotal(GLOBAL_ID), 0);
+
+    // --- Consultas Cruzadas (Otros Niveles) ---
     public static bool WasGemPickedInLevel(int gemNum, int buildIndex)
         => Get(PrefKeys.Gem(gemNum, SceneName(buildIndex)), 0) > 0;
 
     public static int GetGemTotalInLevel(int buildIndex)
         => Get(PrefKeys.GemTotal(SceneName(buildIndex)), 0);
+    
+    #endregion
+
+    #region TIER B: Progresión de Niveles
+
+    public static void CompleteLevel(int buildIndex)
+        => Set(PrefKeys.LevelByIndex(buildIndex), true);
+
+    public static bool IsLevelCompleted(int buildIndex)
+        => Get<bool>(PrefKeys.LevelByIndex(buildIndex)); // El Get genérico maneja el bool
+
+    #endregion
+
+    #region TIER B: Configuración de Audio (Volumen & Mute)
 
     // ---- Volumen ----
-    public static void  SetVolume(VolumeSoundId id, float v01) => Set(PrefKeys.VolumeSoundKey(id), v01);
+    public static void SetVolume(VolumeSoundId id, float v01) => Set(PrefKeys.VolumeSoundKey(id), v01);
     public static float GetVolume(VolumeSoundId id, float def = 0.8f) => Get(PrefKeys.VolumeSoundKey(id), def);
 
-    public static void  SetVolume(VolumeFxId id, float v01) => Set(PrefKeys.VolumeFxKey(id), v01);
+    public static void SetVolume(VolumeFxId id, float v01) => Set(PrefKeys.VolumeFxKey(id), v01);
     public static float GetVolume(VolumeFxId id, float def = 0.8f) => Get(PrefKeys.VolumeFxKey(id), def);
-    
+
     // ---- Mute ----
-// ---- Mute ----
-// Guardamos como int (0/1) para no depender de que PlayerPrefsManager.Get<T> soporte bool.
+    // Nota: Usamos Set/Get genéricos que ya derivan a PlayerPrefsManager.SetBool/GetBool internamente
+    public static void SetMuted(VolumeSoundId id, bool muted) => Set(PrefKeys.MuteSoundKey(id), muted);
+    public static bool GetMuted(VolumeSoundId id, bool def = false) => Get(PrefKeys.MuteSoundKey(id), def);
 
-    public static void SetMuted(VolumeSoundId id, bool muted)
-        => PlayerPrefsManager.Set(PrefKeys.MuteSoundKey(id), muted ? 1 : 0);
+    public static void SetMuted(VolumeFxId id, bool muted) => Set(PrefKeys.MuteFxKey(id), muted);
+    public static bool GetMuted(VolumeFxId id, bool def = false) => Get(PrefKeys.MuteFxKey(id), def);
 
-    public static bool GetMuted(VolumeSoundId id, bool def = false)
-        => PlayerPrefsManager.Get(PrefKeys.MuteSoundKey(id), def ? 1 : 0) != 0;
+    #endregion
+    
+    #region TIER C: Estado 'Seen' (Tutoriales y Revelaciones)
 
-    public static void SetMuted(VolumeFxId id, bool muted)
-        => PlayerPrefsManager.Set(PrefKeys.MuteFxKey(id), muted ? 1 : 0);
+    public static void MarkAsSeen(string key) => Set(key, 1); // Guardamos como 1 (true)
+    public static bool IsSeen(string key) => Get(key, 0) == 1;
 
-    public static bool GetMuted(VolumeFxId id, bool def = false)
-        => PlayerPrefsManager.Get(PrefKeys.MuteFxKey(id), def ? 1 : 0) != 0;
+    // Wrappers específicos
+    public static void MarkTutorialSeen(string tutorialId) => MarkAsSeen(PrefKeys.SeenTutorial(tutorialId));
+    public static bool IsTutorialSeen(string tutorialId)   => IsSeen(PrefKeys.SeenTutorial(tutorialId));
 
+    public static void MarkLevelRevealSeen(int index) => MarkAsSeen(PrefKeys.SeenLevelReveal(index));
+    public static bool IsLevelRevealSeen(int index)   => IsSeen(PrefKeys.SeenLevelReveal(index));
+    public static void MarkZoneRevealSeen(int index) => MarkAsSeen(PrefKeys.SeenZoneReveal(index));
+    public static bool IsZoneRevealSeen(int index)   => IsSeen(PrefKeys.SeenZoneReveal(index));
+    public static int GetSeenGemsCount() => Get(PrefKeys.SeenGemsCount(), 0);
+    public static void UpdateSeenGemsCount(int count) => Set(PrefKeys.SeenGemsCount(), count);
+    public static void MarkCinematicSeen(string id) => MarkAsSeen(PrefKeys.SeenCinematic(id));
+    public static bool IsCinematicSeen(string id)   => IsSeen(PrefKeys.SeenCinematic(id));
 
+    #endregion
 
-    // ---- Tiempos ----
-    //public static void  SetTime(TimeId id, float seconds) => Set(PrefKeys.TimeKey(id), seconds);
-    //public static float GetTime(TimeId id, float def = float.MaxValue) => Get(PrefKeys.TimeKey(id), def);
+    #region Helpers Internos
 
-    // ---- Util interno ----
     private static string SceneName(int buildIndex)
     {
         var path = SceneUtility.GetScenePathByBuildIndex(buildIndex);
         return string.IsNullOrEmpty(path) ? "" : Path.GetFileNameWithoutExtension(path);
     }
+
+    #endregion
 }

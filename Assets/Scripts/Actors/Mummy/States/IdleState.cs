@@ -1,9 +1,10 @@
 using UnityEngine;
-using static PlayerEnum;
 
-/// <summary>
-/// IdleState
+/// <summary> 
+/// Estado de Reposo: Punto de entrada neutro de la FSM donde el personaje permanece estático, 
+/// orientándose automáticamente hacia el jugador o manteniendo la pose base. 
 /// </summary>
+
 public sealed class IdleState : State
 {
     private readonly PlayerContext _ctx;
@@ -14,7 +15,6 @@ public sealed class IdleState : State
         _ctx.View.Animator.SetBool("Idle", true);
         
         _ctx.View?.SetMoveSpeedVisual(0f);
-        Debug.Log("IdleState!");
     }
 
     public override void OnExit()

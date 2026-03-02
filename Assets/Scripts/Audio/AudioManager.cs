@@ -2,15 +2,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
+/// <summary> 
+/// Núcleo de Audio: Singleton central que administra el pool de AudioSources, gestiona los buses 
+/// de salida del Mixer y permite la reproducción global de clips 2D y 3D. 
+/// </summary>
+
 public sealed class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
 
-    [Header("Configuración")]
-    [SerializeField] private AudioSettings _settings;
+    [Header("Configuración")] [SerializeField]
+    private AudioSettings _settings;
+    [SerializeField] private int _sfxPoolSize = 10;
+    
+    [Header("AudioSources 2D")] [SerializeField]
+    private AudioSource _musicSource;
 
-    [Header("AudioSources 2D")]
-    [SerializeField] private AudioSource _musicSource;
     [SerializeField] private AudioSource _ambienceSource;
     [SerializeField] private AudioSource _uiSource;
     [SerializeField] private AudioSource _sfx2DSource;
@@ -18,10 +25,11 @@ public sealed class AudioManager : MonoBehaviour
 
     private Dictionary<AudioBus, BusConfig> _busLookup;
     private readonly Dictionary<AudioBus, float> _busVolumes = new();
-
-    private void Awake() 
+    private readonly Dictionary<string, AudioSource> _activeLoops = new();
+    private List<AudioSource> _sfxPool = new();
+    
+    private void Awake()
     {
-        // Singleton simple
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -32,10 +40,36 @@ public sealed class AudioManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         InitBuses();
+        CreateSfxPool();
         ApplyDefaultVolumes();
         Assign2DSourcesToMixerGroups();
     }
 
+    private void CreateSfxPool()
+    {
+        for (int i = 0; i < _sfxPoolSize; i++)
+        {
+            GameObject go = new GameObject($"SfxSource_{i}");
+            go.transform.SetParent(this.transform);
+            AudioSource src = go.AddComponent<AudioSource>();
+            
+            src.playOnAwake = false;
+            src.spatialBlend = 0f; 
+            
+            _sfxPool.Add(src);
+        }
+    }
+    
+    private AudioSource GetAvailableSfxSource()
+    {
+        foreach (var src in _sfxPool)
+        {
+            if (!src.isPlaying) return src;
+        }
+        
+        return _sfxPool[0];
+    }
+    
     #region Buses & Volumen
 
     private void InitBuses()
@@ -81,7 +115,6 @@ public sealed class AudioManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(config.mixerParameter))
         {
-            // 0..1 -> dB (aprox -80 a 0)
             float dB = volume01 > 0.0001f ? Mathf.Log10(volume01) * 20f : -80f;
             _settings.mixer.SetFloat(config.mixerParameter, dB);
         }
@@ -102,7 +135,7 @@ public sealed class AudioManager : MonoBehaviour
 
         return null;
     }
-    
+
     #endregion
 
     #region Play 2D
@@ -110,54 +143,46 @@ public sealed class AudioManager : MonoBehaviour
     /// <summary>
     /// Reproduce un clip 2D en el bus indicado.
     /// </summary>
-    public void PlayClip2D(AudioClip clip, AudioBus bus, float volume = 1f, float pitch = 1f)
+    public void PlayClip2D(AudioClip clip, AudioBus bus, string key, float volume = 1f, float pitch = 1f, bool loop = false)
     {
-        if (clip == null)
-            return;
+        if (clip == null) return;
 
+        StopLoop(key);
         AudioSource src = null;
 
-        switch (bus)
+        if (bus == AudioBus.Sfx)
         {
-            case AudioBus.Music:
-                src = _musicSource;
-                break;
-            case AudioBus.Ambient:
-                src = _ambienceSource;
-                break;
-            case AudioBus.UI:
-                src = _uiSource;
-                break;
-            case AudioBus.Voice:
-                src = _voiceSource;
-                break;
-            default:
-                src = _sfx2DSource;
-                break;
-        }
-
-        if (src == null) 
-        {
-            Debug.LogWarning($"AudioManager: No hay AudioSource asignado para el bus {bus}");
-            return;
-        }
-
-        src.pitch = pitch;
-
-        // Para música/ambiente suele ser mejor asignar clip y Play normal.
-        if (bus == AudioBus.Music || bus == AudioBus.Ambient)
-        {
-            src.clip = clip;
-            src.loop = true; // ajustalo según tu caso
-            src.volume = volume;
-            src.Play();
+            src = GetAvailableSfxSource();
         }
         else
         {
-            src.PlayOneShot(clip, volume);
+            switch (bus)
+            {
+                case AudioBus.Music: src = _musicSource; break;
+                case AudioBus.Ambient: src = _ambienceSource; break;
+                case AudioBus.UI: src = _uiSource; break;
+                case AudioBus.Voice: src = _voiceSource; break;
+            }
+        }
+
+        if (src == null) return;
+
+        src.clip = clip;
+        src.loop = loop;
+        src.volume = volume;
+        src.pitch = pitch;
+        
+        var group = GetMixerGroup(bus);
+        if (group != null) src.outputAudioMixerGroup = group;
+
+        src.Play();
+
+        if (loop && !string.IsNullOrEmpty(key))
+        {
+            _activeLoops[key] = src;
         }
     }
-
+    
     #endregion
 
     #region Play 3D
@@ -165,51 +190,66 @@ public sealed class AudioManager : MonoBehaviour
     /// <summary>
     /// Crea un AudioSource 3D temporal en la posición indicada y lo destruye al terminar.
     /// </summary>
-    public void PlayClip3D(
-        AudioClip clip,
-        AudioBus bus,
-        Vector3 position,
-        float volume = 1f,
-        float pitch = 1f,
-        float spatialBlend = 1f,
-        float maxDistance = 20f
-    )
+    public void PlayClip3D(AudioClip clip, AudioBus bus, string key, Vector3 position, float volume = 1f,
+        float pitch = 1f, bool loop = false, float spatialBlend = 1f, float maxDistance = 20f)
     {
-        if (clip == null)
-            return;
+        if (clip == null) return;
+        StopLoop(key);
 
-        var go = new GameObject($"OneShot3D_{clip.name}");
+        var go = new GameObject($"Loop3D_{key}");
         go.transform.position = position;
-
         var src = go.AddComponent<AudioSource>();
+
         src.clip = clip;
+        src.loop = loop;
         src.volume = volume;
         src.pitch = pitch;
         src.spatialBlend = spatialBlend;
         src.maxDistance = maxDistance;
-        src.rolloffMode = AudioRolloffMode.Linear;
 
-        // Asignar el mixer group según el bus
-        if (_busLookup != null && _busLookup.TryGetValue(bus, out var config) && config.mixerGroup != null)
-        {
+        if (_busLookup.TryGetValue(bus, out var config))
             src.outputAudioMixerGroup = config.mixerGroup;
-        } 
 
         src.Play();
-        Destroy(go, clip.length + 0.5f);
-        
-        Debug.Log("PlaySoundFx3D");
+
+        if (loop)
+        {
+            _activeLoops[key] = src;
+        }
+        else
+        {
+            Destroy(go, clip.length + 0.1f);
+        }
     }
 
     #endregion
+
+    public void StopLoop(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return;
+
+        if (_activeLoops.TryGetValue(key, out AudioSource src))
+        {
+            if (src != null)
+            {
+                src.Stop();
+
+                if (src.gameObject.name.StartsWith("Loop3D_"))
+                {
+                    Destroy(src.gameObject);
+                }
+            }
+            _activeLoops.Remove(key);
+        }
+    }
     
     private void Assign2DSourcesToMixerGroups()
     {
-        AssignSourceToBus(_musicSource,    AudioBus.Music);
+        AssignSourceToBus(_musicSource, AudioBus.Music);
         AssignSourceToBus(_ambienceSource, AudioBus.Ambient);
-        AssignSourceToBus(_uiSource,       AudioBus.UI);
-        AssignSourceToBus(_sfx2DSource,    AudioBus.Sfx);
-        AssignSourceToBus(_voiceSource,    AudioBus.Voice);
+        AssignSourceToBus(_uiSource, AudioBus.UI);
+        AssignSourceToBus(_sfx2DSource, AudioBus.Sfx);
+        AssignSourceToBus(_voiceSource, AudioBus.Voice);
     }
 
     private void AssignSourceToBus(AudioSource src, AudioBus bus)
@@ -221,5 +261,4 @@ public sealed class AudioManager : MonoBehaviour
         if (group != null)
             src.outputAudioMixerGroup = group;
     }
-
 }

@@ -1,11 +1,16 @@
-using System;
 using UnityEngine;
+
+/// <summary>
+/// Base de Habilidades: Define la lógica estructural para ejecutar ataques, gestionando 
+/// automáticamente los tiempos de recarga (cooldown) y la validación de condiciones de uso.
+/// </summary>
 
 #region Interfaces de integración
 
 /// <summary>
 /// Interfaz mínima que debe exponer tu Boss para que las skills puedan operar sin acoplarse a una clase concreta.
 /// </summary>
+
 public interface IBossContext
 {
     Transform Transform { get; }
@@ -17,6 +22,7 @@ public interface IBossContext
 /// <summary>
 /// Snapshot liviano del mundo para que condiciones/skills no raycastéen de más.
 /// </summary>
+
 public readonly struct WorldModel
 {
     private readonly Vector3 BossPos;
@@ -43,6 +49,7 @@ public readonly struct WorldModel
 /// Base abstracta para cualquier habilidad de jefe. Maneja cooldown y ejecución segura.
 /// Cada skill concreta sobreescribe Execute() y, si lo necesita, CanExecuteExtra().
 /// </summary>
+
 public abstract class BossSkillSO : ScriptableObject
 {
     [Header("Datos")]

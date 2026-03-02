@@ -1,10 +1,10 @@
 using UnityEngine;
 
-/// <summary>
-/// UIBandageManager
-/// Muestra/oculta los íconos de vendas según OnBandagesCountChanged.
-/// No controla el reloj de arena (esa lógica vive en HourglassManager).
+/// <summary> 
+/// Coordinador de Vendas UI: Escucha los cambios en el inventario del jugador para activar o 
+/// desactivar secuencialmente los controladores de visualización de los iconos de vendas. 
 /// </summary>
+
 public sealed class UIBandageManager : MonoBehaviour
 {
     [Header("Controladores de Vendas")]

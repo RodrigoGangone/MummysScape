@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51f9e060baa0e5b4a9b40b4cdcb1d3ec, type: 3}
+  m_Name: Sarcofagus
+  m_EditorClassIdentifier: 
+  bus: 5
+  entries:
+  - key: Destroy
+    clip: {fileID: 8300000, guid: cf1da277d367de449af1486dd8a2e507, type: 3}
+    volume: 0.05
+    pitch: 1
+    loop: 0
+    is3D: 1
+    spatialBlend: 0
+    maxDistance: 0
+  - key: Open
+    clip: {fileID: 8300000, guid: 7d1b83467661d8e4e9da1de0bef2db9b, type: 3}
+    volume: 1
+    pitch: 5
+    loop: 0
+    is3D: 1
+    spatialBlend: 0
+    maxDistance: 0
+  - key: Reveal
+    clip: {fileID: 8300000, guid: 5645a7e6b514d8c41af87fddc941443c, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    is3D: 1
+    spatialBlend: 0
+    maxDistance: 0
+  - key: Fall
+    clip: {fileID: 8300000, guid: 564cca899990a3645aa396e5e9bc6d5e, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    is3D: 1
+    spatialBlend: 0
+    maxDistance: 0
+  - key: Bounce
+    clip: {fileID: 8300000, guid: 41e96a3a7ce6b254e9d849f28b6f279e, type: 3}
+    volume: 0.25
+    pitch: 1
+    loop: 0
+    is3D: 1
+    spatialBlend: 0
+    maxDistance: 0
+  - key: Shake
+    clip: {fileID: 8300000, guid: 7862bc53f1a665148a2079732680846c, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    is3D: 1
+    spatialBlend: 0
+    maxDistance: 0

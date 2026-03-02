@@ -1,19 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8400575521690301438
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  eventName: Locked
-  triggerTime: 0
 --- !u!1102 &-8122262754759552458
 AnimatorState:
   serializedVersion: 6
@@ -33,8 +19,8 @@ AnimatorState:
   - {fileID: 9058728522178573207}
   - {fileID: 4602796090331615618}
   - {fileID: 415761129003532888}
-  - {fileID: -7416971625128135164}
-  - {fileID: 5382404480615602103}
+  - {fileID: -2865051265361133811}
+  - {fileID: 4665877448376135794}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -106,20 +92,6 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!114 &-7416971625128135164
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  eventName: PassedLevel
-  triggerTime: 0.9
 --- !u!1107 &-7398321347302405901
 AnimatorStateMachine:
   serializedVersion: 6
@@ -185,11 +157,53 @@ AnimatorStateTransition:
   m_TransitionDuration: 0
   m_TransitionOffset: 0
   m_ExitTime: 0.75
-  m_HasExitTime: 1
+  m_HasExitTime: 0
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &-3024868800366943921
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: Sound4
+  triggerTime: 0.784
+--- !u!114 &-2865051265361133811
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: Destroy
+  triggerTime: 0.862
+--- !u!114 &-2479714775249354715
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: Sound2
+  triggerTime: 0.55
 --- !u!114 &-1166056341034743233
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -218,20 +232,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: 
   triggerTime: 0
---- !u!114 &-972817435209623708
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  eventName: Unlocked
-  triggerTime: 0.9
 --- !u!114 &-606119935402246663
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -246,6 +246,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: Bounce
   triggerTime: 0.231
+--- !u!114 &-475001059549849527
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: Sound5
+  triggerTime: 0.368
+--- !u!114 &-3178875298728692
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: Sound1
+  triggerTime: 0.025
 --- !u!91 &9100000
 AnimatorController:
   m_ObjectHideFlags: 0
@@ -403,7 +431,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: Explosion
   triggerTime: 0.831
---- !u!114 &5382404480615602103
+--- !u!114 &4665877448376135794
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -415,8 +443,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventName: Locked
-  triggerTime: 0
+  eventName: Closed
+  triggerTime: 0.12
 --- !u!1102 &5580194167724007668
 AnimatorState:
   serializedVersion: 6
@@ -436,8 +464,10 @@ AnimatorState:
   - {fileID: 6668427595109023771}
   - {fileID: -606119935402246663}
   - {fileID: 6343976460362242358}
-  - {fileID: -972817435209623708}
-  - {fileID: -8400575521690301438}
+  - {fileID: -3178875298728692}
+  - {fileID: -2479714775249354715}
+  - {fileID: -3024868800366943921}
+  - {fileID: -475001059549849527}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1

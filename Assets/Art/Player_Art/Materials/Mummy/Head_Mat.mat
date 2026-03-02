@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Head_Mat
-  m_Shader: {fileID: 4800000, guid: 870f2b0084660894881332f3dd43688c, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: b6c39e1ed14f2974e96764e0e3a13154, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -75,6 +75,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Texture2D:
+        m_Texture: {fileID: 2800000, guid: 59eed8627c4ff6f4286b5a01fd3ab2d5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -99,6 +103,7 @@ Material:
     - Vector1_BBB27F28: 0.0477
     - Vector1_C025754: 0.384
     - _AlphaClip: 0
+    - _AppearThreshold: 0
     - _Blend: 0
     - _BottomThreshold: 1.004
     - _BumpScale: 1
@@ -109,6 +114,9 @@ Material:
     - _DissolveStartHeight: 0.88
     - _DstBlend: 0
     - _EmissiveIntensity: 0
+    - _FireDetail: 10
+    - _FirePower: 0.5
+    - _FireThreshold: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1

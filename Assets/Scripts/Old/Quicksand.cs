@@ -33,12 +33,13 @@ public class Quicksand : MonoBehaviour
     private Vector3 _targetPosition;
     private PlayerContext _player;
     private GameObject _currentDrowningFxInstance;
+    
+    private float _drowningFxFixedY;
 
     private void OnEnable()
     { 
         GameEventManager.Instance.levelEvents.OnDeath.Register(Drowned);
     }
-
 
     private void OnDisable()
     {
@@ -67,11 +68,14 @@ public class Quicksand : MonoBehaviour
     {
         if (_isMoving)
             MovePlatform();
-
-        if (_currentDrowningFxInstance != null && _player != null)
-            _currentDrowningFxInstance.transform.position = _player.Tf.position;
         
-        // LÓGICA DE VERIFICACIÓN EN UPDATE: Siempre se chequea el estado de vendajes mientras esté en la plataforma.
+        if (_currentDrowningFxInstance != null && _player != null)
+        {
+            Vector3 p = _player.Tf.position;
+            _currentDrowningFxInstance.transform.position = 
+                new Vector3(p.x, _drowningFxFixedY, p.z);
+        }
+        
         if (_isPlayerOnPlatform && _player != null)
         {
             CheckPlayerBandagesState();
@@ -91,22 +95,16 @@ public class Quicksand : MonoBehaviour
     {
         int currentBandages = _player.Model.Bandages;
         
-        // Si tiene 0 vendajes, escapa (la condición de escape está en Update)
         if (currentBandages == 0)
         {
             EscapeQuicksand();
         }
-        // Nota: Si los vendajes cambian de 1 a 2 o viceversa, la lógica no reinicia el timer 
-        // aquí, ya que el DrownTimer sigue corriendo normalmente. 
-        // Si el jugador entra con 1 y gana 1 más, no hay "ventana de gracia" aquí.
     }
     
     private void EscapeQuicksand()
     {
-        // Solo ejecuta la lógica de escape si actualmente está en la plataforma.
         if (!_isPlayerOnPlatform) return; 
 
-        // Cancelar el estado de hundimiento
         _isPlayerOnPlatform = false;
                 
         if (_drownCoroutine != null)
@@ -127,27 +125,20 @@ public class Quicksand : MonoBehaviour
             _currentDrowningFxInstance = null;
         }
             
-        // La plataforma vuelve a su posición inicial
         SetTargetPosition(_startPosition, moveSpeed);
     }
 
-    // *** CAMBIO CLAVE: Usamos OnTriggerStay para iniciar y mantener la detección ***
     private void OnTriggerStay(Collider other)
     {
         if (!other.gameObject.CompareTag("PlayerFather")) return;
 
         _player ??= other.gameObject.GetComponent<PlayerController>().Ctx;
 
-        // Si el jugador no existe o está en estado Head (0 vendajes), NO hacemos nada.
         if (_player == null || _player.Model.Bandages == 0)
             return; 
 
-        // Si el jugador ya está marcado como en la plataforma, la lógica ya está activa 
-        // y el Update está comprobando el estado. No necesitamos re-iniciar todo.
         if (_isPlayerOnPlatform)
             return; 
-
-        // INICIAR EL PROCESO (Solo la primera vez que se detecta y tiene vendajes)
 
         _isPlayerOnPlatform = true;
 
@@ -159,14 +150,15 @@ public class Quicksand : MonoBehaviour
 
         SetTargetPosition(_endPosition, moveSpeed);
 
-        // Inicia el temporizador de ahogamiento
         StartDrownTimer();
 
         if (drowningFx != null && _currentDrowningFxInstance == null)
+        {
             _currentDrowningFxInstance = Instantiate(drowningFx, _player.Tf.position, Quaternion.identity);
+            _drowningFxFixedY = _currentDrowningFxInstance.transform.position.y;
+        }
     }
 
-    // Usamos OnTriggerExit para detectar al jugador cuando sale del volumen
     private void OnTriggerExit(Collider other)
     {
         if (!other.gameObject.CompareTag("PlayerFather")) return;
@@ -195,8 +187,6 @@ public class Quicksand : MonoBehaviour
     {
         yield return new WaitForSeconds(timeToDrown);
 
-        // Solo ahogar si el jugador sigue en la plataforma y aún tiene vendajes (> 0)
-        // La comprobación final es crucial para evitar ahogar al jugador que escapó en el último frame.
         if (_isPlayerOnPlatform && _player != null && _player.Model.Bandages > 0)
         {
             if (_currentDrowningFxInstance != null)
@@ -234,7 +224,6 @@ public class Quicksand : MonoBehaviour
         _resetCoroutine = null;
     }
     
-    // Método Apply - Mantenido como stub.
     private void Apply(int bandagesCount)
     {
         // Vacío

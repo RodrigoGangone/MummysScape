@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 6184456360807479907}
   - component: {fileID: 8245628366326523347}
   - component: {fileID: 2939013598129468616}
+  - component: {fileID: 5370672377176515946}
+  - component: {fileID: 3308295721562865594}
   m_Layer: 0
   m_Name: GameEventManager
   m_TagString: Untagged
@@ -46,18 +48,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bossEvents:
-    OnStageChanged: {fileID: 0}
-    OnDeath: {fileID: 0}
+    OnDamaged: {fileID: 11400000, guid: 30180795ab015c948bad1f31710e2e4a, type: 2}
+    OnDeath: {fileID: 11400000, guid: a8dc8003889b40943bb2b6a0592082e4, type: 2}
+    OnStageCompleted: {fileID: 11400000, guid: 0253e019938af614fabd824a8426273e, type: 2}
   playerEvents:
     OnBandagesCountChanged: {fileID: 11400000, guid: c16a33d0f4dfdda45a2e4cfd4e388b71, type: 2}
     OnSizeChanged: {fileID: 11400000, guid: e09b9beee18ed2449bb90b53140fd548, type: 2}
     OnShoot: {fileID: 11400000, guid: aadecd721d3c1e841804fe39fbf72f66, type: 2}
     OnHit: {fileID: 11400000, guid: 66e68af5ef87f0048b8517f83113a6bf, type: 2}
     OnLocked: {fileID: 11400000, guid: b85429a3ed50c224c89e583a75738fa5, type: 2}
+    OnLockRequested: {fileID: 11400000, guid: 1a63c87a7059b704fadfb13657c1a594, type: 2}
+    OnWin: {fileID: 11400000, guid: 384be68b0df381f42a38fa5f204a7bcc, type: 2}
   levelEvents:
     OnWin: {fileID: 11400000, guid: 1be7c8f7b7822e6498560ad44a98fef9, type: 2}
     OnDeath: {fileID: 11400000, guid: 7b0b59825b6200a449c18cefc41aa39c, type: 2}
-    OnTutorialPrompt: {fileID: 11400000, guid: f7b828538c6c9414d98fb0f3c72087a7, type: 2}
+    OnRequestBandageSpawn: {fileID: 11400000, guid: 990a861f652766f46bfaa8fa003f461b, type: 2}
+    OnPrompt: {fileID: 11400000, guid: f7b828538c6c9414d98fb0f3c72087a7, type: 2}
+    OnShowFocusMessage: {fileID: 11400000, guid: 3634cbc542b9bbb49a0e5c0d4250e8d6, type: 2}
+    OnHideFocusMessage: {fileID: 11400000, guid: ca6e7e0340b948a42b0008f37390c3be, type: 2}
     OnPauseChanged: {fileID: 11400000, guid: 9aaaac88985bd1a42b263721c4c7d6fd, type: 2}
     OnRespawn: {fileID: 11400000, guid: 654cc5b2c5169e64eae42d9224b49966, type: 2}
     OnPickedGem: {fileID: 11400000, guid: 3f4209f5f7b619046bc2d29f394fc453, type: 2}
@@ -79,3 +87,29 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 54ef293d238624d4d965264090c432a3, type: 2}
   - {fileID: 11400000, guid: ffbc7f1462a3ff14bae58b5688b6f46e, type: 2}
   - {fileID: 11400000, guid: f127592d5385ebe4fbf2e7c415c133c0, type: 2}
+--- !u!114 &5370672377176515946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3610847831028506359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8401f34401363be4b800ee280352079d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _inspectorLocks: []
+--- !u!114 &3308295721562865594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3610847831028506359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b1d447bc7d858b4da5c3fc4fd61018a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxBandagesInScene: 5

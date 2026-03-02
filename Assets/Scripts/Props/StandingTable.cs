@@ -1,0 +1,103 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using static PlayerEnum;
+
+/// <summary> 
+/// Plataforma Colapsable: Gestiona superficies que caen por gravedad tras un tiempo de espera 
+/// si el jugador posee el tamaño "Normal", incluyendo una rutina de reposicionamiento automático. 
+/// </summary>
+
+[DefaultExecutionOrder(-50)]
+public class  StandingTable : MonoBehaviour
+{
+    private PlayerContext _playerContext;
+    private List<GameObject> _tables = new();
+
+    public List<GameObject> Tables
+    {
+        set => _tables = value;
+    }
+
+    private Coroutine _gravityCoroutine;
+    public Coroutine replacementTables;
+
+    private const float TIME_TO_FALL = 1f;
+    private const float TIME_TO_REPLACEMENT = 2f;
+
+    public Action ArrangeTables;
+
+    private void Start()
+    {
+        ArrangeTables = () =>
+        {
+            foreach (var table in _tables)
+            {
+                var tableRb = table.GetComponent<Rigidbody>();
+
+                tableRb.isKinematic = true;
+            }
+        };
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (!other.CompareTag("PlayerFather")) return;
+
+        _playerContext = other.GetComponent<PlayerController>().Ctx;
+
+        if (_playerContext.Model.Size == PlayerSize.Normal)
+        {
+            if (_gravityCoroutine == null)
+                _gravityCoroutine = StartCoroutine(CountToActivateGravity());
+
+            if (replacementTables != null)
+            {
+                StopCoroutine(replacementTables);
+                replacementTables = null;
+            }
+        }
+    }
+
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("PlayerFather")) return;
+
+        if (_gravityCoroutine != null)
+        {
+            StopCoroutine(_gravityCoroutine);
+            _gravityCoroutine = null;
+        }
+
+        if (replacementTables == null)
+            replacementTables = StartCoroutine(ReplacementTables());
+    }
+
+
+    private IEnumerator CountToActivateGravity()
+    {
+        yield return new WaitForSeconds(TIME_TO_FALL);
+
+        foreach (var table in _tables)
+        {
+            if (table != null)
+            {
+                var tableRb = table.GetComponent<Rigidbody>();
+                tableRb.isKinematic = false;
+
+                yield return new WaitForSeconds(0.2f);
+            }
+        }
+
+        replacementTables = StartCoroutine(ReplacementTables());
+    }
+
+    private IEnumerator ReplacementTables()
+    {
+        yield return new WaitForSeconds(TIME_TO_REPLACEMENT);
+
+        ArrangeTables.Invoke();
+    }
+}

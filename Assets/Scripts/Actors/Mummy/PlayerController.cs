@@ -1,17 +1,16 @@
 using UnityEngine;
 using static PlayerEnum;
 
-/// <summary>
-/// PlayerController
-/// Orquesta todo: crea Model, bindea MovementRuntime, arma PlayerContext,
-/// registra States en tu StateMachinePlayer y define el estado inicial.
-/// Requiere Rigidbody y StateMachinePlayer en el mismo GameObject.
+/// <summary> 
+/// Orquestador del Jugador: Centraliza la inicialización del modelo, la configuración de la FSM y 
+/// el bindeo de todos los sistemas de soporte (físicas, inputs y visuales). 
 /// </summary>
+
 [RequireComponent(typeof(StateMachinePlayer))]
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputStateDriver))]
 [RequireComponent(typeof(GroundCheckRuntime))]
-public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
+public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
 {
     [Header("Refs (Scene/Prefab)")] [SerializeField]
     private PlayerView _view;
@@ -20,11 +19,11 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
     [SerializeField] private MovementRuntime _movement;
     [SerializeField] private SwingHandler _swingHandler;
     [SerializeField] private EnvironmentObserver _observer;
-    [SerializeField] private PlayerInputReaderLegacy _input; // podés cambiar por el de New Input System
-    [SerializeField] private HeadTimerController _headTimer; // opcional (puede estar en UI)
+    [SerializeField] private PlayerInputReaderLegacy _input; 
+    [SerializeField] private HeadTimerController _headTimer; 
     [SerializeField] private InteractionRuntime _interactions;
     [SerializeField] private GroundCheckRuntime _ground;
-    [SerializeField] private GameObject _bandagePickupPrefab; // opcional
+    [SerializeField] private GameObject _bandagePickupPrefab;
 
     [Header("Size Runtime")] [SerializeField]
     private PlayerSizeVisual _sizeVisual;
@@ -44,35 +43,29 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
     {
         _sm = GetComponent<StateMachinePlayer>();
         _rb = GetComponent<Rigidbody>();
-        //_rb.interpolation = RigidbodyInterpolation.Interpolate;
+
         _rb.constraints = RigidbodyConstraints.FreezeRotation;
 
         _swingHandler = GetComponent<SwingHandler>();
         _inputDriver = GetComponent<PlayerInputStateDriver>();
 
-        // PlayerEvents
+
         var pe = GameEventManager.Instance.playerEvents;
-        // Model + Inyeccion de player events
+
         _model = new PlayerModel(pe.OnBandagesCountChanged, pe.OnSizeChanged);
 
-        // MovementRuntime escucha Size del Model
         _movement.Bind(_model);
-
-        // View opcional: actualizar sprite del reloj cuando cambie el Size
-        //_model.OnSizeChanged += size => _view?.SetHeadTimerSprite(size == PlayerSize.Head);
-
+        
         _headTimer?.Bind(_model);
         _sizeVisual?.Bind(_model);
         _capsuleBySize?.Bind(_model);
 
         _ground = GetComponent<GroundCheckRuntime>();
 
-        // Contexto compartido por States
         _ctx = new PlayerContext(transform, _rb, _swingHandler, _observer, _cameraProvider, _model, _view, _movement,
             _input,
             _interactions, _ground, _sm);
 
-        // Estados (tu API AddState / ChangeState)
         _sm.AddState(PlayerStateId.Idle, new IdleState(_ctx));
         _sm.AddState(PlayerStateId.Walk, new WalkState(_ctx));
         _sm.AddState(PlayerStateId.Fall, new FallState(_ctx));
@@ -88,16 +81,14 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         _sm.AddState(PlayerStateId.Dead, new DeadState(_ctx));
         _sm.AddState(PlayerStateId.Win, new WinState(_ctx));
 
-        _sm.SetGuard(new PlayerTransitionGuard(_ctx)); // Guard central (usa TransitionRules + SizeRules)
-        _inputDriver.Bind(_ctx, _sm); // Driver que convierte inputs a estados
-        _sm.ChangeState(PlayerStateId.Idle); // Estado inicial
+        _sm.SetGuard(new PlayerTransitionGuard(_ctx)); 
+        _inputDriver.Bind(_ctx, _sm); 
+        _sm.ChangeState(PlayerStateId.Idle); 
 
-        //Eventos iniciales
         pe.OnBandagesCountChanged.Raise(_model.Bandages);
         pe.OnSizeChanged.Raise(_model.Size);
     }
 
-    // Intenta sumar 'amount' vendas al Model (retorna false si ya estás en el máximo).
     public bool TryCollectBandage(int amount)
     {
         if (_sm.CurrentStateImplement<IBandageRestrictor>())
@@ -110,8 +101,8 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         return _model.Bandages > before;
     }
 
-    // Invocado por HeadTimer al expirar (UnityEvent): mata al player.</summary>
     private void Kill() => _sm.ChangeState(PlayerStateId.Dead);
+    private void Win() => _sm.ChangeState(PlayerStateId.Win);
 
     public void OnPauseChanged(bool paused)
     {
@@ -119,25 +110,23 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
 
         _rb.isKinematic = PlayerControlState.AnyBlocked;
 
-        if (paused && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot)))
+        if (paused && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot) || _sm.IsCurrent(PlayerStateId.Walk)))
             _sm.ChangeState(PlayerStateId.Idle);
 
         _sm.enabled = !paused;
     }
-
-    //TODO: MODIFICAR ONLOCKEDCHANGED EN BASE A COMO SEA LA ANIMACION DEL SARCOFAGO [SI APAGAMOS AL PLAYER Y HACEMOS QUE LE SARCOFAGO HAGA TODO]
-
+    
     public void OnLockChanged(bool locked)
     {
         PlayerControlState.SetLock(locked);
 
-
         _rb.isKinematic = PlayerControlState.AnyBlocked;
 
-        if (locked && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot)))
+        if (locked && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot)|| _sm.IsCurrent(PlayerStateId.Walk)))
             _sm.ChangeState(PlayerStateId.Idle);
 
         _sm.enabled = !locked;
+        
         GetComponent<Collider>().enabled = !locked;
     }
 
@@ -146,6 +135,7 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
         GameEventManager.Instance.levelEvents.OnDeath.Register(Kill);
+        GameEventManager.Instance.playerEvents.OnWin.Register(Win);
     }
 
     private void OnDisable()
@@ -153,5 +143,6 @@ public sealed class PlayerController : MonoBehaviour, IPausable, ILocked
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Kill);
+        GameEventManager.Instance.levelEvents.OnWin.Unregister(Win);
     }
 }

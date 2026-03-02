@@ -1,9 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// Config raíz del Boss. Define sus stages y slots de habilidades (dos por requerimiento),
-/// además de parámetros globales de percepción para el GOAP.
+/// Configuración Raíz: Centraliza la definición de las fases (stages) del Boss, sus slots de 
+/// habilidades principales y los parámetros globales de velocidad y rotación.
 /// </summary>
+
 [CreateAssetMenu(fileName = "BossConfig", menuName = "Boss/Config")]
 public sealed class BossConfigSO : ScriptableObject
 {
@@ -25,9 +26,7 @@ public sealed class BossConfigSO : ScriptableObject
     
     public int StageCount => stages?.Length ?? 0;
 
-    public StageStatsSO GetStage(int index)
-        => (index >= 0 && index < StageCount) ? stages[index] : null;
-
+    public StageStatsSO GetStage(int index) => (index >= 0 && index < StageCount) ? stages[index] : null;
     public BossSkillSO PrimarySkill => primarySkill;
     public BossSkillSO SecondarySkill => secondarySkill;
 }

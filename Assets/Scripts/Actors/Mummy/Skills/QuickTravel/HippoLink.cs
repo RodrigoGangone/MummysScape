@@ -1,28 +1,28 @@
 using UnityEngine;
 
+/// <summary> 
+/// Coordinador de Viaje: Actúa como el controlador de estado para el sistema de transporte, 
+/// gestionando la disponibilidad del enlace y disparando eventos globales para bloquear 
+/// o liberar el control del jugador durante la transición. 
+/// </summary>
+
 public class HippoLink : MonoBehaviour
 {
     private bool _isBusy = false;
     
     public bool IsBusy => _isBusy;
 
-    // Método para "preguntar" si se puede iniciar el viaje
-    public bool CanStartTravel()
-    {
-        return !_isBusy;
-    }
+    public bool CanStartTravel() => !_isBusy;
 
-    // Método para "notificar" que el viaje comenzó
     public void StartTravel()
     {
-        GameEventManager.Instance.playerEvents.OnLocked.Raise(true);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("HippoTravel", true);
         _isBusy = true;
     }
 
-    // Método para "notificar" que el viaje terminó
     public void EndTravel()
     {
-        GameEventManager.Instance.playerEvents.OnLocked.Raise(false);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("HippoTravel", false);
         _isBusy = false;
     }
 }

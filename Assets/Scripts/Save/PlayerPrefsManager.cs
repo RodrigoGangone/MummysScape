@@ -2,6 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary> 
+/// Motor de Persistencia: Envoltura genérica sobre PlayerPrefs que añade soporte para tipos 
+/// booleanos, objetos JSON y un sistema de notificaciones para herramientas de depuración. 
+/// </summary>
+
 public static class PlayerPrefsManager
 {
     private static readonly List<PlayerPrefsRegistry> _registries = new();

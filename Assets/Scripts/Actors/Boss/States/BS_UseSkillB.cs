@@ -1,8 +1,10 @@
-using System.Collections;
-using UnityEngine;
 using static Utils;
 
-/// <summary> Estado que ejecuta Skill B y vuelve a Idle. </summary>
+/// <summary>
+/// Estado de Habilidad Secundaria: Controla la activación y el ciclo de animación del segundo 
+/// slot de ataque configurado para el Boss.
+/// </summary>
+
 public sealed class BS_UseSkillB : State
 {
     private readonly BossActor _actor;
