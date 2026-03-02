@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -32,10 +33,9 @@ public class CameraEffectsHandler : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        GameEventManager.Instance.bossEvents.OnDeath.Register(OnBossDeathEffects);
-    }
+    private void OnEnable() => GameEventManager.Instance.bossEvents.OnDeath.Register(OnBossDeathEffects);
+    private void OnDisable() => GameEventManager.Instance.bossEvents.OnDeath.Unregister(OnBossDeathEffects);
+    
 
     private void OnBossDeathEffects()
     {

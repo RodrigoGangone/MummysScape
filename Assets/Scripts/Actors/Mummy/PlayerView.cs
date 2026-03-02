@@ -81,6 +81,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         }
 
         _currentHandAnchor = _handAnchorNormal;
+
     }
 
     private void LateUpdate()
@@ -177,7 +178,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
         bool wasWalking = _anim.parameterCount > 0 && _anim.GetBool("Walk");
         bool wasIdle = _anim.parameterCount > 0 && _anim.GetBool("Idle");
-        float currentSpeed = _anim.GetFloat("Speed");
+        //float currentSpeed = _anim.GetFloat("Speed");
 
         _anim.enabled = false;
 
@@ -209,7 +210,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         {
             _anim.SetBool("Walk", wasWalking);
             _anim.SetBool("Idle", wasIdle);
-            _anim.SetFloat("Speed", currentSpeed);
+            //_anim.SetFloat("Speed", currentSpeed);
 
             _anim.Play(0, -1, 0f);
         }
@@ -217,7 +218,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
     public void SetMoveSpeedVisual(float normalized)
     {
-        if (_anim) _anim.SetFloat("Speed", normalized);
+        //if (_anim) _anim.SetFloat("Speed", normalized);
     }
     
     private void PlayDropFx(PlayerSize playerSize)
