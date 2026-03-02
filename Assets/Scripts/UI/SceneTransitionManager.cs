@@ -30,6 +30,7 @@ public class SceneTransitionManager : MonoBehaviour
      */
     public void FadeInAndLoadScene(int sceneIndex)
     {
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("SceneTransition", true);
         StartCoroutine(FadeInRoutine(sceneIndex));
     }
     
