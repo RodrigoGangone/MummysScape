@@ -16,6 +16,7 @@ public class BandageProjectile : MonoBehaviour, IPausable
     [Header("Settings")] 
     [SerializeField] private LayerMask collisionLayers; 
     [SerializeField] private GameObject drop;
+    [SerializeField] private GameObject fxHit;
 
     private Rigidbody _rb;
     private Collider _collider;
@@ -101,6 +102,7 @@ public class BandageProjectile : MonoBehaviour, IPausable
                 var bandage = Instantiate(drop, transform.position, Quaternion.identity);
                 
                 bandage.GetComponent<Bandage>().SetupPickupDelay();
+                Instantiate(fxHit, transform.position, Quaternion.identity, null);
             }
             
             ReleaseToPool();
