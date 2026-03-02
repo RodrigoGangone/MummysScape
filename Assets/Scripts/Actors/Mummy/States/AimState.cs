@@ -1,10 +1,11 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.Rendering.Universal;
 
 /// <summary> 
-/// Estado de Apuntado: Gestiona la visualización de la trayectoria parabólica y el indicador de rango (Decal), 
-/// calculando la validez del objetivo y orientando al personaje hacia el punto de impacto. 
+/// Estado de Apuntado: Gestiona la visualización de la trayectoria parabólica, el indicador de rango,
+/// y la interacción con objetos mediante SphereCast en el punto de impacto.
 /// </summary>
 public class AimState : State, IBandageRestrictor
 {
@@ -26,9 +27,12 @@ public class AimState : State, IBandageRestrictor
     private Vector3 _lastMousePos;
     private const float AIM_SENSITIVITY = 500;
 
-    // --- NEW: rotar solo cuando el aim se mueve ---
     private bool _canRotateByAim;
-    private const float AIM_ROTATE_DEADZONE_SQR = 0.25f; // subilo si hay jitter (1f, 4f, etc)
+    private const float AIM_ROTATE_DEADZONE_SQR = 0.25f;
+
+    // --- VARIABLES DE INTERACCIÓN ---
+    private Interactable _currentInteractable; 
+    private const float DETECTION_RADIUS = 0.6f; // Radio del SphereCast para detectar el objeto
 
     public AimState(PlayerContext ctx)
     {
@@ -45,17 +49,13 @@ public class AimState : State, IBandageRestrictor
         _ctx.View.Animator.SetBool("Aim", true);
 
         SimpleShootData.Path = null;
-
         _aimScreenPos = new Vector2(Screen.width / 2, Screen.height / 2);
         _lastMousePos = Input.mousePosition;
-
-        // NEW
         _canRotateByAim = false;
 
         if (_arcRenderer != null)
         {
             _arcRenderer.enabled = false;
-
             if (_lineMaterialInstance == null)
                 _lineMaterialInstance = _arcRenderer.material;
         }
@@ -78,12 +78,14 @@ public class AimState : State, IBandageRestrictor
 
     public override void OnFixedUpdate()
     {
+        // Posicionar el proyector de rango (el círculo en el suelo)
         if (_rangeIndicator != null && _rangeIndicator.gameObject.activeSelf)
         {
             Vector3 projectorPos = _ctx.Tf.position + Vector3.up * _ctx.AimMaxHeight;
             _rangeIndicator.transform.position = projectorPos;
         }
 
+        // Gestión de Input (Mouse vs Stick)
         Vector2 aimDelta = _ctx.Input.AimMove;
         Vector3 mousePos = Input.mousePosition;
 
@@ -106,13 +108,16 @@ public class AimState : State, IBandageRestrictor
 
         _lastMousePos = mousePos;
 
+        // Cálculo del punto de impacto de la trayectoria
         bool hasValidTarget = _ctx.TryGetAim(_aimScreenPos, out var pos, out var normal);
 
         if (hasValidTarget)
         {
             SetDecal(pos, normal);
+            
+            // Lógica de detección de objetos interactuables
+            CheckInteractableAtTarget(pos);
 
-            // NEW: solo rotar después de que el aim se movió
             if (_canRotateByAim)
             {
                 Vector3 direction = (pos - _ctx.Tf.position).normalized;
@@ -129,6 +134,11 @@ public class AimState : State, IBandageRestrictor
                 }
             }
         }
+        else
+        {
+            // Si el aim apunta al vacío, limpiamos el interactuable actual
+            ClearCurrentInteractable();
+        }
 
         SetArc(hasValidTarget);
         SetDecalVisible(hasValidTarget);
@@ -136,6 +146,9 @@ public class AimState : State, IBandageRestrictor
 
     public override void OnExit()
     {
+        // Limpiar el estado visual del objeto interactuable al salir
+        ClearCurrentInteractable();
+
         SetDecalVisible(false);
 
         if (_rangeIndicator == null) return;
@@ -155,13 +168,60 @@ public class AimState : State, IBandageRestrictor
         _ctx.View.Animator.SetBool("Aim", false);
     }
 
+    // --- DETECCIÓN DE INTERACTUABLES ---
+
+    private void CheckInteractableAtTarget(Vector3 impactPoint)
+    {
+        // Usamos un pequeño SphereCast o OverlapSphere en el punto de impacto
+        Collider[] hitColliders = Physics.OverlapSphere(impactPoint, DETECTION_RADIUS);
+        Interactable foundInteractable = null;
+
+        foreach (var col in hitColliders)
+        {
+            // Comprobamos si tiene el componente de lógica de bala
+            if (col.TryGetComponent<ActivateObjectsBullet>(out var bulletLogic))
+            {
+                // Intentamos obtener el componente que maneja el material
+                if (col.TryGetComponent<Interactable>(out var interactableMat))
+                {
+                    foundInteractable = interactableMat;
+                    break;
+                }
+            }
+        }
+
+        // Si el objeto bajo la mira ha cambiado
+        if (foundInteractable != _currentInteractable)
+        {
+            // Apagar el anterior
+            if (_currentInteractable != null)
+                _currentInteractable.OffMaterial();
+
+            // Encender el nuevo
+            if (foundInteractable != null)
+                foundInteractable.OnMaterial();
+
+            _currentInteractable = foundInteractable;
+        }
+    }
+
+    private void ClearCurrentInteractable()
+    {
+        if (_currentInteractable != null)
+        {
+            _currentInteractable.OffMaterial();
+            _currentInteractable = null;
+        }
+    }
+
+    // --- MÉTODOS VISUALES ---
+
     private void SetArc(bool hasValidTarget)
     {
         if (_arcRenderer == null) return;
 
         var path = SimpleShootData.Path;
 
-        // Siempre dibujar, aunque sea un segmento mínimo
         if (path == null || path.Count < 2)
         {
             _arcRenderer.enabled = true;
