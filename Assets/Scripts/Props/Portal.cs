@@ -36,6 +36,10 @@ public class Portal : MonoBehaviour
     private const string LOCK_ID = "Sarcofagus";
     private const string PLAYER_TAG = "PlayerFather";
 
+    // Variables para manejar el input en el Update
+    private bool _canInteract;
+    private PlayerController _cachedPlayer;
+
     private void Start()
     {
         if (!enterLevel) return;
@@ -48,24 +52,38 @@ public class Portal : MonoBehaviour
         if (directorEnter != null) directorEnter.Play();
     }
 
+    private void Update()
+    {
+        // Chequeo limpio de input en el ciclo de renderizado
+        if (_canInteract && !enterLevel && Input.GetButtonDown("Accept"))
+        {
+            if (_cachedPlayer != null)
+            {
+                _canInteract = false; // Evitamos doble input inmediato
+                StartWinSequence(_cachedPlayer);
+            }
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG) || enterLevel) return;
+        
+        // Guardamos la referencia del jugador y habilitamos la interacción
+        _cachedPlayer = other.GetComponent<PlayerController>();
+        _canInteract = true;
+        
         GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.Y);
-    }
-
-    private void OnTriggerStay(Collider other)
-    {
-        if (enterLevel) return;
-        if (!other.CompareTag(PLAYER_TAG)) return;
-
-        if (Input.GetButtonDown("Accept"))
-            StartWinSequence(other.gameObject.GetComponent<PlayerController>());
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG) || enterLevel) return;
+        
+        // Limpiamos la referencia y deshabilitamos al salir
+        _canInteract = false;
+        _cachedPlayer = null;
+        
         GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
     }
 
@@ -85,34 +103,22 @@ public class Portal : MonoBehaviour
     private IEnumerator MoveAndOrientPlayer(PlayerController player)
     {
         float timer = 0f;
-
         Vector3 startPos = player.Ctx.Tf.position;
-
         Quaternion startRot = player.Ctx.Tf.rotation;
 
-
         while (timer < moveDuration)
-
         {
             float t = timer / moveDuration;
-
-
             t = Mathf.SmoothStep(0f, 1f, t);
 
-
             player.Ctx.Tf.position = Vector3.Lerp(startPos, winTarget.position, t);
-
             player.Ctx.Tf.rotation = Quaternion.Slerp(startRot, winTarget.rotation, t);
 
-
             timer += Time.deltaTime;
-
             yield return null;
         }
 
-
         player.Ctx.Tf.position = winTarget.position;
-
         player.Ctx.Tf.rotation = winTarget.rotation;
 
         directorExit.Play();

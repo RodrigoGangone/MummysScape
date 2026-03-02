@@ -7,7 +7,6 @@ using static PauseUtils;
 /// Controlador de Tutorial: Gestiona la activación de tutoriales en escena, coordinando efectos visuales, 
 /// videos y la validación de persistencia para evitar la repetición de guías ya completadas. 
 /// </summary>
-
 [RequireComponent(typeof(BoxCollider))]
 public class TutorialTrigger : MonoBehaviour, IPausable
 {
@@ -31,6 +30,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private Coroutine _effectRoutine;
     private bool _paused;
     private bool _isPlaying;
+    private bool _canPlayTutorial; 
     
     private bool IsTutorialAlreadySeen => Save.IsTutorialSeen(focusPoint.Id);
     
@@ -43,28 +43,35 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         ToggleEffects(false);
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void Update()
     {
-        if (!other.CompareTag("PlayerFather") || IsTutorialAlreadySeen) return;
-
-        ExecuteTutorialSequence();
-        SetColliderShape(false);
-    }
-
-    private void OnTriggerStay(Collider other)
-    {
-        if (!other.CompareTag("PlayerFather") || !IsTutorialAlreadySeen) return;
-
-        if (!_isPromptActive)
-        {
-            GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.Y);
-            _isPromptActive = true;
-        }
-
-        if (!_paused && !_isPlaying && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
+        // La lectura del input se hace de forma perfecta y fluida en el Update
+        if (_canPlayTutorial && !_paused && !_isPlaying && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
         {
             ExecuteTutorialSequence();
             _isPlaying = true;
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!other.CompareTag("PlayerFather")) return;
+
+        if (!IsTutorialAlreadySeen)
+        {
+            // Secuencia automática si no lo ha visto
+            ExecuteTutorialSequence();
+            SetColliderShape(false);
+        }
+        else
+        {
+            // Si ya lo vio, mostramos el prompt y habilitamos poder reproducirlo manualmente
+            if (!_isPromptActive)
+            {
+                GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.Y);
+                _isPromptActive = true;
+            }
+            _canPlayTutorial = true;
         }
     }
     
@@ -72,8 +79,13 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     {
         if (!other.CompareTag("PlayerFather")) return;
 
-        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
-        _isPromptActive = false;
+        // Limpiamos todo al salir del trigger
+        if (_isPromptActive)
+        {
+            GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
+            _isPromptActive = false;
+        }
+        _canPlayTutorial = false;
     }
 
     private void ExecuteTutorialSequence()
