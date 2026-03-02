@@ -5318,6 +5318,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd18982a3973674d91c79893d8ff66e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  specialFx: {fileID: 6320254748849500218}
   _operableByHead: 0
   _operableBySmall: 1
   _operableByNormal: 1
@@ -5334,7 +5335,7 @@ GameObject:
   - component: {fileID: 9215326096175249589}
   - component: {fileID: 6320254748849500218}
   - component: {fileID: 6914077000858700605}
-  m_Layer: 12
+  m_Layer: 23
   m_Name: Aim
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5354,9 +5355,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6350409498433437993}
-  - {fileID: 975725595041233955}
   - {fileID: 1019257330728419747}
+  - {fileID: 975725595041233955}
   m_Father: {fileID: 7990661250167535657}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!198 &6320254748849500218
@@ -10181,11 +10181,11 @@ Transform:
   m_GameObject: {fileID: 7301835605903165654}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.26576304, z: -0, w: 0.96403843}
-  m_LocalPosition: {x: 0.419, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.23634268, y: -0.26194945, z: -0.296}
+  m_LocalScale: {x: 0.8408572, y: 0.99223274, z: 0.936867}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9215326096175249589}
+  m_Father: {fileID: 975725595041233955}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!198 &3735913333368168759
 ParticleSystem:
@@ -15089,16 +15089,24 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2530262977339795432, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.7955002
+      objectReference: {fileID: 0}
+    - target: {fileID: 2530262977339795432, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.7954994
+      objectReference: {fileID: 0}
+    - target: {fileID: 2530262977339795432, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.00030000685
+      value: -0.00030004978
       objectReference: {fileID: 0}
     - target: {fileID: 2530262977339795432, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.013800001
+      value: 0.013799965
       objectReference: {fileID: 0}
     - target: {fileID: 2530262977339795432, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.0051999968
+      value: 0.0051999986
       objectReference: {fileID: 0}
     - target: {fileID: 2530262977339795432, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
       propertyPath: m_LocalRotation.w
@@ -15131,6 +15139,10 @@ PrefabInstance:
     - target: {fileID: 3956162632895784359, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
       propertyPath: m_Name
       value: FX_Shining
+      objectReference: {fileID: 0}
+    - target: {fileID: 3956162632895784359, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: m_Layer
+      value: 23
       objectReference: {fileID: 0}
     - target: {fileID: 4446615802021225703, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
       propertyPath: playOnAwake
@@ -15384,9 +15396,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: ShiningParticle
       objectReference: {fileID: 0}
+    - target: {fileID: 7467589665410145519, guid: 7108b189bef777a4894761e880a27490, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 7035543239861194584, guid: 7108b189bef777a4894761e880a27490, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6350409498433437993}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7108b189bef777a4894761e880a27490, type: 3}
 --- !u!4 &975725595041233955 stripped
