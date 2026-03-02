@@ -110,7 +110,8 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetButtonDown("Pause")) Toggle();
+        if (Input.GetButtonDown("Pause") && !PlayerLock.Instance.IsLocked) 
+            Toggle();
     }
 
     // --- LÓGICA DE CARGA Y WIN ---
