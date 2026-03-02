@@ -192,6 +192,8 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         _isLocked = true;
         UpdateControlState(); 
 
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Boss", true);
+        
         //float originalTimeScale = Time.timeScale;
         //Time.timeScale = 0.05f;
     
