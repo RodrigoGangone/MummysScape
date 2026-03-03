@@ -85470,6 +85470,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f15824a59ad7f340956d86aaa665423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lowDuration: 0.25
+  highDuration: 0.25
+  lowFreq: 0.75
+  highFreq: 1
   fx1: {fileID: 5923528330953885694}
   fx2: {fileID: 4715239494639815182}
   fx3: {fileID: 3498205245440117779}
@@ -85477,6 +85481,7 @@ MonoBehaviour:
   fx5: {fileID: 8264986911990406777}
   fx6: {fileID: 4020235548729348076}
   fx7: {fileID: 0}
+  fx8: {fileID: 0}
   bank: {fileID: 11400000, guid: afccf22339aa59e41a1741026abaf3e2, type: 2}
   keySound01: Destroy
   keySound02: Open
@@ -85631,6 +85636,38 @@ MonoBehaviour:
         - m_Target: {fileID: 6357266839566988333}
           m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
           m_MethodName: PlaySound2
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: lowRumble
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6357266839566988333}
+          m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
+          m_MethodName: VibrateLow
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: highRumble
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6357266839566988333}
+          m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
+          m_MethodName: VibrateHigh
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
