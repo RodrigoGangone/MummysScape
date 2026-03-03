@@ -174,8 +174,6 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         StartCoroutine(GlowEffect(glowDuration));
         var cam = GetComponent<FocusOnActivation>();
         cam?.Activate();
-        GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.8f, 2f);
-        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.8f, 2f);
     }
 
     public void ReturnToPrevious()
@@ -225,16 +223,19 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     {
         StartCoroutine(AnimateGlow(0f, glowIntensity, duration / 2f));
         if (platformBank != null) platformBank.Play3D(activeSoundKey, transform.position);
-        yield return WaitForSecondsPausable(duration / 2f, () => _paused || _isLocked);
+        yield return WaitForSecondsPausable(duration / 2f, () => _paused);
         StartCoroutine(AnimateGlow(glowIntensity, 0f, duration / 2f));
     }
 
     private IEnumerator AnimateGlow(float from, float to, float duration)
     {
+        GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.8f, 2f);
+        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.8f, 2f);
+        
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            if (_paused || _isLocked)
+            if (_paused)
             {
                 yield return null;
                 continue;
