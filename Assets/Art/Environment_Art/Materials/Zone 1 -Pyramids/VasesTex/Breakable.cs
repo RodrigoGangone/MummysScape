@@ -45,7 +45,7 @@ public class Breakable : MonoBehaviour
         {
             var spawnedDrop = Instantiate(drop, transform.position, transform.rotation);
             GameEventManager.Instance.levelEvents.OnRequestBandageSpawn.Raise(transform.position);
-            
+
             if (spawnedDrop.TryGetComponent<Bandage>(out var bandage))
             {
                 bandage.SetupPickupDelay(dropActivationDelay, this);
@@ -53,6 +53,7 @@ public class Breakable : MonoBehaviour
         }
 
         bank.Play3D("Break", transform.position);
+        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.2f, 0.1f);
         _renderer.enabled = false;
         _collider.enabled = false;
     }

@@ -7,28 +7,27 @@ using static PauseUtils;
 /// Plataforma Horizontal: Gestiona el desplazamiento lateral entre puntos, incorporando efectos visuales 
 /// de montículos de arena, materiales reactivos (glow) y sincronización de audio pausable. 
 /// </summary>
-
 public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 {
-    [Header("PLAY ON AWAKE")] 
-    [SerializeField] private bool isMoving;
+    [Header("PLAY ON AWAKE")] [SerializeField]
+    private bool isMoving;
 
-    [Header("SPEED")] 
-    [SerializeField] private float speed = 1f;
+    [Header("SPEED")] [SerializeField] private float speed = 1f;
     [SerializeField] private float stopTime = 0.5f;
 
-    [Header("WAYPOINTS")] 
-    [SerializeField] private Transform[] waypoints;
+    [Header("WAYPOINTS")] [SerializeField] private Transform[] waypoints;
 
-    [Header("AUDIO & FX")] 
-    [SerializeField] private FxBank platformBank;
-    [SerializeField] private string movingSoundKey = "Moving"; 
-    [SerializeField] private string activeSoundKey = "Active"; 
+    [Header("AUDIO & FX")] [SerializeField]
+    private FxBank platformBank;
+
+    [SerializeField] private string movingSoundKey = "Moving";
+    [SerializeField] private string activeSoundKey = "Active";
     [SerializeField] private float glowDuration = 2f;
     [SerializeField] private float glowIntensity = 0.15f;
 
-    [Header("SAND MOUNDS EFFECTS")] 
-    [SerializeField] private float moundEmergenceSpeed = 1f;
+    [Header("SAND MOUNDS EFFECTS")] [SerializeField]
+    private float moundEmergenceSpeed = 1f;
+
     [SerializeField] private Transform sandMoundForward;
     [SerializeField] private Transform[] sandMoundForwardWaypoints;
     [SerializeField] private Transform sandMoundBackward;
@@ -43,14 +42,14 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 
     private AudioSource _movingAudio;
 
-    private bool _paused;     
-    private bool _isLocked;   
+    private bool _paused;
+    private bool _isLocked;
     private bool _holdAtWaypoint;
 
     private void Start()
     {
         platformMaterials = GetMaterialsFromChildren();
-        
+
         if (waypoints.Length > 0 && isMoving)
         {
             if (Vector3.Distance(transform.position, waypoints[0].position) < 0.001f)
@@ -63,7 +62,7 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         {
             if (sandMoundForwardWaypoints.Length > 0)
                 sandMoundForward.position = sandMoundForwardWaypoints[0].position;
-            
+
             if (sandMoundBackwardWaypoints.Length > 0)
                 sandMoundBackward.position = sandMoundBackwardWaypoints[0].position;
         }
@@ -71,8 +70,8 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 
     private void Update()
     {
-        bool shouldMove = !_paused 
-                          && !_isLocked 
+        bool shouldMove = !_paused
+                          && !_isLocked
                           && !_holdAtWaypoint
                           && isMoving
                           && waypoints.Length > 0;
@@ -90,7 +89,7 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     private void MoveToFirstWaypoint()
     {
         Transform firstWaypoint = waypoints[0];
-        float step = speed * Time.deltaTime; 
+        float step = speed * Time.deltaTime;
 
         transform.position = Vector3.MoveTowards(transform.position, firstWaypoint.position, step);
 
@@ -175,8 +174,10 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         StartCoroutine(GlowEffect(glowDuration));
         var cam = GetComponent<FocusOnActivation>();
         cam?.Activate();
+        GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.8f, 2f);
+        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.8f, 2f);
     }
-    
+
     public void ReturnToPrevious()
     {
         _currentWaypointIndex = _currentWaypointIndex > 0 ? _currentWaypointIndex - 1 : waypoints.Length - 1;
@@ -204,17 +205,19 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         if (_currentWaypointIndex == 1)
         {
             foreach (var ps in sandMoundForwardParticles)
-                if (!ps.isPlaying && !_paused && !_isLocked) ps.Play();
+                if (!ps.isPlaying && !_paused && !_isLocked)
+                    ps.Play();
             foreach (var ps in sandMoundBackwardParticles) ps.Stop();
         }
         else
         {
             foreach (var ps in sandMoundBackwardParticles)
-                if (!ps.isPlaying && !_paused && !_isLocked) ps.Play();
+                if (!ps.isPlaying && !_paused && !_isLocked)
+                    ps.Play();
             foreach (var ps in sandMoundForwardParticles) ps.Stop();
         }
     }
-    
+
     private Material[] GetMaterialsFromChildren() =>
         GetComponentsInChildren<Renderer>().SelectMany(r => r.materials).ToArray();
 
@@ -231,15 +234,21 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            if (_paused || _isLocked) { yield return null; continue; }
+            if (_paused || _isLocked)
+            {
+                yield return null;
+                continue;
+            }
+
             elapsed += Time.deltaTime;
             float current = Mathf.Lerp(from, to, elapsed / duration);
             foreach (var mat in platformMaterials)
-                if (mat.HasProperty("_GlowIntensity")) mat.SetFloat("_GlowIntensity", current);
+                if (mat.HasProperty("_GlowIntensity"))
+                    mat.SetFloat("_GlowIntensity", current);
             yield return null;
         }
     }
-    
+
     public void OnPauseChanged(bool paused)
     {
         _paused = paused;
@@ -261,9 +270,9 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 
         if (_movingAudio != null)
         {
-            if (isFrozen && _movingAudio.isPlaying) 
+            if (isFrozen && _movingAudio.isPlaying)
                 _movingAudio.Pause();
-            else if (!isFrozen && !_movingAudio.isPlaying && isMoving && !_holdAtWaypoint) 
+            else if (!isFrozen && !_movingAudio.isPlaying && isMoving && !_holdAtWaypoint)
                 _movingAudio.UnPause();
         }
     }
@@ -293,9 +302,10 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
     }
 
     #region Player Collision Logic
+
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player")) 
+        if (other.CompareTag("Player"))
             other.transform.SetParent(this.transform);
     }
 
@@ -304,5 +314,6 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
         if (other.CompareTag("Player"))
             other.transform.SetParent(null);
     }
+
     #endregion
 }

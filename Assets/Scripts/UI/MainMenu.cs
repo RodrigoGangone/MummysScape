@@ -10,35 +10,36 @@ using static Utils;
 
 public class MainMenu : MonoBehaviour
 {
-    [Header("PANEL MAIN MENU")]
-    [SerializeField] private GameObject _mainMenuPanel;
-    [SerializeField] private Material _mainMaterial; 
+    [Header("PANEL MAIN MENU")] [SerializeField]
+    private GameObject _mainMenuPanel;
+
+    [SerializeField] private Material _mainMaterial;
     [SerializeField] private Button _btnPlay;
     [SerializeField] private Button _btnOptions;
     [SerializeField] private Button _btnExit;
 
-    [Header("PANEL OPTIONS")]
-    [SerializeField] private GameObject _optionsPanel;
-    [SerializeField] private Material _optionsMaterial; 
+    [Header("PANEL OPTIONS")] [SerializeField]
+    private GameObject _optionsPanel;
+
+    [SerializeField] private Material _optionsMaterial;
     [SerializeField] private Button _btnDeletePrefs;
     [SerializeField] private TMP_Dropdown _frameRateSpinner;
     [SerializeField] private Button _btnBackToMain;
 
-    [Header("FIRST SELECTED")]
-    [SerializeField] private Selectable _mainFirstSelected;
+    [Header("FIRST SELECTED")] [SerializeField]
+    private Selectable _mainFirstSelected;
+
     [SerializeField] private Selectable _optionsFirstSelected;
 
-    [Header("UI ROOT")]
-    [SerializeField] private CanvasGroup _canvasGroup;
+    [Header("UI ROOT")] [SerializeField] private CanvasGroup _canvasGroup;
     [SerializeField] private PlayableDirector director;
 
-    [Header("FEEDBACKS")] 
-    [SerializeField] private Animator sarcofagusAnim;
+    [Header("FEEDBACKS")] [SerializeField] private Animator sarcofagusAnim;
 
     private const string MATERIAL_POWER_PARAM = "_Power";
     private bool _isTransitioning;
     private static List<string> FrameRateText => new(FPS.Keys);
-    
+
     private SceneTransitionManager Transition => GetComponent<SceneTransitionManager>();
 
     private void Awake()
@@ -57,11 +58,11 @@ public class MainMenu : MonoBehaviour
     private void Start()
     {
         CheckOptions();
-        
+
         // 1 = Abierto, 0 = Cerrado
         _mainMaterial.SetFloat(MATERIAL_POWER_PARAM, 1f); // Inicia visible
         _optionsMaterial.SetFloat(MATERIAL_POWER_PARAM, 0f); // Inicia oculto
-        
+
         _mainMenuPanel.SetActive(true);
         _optionsPanel.SetActive(false);
 
@@ -76,8 +77,8 @@ public class MainMenu : MonoBehaviour
         if (_isTransitioning) return;
         // De Main (Visible=1) a Options (Visible=1)
         StartCoroutine(PanelTransitionRoutine(
-            _mainMenuPanel, _mainMaterial, 
-            _optionsPanel, _optionsMaterial, 
+            _mainMenuPanel, _mainMaterial,
+            _optionsPanel, _optionsMaterial,
             _optionsFirstSelected));
     }
 
@@ -86,8 +87,8 @@ public class MainMenu : MonoBehaviour
         if (_isTransitioning) return;
         // De Options (Visible=1) a Main (Visible=1)
         StartCoroutine(PanelTransitionRoutine(
-            _optionsPanel, _optionsMaterial, 
-            _mainMenuPanel, _mainMaterial, 
+            _optionsPanel, _optionsMaterial,
+            _mainMenuPanel, _mainMaterial,
             _mainFirstSelected));
     }
 
@@ -96,21 +97,24 @@ public class MainMenu : MonoBehaviour
         if (_isTransitioning) return;
         SetMenuInteractable(false);
 
+        GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.5f, 2f);
+        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.5f, 2f);
+
         // Cerramos el menú (1 -> 0) y disparamos el director
         StartCoroutine(PanelTransitionRoutine(
-            _mainMenuPanel, _mainMaterial, 
-            null, null, null, 
+            _mainMenuPanel, _mainMaterial,
+            null, null, null,
             () => director.Play()));
     }
-    
+
     public void InitSelector() => Transition.FadeInAndLoadScene(2);
 
     // --- CORRUTINA UNIFICADA ---
 
     private IEnumerator PanelTransitionRoutine(
-        GameObject toHide, Material matToHide, 
-        GameObject toShow, Material matToShow, 
-        Selectable nextSelect, 
+        GameObject toHide, Material matToHide,
+        GameObject toShow, Material matToShow,
+        Selectable nextSelect,
         Action midAction = null)
     {
         _isTransitioning = true;
@@ -120,16 +124,17 @@ public class MainMenu : MonoBehaviour
 
         // 2. INTERCAMBIO (Punto ciego: todo está en 0)
         if (matToHide != null) yield return LerpMaterial(matToHide, 1f, 0f);
-        
-        midAction?.Invoke(); 
-        
+
+        midAction?.Invoke();
+
 
         // 3. ABRIR panel nuevo (0 -> 1)
-        if (toShow != null && matToShow != null) 
+        if (toShow != null && matToShow != null)
         {
             yield return LerpMaterial(matToShow, 0f, 1f);
             if (nextSelect != null) SetSelected(nextSelect);
         }
+
         if (toShow != null) toShow.SetActive(true);
 
         _isTransitioning = false;
@@ -145,6 +150,7 @@ public class MainMenu : MonoBehaviour
             mat.SetFloat(MATERIAL_POWER_PARAM, Mathf.Lerp(start, end, elapsed / duration));
             yield return null;
         }
+
         mat.SetFloat(MATERIAL_POWER_PARAM, end);
     }
 
@@ -184,7 +190,7 @@ public class MainMenu : MonoBehaviour
 
     public void SelectFeedback()
     {
-        if(Save.IsCinematicSeen("mainMenuCinematic"))
+        if (Save.IsCinematicSeen("mainMenuCinematic"))
             sarcofagusAnim.Play("Reck_L_WakeUp");
     }
 

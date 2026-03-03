@@ -1,41 +1,59 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class JoystickRumble : MonoBehaviour
 {
+    private Coroutine rumbleCoroutine;
+
     private void OnEnable()
     {
-        GameEventManager.Instance.levelEvents.OnRumbleLow.Register<float, float>(HighVibrate);
-        GameEventManager.Instance.levelEvents.OnRumbleHigh.Register<float, float>(LowVibrate);
+        // Corregido el registro invertido
+        GameEventManager.Instance.levelEvents.OnRumbleLow.Register<float, float>(LowVibrate);
+        GameEventManager.Instance.levelEvents.OnRumbleHigh.Register<float, float>(HighVibrate);
     }
 
     private void OnDisable()
     {
-        GameEventManager.Instance.levelEvents.OnRumbleLow.Unregister<float, float>(HighVibrate);
-        GameEventManager.Instance.levelEvents.OnRumbleHigh.Unregister<float, float>(LowVibrate);
+        GameEventManager.Instance.levelEvents.OnRumbleLow.Unregister<float, float>(LowVibrate);
+        GameEventManager.Instance.levelEvents.OnRumbleHigh.Unregister<float, float>(HighVibrate);
+        StopVibration(); // Seguridad: dejar de vibrar si se destruye el objeto
     }
 
     private void HighVibrate(float highFrequency, float duration)
     {
-        if (Gamepad.current == null)
-            return;
-
-        Gamepad.current.SetMotorSpeeds(0, highFrequency);
-        Invoke(nameof(StopVibration), duration);
+        StartRumble(0, highFrequency, duration);
     }
 
     private void LowVibrate(float lowFrequency, float duration)
     {
-        if (Gamepad.current == null)
-            return;
-
-        Gamepad.current.SetMotorSpeeds(lowFrequency, 0);
-        Invoke(nameof(StopVibration), duration);
+        StartRumble(lowFrequency, 0, duration);
     }
 
-    private void StopVibration()
+    private void StartRumble(float lowFreq, float highFreq, float duration)
     {
-        if (Gamepad.current != null)
-            Gamepad.current.SetMotorSpeeds(0f, 0f);
+        if (Gamepad.current == null) return;
+
+        // Si ya hay una vibración en curso, la detenemos para empezar la nueva
+        if (rumbleCoroutine != null)
+            StopCoroutine(rumbleCoroutine);
+
+        rumbleCoroutine = StartCoroutine(RumbleRoutine(lowFreq, highFreq, duration));
+    }
+
+    private IEnumerator RumbleRoutine(float lowFreq, float highFreq, float duration)
+    {
+        Gamepad.current.SetMotorSpeeds(lowFreq, highFreq);
+        
+        yield return new WaitForSeconds(duration);
+
+        Gamepad.current.SetMotorSpeeds(0f, 0f);
+        rumbleCoroutine = null;
+    }
+
+    public void StopVibration()
+    {
+        if (rumbleCoroutine != null) StopCoroutine(rumbleCoroutine);
+        if (Gamepad.current != null) Gamepad.current.SetMotorSpeeds(0f, 0f);
     }
 }

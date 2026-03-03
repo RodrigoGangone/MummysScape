@@ -22,7 +22,7 @@ public sealed class BoxPushAttract : MonoBehaviour
     [Range(0, 4)] [SerializeField] private int _minSupportedCorners = 1;
     [SerializeField] private bool _useBoxCast = false;
     [SerializeField] private float _boxCastInset = 0.01f;
-    
+
     [Header("Fx")] [SerializeField] public FxBank bank;
 
     private CinemachineImpulseSource _impulseSource;
@@ -184,6 +184,7 @@ public sealed class BoxPushAttract : MonoBehaviour
             bank.Play3D("HitBox", transform.position);
             _fxImpact.Play();
             _impulseSource.GenerateImpulse(_shakeForce);
+            GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(.8f, 0.25f);
         }
     }
 
@@ -192,7 +193,7 @@ public sealed class BoxPushAttract : MonoBehaviour
     [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
     [SerializeField] private Color _okColor = new(0.2f, 1f, 0.2f, 0.9f);
     [SerializeField] private Color _badColor = new(1f, 0.2f, 0.2f, 0.9f);
-    
+
     private void OnDrawGizmosSelected() => OnDrawGizmos();
 
     private void OnDrawGizmos()
