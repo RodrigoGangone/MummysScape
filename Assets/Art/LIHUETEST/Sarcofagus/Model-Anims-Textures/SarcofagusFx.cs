@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class SarcofagusFx : MonoBehaviour
 {
-    [SerializeField] private float duration;
+    [SerializeField] private float lowDuration;
+    [SerializeField] private float highDuration;
     [SerializeField] private float lowFreq;
     [SerializeField] private float highFreq;
     
@@ -76,6 +77,6 @@ public class SarcofagusFx : MonoBehaviour
     public void PlaySound4() => bank.Play2D(keySound04);
     public void PlaySound5() => bank.Play2D(keySound05);
 
-    public void VibrateLow() => GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(lowFreq, duration);
-    public void VibrateHigh() => GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(highFreq, duration);
+    public void VibrateLow() => GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(lowFreq, lowDuration);
+    public void VibrateHigh() => GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(highFreq, highDuration);
 }
