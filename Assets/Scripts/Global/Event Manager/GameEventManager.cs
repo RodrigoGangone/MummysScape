@@ -42,6 +42,8 @@ public class GameEventManager : MonoBehaviour
         public GameEvent OnPauseChanged;
         public GameEvent OnRespawn;
         public GameEvent OnPickedGem;
+        public GameEvent OnRumbleLow;
+        public GameEvent OnRumbleHigh;
     }
 
     [Header("Boss Events")] [SerializeField]

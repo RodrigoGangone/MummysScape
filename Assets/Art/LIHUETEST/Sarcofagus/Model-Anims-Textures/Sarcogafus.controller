@@ -417,6 +417,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: Shining
   triggerTime: 0.35
+--- !u!114 &4085871283087972305
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.12
 --- !u!114 &4602796090331615618
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -445,6 +459,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: Closed
   triggerTime: 0.12
+--- !u!114 &4980365020369935745
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.2
 --- !u!1102 &5580194167724007668
 AnimatorState:
   serializedVersion: 6
@@ -468,6 +496,11 @@ AnimatorState:
   - {fileID: -2479714775249354715}
   - {fileID: -3024868800366943921}
   - {fileID: -475001059549849527}
+  - {fileID: 6062180250326719226}
+  - {fileID: 5840225207311558163}
+  - {fileID: 4085871283087972305}
+  - {fileID: 4980365020369935745}
+  - {fileID: 6552650262433818753}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -496,6 +529,34 @@ AnimatorTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 1
+--- !u!114 &5840225207311558163
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: highRumble
+  triggerTime: 0
+--- !u!114 &6062180250326719226
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.77
 --- !u!1102 &6116163438783980793
 AnimatorState:
   serializedVersion: 6
@@ -550,6 +611,20 @@ AnimatorTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 1
+--- !u!114 &6552650262433818753
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.3
 --- !u!114 &6668427595109023771
 MonoBehaviour:
   m_ObjectHideFlags: 1

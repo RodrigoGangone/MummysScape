@@ -30548,7 +30548,7 @@ Transform:
   - {fileID: 5277137551743628533}
   - {fileID: 1764984614384463204}
   m_Father: {fileID: 6957642441395626522}
-  m_LocalEulerAnglesHint: {x: 89.98022, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 89.9802, y: 0, z: 0}
 --- !u!1 &4790504503836565512
 GameObject:
   m_ObjectHideFlags: 0
@@ -45899,6 +45899,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f15824a59ad7f340956d86aaa665423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  duration: 0.2
+  lowFreq: 0.2
+  highFreq: 1
   fx1: {fileID: 5923528330953885694}
   fx2: {fileID: 4715239494639815182}
   fx3: {fileID: 3498205245440117779}
@@ -46118,6 +46121,38 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+  - eventName: lowRumble
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6357266839566988333}
+          m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
+          m_MethodName: VibrateLow
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: highRumble
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6357266839566988333}
+          m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
+          m_MethodName: VibrateHigh
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &7591693343624724272
 GameObject:
   m_ObjectHideFlags: 0
@@ -46150,7 +46185,7 @@ Transform:
   - {fileID: 7876213834075081550}
   - {fileID: 1677332057673840451}
   m_Father: {fileID: 6957642441395626522}
-  m_LocalEulerAnglesHint: {x: 89.98022, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 45.979057, y: 0, z: 0}
 --- !u!1 &8316507087150392206
 GameObject:
   m_ObjectHideFlags: 0
@@ -66737,6 +66772,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f15824a59ad7f340956d86aaa665423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  duration: 0
+  lowFreq: 0
+  highFreq: 0
   fx1: {fileID: 0}
   fx2: {fileID: 0}
   fx3: {fileID: 0}
