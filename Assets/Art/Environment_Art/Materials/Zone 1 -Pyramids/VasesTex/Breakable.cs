@@ -53,7 +53,7 @@ public class Breakable : MonoBehaviour
         }
 
         bank.Play3D("Break", transform.position);
-        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.2f, 0.1f);
+        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.5f, 0.25f);
         _renderer.enabled = false;
         _collider.enabled = false;
     }

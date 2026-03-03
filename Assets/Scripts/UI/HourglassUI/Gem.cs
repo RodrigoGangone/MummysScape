@@ -32,6 +32,7 @@ public class Gem : MonoBehaviour
         Save.MarkGemPicked(gemNum);
 
         GameEventManager.Instance.levelEvents.OnPickedGem.Raise(gemNum);
+        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.5f, 0.25f);
 
         Instantiate(fxGemPick, transform.position, Quaternion.identity, null);
         
