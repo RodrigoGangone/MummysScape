@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.31265932, g: 0.39998147, b: 0.4160671, a: 1}
+  m_IndirectSpecularColor: {r: 0.31713435, g: 0.40130538, b: 0.41646737, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -56743,7 +56743,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 346092743}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.22089021, y: -0.14625344, z: 0.03352327, w: 0.96368754}
+  m_LocalRotation: {x: 0.22089022, y: -0.14625345, z: 0.033523276, w: 0.96368754}
   m_LocalPosition: {x: -42.63599, y: 19.96, z: -41.0204}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -86786,6 +86786,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd18982a3973674d91c79893d8ff66e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  specialFx: {fileID: 0}
   _operableByHead: 1
   _operableBySmall: 0
   _operableByNormal: 0
@@ -99193,6 +99194,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd18982a3973674d91c79893d8ff66e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  specialFx: {fileID: 0}
   _operableByHead: 1
   _operableBySmall: 0
   _operableByNormal: 0
@@ -338695,7 +338697,6 @@ GameObject:
   - component: {fileID: 2145690063}
   - component: {fileID: 2145690062}
   - component: {fileID: 2145690061}
-  - component: {fileID: 2145690060}
   - component: {fileID: 2145690059}
   m_Layer: 31
   m_Name: Main Camera
@@ -338738,18 +338739,6 @@ MonoBehaviour:
   m_CameraActivatedEvent:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &2145690060
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2145690058}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bbd79ceb5e23e15409862bd7352f345a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &2145690061
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -338853,7 +338842,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2145690058}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.22089021, y: -0.14625344, z: 0.03352327, w: 0.96368754}
+  m_LocalRotation: {x: 0.22089022, y: -0.14625345, z: 0.033523276, w: 0.96368754}
   m_LocalPosition: {x: -42.63599, y: 19.96, z: -41.0204}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
