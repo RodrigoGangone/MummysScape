@@ -56,5 +56,10 @@ public class Bandage : MonoBehaviour, IPausable
     public void OnPauseChanged(bool paused) => _paused = paused;
 
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnRequestBandageSpawn.Raise(gameObject, true);
-    private void OnDisable() => GameEventManager.Instance.levelEvents.OnRequestBandageSpawn.Raise(gameObject, false);
+
+    private void OnDisable()
+    {
+        if (_sourceJar != null) _sourceJar.NotifyItemPickedUp();
+        GameEventManager.Instance.levelEvents.OnRequestBandageSpawn.Raise(gameObject, false);
+    }
 }

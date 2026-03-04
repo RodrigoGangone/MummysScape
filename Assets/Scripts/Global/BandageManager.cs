@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 public class BandageManager : MonoBehaviour
 {
-    [SerializeField] private int maxBandagesInScene = 5;
+    [SerializeField] private int maxBandagesInScene = 20;
 
     private List<GameObject> activeBandages = new();
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnRequestBandageSpawn.Register<GameObject, bool>(HandleBandageUpdate);
@@ -20,7 +20,9 @@ public class BandageManager : MonoBehaviour
         {
             if (activeBandages.Count >= maxBandagesInScene)
             {
-                activeBandages[0].SetActive(false);
+                GameObject oldestBandage = activeBandages[0];
+                activeBandages.RemoveAt(0); // Es importante sacarla de la lista
+                oldestBandage.SetActive(false); // Esto disparará el OnDisable de la venda
             }
 
             if (!activeBandages.Contains(bandage))
