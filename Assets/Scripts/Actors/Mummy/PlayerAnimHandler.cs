@@ -17,7 +17,8 @@ public class PlayerAnimHandler : MonoBehaviour
     public void Smash()
     {
         _ctx.View._smashFX.Play();
-
+        _ctx.View.PlaySfx("SmashExit");
+        
         Collider[] hits = Physics.OverlapSphere(transform.position, _ctx.SmashRange, _ctx.SmashLayer);
 
         foreach (var hit in hits)
