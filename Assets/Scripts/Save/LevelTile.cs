@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary> 
 /// Gestor de Nivel: Controla el estado de desbloqueo de un nivel individual, gestionando la visualización 
@@ -36,20 +37,27 @@ public class LevelTile : MonoBehaviour
 
     void Start()
     {
-        if (isFirstLevel) _isUnlocked = true;
-        else
-        {
-            _isUnlocked = Save.IsLevelCompleted(buildIndex - 1);
-        }
+        bool isValidIndex = IsBuildIndexValid(buildIndex);
 
-        if (!_isUnlocked)
+        if (isFirstLevel) _isUnlocked = true;
+        else _isUnlocked = Save.IsLevelCompleted(buildIndex - 1);
+
+        if (!_isUnlocked || !isValidIndex)
         {
             ApplyLockedMaterial();
             SetAllGems(false);
 
-            var portal = GetComponentInChildren<Portal>();
-            if (portal != null) portal.gameObject.SetActive(false);
+            var portal = GetComponentInChildren<Portal>(true);
+            if (portal != null)
+            {
+                portal.enabled = false;
 
+                // Si el GameObject del portal tiene SphereCollider lo desactivamos
+                SphereCollider sphere = portal.GetComponent<SphereCollider>();
+                if (sphere != null)
+                    sphere.enabled = false;
+            }
+            
             return;
         }
 
@@ -68,7 +76,7 @@ public class LevelTile : MonoBehaviour
                 );
             }
         }
-
+        
         if (!isBossLevel) RefreshGems();
         else SetAllGems(false);
     }
@@ -112,5 +120,11 @@ public class LevelTile : MonoBehaviour
     {
         if (other.gameObject.CompareTag("PlayerFather") && _isUnlocked)
             portalFx.Stop();
+    }
+    
+    private bool IsBuildIndexValid(int index)
+    {
+        //path vacío si el índice no existe en BuildSettings
+        return !string.IsNullOrEmpty(SceneUtility.GetScenePathByBuildIndex(index));
     }
 }
