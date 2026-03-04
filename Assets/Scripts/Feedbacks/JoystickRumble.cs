@@ -44,7 +44,7 @@ public class JoystickRumble : MonoBehaviour
     private IEnumerator RumbleRoutine(float lowFreq, float highFreq, float duration)
     {
         Gamepad.current.SetMotorSpeeds(lowFreq, highFreq);
-        
+
         yield return new WaitForSeconds(duration);
 
         Gamepad.current.SetMotorSpeeds(0f, 0f);
@@ -56,4 +56,7 @@ public class JoystickRumble : MonoBehaviour
         if (rumbleCoroutine != null) StopCoroutine(rumbleCoroutine);
         if (Gamepad.current != null) Gamepad.current.SetMotorSpeeds(0f, 0f);
     }
+
+    public void HighRumbleBasic() => GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.9f, 1f);
+    public void LowRumbleBasic() => GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.5f, 0.25f);
 }
