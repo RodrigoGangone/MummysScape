@@ -143,6 +143,6 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
         GameEventManager.Instance.levelEvents.OnDeath.Unregister(Kill);
-        GameEventManager.Instance.levelEvents.OnWin.Unregister(Win);
+        GameEventManager.Instance.playerEvents.OnWin.Unregister(Win);
     }
 }
