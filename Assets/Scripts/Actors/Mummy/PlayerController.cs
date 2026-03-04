@@ -113,7 +113,7 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
         if (paused && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot) || _sm.IsCurrent(PlayerStateId.Walk)))
             _sm.ChangeState(PlayerStateId.Idle);
 
-        _sm.enabled = !paused;
+        //_sm.enabled = !paused;
     }
     
     public void OnLockChanged(bool locked)
@@ -125,7 +125,7 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
         if (locked && (_sm.IsCurrent(PlayerStateId.Aim) || _sm.IsCurrent(PlayerStateId.Shoot)|| _sm.IsCurrent(PlayerStateId.Walk)))
             _sm.ChangeState(PlayerStateId.Idle);
 
-        _sm.enabled = !locked;
+        //_sm.enabled = !locked;
         
         GetComponent<Collider>().enabled = !locked;
     }
