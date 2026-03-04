@@ -25,6 +25,7 @@ public static class TransitionRules
             { PlayerStateId.QuickTravel, new[]{ PlayerStateId.Idle, PlayerStateId.Dead } },
             { PlayerStateId.KnockBack,   new[]{ PlayerStateId.Idle, PlayerStateId.Fall, PlayerStateId.Dead } },
             { PlayerStateId.Dead,        Array.Empty<PlayerStateId>() },
+            { PlayerStateId.Win,        Array.Empty<PlayerStateId>() },
         };
 
     public static bool Can(PlayerStateId from, PlayerStateId to) =>
