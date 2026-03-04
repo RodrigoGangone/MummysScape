@@ -5,7 +5,7 @@ using UnityEngine;
 /// de vendas del stock como un efecto visual de "drop" por impacto. 
 /// </summary>
 
-public class KnockBackState : State
+public class KnockBackState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
     private readonly GameObject _bandagePrefab;
