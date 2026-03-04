@@ -5,7 +5,6 @@ using static PlayerEnum.PlayerStateId;
 /// Driver de Decisiones: Traduce los inputs crudos en solicitudes de cambio de estado para la FSM, 
 /// aplicando una jerarquía de prioridades (caída > acciones > movimiento). 
 /// </summary>
-
 [DisallowMultipleComponent]
 [RequireComponent(typeof(StateMachinePlayer))]
 public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
@@ -34,14 +33,14 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
     {
         if (_ctx == null || _sm == null || _input == null || _paused || _locked) return;
 
-        if (_ctx.HasExternalImpact) 
+        if (_ctx.HasExternalImpact)
         {
-            if(!_sm.IsCurrent(KnockBack))
+            if (!_sm.IsCurrent(KnockBack))
                 _sm.ChangeState(KnockBack);
-            
+
             return;
         }
-        
+
         var mv = _input.Move;
         bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
 
@@ -54,7 +53,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
                     _sm.ChangeState(Fall);
                 }
 
-                return; 
+                return;
             }
 
             if (_input.IsSpaceHeld() && _ctx.TryGetSwingTarget(out _))
@@ -89,7 +88,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
                 return;
             }
 
-            if (_ctx.TryGetAttractTarget(out _)) 
+            if (_ctx.TryGetAttractTarget(out _))
             {
                 _sm.ChangeState(Attract);
                 return;
@@ -110,12 +109,14 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
                 }
                 else
                 {
+                    _sm.ChangeState(Idle);
                     Debug.Log("Bloqueado: El sistema dice que el tiro no es válido.");
                 }
             }
-            
+
             return;
         }
+
         if (_input.ConsumeDropDown())
         {
             if (_sm.ChangeState(DropBandage)) return;
@@ -137,7 +138,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
-    } 
+    }
 
     private void OnDisable()
     {
