@@ -104,6 +104,16 @@ public static class Save
 
     #endregion
 
+    #region TIER B: Navegación y Posicionamiento
+
+    public static void SetLastLevelPlayed(int buildIndex) 
+        => PlayerPrefsManager.Set(PrefKeys.LastLevelPlayed, buildIndex);
+
+    public static int GetLastLevelPlayed() 
+        => PlayerPrefsManager.Get(PrefKeys.LastLevelPlayed, -1);
+
+    #endregion
+    
     #region Helpers Internos
 
     private static string SceneName(int buildIndex)

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -33,7 +32,12 @@ public class LevelTile : MonoBehaviour
 
     [SerializeField] private Transform entryLookAt;
 
+    [SerializeField] private Transform playerPos;
+    
     bool _isUnlocked;
+
+    public int BuildIndex => buildIndex;
+    public Transform Playerpos => playerPos;
 
     void Start()
     {
