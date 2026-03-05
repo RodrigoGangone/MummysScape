@@ -184,9 +184,8 @@ public class MainMenu : MonoBehaviour
         if (_isTransitioning) return;
         SetMenuInteractable(false);
         StartFadeTitle(1f, 0f, 3f);
-
-        GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.5f, 2f);
-        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.5f, 2f);
+        
+        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.75f, 0.5f);
 
         // Cerramos el menú (1 -> 0) y disparamos el director
         StartCoroutine(PanelTransitionRoutine(
