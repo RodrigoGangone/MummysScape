@@ -9,7 +9,7 @@ using static PrefFamily;
 /// y slugs, garantizando que no existan errores de escritura al acceder a los datos. 
 /// </summary>
 
-public enum PrefFamily { Gems, GemTotals, LevelCompleted, Time, VolumeSound, VolumeFX, Seen }
+public enum PrefFamily { Gems, GemTotals, LevelCompleted, Time, VolumeSound, VolumeFX, Seen, Navigation }
 public enum VolumeSoundId { Master, Music, Voice, Ambient }
 public enum VolumeFxId    { Sfx, UI }
 public enum TimeId { Best, Last, Total } // agrega los que necesites
@@ -24,7 +24,8 @@ public static class PrefKeys
         { Time,           "time." }, 
         { VolumeSound,    "volume.sound." },
         { VolumeFX,       "volume.fx." },
-        { Seen,           "seen." } // <--- NUEVO
+        { Seen,           "seen." }, 
+        { PrefFamily.Navigation, "nav." }
     };
 
     static string Scene
@@ -66,4 +67,10 @@ public static class PrefKeys
     public static string SeenGemsCount() => $"{Prefix[Seen]}gems_count";
     public static string SeenCinematic(string cinematicId) => $"{Prefix[Seen]}cinematic.{cinematicId}";
     //public static string TimeKey(TimeId id) => $"{Prefix[Time]}{id.ToString().ToLowerInvariant()}";
+    
+    // Clave para guardar el índice del último nivel jugado
+    public static string LastLevelPlayed => $"{Prefix[Navigation]}last_index";
+    
+    // Si quieres guardar por zona específicamente:
+    public static string LastLevelInZone(int zoneId) => $"{Prefix[Navigation]}zone.{zoneId}.last";
 }

@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -27,7 +26,7 @@ public class PlayerPrefsRegistryEditor : Editor
 
     // Estilos
     GUIStyle _headerStyle;
-    GUIStyle _groupHeaderStyle; // Estilo para los separadores
+    GUIStyle _groupHeaderStyle;
 
     void OnEnable()
     {
@@ -46,7 +45,7 @@ public class PlayerPrefsRegistryEditor : Editor
         InitStyles();
 
         EditorGUILayout.Space(5);
-        EditorGUILayout.LabelField("Gestor de Guardado", _headerStyle);
+        EditorGUILayout.LabelField("Gestor de Guardado (Maxi Engine)", _headerStyle);
         EditorGUILayout.Space(5);
 
         DrawConfigSection();
@@ -57,11 +56,9 @@ public class PlayerPrefsRegistryEditor : Editor
         serializedObject.ApplyModifiedProperties();
     }
 
-    // ... (SECCIONES CONFIG Y SIMULATOR IGUAL QUE ANTES) ...
-    // Solo resumo Config y Simulator para ahorrar espacio visual, 
-    // PERO EL CÓDIGO COMPLETO DEBE INCLUIRLAS. 
-    // Copio aquí las secciones sin cambios para que sea Copy-Paste seguro.
-
+    // ---------------------------------------------------------
+    // SECCIÓN 1: CONFIGURACIÓN
+    // ---------------------------------------------------------
     void DrawConfigSection()
     {
         using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
@@ -90,16 +87,17 @@ public class PlayerPrefsRegistryEditor : Editor
             using (new EditorGUI.DisabledScope(locked))
                 EditorGUILayout.PropertyField(_keyPrefixesProp, new GUIContent("Prefijos Rastreados"), true);
         }
-
         EditorGUILayout.Space(5);
     }
 
+    // ---------------------------------------------------------
+    // SECCIÓN 2: SIMULADOR
+    // ---------------------------------------------------------
     void DrawSimulatorSection()
     {
         using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
         {
-            _showCreator = EditorGUILayout.Foldout(_showCreator, "Simulador / Crear Datos", true,
-                EditorStyles.foldoutHeader);
+            _showCreator = EditorGUILayout.Foldout(_showCreator, "Simulador / Crear Datos", true, EditorStyles.foldoutHeader);
             if (_showCreator)
             {
                 EditorGUILayout.HelpBox("Crea claves manualmente para simular progreso.", MessageType.None);
@@ -115,33 +113,21 @@ public class PlayerPrefsRegistryEditor : Editor
                     GUILayout.Label("Valor:", GUILayout.Width(40));
                     _newValue = EditorGUILayout.TextField(_newValue);
                     GUI.backgroundColor = new Color(0.6f, 0.9f, 0.6f);
-                    if (GUILayout.Button(EditorGUIUtility.IconContent("SaveAs"), GUILayout.Height(20),
-                            GUILayout.Width(40))) SimulateData();
+                    if (GUILayout.Button(EditorGUIUtility.IconContent("SaveAs"), GUILayout.Height(20), GUILayout.Width(40))) SimulateData();
                     GUI.backgroundColor = Color.white;
                 }
 
                 EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("Gem Global", EditorStyles.miniButton))
-                {
-                    _newKey = "gemTotal.Global";
-                    _newValue = "100";
-                }
-
-                if (GUILayout.Button("Level 5 OK", EditorStyles.miniButton))
-                {
-                    _newKey = "level.completed.index.5";
-                    _newValue = "1";
-                }
-
+                if (GUILayout.Button("Gem Global", EditorStyles.miniButton)) { _newKey = "gemTotal.Global"; _newValue = "100"; }
+                if (GUILayout.Button("Level 1 Nav", EditorStyles.miniButton)) { _newKey = "nav.last_visited_index"; _newValue = "1"; }
                 EditorGUILayout.EndHorizontal();
             }
         }
-
         EditorGUILayout.Space(5);
     }
 
     // ---------------------------------------------------------
-    // SECCIÓN 3: HERRAMIENTAS (ACTUALIZADA con SORT)
+    // SECCIÓN 3: HERRAMIENTAS
     // ---------------------------------------------------------
     void DrawToolsSection()
     {
@@ -151,19 +137,11 @@ public class PlayerPrefsRegistryEditor : Editor
 
             using (new EditorGUILayout.HorizontalScope())
             {
-                // Escaneo
-                if (GUILayout.Button(
-                        new GUIContent(" Escanear Disco", EditorGUIUtility.IconContent("d_ViewToolOrbit").image),
-                        GUILayout.Height(24)))
+                if (GUILayout.Button(new GUIContent(" Escanear Disco", EditorGUIUtility.IconContent("d_ViewToolOrbit").image), GUILayout.Height(24)))
                     PerformSmartDiscovery();
 
-                // NUEVO: BOTÓN ORGANIZAR
-                if (GUILayout.Button(
-                        new GUIContent(" Organizar (Tipo)", EditorGUIUtility.IconContent("AlphabeticalSorting").image),
-                        GUILayout.Height(24)))
-                {
+                if (GUILayout.Button(new GUIContent(" Organizar (Tipo)", EditorGUIUtility.IconContent("AlphabeticalSorting").image), GUILayout.Height(24)))
                     SortRegistryByType();
-                }
             }
 
             GUILayout.Space(5);
@@ -171,25 +149,20 @@ public class PlayerPrefsRegistryEditor : Editor
             using (new EditorGUILayout.HorizontalScope())
             {
                 GUI.backgroundColor = new Color(1f, 0.7f, 0.2f);
-                if (GUILayout.Button(
-                        new GUIContent(" Limpiar Vista", EditorGUIUtility.IconContent("TreeEditor.Trash").image),
-                        GUILayout.Height(24)))
+                if (GUILayout.Button(new GUIContent(" Limpiar Vista", EditorGUIUtility.IconContent("TreeEditor.Trash").image), GUILayout.Height(24)))
                     ConfirmAndClearVisible();
 
                 GUI.backgroundColor = new Color(1f, 0.4f, 0.4f);
-                if (GUILayout.Button(
-                        new GUIContent(" FORMAT TOTAL", EditorGUIUtility.IconContent("d_TreeEditor.Trash").image),
-                        GUILayout.Height(24)))
+                if (GUILayout.Button(new GUIContent(" FORMAT TOTAL", EditorGUIUtility.IconContent("d_TreeEditor.Trash").image), GUILayout.Height(24)))
                     ConfirmAndNukeAll();
                 GUI.backgroundColor = Color.white;
             }
         }
-
         EditorGUILayout.Space(5);
     }
 
     // ---------------------------------------------------------
-    // SECCIÓN 4: DATOS (ACTUALIZADA CON GRUPOS Y MOVER)
+    // SECCIÓN 4: DATOS
     // ---------------------------------------------------------
     void DrawDataSection()
     {
@@ -197,15 +170,13 @@ public class PlayerPrefsRegistryEditor : Editor
         {
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button(EditorGUIUtility.IconContent("Refresh"), EditorStyles.iconButton,
-                        GUILayout.Width(22)))
+                if (GUILayout.Button(EditorGUIUtility.IconContent("Refresh"), EditorStyles.iconButton, GUILayout.Width(22)))
                 {
                     SyncValuesFromDisk();
                     ShowToast("Sincronizado");
                 }
 
-                _showEntries = EditorGUILayout.Foldout(_showEntries, $"Datos [{_keysProp.arraySize}]", true,
-                    EditorStyles.foldoutHeader);
+                _showEntries = EditorGUILayout.Foldout(_showEntries, $"Datos [{_keysProp.arraySize}]", true, EditorStyles.foldoutHeader);
                 if (_showEntries)
                 {
                     GUILayout.FlexibleSpace();
@@ -220,14 +191,13 @@ public class PlayerPrefsRegistryEditor : Editor
             {
                 GUILayout.Label("Key", GUILayout.Width(200));
                 GUILayout.Label("Value", GUILayout.ExpandWidth(true));
-                GUILayout.Label("", GUILayout.Width(80)); // Espacio extra para flechas
+                GUILayout.Label("", GUILayout.Width(80));
             }
 
             var currentPrefixes = GetCurrentPrefixes();
-            string lastGroup = ""; // Para detectar cambios de categoría
+            string lastGroup = "";
 
-            _scrollPos =
-                EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.MinHeight(100), GUILayout.MaxHeight(400));
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.MinHeight(100), GUILayout.MaxHeight(400));
 
             int visibleCount = 0;
             for (int i = 0; i < _keysProp.arraySize; i++)
@@ -235,20 +205,16 @@ public class PlayerPrefsRegistryEditor : Editor
                 string k = _keysProp.GetArrayElementAtIndex(i).stringValue;
 
                 if (!MatchesPrefix(k, currentPrefixes)) continue;
-                if (!string.IsNullOrEmpty(_search) &&
-                    !k.Contains(_search, StringComparison.OrdinalIgnoreCase)) continue;
+                if (!string.IsNullOrEmpty(_search) && !k.Contains(_search, StringComparison.OrdinalIgnoreCase)) continue;
 
-                // --- Lógica de Grupos ---
-                // Si la categoría cambia respecto a la fila anterior, pintamos un header
                 string currentGroup = GetGroupHeader(k);
-                if (currentGroup != lastGroup &&
-                    string.IsNullOrEmpty(_search)) // No agrupar si buscamos texto específico
+                if (currentGroup != lastGroup && string.IsNullOrEmpty(_search))
                 {
                     DrawGroupHeader(currentGroup);
                     lastGroup = currentGroup;
                 }
 
-                DrawEditableRow(i, i == 0, i == _keysProp.arraySize - 1);
+                DrawEditableRow(i);
                 visibleCount++;
             }
 
@@ -262,13 +228,12 @@ public class PlayerPrefsRegistryEditor : Editor
     void DrawGroupHeader(string title)
     {
         EditorGUILayout.Space(5);
-        // Dibujamos una franja oscura con el título
         var rect = EditorGUILayout.GetControlRect(false, 18);
         EditorGUI.DrawRect(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
         EditorGUI.LabelField(rect, title, _groupHeaderStyle);
     }
 
-    void DrawEditableRow(int index, bool isFirst, bool isLast)
+    void DrawEditableRow(int index)
     {
         SerializedProperty keyProp = _keysProp.GetArrayElementAtIndex(index);
         SerializedProperty valProp = _valuesProp.GetArrayElementAtIndex(index);
@@ -281,7 +246,6 @@ public class PlayerPrefsRegistryEditor : Editor
         {
             EditorGUILayout.SelectableLabel(k, EditorStyles.label, GUILayout.Width(200), GUILayout.Height(20));
 
-            // Valor editable
             bool exists = PlayerPrefs.HasKey(k);
             if (!exists) GUI.color = new Color(1, 1, 1, 0.5f);
 
@@ -295,83 +259,62 @@ public class PlayerPrefsRegistryEditor : Editor
 
             GUI.color = Color.white;
 
-            // --- BOTONES MOVER (▲ ▼) ---
-            // Solo permitimos mover si no estamos filtrando por texto (para evitar confusiones de índices)
             if (string.IsNullOrEmpty(_search))
             {
-                if (GUILayout.Button("▲", EditorStyles.miniButtonLeft, GUILayout.Width(20)))
-                {
-                    MoveItem(index, -1);
-                }
-
-                if (GUILayout.Button("▼", EditorStyles.miniButtonRight, GUILayout.Width(20)))
-                {
-                    MoveItem(index, 1);
-                }
+                if (GUILayout.Button("▲", EditorStyles.miniButtonLeft, GUILayout.Width(20))) MoveItem(index, -1);
+                if (GUILayout.Button("▼", EditorStyles.miniButtonRight, GUILayout.Width(20))) MoveItem(index, 1);
             }
 
-            // Save & Delete
             if (GUILayout.Button(EditorGUIUtility.IconContent("SaveAs"), EditorStyles.iconButton, GUILayout.Width(22)))
             {
                 UpdateDiskValue(k, newValue);
                 ShowToast("Guardado");
             }
 
-            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), EditorStyles.iconButton,
-                    GUILayout.Width(22)))
-            {
+            if (GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), EditorStyles.iconButton, GUILayout.Width(22)))
                 DeleteSingleKey(k);
-            }
         }
     }
 
     // ---------------------------------------------------------
-    // LÓGICA DE ORDENAMIENTO Y GRUPOS
+    // LÓGICA DE NEGOCIO
     // ---------------------------------------------------------
 
     void SortRegistryByType()
     {
         var reg = (PlayerPrefsRegistry)target;
         var list = new List<KeyValuePair<string, string>>();
-
-        // 1. Extraer pares
         var so = new SerializedObject(reg);
         var kP = so.FindProperty("keys");
         var vP = so.FindProperty("values");
 
         for (int i = 0; i < kP.arraySize; i++)
-            list.Add(new KeyValuePair<string, string>(kP.GetArrayElementAtIndex(i).stringValue,
-                vP.GetArrayElementAtIndex(i).stringValue));
+            list.Add(new KeyValuePair<string, string>(kP.GetArrayElementAtIndex(i).stringValue, vP.GetArrayElementAtIndex(i).stringValue));
 
-        // 2. Ordenar con peso personalizado
         list.Sort((a, b) =>
         {
             int wA = GetTypeWeight(a.Key);
             int wB = GetTypeWeight(b.Key);
-            if (wA != wB) return wA.CompareTo(wB); // Primero por peso
-            return string.Compare(a.Key, b.Key, StringComparison.Ordinal); // Luego alfabético
+            if (wA != wB) return wA.CompareTo(wB);
+            return string.Compare(a.Key, b.Key, StringComparison.Ordinal);
         });
 
-        // 3. Reinsertar
-        kP.ClearArray();
-        vP.ClearArray();
+        kP.ClearArray(); vP.ClearArray();
         for (int i = 0; i < list.Count; i++)
         {
-            kP.InsertArrayElementAtIndex(i);
-            vP.InsertArrayElementAtIndex(i);
+            kP.InsertArrayElementAtIndex(i); vP.InsertArrayElementAtIndex(i);
             kP.GetArrayElementAtIndex(i).stringValue = list[i].Key;
             vP.GetArrayElementAtIndex(i).stringValue = list[i].Value;
         }
 
         so.ApplyModifiedProperties();
-        ShowToast("Lista organizada por Tipo");
+        ShowToast("Lista organizada");
     }
 
     void MoveItem(int index, int direction)
     {
         int newIndex = index + direction;
         if (newIndex < 0 || newIndex >= _keysProp.arraySize) return;
-
         _keysProp.MoveArrayElement(index, newIndex);
         _valuesProp.MoveArrayElement(index, newIndex);
         serializedObject.ApplyModifiedProperties();
@@ -379,45 +322,38 @@ public class PlayerPrefsRegistryEditor : Editor
 
     string GetGroupHeader(string key)
     {
-        // Las cinemáticas primero, para que no caigan en "SEEN (OTHERS)"
-        if (key.StartsWith("seen.cinematic.")) return "--- CINEMATICS ---"; 
+        if (key.StartsWith("level.")) return "--- LEVELS ---";
+        if (key.StartsWith("nav.")) return "--- NAVIGATION ---"; //
+        if (key.StartsWith("seen.cinematic.")) return "--- CINEMATICS ---";
         if (key.StartsWith("seen.tutorial.")) return "--- SEEN (TUTORIALS) ---";
         if (key.StartsWith("seen.level")) return "--- SEEN (REVEALS) ---";
         if (key.StartsWith("seen.")) return "--- SEEN (OTHERS) ---";
-    
-        if (key.StartsWith("level.")) return "--- LEVELS ---";
-        if (key.StartsWith("gem.")) return "--- GEMS ---";
         if (key.StartsWith("gemTotal.")) return "--- GEM TOTALS ---";
+        if (key.StartsWith("gem.")) return "--- GEMS ---";
         if (key.StartsWith("volume.")) return "--- AUDIO / SETTINGS ---";
         return "--- OTROS ---";
     }
 
     int GetTypeWeight(string key)
     {
-        // Define el orden: Menor número = Aparece más arriba
-        if (key.StartsWith("level.")) return 0; // 1. Niveles
-        if (key.StartsWith("seen.cinematic.")) return 5;  // <--- Peso específico
-        if (key.StartsWith("seen.level")) return 10; // 2. Seen Reveals
-        if (key.StartsWith("seen.tutorial")) return 11; // 3. Seen Tutorials
-        if (key.StartsWith("seen.")) return 12; // 4. Seen Otros
-        if (key.StartsWith("gemTotal.")) return 20; // 5. Gem Totals
-        if (key.StartsWith("gem.")) return 21; // 6. Gemas individuales
-        if (key.StartsWith("volume.")) return 90; // 7. Audio
-        return 100; // 8. Resto
+        if (key.StartsWith("level.")) return 0;
+        if (key.StartsWith("nav.")) return 2; //
+        if (key.StartsWith("seen.cinematic.")) return 5;
+        if (key.StartsWith("seen.level")) return 10;
+        if (key.StartsWith("seen.tutorial")) return 11;
+        if (key.StartsWith("seen.")) return 12;
+        if (key.StartsWith("gemTotal.")) return 20;
+        if (key.StartsWith("gem.")) return 21;
+        if (key.StartsWith("volume.")) return 90;
+        return 100;
     }
 
-    // ---------------------------------------------------------
-    // RESTO DE LÓGICA (Scan, Styles, Helpers...)
-    // ---------------------------------------------------------
-
-    // (Pego aquí la lógica de escaneo actualizada del paso anterior para asegurar que esté completa)
-void PerformSmartDiscovery()
+    void PerformSmartDiscovery()
     {
         var registry = (PlayerPrefsRegistry)target;
         int found = 0;
         var potentialKeys = new HashSet<string>();
 
-        // 1. Detección por Escena Actual (Gemas y Totales)
         string currentScene = SceneManager.GetActiveScene().name;
         if (!string.IsNullOrEmpty(currentScene))
         {
@@ -425,49 +361,22 @@ void PerformSmartDiscovery()
             potentialKeys.Add($"gemTotal.{currentScene}");
         }
 
-        // 2. Detección de Progresión Global
         potentialKeys.Add("gemTotal.Global");
-        potentialKeys.Add(PrefKeys.SeenGemsCount());
-        
+        potentialKeys.Add(PrefKeys.SeenGemsCount()); //
+        potentialKeys.Add(PrefKeys.LastLevelPlayed); //
+
         for (int i = 0; i <= 50; i++)
         {
             potentialKeys.Add($"level.completed.index.{i}");
             potentialKeys.Add($"seen.level_reveal.{i}");
-            potentialKeys.Add($"seen.zone_reveal.{i}");
         }
 
-        // 3. Detección de Tutoriales (Busca componentes en la escena/prefabs)
-        var allTutorialPoints = Resources.FindObjectsOfTypeAll<TutorialFocusPoint>();
-        foreach (var t in allTutorialPoints)
-            if (!string.IsNullOrEmpty(t.Id))
-                potentialKeys.Add($"seen.tutorial.{t.Id}");
-
-        // 4. NUEVO: Detección de Cinemáticas (Busca IDs en los CinematicObserver)
-        var observers = Resources.FindObjectsOfTypeAll<CinematicObserver>();
-        foreach (var obs in observers)
-        {
-            // Usamos SerializedObject para leer el campo privado 'cinematicId'
-            var soObs = new SerializedObject(obs);
-            var idProp = soObs.FindProperty("cinematicId");
-            if (idProp != null && !string.IsNullOrEmpty(idProp.stringValue))
-            {
-                // Formato definido en PrefKeys: seen.cinematic.{id}
-                potentialKeys.Add($"seen.cinematic.{idProp.stringValue}");
-            }
-        }
-
-        // 5. Ajustes de Audio
         potentialKeys.Add("volume.sound.master");
         potentialKeys.Add("volume.sound.music");
         potentialKeys.Add("volume.fx.sfx");
-        potentialKeys.Add("volume.sound.master.mute");
-        potentialKeys.Add("volume.sound.music.mute");
-        potentialKeys.Add("volume.fx.sfx.mute");
 
-        // 6. Cruce con el disco (PlayerPrefs) y Filtro del Registry
         foreach (var key in potentialKeys)
         {
-            // Solo lo añadimos si existe en el disco y si este Registry lo acepta (Matches)
             if (PlayerPrefs.HasKey(key) && registry.Matches(key))
             {
                 registry.UpdateEntry(key, GetValueAsString(key));
@@ -475,22 +384,11 @@ void PerformSmartDiscovery()
             }
         }
 
-        // 7. Feedback visual
-        if (found > 0)
-        {
-            EditorUtility.SetDirty(registry);
-            serializedObject.Update();
-            Repaint();
-            ShowToast($"{found} claves importadas.");
-        }
-        else 
-        {
-            ShowToast("Sin datos nuevos en disco.");
-        }
+        if (found > 0) { EditorUtility.SetDirty(registry); serializedObject.Update(); Repaint(); ShowToast($"{found} claves importadas."); }
+        else ShowToast("Sin datos nuevos.");
     }
-    // ... (Helpers SimulateData, UpdateDiskValue, SyncValuesFromDisk... se mantienen igual) ...
-    // Copio las esenciales para que compile:
 
+    // --- Helpers de Persistencia ---
     void SimulateData()
     {
         if (string.IsNullOrEmpty(_newKey)) return;
@@ -501,13 +399,9 @@ void PerformSmartDiscovery()
             else PlayerPrefs.SetString(_newKey, _newValue);
             PlayerPrefs.Save();
             ((PlayerPrefsRegistry)target).UpdateEntry(_newKey, _newValue);
-            EditorUtility.SetDirty(target);
-            ShowToast("Creado");
+            EditorUtility.SetDirty(target); ShowToast("Creado");
         }
-        catch
-        {
-            ShowToast("Error formato");
-        }
+        catch { ShowToast("Error formato"); }
     }
 
     void UpdateDiskValue(string key, string s)
@@ -528,14 +422,9 @@ void PerformSmartDiscovery()
             {
                 string disk = GetValueAsString(k);
                 var vp = _valuesProp.GetArrayElementAtIndex(i);
-                if (vp.stringValue != disk)
-                {
-                    vp.stringValue = disk;
-                    changed = true;
-                }
+                if (vp.stringValue != disk) { vp.stringValue = disk; changed = true; }
             }
         }
-
         if (changed) serializedObject.ApplyModifiedProperties();
     }
 
@@ -551,7 +440,6 @@ void PerformSmartDiscovery()
 
     void ApplyPresetPrefixes()
     {
-        var r = (PlayerPrefsRegistry)target;
         var p = PlayerPrefsRegistry.PresetToPrefixes((PlayerPrefsRegistry.RegistryKeyPreset)_presetProp.intValue);
         _keyPrefixesProp.arraySize = p.Length;
         for (int i = 0; i < p.Length; i++) _keyPrefixesProp.GetArrayElementAtIndex(i).stringValue = p[i];
@@ -561,46 +449,21 @@ void PerformSmartDiscovery()
     string[] GetCurrentPrefixes()
     {
         var l = new List<string>();
-        for (int i = 0; i < _keyPrefixesProp.arraySize; i++)
-            l.Add(_keyPrefixesProp.GetArrayElementAtIndex(i).stringValue);
+        for (int i = 0; i < _keyPrefixesProp.arraySize; i++) l.Add(_keyPrefixesProp.GetArrayElementAtIndex(i).stringValue);
         return l.ToArray();
     }
 
     bool MatchesPrefix(string k, string[] p)
     {
         if (p == null || p.Length == 0) return true;
-        foreach (var x in p)
-            if (!string.IsNullOrEmpty(x) && k.StartsWith(x))
-                return true;
+        foreach (var x in p) if (!string.IsNullOrEmpty(x) && k.StartsWith(x)) return true;
         return false;
     }
 
-    void ConfirmAndClearVisible()
-    {
-        if (EditorUtility.DisplayDialog("Limpiar", "¿Borrar visibles?", "Si", "No"))
-            ClearByPreset((PlayerPrefsRegistry.RegistryKeyPreset)_presetProp.intValue);
-    }
+    void ConfirmAndClearVisible() { if (EditorUtility.DisplayDialog("Limpiar", "¿Borrar visibles?", "Si", "No")) ClearByPreset((PlayerPrefsRegistry.RegistryKeyPreset)_presetProp.intValue); }
+    void ConfirmAndNukeAll() { if (EditorUtility.DisplayDialog("NUCLEAR", "¿Borrar TODO?", "Si", "No")) { PlayerPrefs.DeleteAll(); PlayerPrefs.Save(); ((PlayerPrefsRegistry)target).ClearAll(); } }
+    void DeleteSingleKey(string k) { if (EditorUtility.DisplayDialog("Borrar", k, "Si", "No")) { PlayerPrefs.DeleteKey(k); ((PlayerPrefsRegistry)target).RemoveEntry(k); } }
 
-    void ConfirmAndNukeAll()
-    {
-        if (EditorUtility.DisplayDialog("NUCLEAR", "¿Borrar TODO?", "Si", "No"))
-        {
-            PlayerPrefs.DeleteAll();
-            PlayerPrefs.Save();
-            ((PlayerPrefsRegistry)target).ClearAll();
-        }
-    }
-
-    void DeleteSingleKey(string k)
-    {
-        if (EditorUtility.DisplayDialog("Borrar", k, "Si", "No"))
-        {
-            PlayerPrefs.DeleteKey(k);
-            ((PlayerPrefsRegistry)target).RemoveEntry(k);
-        }
-    }
-
-    // Helper de borrado estático reducido para compilar
     void ClearByPreset(PlayerPrefsRegistry.RegistryKeyPreset preset)
     {
         string[] prefixes = PlayerPrefsRegistry.PresetToPrefixes(preset);
@@ -610,28 +473,15 @@ void PerformSmartDiscovery()
         for (int i = kP.arraySize - 1; i >= 0; i--)
         {
             string k = kP.GetArrayElementAtIndex(i).stringValue;
-            foreach (var p in prefixes)
-                if (k.StartsWith(p))
-                {
-                    PlayerPrefs.DeleteKey(k);
-                    kP.DeleteArrayElementAtIndex(i);
-                    vP.DeleteArrayElementAtIndex(i);
-                    break;
-                }
+            foreach (var p in prefixes) if (k.StartsWith(p)) { PlayerPrefs.DeleteKey(k); kP.DeleteArrayElementAtIndex(i); vP.DeleteArrayElementAtIndex(i); break; }
         }
-
-        so.ApplyModifiedProperties();
-        PlayerPrefs.Save();
+        so.ApplyModifiedProperties(); PlayerPrefs.Save();
     }
 
     void InitStyles()
     {
-        if (_headerStyle == null)
-            _headerStyle = new GUIStyle(EditorStyles.largeLabel)
-                { fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-        if (_groupHeaderStyle == null)
-            _groupHeaderStyle = new GUIStyle(EditorStyles.boldLabel)
-                { normal = { textColor = new Color(0.9f, 0.9f, 0.9f) }, alignment = TextAnchor.MiddleCenter };
+        if (_headerStyle == null) _headerStyle = new GUIStyle(EditorStyles.largeLabel) { fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+        if (_groupHeaderStyle == null) _groupHeaderStyle = new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = new Color(0.9f, 0.9f, 0.9f) }, alignment = TextAnchor.MiddleCenter };
     }
 
     void ShowToast(string m) => SceneView.lastActiveSceneView?.ShowNotification(new GUIContent(m));
