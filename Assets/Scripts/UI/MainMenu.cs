@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Playables;
@@ -10,6 +11,11 @@ using static Utils;
 
 public class MainMenu : MonoBehaviour
 {
+    [Header("TITLE")]
+    [SerializeField] private Image _titleImage;
+    private Coroutine _fadeTitleRoutine;
+    private const float DEFAULT_TITLE_FADE_DURATION = 1f;
+    
     [Header("PANEL MAIN MENU")] [SerializeField]
     private GameObject _mainMenuPanel;
 
@@ -69,12 +75,90 @@ public class MainMenu : MonoBehaviour
         SetSelected(_mainFirstSelected ?? _btnPlay);
         SetMenuInteractable(true);
     }
+    
+    private void StartFadeTitle(float start, float end, float duration = DEFAULT_TITLE_FADE_DURATION)
+    {
+        // Si no está seteado en inspector, no hacemos nada pero dejamos huella (solo una vez)
+        if (_titleImage == null)
+        {
+            Debug.LogWarning($"{nameof(MainMenu)}: _titleImage es null. Asigná el Image 'Title' en el Inspector.", this);
+            return;
+        }
+
+        // Evita que dos corrutinas peleen por el alpha (spam de botones / doble transición)
+        if (_fadeTitleRoutine != null)
+            StopCoroutine(_fadeTitleRoutine);
+
+        _fadeTitleRoutine = StartCoroutine(FadeTitleSafe(start, end, duration));
+    }
+    
+    private IEnumerator FadeTitleSafe(float start, float end, float duration = 1.0f)
+    {
+        // Double-check por si se llama desde otro lugar
+        if (_titleImage == null)
+            yield break;
+
+        // Duración inválida: seteo directo y salgo
+        if (duration <= 0f)
+        {
+            var c = _titleImage.color;
+            c.a = end;
+            _titleImage.color = c;
+            _fadeTitleRoutine = null;
+            yield break;
+        }
+
+        float elapsed = 0f;
+
+        // Tomamos el color inicial siempre desde el componente real
+        Color color = _titleImage.color;
+
+        // Arrancamos desde "start" para que sea determinista aunque el alpha esté en otro valor
+        color.a = start;
+        _titleImage.color = color;
+
+        // Cacheo por seguridad (si cambia la referencia durante el fade, salimos)
+        var imageRef = _titleImage;
+
+        while (elapsed < duration)
+        {
+            // Si el objeto se desactiva o se destruye, cortamos limpio
+            if (!isActiveAndEnabled || imageRef == null)
+                break;
+
+            // Si Unity destruyó el componente, la referencia se vuelve "fake null"
+            if (imageRef == null)
+                break;
+
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float alpha = Mathf.Lerp(start, end, t);
+
+            color.a = alpha;
+            imageRef.color = color;
+
+            yield return null;
+        }
+
+        // Si todavía existe, dejamos el valor final clavado
+        if (isActiveAndEnabled && imageRef != null)
+        {
+            color = imageRef.color;
+            color.a = end;
+            imageRef.color = color;
+        }
+
+        _fadeTitleRoutine = null;
+    }
 
     // --- FLUJOS DE NAVEGACIÓN ---
 
     private void ShowOptions()
     {
         if (_isTransitioning) return;
+        
+        StartFadeTitle(1f, 0f);
+
         // De Main (Visible=1) a Options (Visible=1)
         StartCoroutine(PanelTransitionRoutine(
             _mainMenuPanel, _mainMaterial,
@@ -85,6 +169,9 @@ public class MainMenu : MonoBehaviour
     private void ShowMain()
     {
         if (_isTransitioning) return;
+        
+        StartFadeTitle(0f, 1f);
+        
         // De Options (Visible=1) a Main (Visible=1)
         StartCoroutine(PanelTransitionRoutine(
             _optionsPanel, _optionsMaterial,
@@ -96,6 +183,7 @@ public class MainMenu : MonoBehaviour
     {
         if (_isTransitioning) return;
         SetMenuInteractable(false);
+        StartFadeTitle(1f, 0f, 3f);
 
         GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.5f, 2f);
         GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.5f, 2f);
@@ -201,5 +289,14 @@ public class MainMenu : MonoBehaviour
 #else
         Application.Quit();
 #endif
+    }
+    
+    private void OnDisable()
+    {
+        if (_fadeTitleRoutine != null)
+        {
+            StopCoroutine(_fadeTitleRoutine);
+            _fadeTitleRoutine = null;
+        }
     }
 }
