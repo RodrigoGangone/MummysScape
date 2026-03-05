@@ -162,14 +162,18 @@ public class UIManager : MonoBehaviour
 
         if (isWin)
         {
-            _mummyUI.SetTrigger("Win");
+            if(_mummyUI != null) _mummyUI.SetTrigger("Win");
             SetSelected(_winFirstSelected ?? _btnEndGameNextLvl);
         }
         else
         {
-            _mummyUI.SetTrigger("Lose");
+            if(_mummyUI != null) _mummyUI.SetTrigger("Lose");
             SetSelected(_loseFirstSelected ?? _btnEndGameRetry);
         }
+
+        // --- CORRECCIÓN AQUÍ ---
+        // Una vez activado el panel, ordenamos al Transition Manager que aclare la pantalla
+        Transition.TriggerFadeOut(null);
 
         StartCoroutine(EndGameUIFlow());
     }
