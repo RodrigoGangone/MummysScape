@@ -45587,10 +45587,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 39872551746159126}
-  - component: {fileID: 1703154566276700818}
   - component: {fileID: 1922525160810501105}
   - component: {fileID: 8327508785484449685}
   - component: {fileID: 7163751912731866487}
+  - component: {fileID: 2788456260838377243}
   m_Layer: 0
   m_Name: Sarcofagus - Exit
   m_TagString: Untagged
@@ -45617,27 +45617,6 @@ Transform:
   - {fileID: 2963733336260352827}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &1703154566276700818
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3721958170283911563}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 2
-  m_Center: {x: 0, y: 0.5, z: 0.37}
 --- !u!114 &1922525160810501105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45808,6 +45787,27 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!65 &2788456260838377243
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3721958170283911563}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.6653337, y: 2.2873683, z: 1.6490595}
+  m_Center: {x: -0.0022132993, y: 0.64368415, z: 1.3076962}
 --- !u!1 &4520043552121475871
 GameObject:
   m_ObjectHideFlags: 0
