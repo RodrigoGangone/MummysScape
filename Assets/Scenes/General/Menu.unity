@@ -100883,6 +100883,7 @@ MonoBehaviour:
     m_Signals:
     - {fileID: 11400000, guid: 67b0c0b9a58087d4aa72c906a887f172, type: 2}
     - {fileID: 11400000, guid: 4b8b5be3981c0e742b24ab11f098b858, type: 2}
+    - {fileID: 11400000, guid: c70b86040c9ab3b4b968ea680e907f7b, type: 2}
     m_Events:
     - m_PersistentCalls:
         m_Calls:
@@ -100903,6 +100904,20 @@ MonoBehaviour:
         - m_Target: {fileID: 826789472}
           m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
           m_MethodName: SelectFeedback
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 2048540650}
+          m_TargetAssemblyTypeName: JoystickRumble, Assembly-CSharp
+          m_MethodName: HighRumbleBasic
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
