@@ -28,6 +28,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [SerializeField] public ParticleSystem _dropFX;
     [SerializeField] public ParticleSystem _koFX;
 
+    [SerializeField] private DecalProjector shadow;
+
     [Header("Shoot Visual")] [SerializeField]
     private GameObject _decal;
 
@@ -61,6 +63,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     private FxBank _currentBank;
     
     public GameObject Decal => _decal;
+    public DecalProjector Shadow => shadow;
     public DecalProjector RangeIndicator => _rangeIndicator;
     public LineRenderer ArcRenderer => _arcRenderer;
     public Animator Animator => _anim;
