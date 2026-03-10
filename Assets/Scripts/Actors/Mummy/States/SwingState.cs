@@ -119,7 +119,7 @@ public class SwingState : State, IBandageRestrictor
 
         Vector3 tanDir = Vector3.ProjectOnPlane(wishDir, ropeDir).normalized;
 
-        Vector3 currentVel = rb.velocity;
+        Vector3 currentVel = rb.linearVelocity;
         Vector3 currentTanVel = Vector3.ProjectOnPlane(currentVel, ropeDir);
         float currentSpeed = currentTanVel.magnitude;
 

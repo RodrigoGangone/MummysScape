@@ -19,7 +19,7 @@ public sealed class WalkState : State
         _ctx.View.PlaySfx("Walk");
         _ctx.View.Animator.SetBool("Walk", true);
         // Matamos la inercia física al entrar para tener control total inmediato
-        _ctx.Rb.velocity = Vector3.zero;
+        _ctx.Rb.linearVelocity = Vector3.zero;
         
         GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(HandleSizeChanged);
     }

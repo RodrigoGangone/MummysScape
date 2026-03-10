@@ -40,9 +40,9 @@ Shader "Hidden/ScreenSpaceOutline"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 
-            TEXTURE2D(_MainTex);
-            SAMPLER(sampler_MainTex);
-
+TEXTURE2D(_BlitTexture);
+SAMPLER(sampler_BlitTexture);
+            
             // RT de normales VS generada por el primer pass
             TEXTURE2D(_SceneViewSpaceNormals);
             SAMPLER(sampler_SceneViewSpaceNormals);
@@ -123,8 +123,7 @@ Shader "Hidden/ScreenSpaceOutline"
             half4 frag (Varyings IN) : SV_Target
             {
                 float2 texel = 1.0 / _ScreenParams.xy;
-                half4 src = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv);
-                float angleFactor = AngleFactorAtUV(IN.uv);
+half4 src = SAMPLE_TEXTURE2D(_BlitTexture, sampler_BlitTexture, IN.uv);                float angleFactor = AngleFactorAtUV(IN.uv);
                 
                 // --- Profundidad ---
                 float depthMask = 0.0;

@@ -9,7 +9,7 @@ using UnityEngine;
 public sealed class BoxPushAttract : MonoBehaviour
 {
     [Header("Fricción / Física")] [SerializeField]
-    private PhysicMaterial _materialBajaFriccion;
+    private PhysicsMaterial _materialBajaFriccion;
 
     [Header("Ground Check")] [SerializeField]
     private LayerMask _groundMask;
@@ -79,10 +79,10 @@ public sealed class BoxPushAttract : MonoBehaviour
 
         if (!enabled)
         {
-            var v = _rb.velocity;
+            var v = _rb.linearVelocity;
             v.x = 0f;
             v.z = 0f;
-            _rb.velocity = v;
+            _rb.linearVelocity = v;
         }
     }
 
@@ -102,7 +102,7 @@ public sealed class BoxPushAttract : MonoBehaviour
 
     public void StopImmediate()
     {
-        _rb.velocity = Vector3.zero;
+        _rb.linearVelocity = Vector3.zero;
     }
 
     private bool GroundCheckCorners(out int supported)

@@ -89,7 +89,7 @@ public class SwingHandler : MonoBehaviour
         if (!SpringJoint || !rb) return;
 
         Vector3 ropeDir = GetRopeDirWorld();
-        Vector3 v = rb.velocity;
+        Vector3 v = rb.linearVelocity;
         Vector3 vRad = Vector3.Project(v, ropeDir); 
         Vector3 vTan = v - vRad;                   
 
@@ -97,7 +97,7 @@ public class SwingHandler : MonoBehaviour
         if (vTan.sqrMagnitude > maxTan * maxTan)
         {
             vTan = vTan.normalized * maxTan;
-            rb.velocity = vRad + vTan;
+            rb.linearVelocity = vRad + vTan;
         }
     }
 
@@ -114,11 +114,11 @@ public class SwingHandler : MonoBehaviour
                 rb.AddForce(gTan * _gravityAssist, ForceMode.Acceleration);
         }
 
-        Vector3 v = rb.velocity;
+        Vector3 v = rb.linearVelocity;
         Vector3 vRad = Vector3.Project(v, ropeDir);
         Vector3 vTan = v - vRad;
 
         vTan = Vector3.MoveTowards(vTan, Vector3.zero, _tangentialBrake * dt);
-        rb.velocity = vRad + vTan;
+        rb.linearVelocity = vRad + vTan;
     }
 }

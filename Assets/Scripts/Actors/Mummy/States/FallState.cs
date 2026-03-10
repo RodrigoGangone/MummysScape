@@ -31,7 +31,7 @@ public class FallState : State, IBandageRestrictor
         float targetSpeed = _ctx.MoveSpeed * AirMultiplier;
         Vector3 targetVelXZ = dir * targetSpeed;
 
-        Vector3 currentVel = _ctx.Rb.velocity;
+        Vector3 currentVel = _ctx.Rb.linearVelocity;
         Vector3 currentVelXZ = new Vector3(currentVel.x, 0f, currentVel.z);
 
         Vector3 diff = targetVelXZ - currentVelXZ;
