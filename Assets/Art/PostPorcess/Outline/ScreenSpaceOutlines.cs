@@ -66,7 +66,6 @@ public class ScreenSpaceOutlines : ScriptableRendererFeature
                 return;
 
             UniversalCameraData cameraData = frameData.Get<UniversalCameraData>();
-            UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
             UniversalRenderingData renderingData = frameData.Get<UniversalRenderingData>();
             UniversalLightData lightData = frameData.Get<UniversalLightData>();
 
@@ -78,7 +77,7 @@ public class ScreenSpaceOutlines : ScriptableRendererFeature
                 renderGraph,
                 desc,
                 "_SceneViewSpaceNormals",
-                true,
+                clear: false,
                 _settings.filterMode
             );
 
@@ -112,17 +111,12 @@ public class ScreenSpaceOutlines : ScriptableRendererFeature
 
             builder.UseRendererList(passData.rendererList);
             builder.SetRenderAttachment(normalsTex, 0);
-
-            // Esto reemplaza PushGlobalTexture en Unity 6
             builder.SetGlobalTextureAfterPass(normalsTex, _normalsTextureId);
-
             builder.AllowPassCulling(false);
-
-            builder.SetRenderAttachmentDepth(resourceData.activeDepthTexture, AccessFlags.Read);
 
             builder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
             {
-                // limpiar solo color, NO depth
+                // Limpiar solo color. No tocar depth.
                 context.cmd.ClearRenderTarget(false, true, Color.clear);
                 context.cmd.DrawRendererList(data.rendererList);
             });
@@ -167,41 +161,38 @@ public class ScreenSpaceOutlines : ScriptableRendererFeature
                 renderGraph,
                 desc,
                 "_OutlinesTemp",
-                false
+                clear: false
             );
 
-            using (var builder = renderGraph.AddRasterRenderPass<PassData>(
+            using var builder = renderGraph.AddRasterRenderPass<PassData>(
                 "Screen Space Outline Pass",
-                out var passData))
+                out var passData
+            );
+
+            _outlineMat.SetFloat("_Thickness", _settings.thickness);
+            _outlineMat.SetFloat("_Blend", _settings.blend);
+            _outlineMat.SetFloat("_DepthThreshold", _settings.depthThreshold);
+            _outlineMat.SetFloat("_DepthSmoothWidth", _settings.depthSmoothWidth);
+            _outlineMat.SetFloat("_RobertsCrossMultiplier", _settings.robertsCrossMultiplier);
+            _outlineMat.SetFloat("_DepthAttenuation", _settings.depthAttenuation);
+            _outlineMat.SetFloat("_DepthRelativeScale", _settings.depthRelativeScale);
+            _outlineMat.SetFloat("_NormalsThreshold", _settings.normalsThreshold);
+            _outlineMat.SetFloat("_NormalSensitivity", _settings.normalSensitivity);
+            _outlineMat.SetFloat("_UseDepth", _settings.useDepth ? 1f : 0f);
+            _outlineMat.SetFloat("_UseNormals", _settings.useNormals ? 1f : 0f);
+
+            passData.material = _outlineMat;
+            passData.source = cameraTarget;
+
+            builder.UseTexture(cameraTarget, AccessFlags.Read);
+            builder.UseGlobalTexture(_normalsTextureId, AccessFlags.Read);
+            builder.SetRenderAttachment(tempTex, 0);
+            builder.AllowPassCulling(false);
+
+            builder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
             {
-                _outlineMat.SetFloat("_Thickness", _settings.thickness);
-                _outlineMat.SetFloat("_Blend", _settings.blend);
-                _outlineMat.SetFloat("_DepthThreshold", _settings.depthThreshold);
-                _outlineMat.SetFloat("_DepthSmoothWidth", _settings.depthSmoothWidth);
-                _outlineMat.SetFloat("_RobertsCrossMultiplier", _settings.robertsCrossMultiplier);
-                _outlineMat.SetFloat("_DepthAttenuation", _settings.depthAttenuation);
-                _outlineMat.SetFloat("_DepthRelativeScale", _settings.depthRelativeScale);
-                _outlineMat.SetFloat("_NormalsThreshold", _settings.normalsThreshold);
-                _outlineMat.SetFloat("_NormalSensitivity", _settings.normalSensitivity);
-                _outlineMat.SetFloat("_UseDepth", _settings.useDepth ? 1f : 0f);
-                _outlineMat.SetFloat("_UseNormals", _settings.useNormals ? 1f : 0f);
-
-                passData.material = _outlineMat;
-                passData.source = cameraTarget;
-
-                builder.UseTexture(cameraTarget, AccessFlags.Read);
-
-                // Leemos la textura global generada en el pass anterior
-                builder.UseGlobalTexture(_normalsTextureId, AccessFlags.Read);
-
-                builder.SetRenderAttachment(tempTex, 0);
-                builder.AllowPassCulling(false);
-
-                builder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
-                {
-                    Blitter.BlitTexture(context.cmd, data.source, new Vector4(1, 1, 0, 0), data.material, 0);
-                });
-            }
+                Blitter.BlitTexture(context.cmd, data.source, new Vector4(1, 1, 0, 0), data.material, 0);
+            });
 
             resourceData.cameraColor = tempTex;
         }
@@ -248,6 +239,9 @@ public class ScreenSpaceOutlines : ScriptableRendererFeature
             return;
 
         if (outlinesLayerMask.value == 0)
+            return;
+
+        if (_normalsMat == null || _outlineMat == null)
             return;
 
         renderer.EnqueuePass(_normalsPass);
