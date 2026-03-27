@@ -13,7 +13,7 @@ public class ZoneTile : MonoBehaviour
     [SerializeField] private int requiredTotalGems;
 
     [Header("Referencias de Pilares (Props)")]
-    [SerializeField] private Renderer[] gemVisuals; 
+    [SerializeField] private Renderer[] gemVisuals;
     [SerializeField] private GameObject bossScorpionParent;
 
     [Header("Referencias del Portal (Estructura)")]
@@ -35,49 +35,34 @@ public class ZoneTile : MonoBehaviour
     [Header("Sistema")]
     [SerializeField] private UIManager uiManager;
 
+    [Header("UI Contextual")]
+    [SerializeField] private string enterZonePromptText = "Entrar";
+
     private bool _isUnlocked;
     private bool _playerInside;
 
-    // Diccionarios para guardar los materiales originales de cada grupo
-    private Dictionary<Renderer, Material[]> _originalPortalMaterials = new Dictionary<Renderer, Material[]>();
-    private Dictionary<Renderer, Material[]> _originalPropMaterials = new Dictionary<Renderer, Material[]>();
+    private readonly Dictionary<Renderer, Material[]> _originalPortalMaterials = new();
+    private readonly Dictionary<Renderer, Material[]> _originalPropMaterials = new();
 
-    void Awake()
+    private void Awake()
     {
-        // 1. Cachear materiales originales del Portal
         CacheMaterials(portalStructure, _originalPortalMaterials);
 
-        // 2. Cachear materiales originales de las Gemas
         foreach (var renderer in gemVisuals)
         {
             if (renderer != null && !_originalPropMaterials.ContainsKey(renderer))
                 _originalPropMaterials.Add(renderer, renderer.sharedMaterials);
         }
 
-        // 3. Cachear materiales originales del Escorpión
         CacheMaterials(bossScorpionParent, _originalPropMaterials);
     }
 
-    private void CacheMaterials(GameObject parent, Dictionary<Renderer, Material[]> dictionary)
-    {
-        if (parent == null) return;
-        Renderer[] renderers = parent.GetComponentsInChildren<Renderer>();
-        foreach (var r in renderers)
-        {
-            if (r.GetComponent<CanvasRenderer>() != null) continue;
-            if (!dictionary.ContainsKey(r))
-                dictionary.Add(r, r.sharedMaterials);
-        }
-    }
-
-    void Start()
+    private void Start()
     {
         RefreshStatus();
 
         if (_isUnlocked && !Save.IsZoneRevealSeen(targetBuildIndex))
-        {
             TriggerRevealAnimation();
-        }
     }
 
     public void RefreshStatus()
@@ -87,14 +72,20 @@ public class ZoneTile : MonoBehaviour
 
         if (portalFx != null)
         {
-            if (_isUnlocked && !portalFx.isPlaying) portalFx.Play();
-            else if (!_isUnlocked) portalFx.Stop();
+            if (_isUnlocked && !portalFx.isPlaying)
+                portalFx.Play();
+            else if (!_isUnlocked)
+                portalFx.Stop();
         }
     }
 
-    void CheckUnlockConditions()
+    private void CheckUnlockConditions()
     {
-        if (isFirstZone) { _isUnlocked = true; return; }
+        if (isFirstZone)
+        {
+            _isUnlocked = true;
+            return;
+        }
 
         bool bossDefeated = Save.IsLevelCompleted(requiredBossLevelIndex);
         int currentGems = Save.GetGlobalGemCount();
@@ -103,17 +94,29 @@ public class ZoneTile : MonoBehaviour
         _isUnlocked = bossDefeated && enoughGems;
     }
 
-    void UpdateAllVisuals()
+    private void UpdateAllVisuals()
     {
-        // --- 1. Lógica del Portal ---
         ApplyVisualLogic(_originalPortalMaterials, _isUnlocked, lockedPortalMaterial);
 
-        // --- 2. Lógica del Escorpión ---
         bool bossDefeated = Save.IsLevelCompleted(requiredBossLevelIndex);
         ApplyVisualLogicForScorpion(bossDefeated);
 
-        // --- 3. Lógica de las Gemas (Proporcional) ---
         UpdateGemsVisuals();
+    }
+
+    private void CacheMaterials(GameObject parent, Dictionary<Renderer, Material[]> dictionary)
+    {
+        if (parent == null) return;
+
+        Renderer[] renderers = parent.GetComponentsInChildren<Renderer>();
+
+        foreach (var r in renderers)
+        {
+            if (r.GetComponent<CanvasRenderer>() != null) continue;
+
+            if (!dictionary.ContainsKey(r))
+                dictionary.Add(r, r.sharedMaterials);
+        }
     }
 
     private void ApplyVisualLogic(Dictionary<Renderer, Material[]> cache, bool unlocked, Material lockedMat)
@@ -121,33 +124,51 @@ public class ZoneTile : MonoBehaviour
         foreach (var entry in cache)
         {
             Renderer r = entry.Key;
+
             if (unlocked)
-            {
-                r.materials = entry.Value; // Restaura originales
-            }
+                r.materials = entry.Value;
             else
-            {
                 r.materials = CreateLockedArray(entry.Value.Length, lockedMat);
-            }
         }
     }
 
     private void ApplyVisualLogicForScorpion(bool defeated)
     {
         if (bossScorpionParent == null) return;
+
         Renderer[] renderers = bossScorpionParent.GetComponentsInChildren<Renderer>();
+
         foreach (var r in renderers)
         {
             if (_originalPropMaterials.TryGetValue(r, out Material[] originals))
             {
-                r.materials = defeated ? originals : CreateLockedArray(originals.Length, lockedPropMaterial);
+                r.materials = defeated
+                    ? originals
+                    : CreateLockedArray(originals.Length, lockedPropMaterial);
             }
         }
     }
 
     private void UpdateGemsVisuals()
     {
+        if (gemVisuals == null || gemVisuals.Length == 0) return;
+
         int currentGems = Save.GetGlobalGemCount();
+
+        if (requiredTotalGems <= 0)
+        {
+            for (int i = 0; i < gemVisuals.Length; i++)
+            {
+                Renderer r = gemVisuals[i];
+                if (r == null) continue;
+
+                if (_originalPropMaterials.TryGetValue(r, out Material[] originals))
+                    r.materials = originals;
+            }
+
+            return;
+        }
+
         float progress = Mathf.Clamp01((float)currentGems / requiredTotalGems);
         int gemsToUnlock = Mathf.FloorToInt(progress * gemVisuals.Length);
 
@@ -171,7 +192,10 @@ public class ZoneTile : MonoBehaviour
     private Material[] CreateLockedArray(int length, Material lockedMat)
     {
         Material[] mats = new Material[length];
-        for (int i = 0; i < length; i++) mats[i] = lockedMat;
+
+        for (int i = 0; i < length; i++)
+            mats[i] = lockedMat;
+
         return mats;
     }
 
@@ -184,37 +208,52 @@ public class ZoneTile : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("PlayerFather")) return;
+
         _playerInside = true;
         RefreshStatus();
-        if (_isUnlocked) GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.Y);
+
+        if (_isUnlocked)
+        {
+            GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+                ContextUIFactory.Prompt(ContextMessageType.Enter, buttonType.Y)
+            );
+        }
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag("PlayerFather")) return;
+
         _playerInside = false;
-        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
+
+        GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+            ContextUIFactory.Hidden()
+        );
     }
 
-    void TriggerRevealAnimation()
+    private void TriggerRevealAnimation()
     {
-        if (FocusManager.Instance != null)
-        {
-            FocusManager.Instance.RequestRevealFocus(
-                targetBuildIndex,
-                revealCamPos != null ? revealCamPos : transform,
-                transform,
-                revealDuration,
-                revealZoomAmount,
-                revealZoomCurve,
-                () => Save.MarkZoneRevealSeen(targetBuildIndex)
-            );
-        }
+        if (FocusManager.Instance == null) return;
+
+        FocusManager.Instance.RequestRevealFocus(
+            targetBuildIndex,
+            revealCamPos != null ? revealCamPos : transform,
+            transform,
+            revealDuration,
+            revealZoomAmount,
+            revealZoomCurve,
+            () => Save.MarkZoneRevealSeen(targetBuildIndex)
+        );
     }
 
-    void EnterZone()
+    private void EnterZone()
     {
-        if (uiManager != null)
-            uiManager.GetComponent<SceneTransitionManager>().FadeInAndLoadScene(targetBuildIndex);
+        if (uiManager == null) return;
+
+        GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+            ContextUIFactory.Hidden()
+        );
+
+        uiManager.GetComponent<SceneTransitionManager>().FadeInAndLoadScene(targetBuildIndex);
     }
 }

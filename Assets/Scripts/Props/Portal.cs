@@ -22,7 +22,6 @@ public class Portal : MonoBehaviour
     private PlayableDirector directorEnter;
 
     [SerializeField] private PlayableDirector directorExit;
-
     [SerializeField] private float moveDuration = 1.0f;
     [SerializeField] private Transform winTarget;
 
@@ -30,13 +29,14 @@ public class Portal : MonoBehaviour
     private GameObject fakeMummy;
 
     [SerializeField] private Animator anim;
+
     private FocusOnActivation Focus => GetComponent<FocusOnActivation>();
     private Collider Col => GetComponent<Collider>();
 
     private const string LOCK_ID = "Sarcofagus";
     private const string PLAYER_TAG = "PlayerFather";
+    private const string INTERACT_TEXT = "Entrar";
 
-    // Variables para manejar el input en el Update
     private bool _canInteract;
     private PlayerController _cachedPlayer;
 
@@ -49,51 +49,54 @@ public class Portal : MonoBehaviour
         Focus.Activate();
         OpenAnim();
 
-        if (directorEnter != null) directorEnter.Play();
+        if (directorEnter != null)
+            directorEnter.Play();
     }
 
     private void Update()
     {
-        // Chequeo limpio de input en el ciclo de renderizado
         if (_canInteract && !enterLevel && Input.GetButtonDown("Accept"))
         {
-            if (_cachedPlayer != null)
-            {
-                _canInteract = false; // Evitamos doble input inmediato
-                StartWinSequence(_cachedPlayer);
-            }
+            if (_cachedPlayer == null) return;
+
+            _canInteract = false;
+            StartWinSequence(_cachedPlayer);
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.gameObject.CompareTag(PLAYER_TAG) || enterLevel) return;
+        if (!other.CompareTag(PLAYER_TAG) || enterLevel) return;
 
-        // Guardamos la referencia del jugador y habilitamos la interacción
         _cachedPlayer = other.GetComponent<PlayerController>();
         _canInteract = true;
 
-        GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.Y);
+        GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+            ContextUIFactory.Prompt(ContextMessageType.Interact, buttonType.Y, Color.red)
+        );
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.gameObject.CompareTag(PLAYER_TAG) || enterLevel) return;
+        if (!other.CompareTag(PLAYER_TAG) || enterLevel) return;
 
-        // Limpiamos la referencia y deshabilitamos al salir
         _canInteract = false;
         _cachedPlayer = null;
 
-        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
+        GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(ContextUIFactory.Hidden()
+        );
     }
 
     private void StartWinSequence(PlayerController player)
     {
-        Col.enabled = false;
+        if (Col != null)
+            Col.enabled = false;
 
         Focus.Activate();
 
-        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
+        GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+            ContextUIFactory.Hidden()
+        );
 
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, true);
 
@@ -124,10 +127,12 @@ public class Portal : MonoBehaviour
         player.Ctx.Tf.position = winTarget.position;
         player.Ctx.Tf.rotation = winTarget.rotation;
 
-        directorExit.Play();
+        if (directorExit != null)
+            directorExit.Play();
     }
 
-    public void LockPlayer() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, true);
+    public void LockPlayer() =>
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, true);
 
     public void UnlockPlayer()
     {
@@ -157,9 +162,22 @@ public class Portal : MonoBehaviour
     }
 
     public void WinPlayer() => GameEventManager.Instance.playerEvents.OnWin.Raise();
-    private void OpenAnim() => anim.SetTrigger("Open");
-    public void CloseAnim() => anim.SetTrigger("Close");
 
-    private void OnEnable() => GameEventManager.Instance.levelEvents.OnWin.Register<int>(CompleteLevel);
-    private void OnDisable() => GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(CompleteLevel);
+    private void OpenAnim()
+    {
+        if (anim != null)
+            anim.SetTrigger("Open");
+    }
+
+    public void CloseAnim()
+    {
+        if (anim != null)
+            anim.SetTrigger("Close");
+    }
+
+    private void OnEnable() =>
+        GameEventManager.Instance.levelEvents.OnWin.Register<int>(CompleteLevel);
+
+    private void OnDisable() =>
+        GameEventManager.Instance.levelEvents.OnWin.Unregister<int>(CompleteLevel);
 }
