@@ -9,8 +9,7 @@ using static PlayerEnum.PlayerStateId;
 [RequireComponent(typeof(StateMachinePlayer))]
 public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
 {
-    [Header("Tuning")] [SerializeField, Min(0f)]
-    private float _moveDeadZone = 0.1f;
+    [Header("Tuning")] [SerializeField, Min(0f)] private float _moveDeadZone = 0.1f;
 
     private StateMachinePlayer _sm;
     private PlayerContext _ctx;
@@ -97,22 +96,18 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
 
         if (_input.IsAimHeld())
         {
-            if (_sm.IsCurrent(Shoot)) return;
-
-            _sm.ChangeState(Aim);
-
             if (_input.ConsumeShootDown())
             {
                 if (_ctx.IsAimValid)
-                {
                     _sm.ChangeState(Shoot);
-                }
                 else
-                {
-                    _sm.ChangeState(Idle);
-                    Debug.Log("Bloqueado: El sistema dice que el tiro no es válido.");
-                }
+                    _sm.ChangeState(Aim);
+
+                return;
             }
+
+            if (!_sm.IsCurrent(Shoot))
+                _sm.ChangeState(Aim);
 
             return;
         }

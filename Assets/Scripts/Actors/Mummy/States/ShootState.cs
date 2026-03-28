@@ -16,7 +16,7 @@ public sealed class ShootState : State, IBandageRestrictor
     {
         _ctx.View.PlaySfx("Shoot");
         
-        _ctx.View.Animator.SetBool("Shoot", true);
+        _ctx.View.Animator.SetTrigger("Shoot");
     }
 
     public override void OnUpdate()
@@ -29,6 +29,5 @@ public sealed class ShootState : State, IBandageRestrictor
 
     public override void OnExit()
     {
-        _ctx.View.Animator.SetBool("Shoot", false);
     }
 }
