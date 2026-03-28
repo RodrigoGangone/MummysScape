@@ -5,7 +5,7 @@ public struct ContextUIData
 {
     public bool Visible;
     public bool UseButton;
-    public buttonType Button;
+    public ButtonType Button;
     public ContextMessageType MessageType;
     public string CustomText;
     public Color TextColor;
@@ -13,7 +13,7 @@ public struct ContextUIData
     public ContextUIData(
         bool visible,
         bool useButton,
-        buttonType button,
+        ButtonType button,
         ContextMessageType messageType,
         string customText,
         Color textColor)
@@ -58,7 +58,7 @@ public static class ContextUIFactory
     /// 
     /// Usa un mensaje predefinido (ContextMessageType) + icono de botón.
     /// </summary>
-    public static ContextUIData Prompt(ContextMessageType type, buttonType button, Color? color = null)
+    public static ContextUIData Prompt(ContextMessageType type, ButtonType button, Color? color = null)
         => new ContextUIData(
             visible: true,
             useButton: true,
@@ -96,7 +96,7 @@ public static class ContextUIFactory
     /// 
     /// Combina flexibilidad (texto libre) + input del jugador.
     /// </summary>
-    public static ContextUIData CustomPrompt(string text, buttonType button, Color? color = null)
+    public static ContextUIData CustomPrompt(string text, ButtonType button, Color? color = null)
         => new ContextUIData(
             visible: true,
             useButton: true,

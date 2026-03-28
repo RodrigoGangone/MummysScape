@@ -197,43 +197,43 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _mummyUI: {fileID: 0}
-  selectorSceneIndex: 1
-  _interaction: {fileID: 1665642599261849810}
-  _interactionBtn: {fileID: 2362805837391263650}
-  btnA: {fileID: 21300000, guid: e19e9cc3f0e29324eacd8c06dc68a94c, type: 3}
-  btnY: {fileID: 21300000, guid: 38fb3d40ebbb9c64aa41383cdda7515a, type: 3}
-  _focusMessagePanel: {fileID: 3175011936150384419}
-  _focusText: {fileID: 6742217484244351386}
-  _focusMessageCG: {fileID: 0}
-  _fadeDuration: 0.3
-  _pausePanel: {fileID: 9027560868982066752}
-  _pauseMaterial: {fileID: 2100000, guid: 5989c71586c05414da9771fc77a698b7, type: 2}
-  _optionsPanel: {fileID: 6556445342790209777}
-  _optionsMaterial: {fileID: 2100000, guid: 2cd631c8263ad154e9c7bf26eaaffa6b, type: 2}
-  _btnResume: {fileID: 3926174276429093974}
-  _btnRetry: {fileID: 2356330667333728996}
-  _btnOptions: {fileID: 6185338045326004899}
-  _btnExit: {fileID: 1122768949479274611}
-  _btnBackOptions: {fileID: 6933234731952108681}
-  _pauseFirstSelected: {fileID: 3926174276429093974}
-  _optionsFirstSelected: {fileID: 6062216671801507488}
-  _endGamePanel: {fileID: 6523940995055123738}
-  _btnEndGameRetry: {fileID: 186339208617312996}
-  _btnEndGameMenu: {fileID: 7557402725651895179}
-  _btnEndGameNextLvl: {fileID: 1000164109459155893}
-  _winFirstSelected: {fileID: 1000164109459155893}
-  _loseFirstSelected: {fileID: 186339208617312996}
-  _uiSlotsFills:
-  - {fileID: 5053856582210334374}
-  - {fileID: 6851241758777392442}
-  - {fileID: 5969827658157682167}
-  _gemIcons:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  _delayBeforeRefill: 2
-  _nextLvlTransitionPanel: {fileID: 7121342916584588958}
-  _fakeTimer: 3
+  _sceneConfig:
+    SelectorSceneIndex: 1
+  _contextUI:
+    CanvasGroup: {fileID: 2933800968546615613}
+    InteractionBtn: {fileID: 2362805837391263650}
+    FocusText: {fileID: 6742217484244351386}
+    BtnA: {fileID: 21300000, guid: e19e9cc3f0e29324eacd8c06dc68a94c, type: 3}
+    BtnY: {fileID: 21300000, guid: 38fb3d40ebbb9c64aa41383cdda7515a, type: 3}
+    FadeDuration: 0.3
+  _pauseUI:
+    PausePanel: {fileID: 9027560868982066752}
+    OptionsPanel: {fileID: 6556445342790209777}
+    PauseMaterial: {fileID: 2100000, guid: 5989c71586c05414da9771fc77a698b7, type: 2}
+    OptionsMaterial: {fileID: 2100000, guid: 2cd631c8263ad154e9c7bf26eaaffa6b, type: 2}
+    BtnResume: {fileID: 3926174276429093974}
+    BtnRetry: {fileID: 2356330667333728996}
+    BtnOptions: {fileID: 6185338045326004899}
+    BtnExit: {fileID: 1122768949479274611}
+    BtnBackOptions: {fileID: 6933234731952108681}
+    PauseFirstSelected: {fileID: 3926174276429093974}
+    OptionsFirstSelected: {fileID: 6062216671801507488}
+  _endGameUI:
+    EndGamePanel: {fileID: 6523940995055123738}
+    BtnEndGameRetry: {fileID: 186339208617312996}
+    BtnEndGameMenu: {fileID: 7557402725651895179}
+    BtnEndGameNextLvl: {fileID: 1000164109459155893}
+    WinFirstSelected: {fileID: 1000164109459155893}
+    LoseFirstSelected: {fileID: 186339208617312996}
+    UiSlotsFills:
+    - {fileID: 5053856582210334374}
+    - {fileID: 6851241758777392442}
+    - {fileID: 5969827658157682167}
+    Gems: {fileID: 7907036385905466962}
+    DelayBeforeRefill: 2
+  _loadingUI:
+    NextLvlTransitionPanel: {fileID: 7121342916584588958}
+    FakeTimer: 3
 --- !u!114 &705919721040869079
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -492,6 +492,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9004474009004409746}
   - component: {fileID: 8259243514040069691}
+  - component: {fileID: 2933800968546615613}
   m_Layer: 5
   m_Name: Message
   m_TagString: Untagged
@@ -546,6 +547,18 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!225 &2933800968546615613
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1665642599261849810}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &1954604351676044804
 GameObject:
   m_ObjectHideFlags: 0
@@ -1024,7 +1037,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
@@ -1561,7 +1574,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
@@ -2694,7 +2707,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1

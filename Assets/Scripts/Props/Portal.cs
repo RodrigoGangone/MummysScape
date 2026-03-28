@@ -72,7 +72,7 @@ public class Portal : MonoBehaviour
         _canInteract = true;
 
         GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-            ContextUIFactory.Prompt(ContextMessageType.Interact, buttonType.Y, Color.red)
+            ContextUIFactory.Prompt(ContextMessageType.Interact, ButtonType.Y, Color.red)
         );
     }
 

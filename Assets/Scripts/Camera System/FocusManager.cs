@@ -242,7 +242,7 @@ public class FocusManager : MonoBehaviour, IPausable
             if (req.CanBeCancelled && !string.IsNullOrEmpty(req.CancelText))
             {
                 GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-                    ContextUIFactory.Prompt(ContextMessageType.CancelReplay, buttonType.Y, req.CancelColor)
+                    ContextUIFactory.Prompt(ContextMessageType.CancelReplay, ButtonType.Y, req.CancelColor)
                 );
             }
 

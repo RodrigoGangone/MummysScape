@@ -71,7 +71,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         if (!_isPromptActive)
         {
             GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, buttonType.Y)
+                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, ButtonType.Y)
             );
             _isPromptActive = true;
         }
@@ -136,7 +136,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         if (_canPlayTutorial && IsTutorialAlreadySeen && !_isPromptActive)
         {
             GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, buttonType.Y)
+                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, ButtonType.Y)
             );
             _isPromptActive = true;
         }
@@ -156,7 +156,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         if (_canPlayTutorial && !_isPromptActive)
         {
             GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, buttonType.Y)
+                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, ButtonType.Y)
             );
             _isPromptActive = true;
         }

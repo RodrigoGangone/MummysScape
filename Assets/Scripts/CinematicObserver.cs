@@ -25,12 +25,12 @@ public class CinematicObserver : MonoBehaviour
         {
             Debug.Log($"[Cinematic: {cinematicId}] Se puede saltear");
             // Mostramos el prompt (Botón Y) para avisar que el skip está disponible
-            ShowInteractionInput(true, buttonType.Y);
+            ShowInteractionInput(true, ButtonType.Y);
         }
         else
         {
             Debug.Log($"[Cinematic: {cinematicId}] Primera vez; no se puede saltear todavía");
-            ShowInteractionInput(false, buttonType.Y);
+            ShowInteractionInput(false, ButtonType.Y);
         }
     }
 
@@ -48,11 +48,11 @@ public class CinematicObserver : MonoBehaviour
         Transition.FadeInAndLoadScene(1);
     }
 
-    private void ShowInteractionInput(bool value, buttonType button)
+    private void ShowInteractionInput(bool value, ButtonType button)
     {
         if (interactionBtn == null) return;
         interactionBtn.sprite =
-            button switch { buttonType.A => btnA, buttonType.Y => btnY, _ => interactionBtn.sprite };
+            button switch { ButtonType.A => btnA, ButtonType.Y => btnY, _ => interactionBtn.sprite };
         interaction.SetActive(value);
     }
 }

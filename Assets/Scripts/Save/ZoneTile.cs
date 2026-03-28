@@ -215,7 +215,7 @@ public class ZoneTile : MonoBehaviour
         if (_isUnlocked)
         {
             GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-                ContextUIFactory.Prompt(ContextMessageType.Enter, buttonType.Y)
+                ContextUIFactory.Prompt(ContextMessageType.Enter, ButtonType.Y)
             );
         }
     }
