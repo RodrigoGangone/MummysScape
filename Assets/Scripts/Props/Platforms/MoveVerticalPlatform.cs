@@ -3,74 +3,205 @@ using System.Linq;
 using UnityEngine;
 using static PauseUtils;
 
-/// <summary> 
-/// Plataforma Vertical: Controla el movimiento ascendente y descendente mediante Transform, integrando 
-/// lógica de espera en waypoints y estados de bloqueo por eventos o cinemáticas. 
+/// <summary>
+/// Plataforma Vertical:
+/// - Idle: detenida
+/// - Activating: reproduce feedback visual/sonoro previo al movimiento
+/// - Moving: se desplaza hacia el waypoint objetivo
+/// - Waiting: espera en un waypoint antes de continuar
+///
+/// Pause/Lock no cambian el estado lógico: solo congelan la ejecución.
 /// </summary>
 public class MoveVerticalPlatform : MonoBehaviour, IPausable
 {
-    [Header("SETTINGS")] [SerializeField] private bool isMovingOnStart = true;
+    private enum PlatformState
+    {
+        Idle,
+        Activating,
+        Moving,
+        Waiting
+    }
+
+    [Header("Settings")]
+    [SerializeField] private bool isMovingOnStart = true;
     [SerializeField] private float speed = 1f;
     [SerializeField] private float stopTime = 0.5f;
 
-    [Header("WAYPOINTS")] [SerializeField] private Transform[] waypoints;
+    [Header("Waypoints")]
+    [SerializeField] private Transform[] waypoints;
 
-    [Header("EFFECTS")] [SerializeField] private FxBank platformBank;
+    [Header("Effects")]
+    [SerializeField] private FxBank platformBank;
     [SerializeField] private string movingSoundKey = "Moving";
+    [SerializeField] private string activationSoundKey = "Active";
     [SerializeField] private ParticleSystem sandMoundsParticle;
     [SerializeField] private ParticleSystem activationParticles;
     [SerializeField] private float glowDuration = 2f;
     [SerializeField] private float glowIntensity = 0.15f;
 
-    private int _targetWaypointIndex = 0;
-    private bool _isMoving;
-    private bool _isWaitingAtWaypoint;
+    private PlatformState _state = PlatformState.Idle;
+
+    private int _currentWaypointIndex;
+    private int _targetWaypointIndex;
 
     private bool _isGloballyPaused;
     private bool _isLocked;
 
     private Material[] _platformMaterials;
-    private Coroutine _waitCoroutine;
-
     private AudioSource _movingAudio;
+    private Coroutine _stateRoutine;
+
+    private FocusOnActivation _focusOnActivation;
+
+    private bool IsFrozen => _isGloballyPaused || _isLocked;
+    private bool HasValidWaypoints => waypoints != null && waypoints.Length > 0;
+    private bool CanMoveLogic => !IsFrozen && HasValidWaypoints;
+
+    private void Awake()
+    {
+        _platformMaterials = GetMaterialsFromChildren();
+        _focusOnActivation = GetComponent<FocusOnActivation>();
+    }
 
     private void Start()
     {
-        _platformMaterials = GetMaterialsFromChildren();
-        _isMoving = isMovingOnStart;
-
-        if (waypoints.Length == 0)
+        if (!HasValidWaypoints)
         {
-            Debug.LogWarning("MovingPlatform no tiene waypoints asignados. Se desactivará.", this);
-            _isMoving = false;
+            Debug.LogWarning("MoveVerticalPlatform no tiene waypoints asignados. Se desactivará.", this);
+            enabled = false;
             return;
         }
 
-        transform.position = waypoints[0].position;
+        _currentWaypointIndex = 0;
+        transform.position = waypoints[_currentWaypointIndex].position;
 
-        if (_isMoving)
-            _targetWaypointIndex = 1;
+        if (isMovingOnStart && waypoints.Length > 1)
+        {
+            _targetWaypointIndex = GetNextIndex(_currentWaypointIndex, 1);
+            ChangeState(PlatformState.Moving);
+        }
+        else
+        {
+            _targetWaypointIndex = _currentWaypointIndex;
+            ChangeState(PlatformState.Idle);
+        }
+
+        RefreshFeedback();
     }
 
     private void Update()
     {
-        bool shouldMove = !_isGloballyPaused
-                          && !_isLocked
-                          && !_isWaitingAtWaypoint
-                          && _isMoving
-                          && waypoints.Length > 0;
-
-        HandleEffects(shouldMove);
-        HandleMovingSound(shouldMove);
-
-        if (!shouldMove)
+        if (!HasValidWaypoints)
             return;
 
-        MovePlatform();
+        if (_state == PlatformState.Moving)
+            TickMovement();
+
+        RefreshFeedback();
     }
 
-    private void MovePlatform()
+    #region Public API
+
+    public void StartAction()
     {
+        if (!HasValidWaypoints || waypoints.Length <= 1)
+            return;
+
+        switch (_state)
+        {
+            case PlatformState.Idle:
+                BeginActivation();
+                break;
+
+            case PlatformState.Moving:
+            case PlatformState.Waiting:
+            case PlatformState.Activating:
+                StopPlatform();
+                break;
+        }
+    }
+
+    public void ReturnToPrevious()
+    {
+        if (!HasValidWaypoints || waypoints.Length <= 1)
+            return;
+
+        StopCurrentRoutine();
+
+        _targetWaypointIndex = GetNextIndex(_currentWaypointIndex, -1);
+        ChangeState(PlatformState.Moving);
+    }
+
+    #endregion
+
+    #region State Flow
+
+    private void BeginActivation()
+    {
+        if (_state == PlatformState.Activating)
+            return;
+
+        StopCurrentRoutine();
+        ChangeState(PlatformState.Activating);
+        _stateRoutine = StartCoroutine(ActivationRoutine());
+    }
+
+    private void StopPlatform()
+    {
+        StopCurrentRoutine();
+        ChangeState(PlatformState.Idle);
+    }
+
+    private void ChangeState(PlatformState newState)
+    {
+        _state = newState;
+        RefreshFeedback();
+    }
+
+    private IEnumerator ActivationRoutine()
+    {
+        activationParticles?.Play();
+        _focusOnActivation?.Activate();
+
+        yield return RunGlowSequence();
+
+        if (_state != PlatformState.Activating)
+            yield break;
+
+        _targetWaypointIndex = GetNextIndex(_currentWaypointIndex, 1);
+        ChangeState(PlatformState.Moving);
+        _stateRoutine = null;
+    }
+
+    private IEnumerator WaitAtWaypointRoutine()
+    {
+        ChangeState(PlatformState.Waiting);
+
+        yield return WaitForSecondsPausable(stopTime, () => IsFrozen);
+
+        _targetWaypointIndex = GetNextIndex(_currentWaypointIndex, 1);
+        ChangeState(PlatformState.Moving);
+        _stateRoutine = null;
+    }
+
+    private void StopCurrentRoutine()
+    {
+        if (_stateRoutine == null)
+            return;
+
+        StopCoroutine(_stateRoutine);
+        _stateRoutine = null;
+    }
+
+    #endregion
+
+    #region Movement
+
+    private void TickMovement()
+    {
+        if (!CanMoveLogic)
+            return;
+
         Transform target = waypoints[_targetWaypointIndex];
 
         float distance = Vector3.Distance(transform.position, target.position);
@@ -84,12 +215,65 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         }
 
         float step = speed * speedFactor * Time.deltaTime;
-
         transform.position = Vector3.MoveTowards(transform.position, target.position, step);
 
-        if (Vector3.Distance(transform.position, target.position) < 0.001f)
+        if (Vector3.Distance(transform.position, target.position) <= 0.001f)
         {
-            _waitCoroutine = StartCoroutine(PauseAtWaypoint());
+            transform.position = target.position;
+            _currentWaypointIndex = _targetWaypointIndex;
+
+            StopCurrentRoutine();
+            _stateRoutine = StartCoroutine(WaitAtWaypointRoutine());
+        }
+    }
+
+    private int GetNextIndex(int fromIndex, int direction)
+    {
+        return (fromIndex + direction + waypoints.Length) % waypoints.Length;
+    }
+
+    #endregion
+
+    #region Feedback
+
+    private void RefreshFeedback()
+    {
+        bool shouldPlayMoveFeedback = _state == PlatformState.Moving && !IsFrozen;
+
+        RefreshSandParticles(shouldPlayMoveFeedback);
+        RefreshMovingAudio(shouldPlayMoveFeedback);
+    }
+
+    private void RefreshSandParticles(bool shouldPlay)
+    {
+        if (sandMoundsParticle == null)
+            return;
+
+        if (shouldPlay)
+        {
+            if (!sandMoundsParticle.isPlaying)
+                sandMoundsParticle.Play();
+        }
+        else
+        {
+            if (sandMoundsParticle.isPlaying)
+                sandMoundsParticle.Stop();
+        }
+    }
+
+    private void RefreshMovingAudio(bool shouldPlay)
+    {
+        if (shouldPlay)
+        {
+            EnsureMovingAudio();
+
+            if (_movingAudio != null && !_movingAudio.isPlaying)
+                _movingAudio.Play();
+        }
+        else
+        {
+            if (_movingAudio != null && _movingAudio.isPlaying)
+                _movingAudio.Stop();
         }
     }
 
@@ -114,105 +298,56 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         if (AudioManager.Instance != null)
         {
             var group = AudioManager.Instance.GetMixerGroup(platformBank.bus);
-            if (group != null) _movingAudio.outputAudioMixerGroup = group;
+            if (group != null)
+                _movingAudio.outputAudioMixerGroup = group;
         }
     }
 
-    private void HandleMovingSound(bool isMovingActive)
+    #endregion
+
+    #region Glow
+
+    private Material[] GetMaterialsFromChildren()
     {
-        if (isMovingActive)
+        return GetComponentsInChildren<Renderer>()
+            .SelectMany(r => r.materials)
+            .ToArray();
+    }
+
+    private IEnumerator RunGlowSequence()
+    {
+        yield return AnimateGlow(0f, glowIntensity, glowDuration * 0.5f);
+
+        if (platformBank != null && !string.IsNullOrEmpty(activationSoundKey))
+            platformBank.Play3D(activationSoundKey, transform.position);
+
+        yield return AnimateGlow(glowIntensity, 0f, glowDuration * 0.5f);
+
+        if (GameEventManager.Instance != null)
         {
-            EnsureMovingAudio();
-            if (_movingAudio != null && !_movingAudio.isPlaying) _movingAudio.Play();
+            GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.8f, 2f);
+            GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.8f, 2f);
         }
-        else
-        {
-            if (_movingAudio != null && _movingAudio.isPlaying) _movingAudio.Stop();
-        }
-    }
-
-    private IEnumerator PauseAtWaypoint()
-    {
-        _isWaitingAtWaypoint = true;
-        yield return WaitForSecondsPausable(stopTime, () => _isGloballyPaused || _isLocked);
-        SetNextTarget(1);
-        _isWaitingAtWaypoint = false;
-        _waitCoroutine = null;
-    }
-
-    public void StartAction()
-    {
-        _isMoving = !_isMoving;
-        activationParticles?.Play();
-        StartCoroutine(GlowEffect());
-
-        var cam = GetComponent<FocusOnActivation>();
-        cam?.Activate();
-
-        if (_isMoving && _isWaitingAtWaypoint)
-        {
-            if (_waitCoroutine != null) StopCoroutine(_waitCoroutine);
-            SetNextTarget(1);
-            _isWaitingAtWaypoint = false;
-        }
-    }
-
-    public void ReturnToPrevious()
-    {
-        if (_waitCoroutine != null)
-        {
-            StopCoroutine(_waitCoroutine);
-            _waitCoroutine = null;
-        }
-
-        _isWaitingAtWaypoint = false;
-        SetNextTarget(-1);
-        _isMoving = true;
-    }
-
-    private void SetNextTarget(int direction)
-    {
-        _targetWaypointIndex = (_targetWaypointIndex + direction + waypoints.Length) % waypoints.Length;
-    }
-
-    private void HandleEffects(bool isMovingActive)
-    {
-        if (sandMoundsParticle == null) return;
-
-        if (isMovingActive && !sandMoundsParticle.isPlaying && !_isGloballyPaused && !_isLocked)
-        {
-            sandMoundsParticle.Play();
-        }
-        else if (!isMovingActive && sandMoundsParticle.isPlaying)
-        {
-            sandMoundsParticle.Stop();
-        }
-    }
-
-    #region Glow Effect
-
-    private Material[] GetMaterialsFromChildren() =>
-        GetComponentsInChildren<Renderer>().SelectMany(r => r.materials).ToArray();
-
-    private IEnumerator GlowEffect()
-    {
-        yield return StartCoroutine(AnimateGlow(0f, glowIntensity, glowDuration / 2));
-        platformBank.Play3D("Active", transform.position);
-        yield return StartCoroutine(AnimateGlow(glowIntensity, 0f, glowDuration / 2));
-        
-        GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.8f, 2f);
-        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.8f, 2f);
     }
 
     private IEnumerator AnimateGlow(float from, float to, float duration)
     {
+        if (duration <= 0f)
+        {
+            SetGlow(to);
+            yield break;
+        }
+
         float elapsed = 0f;
+
         while (elapsed < duration)
         {
-            while (_isGloballyPaused) yield return null;
+            while (_isGloballyPaused)
+                yield return null;
 
             elapsed += Time.deltaTime;
-            float current = Mathf.Lerp(from, to, elapsed / duration);
+            float t = Mathf.Clamp01(elapsed / duration);
+            float current = Mathf.Lerp(from, to, t);
             SetGlow(current);
             yield return null;
         }
@@ -222,46 +357,29 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     private void SetGlow(float intensity)
     {
+        if (_platformMaterials == null) return;
+
         foreach (var mat in _platformMaterials)
-            if (mat.HasProperty("_GlowIntensity"))
+        {
+            if (mat != null && mat.HasProperty("_GlowIntensity"))
                 mat.SetFloat("_GlowIntensity", intensity);
+        }
     }
 
     #endregion
 
-    #region Pause & Lock System
+    #region Pause & Lock
 
     public void OnPauseChanged(bool paused)
     {
         _isGloballyPaused = paused;
-        UpdatePauseState();
+        RefreshFeedback();
     }
 
     public void OnLockChanged(bool locked)
     {
         _isLocked = locked;
-        UpdatePauseState();
-    }
-
-    private void UpdatePauseState()
-    {
-        bool isFrozen = _isGloballyPaused || _isLocked;
-
-        if (sandMoundsParticle)
-        {
-            if (isFrozen && sandMoundsParticle.isPlaying)
-                sandMoundsParticle.Pause();
-            else if (!isFrozen && _isMoving && !_isWaitingAtWaypoint)
-                sandMoundsParticle.Play();
-        }
-
-        if (_movingAudio != null)
-        {
-            if (isFrozen && _movingAudio.isPlaying)
-                _movingAudio.Pause();
-            else if (!isFrozen && _isMoving && !_isWaitingAtWaypoint)
-                _movingAudio.UnPause();
-        }
+        RefreshFeedback();
     }
 
     private void OnEnable()
@@ -280,22 +398,18 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     #endregion
 
-    #region Player Collision Logic (Requerido para Transform)
+    #region Player Parenting
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
-        {
-            other.transform.SetParent(this.transform);
-        }
+            other.transform.SetParent(transform);
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
-        {
             other.transform.SetParent(null);
-        }
     }
 
     #endregion
