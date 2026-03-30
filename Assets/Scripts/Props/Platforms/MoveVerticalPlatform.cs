@@ -398,19 +398,19 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     #endregion
 
-    #region Player Parenting
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
-            other.transform.SetParent(transform);
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-            other.transform.SetParent(null);
-    }
-
-    #endregion
+    // #region Player Parenting
+    //
+    // private void OnTriggerEnter(Collider other)
+    // {
+    //     if (other.CompareTag("Player"))
+    //         other.transform.SetParent(transform);
+    // }
+    //
+    // private void OnTriggerExit(Collider other)
+    // {
+    //     if (other.CompareTag("Player"))
+    //         other.transform.SetParent(null);
+    // }
+    //
+    // #endregion
 }

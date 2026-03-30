@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using static Tags;
 
 [RequireComponent(typeof(Collider))]
 public class ZoneTile : MonoBehaviour
@@ -207,7 +208,7 @@ public class ZoneTile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
+        if (!other.CompareTag(PLAYER_TAG)) return;
 
         _playerInside = true;
         RefreshStatus();
@@ -222,7 +223,7 @@ public class ZoneTile : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
+        if (!other.CompareTag(PLAYER_TAG)) return;
 
         _playerInside = false;
 

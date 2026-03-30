@@ -1,5 +1,6 @@
 using UnityEngine;
 using static PlayerEnum;
+using static Animations.Player;
 
 /// <summary> 
 /// Estado de Atracción: Ejecuta la mecánica de "tirar" de una caja mediante vendas, coordinando la 
@@ -24,7 +25,7 @@ public sealed class AttractState : State, IBandageRestrictor
     {
         _ctx.View.PlaySfx("Shoot");
         
-        _ctx.View.Animator.SetBool("PrePull", true);
+        _ctx.View.Animator.SetBool(PREATTRACT, true);
         
         if (!_ctx.TryGetAttractTarget(out _box))
         {
@@ -53,8 +54,8 @@ public sealed class AttractState : State, IBandageRestrictor
         
         _currentWrapHandler.UnWrap();
         
-        _ctx.View.Animator.SetBool("Pull", false);
-        _ctx.View.Animator.SetBool("PrePull", false);
+        _ctx.View.Animator.SetBool(PREATTRACT, false);
+        _ctx.View.Animator.SetBool(ATTRACT, false);
     }
 
     public override void OnUpdate() { }
@@ -92,7 +93,7 @@ public sealed class AttractState : State, IBandageRestrictor
 
         if (Time.time < _moveUnlockTime)
         {
-            _ctx.View.Animator.SetBool("Pull", true);
+            _ctx.View.Animator.SetBool(ATTRACT, true);
             _box.StopImmediate(); 
             return; 
         }

@@ -1,6 +1,6 @@
 using System.Collections;
 using UnityEngine;
-using static PlayerEnum; 
+using static Tags; 
 
 public class Quicksand : MonoBehaviour
 {
@@ -130,7 +130,7 @@ public class Quicksand : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (!other.gameObject.CompareTag("PlayerFather")) return;
+        if (!other.gameObject.CompareTag(PLAYER_TAG)) return;
 
         _player ??= other.gameObject.GetComponent<PlayerController>().Ctx;
 
@@ -161,7 +161,7 @@ public class Quicksand : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.gameObject.CompareTag("PlayerFather")) return;
+        if (!other.gameObject.CompareTag(PLAYER_TAG)) return;
 
         _isPlayerOnPlatform = false;
 

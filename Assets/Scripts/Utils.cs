@@ -4,9 +4,6 @@ using System.Collections.Generic;
 
 public static class Utils
 {
-    internal const string PLAYER_TAG = "PlayerFather";
-    internal const string PLAYER_SMASH_TAG = "Smash";
-
     #region PlayerStates
 
     internal const string STATE_WALK = "SM_Walk";
@@ -53,43 +50,34 @@ public static class Utils
     internal const string ToSecondAttackScorpion = "ToSecondAttackScorpion";
     internal const string ToDeathScorpion = "ToDeathScorpion";
 
-    internal const string ENTRY_NAME_ANIM_SCORPION = "Entry";
-    
-    internal const string IDLE_ANIM_SCORPION = "isIdle";
-    internal const string PRIMARY_ANIM_SCORPION = "isPrimary";
-    internal const string SECONDARY_ANIM_SCORPION = "isSecondary";
-    internal const string CHASE_ANIM_SCORPION = "isChase";
-    internal const string DAMAGED_ANIM_SCORPION = "isDamaged";
-    internal const string DIE_ANIM_SCORPION = "isDie";
-
     #endregion
 
     #endregion
 
     #region Options
 
-    internal const string SELECTED_FPS_KEY = "SelectedFPS";
-
-    private const int FPS_30_VALUE = 30;
-    private const int FPS_60_VALUE = 60;
-    private const int FPS_75_VALUE = 75;
-    private const int FPS_120_VALUE = 120;
-    private const int FPS_144_VALUE = 144;
-
-    private const string FPS_30_KEY = "30 FPS";
-    private const string FPS_60_KEY = "60 FPS";
-    private const string FPS_75_KEY = "75 FPS";
-    private const string FPS_120_KEY = "120 FPS";
-    private const string FPS_144_KEY = "144 FPS";
-
-    internal static readonly Dictionary<string, int> FPS = new()
-    {
-        { FPS_30_KEY, FPS_30_VALUE },
-        { FPS_60_KEY, FPS_60_VALUE },
-        { FPS_75_KEY, FPS_75_VALUE },
-        { FPS_120_KEY, FPS_120_VALUE },
-        { FPS_144_KEY, FPS_144_VALUE }
-    };
+    // internal const string SELECTED_FPS_KEY = "SelectedFPS";
+    //
+    // private const int FPS_30_VALUE = 30;
+    // private const int FPS_60_VALUE = 60;
+    // private const int FPS_75_VALUE = 75;
+    // private const int FPS_120_VALUE = 120;
+    // private const int FPS_144_VALUE = 144;
+    //
+    // private const string FPS_30_KEY = "30 FPS";
+    // private const string FPS_60_KEY = "60 FPS";
+    // private const string FPS_75_KEY = "75 FPS";
+    // private const string FPS_120_KEY = "120 FPS";
+    // private const string FPS_144_KEY = "144 FPS";
+    //
+    // internal static readonly Dictionary<string, int> FPS = new()
+    // {
+    //     { FPS_30_KEY, FPS_30_VALUE },
+    //     { FPS_60_KEY, FPS_60_VALUE },
+    //     { FPS_75_KEY, FPS_75_VALUE },
+    //     { FPS_120_KEY, FPS_120_VALUE },
+    //     { FPS_144_KEY, FPS_144_VALUE }
+    // };
 
     #endregion
 
@@ -109,9 +97,6 @@ public static class Utils
     internal const string MUSIC_VOLUME = "MusicVolume";
     internal const string SFX_VOLUME = "SFXVolume";
     
-    //Audio Mixer public vars
-    internal const string AUDIO_MIXER_MUSIC = "Music";
-    internal const string AUDIO_MIXER_SFX = "SFX";
 
     #endregion
 }

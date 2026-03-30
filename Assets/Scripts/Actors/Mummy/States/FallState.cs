@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Animations.Player;
 
 /// <summary> 
 /// Estado de Caída: Controla el movimiento del personaje mientras está en el aire, aplicando un 
@@ -16,7 +17,7 @@ public class FallState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
-        _ctx.View.Animator.SetBool("Fall", true);
+        _ctx.View.Animator.SetBool(FALL, true);
     }
 
     public override void OnUpdate()
@@ -55,6 +56,6 @@ public class FallState : State, IBandageRestrictor
     public override void OnExit()
     {
         _ctx.View.PlaySfx("Fall");
-        _ctx.View.Animator.SetBool("Fall", false);
+        _ctx.View.Animator.SetBool(FALL, false);
     }
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Tags;
 
 /// <summary> 
 /// Sensor de Obstrucción: Detecta si el jugador bloquea el camino de una plataforma móvil, 
@@ -16,7 +17,7 @@ public class MovePlatfornNoPush : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("PlayerFather"))
+        if (other.CompareTag(PLAYER_TAG))
         {
             Debug.Log("COLISIONO CON PLAYER");
             _moveHorizontalPlatform.ReturnToPrevious();

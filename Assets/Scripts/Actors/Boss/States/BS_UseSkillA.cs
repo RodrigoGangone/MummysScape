@@ -1,5 +1,5 @@
 using UnityEngine;
-using static Utils;
+using static Animations.Boss;
 
 /// <summary>
 /// Estado de Habilidad Primaria: Gestiona el ciclo del primer slot de ataque, asegurando que el Boss 

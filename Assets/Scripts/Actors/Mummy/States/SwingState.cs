@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Animations.Player;
 
 public class SwingState : State, IBandageRestrictor
 {
@@ -19,7 +20,7 @@ public class SwingState : State, IBandageRestrictor
     {
         Debug.Log("SwingState - Enter");
         
-        _ctx.View.Animator.SetBool("PreSwing", true);
+        _ctx.View.Animator.SetBool(PRESWING, true);
         
         // Reset
         _hasConnected = false;
@@ -66,8 +67,8 @@ public class SwingState : State, IBandageRestrictor
         _currentWrapHandler = null;
         _hasConnected = false;
         
-        _ctx.View.Animator.SetBool("Swing", false);
-        _ctx.View.Animator.SetBool("PreSwing", false);
+        _ctx.View.Animator.SetBool(SWING, false);
+        _ctx.View.Animator.SetBool(PRESWING, false);
     }
 
     public override void OnUpdate() { }
@@ -89,7 +90,7 @@ public class SwingState : State, IBandageRestrictor
         // ---------------------------------------------------------
         if (!_hasConnected)
         {
-            _ctx.View.Animator.SetBool("Swing", true);
+            _ctx.View.Animator.SetBool(SWING, true);
 
             // A. Iniciar animación del Shader (Visual en el objeto golpeado)
             if (_currentWrapHandler != null)

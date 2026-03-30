@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static Layers;
+using static Tags;
 
 /// <summary> 
 /// Centro de Interacciones: Gestiona múltiples mecánicas de detección como empuje (Push), atracción (Attract), 
@@ -123,11 +125,11 @@ public sealed class InteractionRuntime : MonoBehaviour
         float minDist = float.MaxValue;
         Rigidbody nearest = null;
 
-        int wallMask = LayerMask.GetMask("Wall");
+        int wallMask = LayerMask.GetMask(WALL_LAYER);
 
         foreach (var hit in hits)
         {
-            if (!hit.CompareTag("Hook")) continue;
+            if (!hit.CompareTag(HOOK_TAG)) continue;
             var rb = hit.attachedRigidbody;
             if (rb == null) continue;
 

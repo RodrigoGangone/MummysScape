@@ -1,4 +1,4 @@
-using static Utils;
+using static Animations.Boss;
 
 /// <summary>
 /// Estado de Muerte: Dispara el trigger de animación final del Boss al agotarse sus etapas 

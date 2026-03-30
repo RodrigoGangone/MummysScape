@@ -1,5 +1,6 @@
 using UnityEngine;
 using static PlayerEnum;
+using static Animations.Player;
 
 /// <summary> 
 /// Estado de Empuje: Sincroniza el movimiento del jugador con una caja interactuable, permitiendo 
@@ -30,7 +31,7 @@ public sealed class PushState : State, IBandageRestrictor
     
         _box.SetPushAttractMode(true, false); 
         _box.bank.Play3D("MoveBox", _box.transform.position);
-        _ctx.View.Animator.SetBool("Push", true);
+        _ctx.View.Animator.SetBool(PUSH, true);
     }
 
     public override void OnExit()
@@ -42,7 +43,7 @@ public sealed class PushState : State, IBandageRestrictor
         
         _ctx.View.StopSfx("WalkPush");
 
-        _ctx.View.Animator.SetBool("Push", false);
+        _ctx.View.Animator.SetBool(PUSH, false);
     }
 
     public override void OnUpdate()

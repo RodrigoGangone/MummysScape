@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using static Animations.Hippo;
 
 /// <summary> 
 /// Ejecutor de Teletransporte: Gestiona la secuencia física y visual del viaje, incluyendo 
@@ -68,7 +69,7 @@ public class HippoTravel : MonoBehaviour, IPausable
         player.position = p1;
         player.rotation = r1;
 
-        if (HippoStartAnim) HippoStartAnim.SetTrigger("isOpen");
+        if (HippoStartAnim) HippoStartAnim.SetTrigger(OPEN);
         
         yield return PauseUtils.WaitForSecondsPausable(3f, () => _paused);
 
@@ -76,7 +77,7 @@ public class HippoTravel : MonoBehaviour, IPausable
         player.position = exit.position;
         player.rotation = exit.rotation;
 
-        if (HippoDestAnim) HippoDestAnim.SetTrigger("isClose");
+        if (HippoDestAnim) HippoDestAnim.SetTrigger(CLOSE);
     }
 
 

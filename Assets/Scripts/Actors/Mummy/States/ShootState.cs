@@ -1,3 +1,5 @@
+using static Animations.Player;
+
 /// <summary> 
 /// Estado de Disparo: Activa la animación y los efectos sonoros de lanzamiento de vendas, sirviendo 
 /// como el disparador visual para la creación de proyectiles físicos. 
@@ -16,7 +18,7 @@ public sealed class ShootState : State, IBandageRestrictor
     {
         _ctx.View.PlaySfx("Shoot");
         
-        _ctx.View.Animator.SetTrigger("Shoot");
+        _ctx.View.Animator.SetTrigger(SHOOT);
     }
 
     public override void OnUpdate()

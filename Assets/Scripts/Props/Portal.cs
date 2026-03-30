@@ -2,6 +2,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
+using static Tags;
+using static Animations.Sarcofagus;
 
 /// <summary> 
 /// Gestor de Transición: Administra la entrada y salida de niveles, coordinando cinemáticas (Timeline), 
@@ -34,8 +36,6 @@ public class Portal : MonoBehaviour
     private Collider Col => GetComponent<Collider>();
 
     private const string LOCK_ID = "Sarcofagus";
-    private const string PLAYER_TAG = "PlayerFather";
-    private const string INTERACT_TEXT = "Entrar";
 
     private bool _canInteract;
     private PlayerController _cachedPlayer;
@@ -166,13 +166,13 @@ public class Portal : MonoBehaviour
     private void OpenAnim()
     {
         if (anim != null)
-            anim.SetTrigger("Open");
+            anim.SetTrigger(OPEN);
     }
 
     public void CloseAnim()
     {
         if (anim != null)
-            anim.SetTrigger("Close");
+            anim.SetTrigger(CLOSE);
     }
 
     private void OnEnable() =>

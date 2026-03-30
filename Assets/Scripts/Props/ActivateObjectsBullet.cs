@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Tags;
 
 /// <summary> 
 /// Interruptor por Impacto: Detecta colisiones de proyectiles ("Bullet") para activar secuencias 
@@ -24,7 +25,7 @@ public class ActivateObjectsBullet : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.gameObject.CompareTag("Bullet")) return;
+        if (!other.gameObject.CompareTag(PROJECTILE_TAG)) return;
         
         _boxCollider.enabled = false;
         

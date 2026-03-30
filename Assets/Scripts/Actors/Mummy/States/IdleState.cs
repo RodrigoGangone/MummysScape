@@ -1,4 +1,4 @@
-using UnityEngine;
+using static Animations.Player;
 
 /// <summary> 
 /// Estado de Reposo: Punto de entrada neutro de la FSM donde el personaje permanece estático, 
@@ -12,14 +12,14 @@ public sealed class IdleState : State
 
     public override void OnEnter()
     {
-        _ctx.View.Animator.SetBool("Idle", true);
+        _ctx.View.Animator.SetBool(IDLE, true);
         
         _ctx.View?.SetMoveSpeedVisual(0f);
     }
 
     public override void OnExit()
     {
-        _ctx.View.Animator.SetBool("Idle", false);
+        _ctx.View.Animator.SetBool(IDLE, false);
     }
 
     public override void OnUpdate()

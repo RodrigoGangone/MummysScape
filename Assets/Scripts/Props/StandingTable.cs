@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Tags;
 using static PlayerEnum;
 
 /// <summary> 
@@ -43,7 +44,7 @@ public class  StandingTable : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
+        if (!other.CompareTag(PLAYER_TAG)) return;
 
         _playerContext = other.GetComponent<PlayerController>().Ctx;
 
@@ -63,7 +64,7 @@ public class  StandingTable : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
+        if (!other.CompareTag(PLAYER_TAG)) return;
 
         if (_gravityCoroutine != null)
         {

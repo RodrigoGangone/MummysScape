@@ -1,3 +1,5 @@
+using static Animations.Player;
+
 /// <summary> 
 /// Estado de Muerte: Dispara la secuencia final de derrota, activando las animaciones correspondientes 
 /// y bloqueando de forma permanente los controles mediante el sistema de eventos. 
@@ -12,7 +14,7 @@ public class DeadState : State, IBandageRestrictor
     {
         _ctx.View.PlaySfx("Death");
         
-        _ctx.View.Animator.SetTrigger("Death");
+        _ctx.View.Animator.SetTrigger(DEAD);
 
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Death", true);
     }

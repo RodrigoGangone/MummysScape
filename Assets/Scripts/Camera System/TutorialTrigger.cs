@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Video;
+using static Tags;
 using static PauseUtils;
 
 /// <summary> 
@@ -59,7 +60,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("PlayerFather") || focusPoint == null) return;
+        if (!other.CompareTag(PLAYER_TAG) || focusPoint == null) return;
 
         if (!IsTutorialAlreadySeen)
         {
@@ -81,7 +82,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
+        if (!other.CompareTag(PLAYER_TAG)) return;
 
         _canPlayTutorial = false;
         _isPromptActive = false;

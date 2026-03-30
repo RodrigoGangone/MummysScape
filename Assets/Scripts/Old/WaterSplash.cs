@@ -1,7 +1,6 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using static Tags;
+using static Layers;
 
 public class WaterSplash : MonoBehaviour
 {
@@ -12,19 +11,19 @@ public class WaterSplash : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("Box") ||
-            other.gameObject.layer == LayerMask.NameToLayer("Player") ||
-            other.gameObject.layer == LayerMask.NameToLayer("BandageMound"))
+        if (other.gameObject.layer == LayerMask.NameToLayer(BOX_LAYER) ||
+            other.gameObject.layer == LayerMask.NameToLayer(PLAYER_LAYER) ||
+            other.gameObject.layer == LayerMask.NameToLayer(BANDAGE_MOUND_LAYER))
         {
             _waterSplashFX.transform.position = other.transform.position + _offset;
 
             _waterSplashFX.Play();
         }
 
-        if (other.gameObject.layer == LayerMask.NameToLayer("BandageMound"))
+        if (other.gameObject.layer == LayerMask.NameToLayer(BANDAGE_MOUND_LAYER))
             other.gameObject.SetActive(false);
 
-        if (other.gameObject.CompareTag("PlayerFather"))
+        if (other.gameObject.CompareTag(PLAYER_TAG))
         {
             _player = other.GetComponent<PlayerController>();
 

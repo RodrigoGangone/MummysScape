@@ -572,19 +572,19 @@ public class MoveHorizontalPlatform : MonoBehaviour, IPausable
 
     #endregion
 
-    #region Player Collision Logic
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
-            other.transform.SetParent(transform);
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-            other.transform.SetParent(null);
-    }
-
-    #endregion
+    // #region Player Collision Logic
+    //
+    // private void OnTriggerEnter(Collider other)
+    // {
+    //     if (other.CompareTag("Player"))
+    //         other.transform.SetParent(transform);
+    // }
+    //
+    // private void OnTriggerExit(Collider other)
+    // {
+    //     if (other.CompareTag("Player"))
+    //         other.transform.SetParent(null);
+    // }
+    //
+    // #endregion
 }
