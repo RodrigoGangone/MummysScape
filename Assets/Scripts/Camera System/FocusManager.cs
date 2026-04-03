@@ -113,7 +113,7 @@ public class FocusManager : MonoBehaviour, IPausable
     {
         if (point == null) return;
 
-        bool seen = Save.IsTutorialSeen(point.Id);
+        bool seen = Save.IsTutorialSeen(point.Tutorial);
 
         if (seen)
         {
@@ -143,7 +143,7 @@ public class FocusManager : MonoBehaviour, IPausable
                 duration: point.Time,
                 zoomAmt: point.ZoomAmount,
                 curve: point.ZoomCurve,
-                onComplete: () => Save.MarkTutorialSeen(point.Id),
+                onComplete: () => Save.MarkTutorialSeen(point.Tutorial),
                 message: point.Message,
                 msgColor: point.TextColor,
                 msgDuration: point.MessageDuration,

@@ -10,7 +10,7 @@ public class ProgressionSettings : ScriptableObject
     public struct AbilityRequirement
     {
         public PlayerStateId state;
-        public string tutorialId; // El ID que usás en TutorialFocusPoint y Save
+        public TutorialID tutorial; // <--- CAMBIO: Ahora es el Enum generado
     }
 
     [SerializeField] private List<AbilityRequirement> requirements;
@@ -19,10 +19,10 @@ public class ProgressionSettings : ScriptableObject
     {
         var req = requirements.Find(r => r.state == state);
         
-        // Si no hay requisito definido, la habilidad es básica
-        if (string.IsNullOrEmpty(req.tutorialId)) return true;
+        // Si el requisito es 'None' o no está en la lista, la habilidad es básica
+        if (req.tutorial == TutorialID.None) return true;
 
-        // Consultamos a tu sistema de persistencia
-        return Save.IsTutorialSeen(req.tutorialId);
+        // Consultamos al sistema de Save usando la sobrecarga del Enum
+        return Save.IsTutorialSeen(req.tutorial);
     }
 }

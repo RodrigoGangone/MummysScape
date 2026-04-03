@@ -8,7 +8,7 @@ using UnityEngine;
 public class TutorialFocusPoint : MonoBehaviour
 {
     [Header("Identificador")] 
-    [SerializeField] private string tutorialId;
+    [SerializeField] private TutorialID tutorial;
 
     [Header("Cámara")] 
     [SerializeField] private Transform cameraPos;
@@ -24,7 +24,7 @@ public class TutorialFocusPoint : MonoBehaviour
     [SerializeField] private Color textColor = Color.white;   
     [SerializeField] private float messageDuration = 2.5f;    
 
-    public string Id => tutorialId;
+    public TutorialID Tutorial => tutorial;
     public Transform CameraPos => cameraPos;
     public Transform LookAt => lookAt;
     public float Time => time;

@@ -34,8 +34,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private bool _isPlaying;
     private bool _canPlayTutorial;
 
-    private bool IsTutorialAlreadySeen => focusPoint != null && Save.IsTutorialSeen(focusPoint.Id);
-
+    private bool IsTutorialAlreadySeen => focusPoint != null && Save.IsTutorialSeen(focusPoint.Tutorial);
     private void Awake()
     {
         _boxCollider = GetComponent<BoxCollider>();
