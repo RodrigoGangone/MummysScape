@@ -2,6 +2,7 @@ using UnityEngine;
 using static Layers;
 using static Animations.Player;
 using static PlayerEnum;
+using static SfxIDs;
 
 public sealed class WalkState : State
 {
@@ -17,7 +18,7 @@ public sealed class WalkState : State
     
     public override void OnEnter()
     {
-        _ctx.View.PlaySfx("Walk");
+        _ctx.View.PlaySfx(Mummy___Normal.Walk);
         _ctx.View.Animator.SetBool(WALK, true);
         // Matamos la inercia física al entrar para tener control total inmediato
         _ctx.Rb.linearVelocity = Vector3.zero;
@@ -27,7 +28,7 @@ public sealed class WalkState : State
 
     public override void OnExit()
     {
-        _ctx.View.StopSfx("Walk");
+        _ctx.View.StopSfx(Mummy___Normal.Walk);
         _ctx.View.Animator.SetBool(WALK, false);
         
         GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(HandleSizeChanged);
@@ -38,8 +39,8 @@ public sealed class WalkState : State
         // Cuando el tamaño cambia, reiniciamos el loop de audio.
         // Como la View actualiza su '_currentBank' en su propio OnSizeChanged,
         // este PlaySfx ya tomará el clip del banco nuevo.
-        _ctx.View.StopSfx("Walk");
-        _ctx.View.PlaySfx("Walk");
+        _ctx.View.StopSfx(Mummy___Normal.Walk);
+        _ctx.View.PlaySfx(Mummy___Normal.Walk);
     }    
     
     public override void OnFixedUpdate()

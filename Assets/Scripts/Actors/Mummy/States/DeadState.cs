@@ -1,4 +1,5 @@
 using static Animations.Player;
+using static SfxIDs;
 
 /// <summary> 
 /// Estado de Muerte: Dispara la secuencia final de derrota, activando las animaciones correspondientes 
@@ -12,7 +13,7 @@ public class DeadState : State, IBandageRestrictor
     
     public override void OnEnter() 
     {
-        _ctx.View.PlaySfx("Death");
+        _ctx.View.PlaySfx(Mummy___Normal.Death);
         
         _ctx.View.Animator.SetTrigger(DEAD);
 

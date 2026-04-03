@@ -1,4 +1,5 @@
 using static Animations.Player;
+using static SfxIDs;
 
 /// <summary> 
 /// Estado de Disparo: Activa la animación y los efectos sonoros de lanzamiento de vendas, sirviendo 
@@ -16,7 +17,7 @@ public sealed class ShootState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
-        _ctx.View.PlaySfx("Shoot");
+        _ctx.View.PlaySfx(Mummy___Normal.Shoot);
         
         _ctx.View.Animator.SetTrigger(SHOOT);
     }

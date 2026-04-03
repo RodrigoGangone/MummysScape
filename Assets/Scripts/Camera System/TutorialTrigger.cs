@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.Video;
 using static Tags;
 using static PauseUtils;
+using static SfxIDs;
 
 /// <summary> 
 /// Controlador de Tutorial: Gestiona la activación de tutoriales en escena, coordinando efectos visuales, 
@@ -23,7 +24,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     [Header("Audio")]
     [SerializeField] private FxBank _bank;
-    [SerializeField] private string keySound;
 
     private BoxCollider _boxCollider;
     private VideoPlayer _tutorialVideo;
@@ -96,7 +96,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     {
         if (focusPoint == null || FocusManager.Instance == null) return;
 
-        _bank?.Play2D(keySound);
+        _bank?.Play2D(Tutorial.See);
         _isPlaying = true;
 
         if (_isPromptActive)

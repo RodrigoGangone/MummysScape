@@ -1,4 +1,5 @@
 using UnityEngine;
+using static SfxIDs;
 
 /// <summary> 
 /// Puente de Animación: Traduce eventos visuales de los clips de animación en acciones lógicas, 
@@ -17,7 +18,7 @@ public class PlayerAnimHandler : MonoBehaviour
     public void Smash()
     {
         _ctx.View._smashFX.Play();
-        _ctx.View.PlaySfx("SmashExit");
+        _ctx.View.PlaySfx(Mummy___Head.SmashExit);
         
         Collider[] hits = Physics.OverlapSphere(transform.position, _ctx.SmashRange, _ctx.SmashLayer);
 

@@ -1,5 +1,6 @@
 using Cinemachine;
 using UnityEngine;
+using static SfxIDs;
 
 /// <summary> 
 /// Lógica de Caja Dinámica: Controla el comportamiento físico de objetos empujables y atraíbles, 
@@ -181,7 +182,7 @@ public sealed class BoxPushAttract : MonoBehaviour
     {
         if ((_sandMask.value & (1 << other.gameObject.layer)) != 0)
         {
-            bank.Play3D("HitBox", transform.position);
+            bank.Play3D(Box.HitBox, transform.position);
             _fxImpact.Play();
             _impulseSource.GenerateImpulse(_shakeForce);
             GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(.8f, 0.25f);

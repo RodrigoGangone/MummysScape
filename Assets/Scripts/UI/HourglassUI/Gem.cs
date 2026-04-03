@@ -1,4 +1,5 @@
 using UnityEngine;
+using static SfxIDs;
 using static Tags;
 
 /// <summary> 
@@ -28,7 +29,7 @@ public class Gem : MonoBehaviour
     {
         if (!other.CompareTag(PLAYER_TAG)) return;
 
-        gemBank.Play3D("Pick", transform.position);
+        gemBank.Play3D(SfxIDs.Gem.Pick, transform.position);
         
         Save.MarkGemPicked(gemNum);
 
