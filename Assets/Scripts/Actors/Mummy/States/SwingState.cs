@@ -1,7 +1,8 @@
 using UnityEngine;
 using static Animations.Player;
+using static PlayerEnum;
 
-public class SwingState : State, IBandageRestrictor
+public class SwingState : State, IBandageRestrictor, IFailableState
 {
     private readonly PlayerContext _ctx;
     
@@ -29,7 +30,7 @@ public class SwingState : State, IBandageRestrictor
         // 1. Obtener Target (Hook)
         if (!_ctx.TryGetSwingTarget(out Rigidbody hookRb))
         {
-            StateMachine.ChangeState(PlayerEnum.PlayerStateId.Fall);
+            StateMachine.ChangeState(PlayerStateId.Fall);
             return;
         }
 
@@ -156,5 +157,10 @@ public class SwingState : State, IBandageRestrictor
 
         float n = Mathf.Clamp01(currentSpeed / Mathf.Max(0.01f, _ctx.SwingHandler.MaxTangentialSpeed));
         _ctx.View?.SetMoveSpeedVisual(n);
+    }
+
+    public void OnTransitionDenied(PlayerSize currentSize)
+    {
+        _ctx.View.HandleFailedTransition(PlayerStateId.Swing, currentSize, _ctx);
     }
 }

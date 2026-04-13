@@ -47,6 +47,9 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [SerializeField] private Transform _handAnchorSmall;
     [SerializeField] private Transform _handAnchorHead;
 
+    [Header("Feedback System")]
+    [SerializeField] private PlayerFeedbackLibrary _feedbackLibrary;
+    
     private Transform _currentHandAnchor; 
     private Transform _bandageTarget; 
     private Vector3 _bandageTargetLocalOffset; 
@@ -250,6 +253,12 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
         _dropFX.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         _dropFX.Play();
+    }
+    
+    public void HandleFailedTransition(PlayerStateId state, PlayerSize size, PlayerContext ctx)
+    {
+        if (_feedbackLibrary != null)
+            _feedbackLibrary.Execute(state, size, ctx);
     }
 
     public void OnPauseChanged(bool paused) => _anim.enabled = !paused;

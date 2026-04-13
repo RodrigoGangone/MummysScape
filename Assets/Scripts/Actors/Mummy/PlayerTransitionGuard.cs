@@ -14,20 +14,25 @@ public sealed class PlayerTransitionGuard : IStateTransitionGuard
     
     public bool Can(Enum from, Enum to)
     {
-        // si a donde va no es un PlayerStateID -> false
         if (to is not PlayerStateId t) return false;
-
-        // si no hay estado previo aún, permitimos el primero (ej: Idle inicial)
         if (from is null) return SizeRules.Can(_ctx.Model.Size, t);
-        
-        // si de donde viene  no es un PlayerStateID -> false
         if (from is not PlayerStateId f) return false;
 
-        // 1) si no puede transicionar de donde viene a donde va -> false
         if (!TransitionRules.Can(f, t)) return false;
 
-        // 2) reglas por tamaño
-        if (!SizeRules.Can(_ctx.Model.Size, t)) return false;
+        // REGLAS POR TAMAÑO
+        if (!SizeRules.Can(_ctx.Model.Size, t))
+        {
+            // Recuperamos el estado al que intentamos ir
+            var targetState = _ctx.StateMachine.GetState(t);
+        
+            // Si el estado tiene implementada la interfaz de fallo, la ejecutamos
+            if (targetState is IFailableState failable)
+            {
+                failable.OnTransitionDenied(_ctx.Model.Size);
+            }
+            return false;
+        }
 
         return true;
     }
