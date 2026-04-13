@@ -39,7 +39,7 @@ public class BandageProjectile : MonoBehaviour, IPausable
         transform.rotation = Quaternion.identity;
         
         _rb.position = startPos;
-        _rb.velocity = Vector3.zero;
+        _rb.linearVelocity = Vector3.zero;
         _rb.angularVelocity = Vector3.zero;
         _rb.useGravity = false;
         

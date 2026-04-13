@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using static Tags;
 
 public class Breakable : MonoBehaviour
 {
@@ -28,7 +29,7 @@ public class Breakable : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (_isBroken) return;
-        if (!other.gameObject.CompareTag("Bullet") && !other.gameObject.CompareTag("PlayerFather")) return;
+        if (!other.gameObject.CompareTag(PROJECTILE_TAG) && !other.gameObject.CompareTag(PLAYER_TAG)) return;
 
         Break();
     }

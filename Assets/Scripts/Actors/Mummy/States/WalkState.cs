@@ -1,6 +1,8 @@
-using System;
 using UnityEngine;
+using static Layers;
+using static Animations.Player;
 using static PlayerEnum;
+using static SfxIDs;
 
 public sealed class WalkState : State
 {
@@ -16,18 +18,18 @@ public sealed class WalkState : State
     
     public override void OnEnter()
     {
-        _ctx.View.PlaySfx("Walk");
-        _ctx.View.Animator.SetBool("Walk", true);
+        _ctx.View.PlaySfx(Mummy___Normal.Walk);
+        _ctx.View.Animator.SetBool(WALK, true);
         // Matamos la inercia física al entrar para tener control total inmediato
-        _ctx.Rb.velocity = Vector3.zero;
+        _ctx.Rb.linearVelocity = Vector3.zero;
         
         GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(HandleSizeChanged);
     }
 
     public override void OnExit()
     {
-        _ctx.View.StopSfx("Walk");
-        _ctx.View.Animator.SetBool("Walk", false);
+        _ctx.View.StopSfx(Mummy___Normal.Walk);
+        _ctx.View.Animator.SetBool(WALK, false);
         
         GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(HandleSizeChanged);
     }
@@ -37,8 +39,8 @@ public sealed class WalkState : State
         // Cuando el tamaño cambia, reiniciamos el loop de audio.
         // Como la View actualiza su '_currentBank' en su propio OnSizeChanged,
         // este PlaySfx ya tomará el clip del banco nuevo.
-        _ctx.View.StopSfx("Walk");
-        _ctx.View.PlaySfx("Walk");
+        _ctx.View.StopSfx(Mummy___Normal.Walk);
+        _ctx.View.PlaySfx(Mummy___Normal.Walk);
     }    
     
     public override void OnFixedUpdate()
@@ -54,7 +56,7 @@ public sealed class WalkState : State
 
         // 1. Definir la Máscara de Capas (Layers)
         // Asegúrate de que las capas 'Wall' e 'Interactable' estén configuradas en Unity
-        int layerMask = LayerMask.GetMask("Wall", "Interactable");
+        int layerMask = LayerMask.GetMask(WALL_LAYER, INTERACTABLE_LAYER);
 
         // 2. Lanzar el Raycast Predictivo
         // Usamos el Raycast para ver si golpearemos algo en la dirección 'dir'

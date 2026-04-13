@@ -1,6 +1,6 @@
 using System.Collections;
-using Unity.Mathematics;
 using UnityEngine;
+using static SfxIDs;
 
 /// <summary>
 /// Puente de Animación: Traduce los eventos de los clips de Animator (Animation Events) en acciones 
@@ -77,18 +77,18 @@ public class BossAnimHandler : MonoBehaviour
 
     public void Play_Entry()
     {
-        bank.Play2D("Entry");
+        bank.Play2D(Scorpion.Entry);
         GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(1f, 2f);
         GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(1f, 2f);
     }
 
-    public void Play_Charge() => bank.Play3D("Charge", transform.position);
-    public void Play_Launch() => bank.Play3D("Launch", transform.position);
-    public void Play_Dig() => bank.Play3D("Dig", transform.position);
+    public void Play_Charge() => bank.Play3D(Scorpion.Charge, transform.position);
+    public void Play_Launch() => bank.Play3D(Scorpion.Launch, transform.position);
+    public void Play_Dig() => bank.Play3D(Scorpion.Dig, transform.position);
 
     public void Play_Death()
     {
-        bank.Play3D("Death", transform.position);
+        bank.Play3D(Scorpion.Death, transform.position);
         GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(1f, 2f);
         GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(1f, 2f);
     }

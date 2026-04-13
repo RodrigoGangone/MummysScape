@@ -2,6 +2,7 @@ using UnityEngine;
 using static BossCommonState;
 using System;
 using System.Collections;
+using static Layers;
 
 /// <summary>
 /// Controlador Central: Integra el sistema de estados (FSM), el planificador de decisiones (GOAP) 
@@ -110,7 +111,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("Interactable"))
+        if (other.gameObject.layer == LayerMask.NameToLayer(INTERACTABLE_LAYER))
         {
             OnDamaged?.Invoke();
             other.gameObject.SetActive(false);

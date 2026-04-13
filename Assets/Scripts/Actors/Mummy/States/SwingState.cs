@@ -1,6 +1,8 @@
 using UnityEngine;
+using static Animations.Player;
+using static PlayerEnum;
 
-public class SwingState : State, IBandageRestrictor
+public class SwingState : State, IBandageRestrictor, IFailableState
 {
     private readonly PlayerContext _ctx;
     
@@ -19,7 +21,7 @@ public class SwingState : State, IBandageRestrictor
     {
         Debug.Log("SwingState - Enter");
         
-        _ctx.View.Animator.SetBool("PreSwing", true);
+        _ctx.View.Animator.SetBool(PRESWING, true);
         
         // Reset
         _hasConnected = false;
@@ -28,7 +30,7 @@ public class SwingState : State, IBandageRestrictor
         // 1. Obtener Target (Hook)
         if (!_ctx.TryGetSwingTarget(out Rigidbody hookRb))
         {
-            StateMachine.ChangeState(PlayerEnum.PlayerStateId.Fall);
+            StateMachine.ChangeState(PlayerStateId.Fall);
             return;
         }
 
@@ -66,8 +68,8 @@ public class SwingState : State, IBandageRestrictor
         _currentWrapHandler = null;
         _hasConnected = false;
         
-        _ctx.View.Animator.SetBool("Swing", false);
-        _ctx.View.Animator.SetBool("PreSwing", false);
+        _ctx.View.Animator.SetBool(SWING, false);
+        _ctx.View.Animator.SetBool(PRESWING, false);
     }
 
     public override void OnUpdate() { }
@@ -89,7 +91,7 @@ public class SwingState : State, IBandageRestrictor
         // ---------------------------------------------------------
         if (!_hasConnected)
         {
-            _ctx.View.Animator.SetBool("Swing", true);
+            _ctx.View.Animator.SetBool(SWING, true);
 
             // A. Iniciar animación del Shader (Visual en el objeto golpeado)
             if (_currentWrapHandler != null)
@@ -119,7 +121,7 @@ public class SwingState : State, IBandageRestrictor
 
         Vector3 tanDir = Vector3.ProjectOnPlane(wishDir, ropeDir).normalized;
 
-        Vector3 currentVel = rb.velocity;
+        Vector3 currentVel = rb.linearVelocity;
         Vector3 currentTanVel = Vector3.ProjectOnPlane(currentVel, ropeDir);
         float currentSpeed = currentTanVel.magnitude;
 
@@ -155,5 +157,10 @@ public class SwingState : State, IBandageRestrictor
 
         float n = Mathf.Clamp01(currentSpeed / Mathf.Max(0.01f, _ctx.SwingHandler.MaxTangentialSpeed));
         _ctx.View?.SetMoveSpeedVisual(n);
+    }
+
+    public void OnTransitionDenied(PlayerSize currentSize)
+    {
+        _ctx.View.HandleFailedTransition(PlayerStateId.Swing, currentSize, _ctx);
     }
 }

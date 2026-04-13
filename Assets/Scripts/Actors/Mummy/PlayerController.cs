@@ -30,6 +30,9 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
 
     [SerializeField] private CapsuleBySizeRuntime _capsuleBySize;
 
+    [Header("Progression")]
+    [SerializeField] private ProgressionSettings _progressionSettings;
+    
     private StateMachinePlayer _sm;
     private PlayerInputStateDriver _inputDriver;
     private Rigidbody _rb;
@@ -52,8 +55,7 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
 
         var pe = GameEventManager.Instance.playerEvents;
 
-        _model = new PlayerModel(pe.OnBandagesCountChanged, pe.OnSizeChanged);
-
+        _model = new PlayerModel(pe.OnBandagesCountChanged, pe.OnSizeChanged, _progressionSettings);
         _movement.Bind(_model);
         
         _headTimer?.Bind(_model);

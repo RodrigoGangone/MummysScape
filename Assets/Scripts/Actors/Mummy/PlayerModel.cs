@@ -17,16 +17,21 @@ public sealed class PlayerModel
     public int MaxBandagesValue => MaxBandages;
     public int Bandages { get; private set; }
     public PlayerSize Size => MapSize(Bandages);
-    public PlayerModel(GameEvent onBandagesCountChanged, GameEvent onSizeChanged)
+    private readonly ProgressionSettings _progression;
+    
+    public PlayerModel(GameEvent onBandagesCountChanged, GameEvent onSizeChanged, ProgressionSettings progression)
     {
         _onBandagesCountChanged = onBandagesCountChanged;
         _onSizeChanged          = onSizeChanged;
+        _progression            = progression;
         
         GameEventManager.Instance.playerEvents.OnShoot.Register((() => { TryConsumeBandage(); }));
         GameEventManager.Instance.playerEvents.OnHit.Register((() => { TryConsumeBandage(Bandages); }));
         
         Bandages = Clamp(MaxBandages, MinBandages, MaxBandages);
     }
+    
+    public bool CanUseAbility(PlayerStateId state) => _progression.IsUnlocked(state);
 
     public bool TryConsumeBandage(int amount = 1)
     {

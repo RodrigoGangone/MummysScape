@@ -34,7 +34,15 @@ public class StateMachinePlayer : MonoBehaviour
     }
 
     public Enum CurrentId()=> _currentId;
-
+// Agregá esto a tu StateMachinePlayer.cs
+    public State GetState(Enum name)
+    {
+        if (_allStates.TryGetValue(name, out var state))
+        {
+            return state;
+        }
+        return null;
+    }
     public bool IsCurrent(Enum name) => Equals(_currentId, name);
 
     public String getCurrentState() =>  (_currentState != null) ? _currentState.ToString() : NO_STATE;

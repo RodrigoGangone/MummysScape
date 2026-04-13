@@ -107,7 +107,7 @@ public class KnockBackState : State, IBandageRestrictor
         }
 
         _ctx.Rb.isKinematic = false;
-        _ctx.Rb.velocity = Vector3.zero;
+        _ctx.Rb.linearVelocity = Vector3.zero;
         _isActive = false;
         
         _ctx.View._koFX.Stop();

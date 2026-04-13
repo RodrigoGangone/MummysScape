@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
+using static Animations.Player;
 using UnityEngine.Rendering.Universal;
 
 /// <summary> 
@@ -46,7 +46,7 @@ public class AimState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
-        _ctx.View.Animator.SetBool("Aim", true);
+        _ctx.View.Animator.SetBool(AIM, true);
 
         SimpleShootData.Path = null;
         _aimScreenPos = new Vector2(Screen.width / 2, Screen.height / 2);
@@ -165,7 +165,7 @@ public class AimState : State, IBandageRestrictor
             AnimateScale(_rangeIndicator.transform, exitScale, ANIM_DURATION, true)
         );
 
-        _ctx.View.Animator.SetBool("Aim", false);
+        _ctx.View.Animator.SetBool(AIM, false);
     }
 
     // --- DETECCIÓN DE INTERACTUABLES ---

@@ -1,4 +1,6 @@
 using UnityEngine;
+using static Animations.Player;
+using static SfxIDs;
 
 /// <summary> 
 /// Estado de Caída: Controla el movimiento del personaje mientras está en el aire, aplicando un 
@@ -16,7 +18,7 @@ public class FallState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
-        _ctx.View.Animator.SetBool("Fall", true);
+        _ctx.View.Animator.SetBool(FALL, true);
     }
 
     public override void OnUpdate()
@@ -31,7 +33,7 @@ public class FallState : State, IBandageRestrictor
         float targetSpeed = _ctx.MoveSpeed * AirMultiplier;
         Vector3 targetVelXZ = dir * targetSpeed;
 
-        Vector3 currentVel = _ctx.Rb.velocity;
+        Vector3 currentVel = _ctx.Rb.linearVelocity;
         Vector3 currentVelXZ = new Vector3(currentVel.x, 0f, currentVel.z);
 
         Vector3 diff = targetVelXZ - currentVelXZ;
@@ -54,7 +56,7 @@ public class FallState : State, IBandageRestrictor
 
     public override void OnExit()
     {
-        _ctx.View.PlaySfx("Fall");
-        _ctx.View.Animator.SetBool("Fall", false);
+        _ctx.View.PlaySfx(Mummy___Normal.Fall);
+        _ctx.View.Animator.SetBool(FALL, false);
     }
 }

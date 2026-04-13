@@ -1,6 +1,6 @@
 using System.Collections;
 using UnityEngine;
-using static Utils;
+using static Animations.Boss;
     
 /// <summary>
 /// Estado de Daño: Ejecuta la animación de impacto y suspende la toma de decisiones hasta que 

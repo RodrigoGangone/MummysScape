@@ -56,7 +56,7 @@ public class ReassemblePieces : MonoBehaviour
             if (pieces[i].transform.TryGetComponent<Rigidbody>(out var rb))
             {
                 // CORRECCIÓN: Resetear velocidad ANTES de hacer el objeto Kinematic
-                rb.velocity = Vector3.zero;
+                rb.linearVelocity = Vector3.zero;
                 rb.angularVelocity = Vector3.zero;
                 rb.isKinematic = true; 
             }

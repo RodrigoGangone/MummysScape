@@ -3,7 +3,7 @@ using UnityEngine.Audio;
 using UnityEngine.UI;
 using static VolumeSoundId;
 using static VolumeFxId;
-using static Utils; // Asumo que todavía necesitas esto para las constantes del Mixer
+using static Audios; // Asumo que todavía necesitas esto para las constantes del Mixer
 
 public class VolumeSettings : MonoBehaviour
 {

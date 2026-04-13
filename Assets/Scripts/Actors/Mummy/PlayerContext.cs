@@ -74,6 +74,8 @@ public sealed class PlayerContext
         right.Normalize();
         return (fwd * v + right * h).normalized;
     }
+    
+    public bool CanUseAbility(PlayerEnum.PlayerStateId state) => Model != null && Model.CanUseAbility(state);
 
     public bool TryGetPushTarget(out BoxPushAttract target, out RaycastHit left, out RaycastHit right)
     {

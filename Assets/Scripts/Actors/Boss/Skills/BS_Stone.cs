@@ -45,7 +45,7 @@ public class BS_Stone : BossSkillSO
         var player = ctx.Player;
         Vector3 playerPos = player.Tf.position;
         Rigidbody playerRb = player.Rb;
-        Vector3 playerVel = playerRb != null ? playerRb.velocity : Vector3.zero;
+        Vector3 playerVel = playerRb != null ? playerRb.linearVelocity : Vector3.zero;
 
         float leadTime = Mathf.Max(0.0f, leadMultiplier * aimTime);
         Vector3 endPos = playerPos + playerVel * leadTime;

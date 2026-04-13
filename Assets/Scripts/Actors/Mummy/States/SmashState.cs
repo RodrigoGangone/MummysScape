@@ -1,5 +1,5 @@
 using UnityEngine;
-using static PlayerEnum;
+using static Animations.Player;
 
 /// <summary>
 /// SmashState
@@ -12,9 +12,7 @@ public sealed class SmashState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
-        Debug.Log("Smash!");
-        _ctx.View.Animator.SetBool("Smash", true);
-        //GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Smash", true);
+        _ctx.View.Animator.SetBool(SMASH, true);
     }
 
     public override void OnUpdate()
@@ -27,7 +25,6 @@ public sealed class SmashState : State, IBandageRestrictor
 
     public override void OnExit()
     {
-       // GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Smash", false);
-        _ctx.View.Animator.SetBool("Smash", false);
+        _ctx.View.Animator.SetBool(SMASH, false);
     }
 }

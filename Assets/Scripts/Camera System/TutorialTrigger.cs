@@ -1,7 +1,9 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Video;
+using static Tags;
 using static PauseUtils;
+using static SfxIDs;
 
 /// <summary> 
 /// Controlador de Tutorial: Gestiona la activación de tutoriales en escena, coordinando efectos visuales, 
@@ -10,12 +12,11 @@ using static PauseUtils;
 [RequireComponent(typeof(BoxCollider))]
 public class TutorialTrigger : MonoBehaviour, IPausable
 {
-    [Header("Referencias")] 
+    [Header("Referencias")]
     [SerializeField] private TutorialFocusPoint focusPoint;
     [SerializeField] private ParticleSystem[] braziers;
-    private VideoPlayer _tutorialVideo;
 
-    [Header("Configuración de Áreas")] 
+    [Header("Configuración de Áreas")]
     [SerializeField] private Vector3 sizeA = Vector3.one;
     [SerializeField] private Vector3 sizeB = Vector3.one * 2f;
     [SerializeField] private Vector3 centerOffsetA = Vector3.zero;
@@ -23,86 +24,100 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     [Header("Audio")]
     [SerializeField] private FxBank _bank;
-    [SerializeField] private string keySound;
-    
+
     private BoxCollider _boxCollider;
-    private bool _isPromptActive;
+    private VideoPlayer _tutorialVideo;
     private Coroutine _effectRoutine;
+
+    private bool _isPromptActive;
     private bool _paused;
     private bool _isPlaying;
-    private bool _canPlayTutorial; 
-    
-    private bool IsTutorialAlreadySeen => Save.IsTutorialSeen(focusPoint.Id);
-    
+    private bool _canPlayTutorial;
+
+    private bool IsTutorialAlreadySeen => focusPoint != null && Save.IsTutorialSeen(focusPoint.Tutorial);
     private void Awake()
     {
         _boxCollider = GetComponent<BoxCollider>();
         _tutorialVideo = GetComponentInChildren<VideoPlayer>();
 
-        SetColliderShape(!IsTutorialAlreadySeen);
+        if (focusPoint != null)
+            SetColliderShape(!IsTutorialAlreadySeen);
+
         ToggleEffects(false);
     }
 
     private void Update()
     {
-        // La lectura del input se hace de forma perfecta y fluida en el Update
-        if (_canPlayTutorial && !_paused && !_isPlaying && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
+        if (_paused || FocusManager.Instance == null)
+            return;
+
+        if (_canPlayTutorial && !_isPlaying && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
         {
-            ExecuteTutorialSequence();
-            _isPlaying = true;
+            ExecuteTutorialSequence(isReplay: true);
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
+        if (!other.CompareTag(PLAYER_TAG) || focusPoint == null) return;
 
         if (!IsTutorialAlreadySeen)
         {
-            // Secuencia automática si no lo ha visto
-            ExecuteTutorialSequence();
+            ExecuteTutorialSequence(isReplay: false);
             SetColliderShape(false);
+            return;
         }
-        else
+
+        if (!_isPromptActive)
         {
-            // Si ya lo vio, mostramos el prompt y habilitamos poder reproducirlo manualmente
-            if (!_isPromptActive)
-            {
-                GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.Y);
-                _isPromptActive = true;
-            }
-            _canPlayTutorial = true;
+            GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, ButtonType.Y)
+            );
+            _isPromptActive = true;
         }
+
+        _canPlayTutorial = true;
     }
-    
+
     private void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
+        if (!other.CompareTag(PLAYER_TAG)) return;
 
-        // Limpiamos todo al salir del trigger
-        if (_isPromptActive)
-        {
-            GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
-            _isPromptActive = false;
-        }
         _canPlayTutorial = false;
+        _isPromptActive = false;
+
+        GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+            ContextUIFactory.Hidden()
+        );
     }
 
-    private void ExecuteTutorialSequence()
+    private void ExecuteTutorialSequence(bool isReplay)
     {
-        if (focusPoint == null) return;
+        if (focusPoint == null || FocusManager.Instance == null) return;
 
-        _bank.Play2D(keySound);
-        
-        FocusManager.Instance.RequestTutorial(focusPoint);
+        _bank?.Play2D(Tutorial.See);
+        _isPlaying = true;
 
-        if (_effectRoutine != null) StopCoroutine(_effectRoutine);
+        if (_isPromptActive)
+        {
+            GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+                ContextUIFactory.Hidden()
+            );
+            _isPromptActive = false;
+        }
+
+        FocusManager.Instance.RequestTutorial(
+            focusPoint,
+            isReplay ? OnTutorialReplayCancelled : null
+        );
+
+        if (_effectRoutine != null)
+            StopCoroutine(_effectRoutine);
 
         float totalDuration = focusPoint.Time;
-        if (!IsTutorialAlreadySeen && !string.IsNullOrEmpty(focusPoint.Message))
-        {
+
+        if (!isReplay && !string.IsNullOrEmpty(focusPoint.Message))
             totalDuration += focusPoint.MessageDuration;
-        }
 
         _effectRoutine = StartCoroutine(TutorialDurationRoutine(totalDuration));
     }
@@ -117,6 +132,34 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
         _effectRoutine = null;
         _isPlaying = false;
+
+        if (_canPlayTutorial && IsTutorialAlreadySeen && !_isPromptActive)
+        {
+            GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, ButtonType.Y)
+            );
+            _isPromptActive = true;
+        }
+    }
+
+    private void OnTutorialReplayCancelled()
+    {
+        if (_effectRoutine != null)
+        {
+            StopCoroutine(_effectRoutine);
+            _effectRoutine = null;
+        }
+
+        ToggleEffects(false);
+        _isPlaying = false;
+
+        if (_canPlayTutorial && !_isPromptActive)
+        {
+            GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, ButtonType.Y)
+            );
+            _isPromptActive = true;
+        }
     }
 
     private void ToggleEffects(bool active)
@@ -124,6 +167,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         foreach (var brazier in braziers)
         {
             if (brazier == null) continue;
+
             if (active) brazier.Play();
             else brazier.Stop();
         }
@@ -137,21 +181,29 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     private void SetColliderShape(bool useSizeA)
     {
+        if (_boxCollider == null) return;
+
         _boxCollider.size = useSizeA ? sizeA : sizeB;
         _boxCollider.center = useSizeA ? centerOffsetA : centerOffsetB;
     }
 
     public void OnPauseChanged(bool paused) => _paused = paused;
-    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+
+    private void OnEnable() =>
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+
+    private void OnDisable() =>
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 
     #region Gizmos
     private void OnDrawGizmos()
     {
         if (focusPoint == null) return;
+
         Gizmos.matrix = transform.localToWorldMatrix;
         Gizmos.color = !IsTutorialAlreadySeen ? Color.green : new Color(0, 1, 0, 0.2f);
         Gizmos.DrawWireCube(centerOffsetA, sizeA);
+
         Gizmos.color = IsTutorialAlreadySeen ? Color.yellow : new Color(1, 0.92f, 0.016f, 0.2f);
         Gizmos.DrawWireCube(centerOffsetB, sizeB);
     }

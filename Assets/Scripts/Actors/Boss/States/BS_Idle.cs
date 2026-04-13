@@ -1,4 +1,4 @@
-using static Utils;
+using static Animations.Boss;
 
 /// <summary>
 /// Estado de Espera: Mantiene al Boss en su pose base mientras rota continuamente para 

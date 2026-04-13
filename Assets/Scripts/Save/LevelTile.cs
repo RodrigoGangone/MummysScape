@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static Tags;
 
 /// <summary> 
 /// Gestor de Nivel: Controla el estado de desbloqueo de un nivel individual, gestionando la visualización 
@@ -116,13 +117,13 @@ public class LevelTile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerFather") && _isUnlocked)
+        if (other.gameObject.CompareTag(PLAYER_TAG) && _isUnlocked)
             portalFx.Play();
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.CompareTag("PlayerFather") && _isUnlocked)
+        if (other.gameObject.CompareTag(PLAYER_TAG) && _isUnlocked)
             portalFx.Stop();
     }
     
