@@ -21,7 +21,8 @@ public class PlayerPrefsRegistry : ScriptableObject
         Time            = 1 << 3,
         VolumeSound     = 1 << 4,
         VolumeFX        = 1 << 5,
-        Seen            = 1 << 6, // <--- NUEVO
+        Seen            = 1 << 6, 
+        Navigation      = 1 << 7, 
         All             = ~0
     }
 
@@ -70,6 +71,8 @@ public class PlayerPrefsRegistry : ScriptableObject
         if (p.HasFlag(RegistryKeyPreset.VolumeSound))    Add(PrefFamily.VolumeSound);
         if (p.HasFlag(RegistryKeyPreset.VolumeFX))       Add(PrefFamily.VolumeFX);
         if (p.HasFlag(RegistryKeyPreset.Seen))           Add(PrefFamily.Seen);
+        if (p.HasFlag(RegistryKeyPreset.Navigation))     Add(PrefFamily.Navigation);
+        
 
         return list.ToArray();
     }

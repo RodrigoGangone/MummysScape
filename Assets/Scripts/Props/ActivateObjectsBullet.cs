@@ -29,6 +29,7 @@ public class ActivateObjectsBullet : MonoBehaviour
         _boxCollider.enabled = false;
         
         eagleBank.Play3D("Active", transform.position);
+        GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.5f,0.25f);
         
         _animator.SetBool("IsActive", !_animator.GetBool("IsActive"));
 

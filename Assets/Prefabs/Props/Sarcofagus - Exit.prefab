@@ -45572,7 +45572,7 @@ Transform:
   m_GameObject: {fileID: 3689780066259691061}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: 5}
+  m_LocalPosition: {x: 0, y: 4, z: 8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -45587,10 +45587,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 39872551746159126}
-  - component: {fileID: 1703154566276700818}
   - component: {fileID: 1922525160810501105}
   - component: {fileID: 8327508785484449685}
   - component: {fileID: 7163751912731866487}
+  - component: {fileID: 2788456260838377243}
   m_Layer: 0
   m_Name: Sarcofagus - Exit
   m_TagString: Untagged
@@ -45617,27 +45617,6 @@ Transform:
   - {fileID: 2963733336260352827}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &1703154566276700818
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3721958170283911563}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 2
-  m_Center: {x: 0, y: 0.5, z: 0.37}
 --- !u!114 &1922525160810501105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45808,6 +45787,27 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!65 &2788456260838377243
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3721958170283911563}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.6653337, y: 2.2873683, z: 1.6490595}
+  m_Center: {x: -0.0022132993, y: 0.64368415, z: 1.3076962}
 --- !u!1 &4520043552121475871
 GameObject:
   m_ObjectHideFlags: 0
@@ -85470,6 +85470,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f15824a59ad7f340956d86aaa665423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lowDuration: 0.25
+  highDuration: 0.25
+  lowFreq: 0.75
+  highFreq: 1
   fx1: {fileID: 5923528330953885694}
   fx2: {fileID: 4715239494639815182}
   fx3: {fileID: 3498205245440117779}
@@ -85477,6 +85481,7 @@ MonoBehaviour:
   fx5: {fileID: 8264986911990406777}
   fx6: {fileID: 4020235548729348076}
   fx7: {fileID: 0}
+  fx8: {fileID: 0}
   bank: {fileID: 11400000, guid: afccf22339aa59e41a1741026abaf3e2, type: 2}
   keySound01: Destroy
   keySound02: Open
@@ -85631,6 +85636,38 @@ MonoBehaviour:
         - m_Target: {fileID: 6357266839566988333}
           m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
           m_MethodName: PlaySound2
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: lowRumble
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6357266839566988333}
+          m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
+          m_MethodName: VibrateLow
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: highRumble
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6357266839566988333}
+          m_TargetAssemblyTypeName: SarcofagusFx, Assembly-CSharp
+          m_MethodName: VibrateHigh
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}

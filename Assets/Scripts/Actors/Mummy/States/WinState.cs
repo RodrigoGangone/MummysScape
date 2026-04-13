@@ -10,7 +10,8 @@ public class WinState : State, IBandageRestrictor
     public override void OnEnter()
     {
         _ctx.View.Animator.SetTrigger("Win");
-
+        _ctx.View.Shadow.fadeFactor = 0;
+        
         Debug.Log("////////////WINSTATE//////////");
         
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Win", true);

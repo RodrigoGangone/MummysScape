@@ -402,6 +402,11 @@ public sealed class InteractionRuntime : MonoBehaviour
             Gizmos.color = _hitColor;
             Gizmos.DrawSphere(impactPoint, 0.25f);
         }
+        
+        bool smashHit = Physics.CheckSphere(transform.position, smashRange, smashLayer);
+    
+        Gizmos.color = smashHit ? _hitColor : new Color(1f, 1f, 0f, 0.5f); // Verde si hay objetivo, amarillo si no
+        Gizmos.DrawWireSphere(transform.position, smashRange);
     }
 
     #endregion

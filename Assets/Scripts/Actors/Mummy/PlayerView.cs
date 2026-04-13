@@ -28,6 +28,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [SerializeField] public ParticleSystem _dropFX;
     [SerializeField] public ParticleSystem _koFX;
 
+    [SerializeField] private DecalProjector shadow;
+
     [Header("Shoot Visual")] [SerializeField]
     private GameObject _decal;
 
@@ -61,6 +63,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     private FxBank _currentBank;
     
     public GameObject Decal => _decal;
+    public DecalProjector Shadow => shadow;
     public DecalProjector RangeIndicator => _rangeIndicator;
     public LineRenderer ArcRenderer => _arcRenderer;
     public Animator Animator => _anim;
@@ -81,6 +84,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         }
 
         _currentHandAnchor = _handAnchorNormal;
+
     }
 
     private void LateUpdate()
@@ -177,7 +181,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
         bool wasWalking = _anim.parameterCount > 0 && _anim.GetBool("Walk");
         bool wasIdle = _anim.parameterCount > 0 && _anim.GetBool("Idle");
-        float currentSpeed = _anim.GetFloat("Speed");
+        //float currentSpeed = _anim.GetFloat("Speed");
 
         _anim.enabled = false;
 
@@ -209,7 +213,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         {
             _anim.SetBool("Walk", wasWalking);
             _anim.SetBool("Idle", wasIdle);
-            _anim.SetFloat("Speed", currentSpeed);
+            //_anim.SetFloat("Speed", currentSpeed);
 
             _anim.Play(0, -1, 0f);
         }
@@ -217,7 +221,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
     public void SetMoveSpeedVisual(float normalized)
     {
-        if (_anim) _anim.SetFloat("Speed", normalized);
+        //if (_anim) _anim.SetFloat("Speed", normalized);
     }
     
     private void PlayDropFx(PlayerSize playerSize)

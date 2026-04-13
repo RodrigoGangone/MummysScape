@@ -6,7 +6,6 @@ using UnityEngine;
 /// Gestor de Entorno: Coordina el intercambio físico y visual de las diferentes áreas o "sets" 
 /// del escenario mediante animaciones de desplazamiento al avanzar de fase en el combate.
 /// </summary>
-
 [DisallowMultipleComponent]
 public class StageSetTransition : MonoBehaviour, IPausable
 {
@@ -136,6 +135,7 @@ public class StageSetTransition : MonoBehaviour, IPausable
             currentStageIndex = toIndex;
         }
 
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Boss", false);
         _transitionCR = null;
     }
 

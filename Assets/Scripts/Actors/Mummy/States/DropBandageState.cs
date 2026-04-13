@@ -5,7 +5,7 @@ using UnityEngine;
 /// aplicando fuerzas de impulso y torque para simular un lanzamiento natural. 
 /// </summary>
 
-public sealed class DropBandageState : State
+public sealed class DropBandageState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
     private readonly GameObject _bandagePickupPrefab;

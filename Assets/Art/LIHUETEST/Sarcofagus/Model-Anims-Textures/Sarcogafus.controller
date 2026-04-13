@@ -21,6 +21,12 @@ AnimatorState:
   - {fileID: 415761129003532888}
   - {fileID: -2865051265361133811}
   - {fileID: 4665877448376135794}
+  - {fileID: 7348613698998632887}
+  - {fileID: 7729975683713211670}
+  - {fileID: 8429639234800478292}
+  - {fileID: 328876917849115328}
+  - {fileID: -2380110912984499988}
+  - {fileID: 3045025826606085978}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -137,6 +143,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: 
   triggerTime: 0
+--- !u!114 &-6749426792019252926
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.8
 --- !u!1101 &-4089295837341848312
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -204,6 +224,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: Sound2
   triggerTime: 0.55
+--- !u!114 &-2380110912984499988
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.65
+--- !u!114 &-1446044911161934408
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.95
 --- !u!114 &-1166056341034743233
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -232,6 +280,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: 
   triggerTime: 0
+--- !u!114 &-628090339340653805
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.4
 --- !u!114 &-606119935402246663
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -308,6 +370,20 @@ AnimatorController:
     m_IKPass: 0
     m_SyncedLayerAffectsTiming: 0
     m_Controller: {fileID: 9100000}
+--- !u!114 &328876917849115328
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.5
 --- !u!114 &415761129003532888
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -378,6 +454,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: Shining
   triggerTime: 0.25
+--- !u!114 &3045025826606085978
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: highRumble
+  triggerTime: 0.861
 --- !u!1101 &3095667635299278909
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -417,6 +507,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: Shining
   triggerTime: 0.35
+--- !u!114 &4085871283087972305
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.18
+--- !u!114 &4571655637633786734
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.87
 --- !u!114 &4602796090331615618
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -445,6 +563,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: Closed
   triggerTime: 0.12
+--- !u!114 &4980365020369935745
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.23
 --- !u!1102 &5580194167724007668
 AnimatorState:
   serializedVersion: 6
@@ -468,6 +600,15 @@ AnimatorState:
   - {fileID: -2479714775249354715}
   - {fileID: -3024868800366943921}
   - {fileID: -475001059549849527}
+  - {fileID: 6062180250326719226}
+  - {fileID: 5840225207311558163}
+  - {fileID: 4085871283087972305}
+  - {fileID: 4980365020369935745}
+  - {fileID: 6552650262433818753}
+  - {fileID: -628090339340653805}
+  - {fileID: -6749426792019252926}
+  - {fileID: 4571655637633786734}
+  - {fileID: -1446044911161934408}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -496,6 +637,34 @@ AnimatorTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 1
+--- !u!114 &5840225207311558163
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0
+--- !u!114 &6062180250326719226
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: highRumble
+  triggerTime: 0
 --- !u!1102 &6116163438783980793
 AnimatorState:
   serializedVersion: 6
@@ -550,6 +719,20 @@ AnimatorTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 1
+--- !u!114 &6552650262433818753
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.3
 --- !u!114 &6668427595109023771
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -564,6 +747,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: Bounce
   triggerTime: 0.16
+--- !u!114 &7348613698998632887
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.3
+--- !u!114 &7729975683713211670
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.35
 --- !u!114 &8129657459405093047
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -578,6 +789,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventName: Bounce
   triggerTime: 0.07
+--- !u!114 &8429639234800478292
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventName: lowRumble
+  triggerTime: 0.4
 --- !u!114 &9058728522178573207
 MonoBehaviour:
   m_ObjectHideFlags: 1

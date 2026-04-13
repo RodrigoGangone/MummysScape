@@ -1,21 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static PlayerEnum; 
-
-/// <summary> 
-/// Feedback de Interacción: Controla el realce visual (outline) de los objetos, cambiando su color 
-/// dinámicamente según si el tamaño actual del jugador permite operar el objeto. 
-/// </summary>
+using static PlayerEnum;
 
 public class Interactable : MonoBehaviour
 {
-    [Header("Configuración de Operable (SIMPLE)")]
-    [SerializeField] private bool _operableByHead = false;
+    [SerializeField] private ParticleSystem specialFx;
+
+    [Header("Configuración de Operable (SIMPLE)")] [SerializeField]
+    private bool _operableByHead = false;
+
     [SerializeField] private bool _operableBySmall = false;
     [SerializeField] private bool _operableByNormal = false;
 
-    [Header("Configuración de Material")]
-    [SerializeField] [ColorUsage(true, true)]
+    [Header("Configuración de Material")] [SerializeField] [ColorUsage(true, true)]
     private Color _functional = new Color(0.5f, 0, 1, 1);
 
     [SerializeField] [ColorUsage(true, true)]
@@ -27,7 +24,7 @@ public class Interactable : MonoBehaviour
     private const string _materialNameToFindForBox = "InteractableOutline_Ma_Box";
 
     private List<Material> _materials = new();
-    
+
     private PlayerSize _currentReportedPlayerSize;
     private bool _isOutlineOn = false;
 
@@ -45,56 +42,60 @@ public class Interactable : MonoBehaviour
             }
         }
     }
-         
+
     private void OnPlayerSizeChanged(PlayerSize newSize)
     {
         _currentReportedPlayerSize = newSize;
-        
+
         if (_isOutlineOn)
+        {
             SetColor();
+            HandleSpecialFx(IsOperable());
+        }
     }
-    
+
     public void OnMaterial()
     {
-        if (_isOutlineOn) return; 
+        if (_isOutlineOn) return;
         _isOutlineOn = true;
 
         foreach (var material in _materials)
         {
             material.SetFloat(_inRange, 1);
         }
-        
-        SetColor(); 
+
+        bool isOperable = IsOperable();
+        SetColor(isOperable);
+        HandleSpecialFx(isOperable);
     }
 
     public void OffMaterial()
     {
-        if (!_isOutlineOn) return; 
+        if (!_isOutlineOn) return;
         _isOutlineOn = false;
-        
+
         foreach (var material in _materials)
         {
             material.SetFloat(_inRange, 0f);
         }
+
+        HandleSpecialFx(false);
     }
 
-    private void SetColor()
+    private bool IsOperable()
+    {
+        return _currentReportedPlayerSize switch
+        {
+            PlayerSize.Head => _operableByHead,
+            PlayerSize.Small => _operableBySmall,
+            PlayerSize.Normal => _operableByNormal,
+            _ => false
+        };
+    }
+
+    private void SetColor(bool isOperable)
     {
         if (_materials.Count == 0) return;
-
-        bool isOperable = false;
-        switch (_currentReportedPlayerSize)
-        {
-            case PlayerSize.Head:
-                isOperable = _operableByHead;
-                break;
-            case PlayerSize.Small:
-                isOperable = _operableBySmall;
-                break;
-            case PlayerSize.Normal:
-                isOperable = _operableByNormal;
-                break;
-        }
 
         Color colorToSet = isOperable ? _functional : _inoperable;
 
@@ -103,8 +104,30 @@ public class Interactable : MonoBehaviour
             material.SetColor(_color, colorToSet);
         }
     }
-    
-    private void OnEnable() => GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(OnPlayerSizeChanged);
-    private void OnDisable() => GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(OnPlayerSizeChanged);
 
+    private void SetColor() => SetColor(IsOperable());
+
+    private void HandleSpecialFx(bool isOperable)
+    {
+        if (specialFx == null) return;
+
+        if (_isOutlineOn && isOperable)
+        {
+            if (!specialFx.isPlaying) specialFx.Play();
+        }
+        else
+        {
+            if (specialFx.isPlaying)
+            {
+                specialFx.Stop();
+                specialFx.Clear();
+            }
+        }
+    }
+
+    private void OnEnable() =>
+        GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(OnPlayerSizeChanged);
+
+    private void OnDisable() =>
+        GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(OnPlayerSizeChanged);
 }

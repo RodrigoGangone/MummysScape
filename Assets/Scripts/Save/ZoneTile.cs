@@ -177,7 +177,7 @@ public class ZoneTile : MonoBehaviour
 
     private void Update()
     {
-        if (_isUnlocked && _playerInside && Input.GetButtonDown("Space"))
+        if (_isUnlocked && _playerInside && Input.GetButtonDown("Accept"))
             EnterZone();
     }
 
@@ -186,14 +186,14 @@ public class ZoneTile : MonoBehaviour
         if (!other.CompareTag("PlayerFather")) return;
         _playerInside = true;
         RefreshStatus();
-        if (_isUnlocked) GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.A);
+        if (_isUnlocked) GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.Y);
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag("PlayerFather")) return;
         _playerInside = false;
-        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.A);
+        GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
     }
 
     void TriggerRevealAnimation()

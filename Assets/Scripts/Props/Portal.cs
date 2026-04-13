@@ -68,22 +68,22 @@ public class Portal : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG) || enterLevel) return;
-        
+
         // Guardamos la referencia del jugador y habilitamos la interacción
         _cachedPlayer = other.GetComponent<PlayerController>();
         _canInteract = true;
-        
+
         GameEventManager.Instance.levelEvents.OnPrompt.Raise(true, buttonType.Y);
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (!other.gameObject.CompareTag(PLAYER_TAG) || enterLevel) return;
-        
+
         // Limpiamos la referencia y deshabilitamos al salir
         _canInteract = false;
         _cachedPlayer = null;
-        
+
         GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
     }
 
@@ -96,6 +96,9 @@ public class Portal : MonoBehaviour
         GameEventManager.Instance.levelEvents.OnPrompt.Raise(false, buttonType.Y);
 
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, true);
+
+        if (isSelectorPortal)
+            Save.SetLastLevelPlayed(sceneIndex);
 
         StartCoroutine(MoveAndOrientPlayer(player));
     }

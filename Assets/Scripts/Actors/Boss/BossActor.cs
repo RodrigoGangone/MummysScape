@@ -119,6 +119,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private void AdvanceStage()
     {
+        if (IsDie) return;
         _stageIndex++;
 
         if (_stageIndex >= config.StageCount)
@@ -191,8 +192,10 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         _isLocked = true;
         UpdateControlState(); 
 
-        float originalTimeScale = Time.timeScale;
-        Time.timeScale = 0.05f;
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Boss", true);
+        
+        //float originalTimeScale = Time.timeScale;
+        //Time.timeScale = 0.05f;
     
         GameEventManager.Instance.bossEvents.OnDeath.Raise(); 
     
@@ -200,7 +203,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
             deathImpactFx.Play();
 
         yield return new WaitForSecondsRealtime(0.15f); 
-        Time.timeScale = originalTimeScale; 
+        //Time.timeScale = originalTimeScale; 
 
         stateMachine.ChangeState(Die); 
         
