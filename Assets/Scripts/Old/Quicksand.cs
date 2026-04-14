@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using static Tags; 
+using static Layers; 
 
 public class Quicksand : MonoBehaviour
 {
@@ -130,6 +131,12 @@ public class Quicksand : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
+        if (other.gameObject.layer == LayerMask.NameToLayer(BANDAGE_MOUND_LAYER))
+        {
+            Instantiate(sinkFx, other.transform.position, other.transform.rotation);
+            Destroy(other.gameObject);
+        }
+        
         if (!other.gameObject.CompareTag(PLAYER_TAG)) return;
 
         _player ??= other.gameObject.GetComponent<PlayerController>().Ctx;
