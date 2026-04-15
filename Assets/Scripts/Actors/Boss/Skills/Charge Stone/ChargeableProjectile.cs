@@ -45,10 +45,13 @@ public class ChargeableProjectile : MonoBehaviour, IPausable, IImpactSource
     {
         if (_hasImpacted) return new KnockbackData();
 
-        if (Physics.Linecast(transform.position, victimPosition, wallMask))
+        // Elevamos el punto de destino 1 metro para evitar el suelo
+        Vector3 targetPoint = victimPosition + Vector3.up * 1.0f; 
+
+        if (Physics.Linecast(transform.position, targetPoint, wallMask))
         {
             BeginImpactSequence();
-            return new KnockbackData();
+            return new KnockbackData { Duration = 0 }; // Importante: Duración 0
         }
 
         BeginImpactSequence();
