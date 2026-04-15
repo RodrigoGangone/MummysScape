@@ -1,109 +1,137 @@
 using UnityEngine;
-
-/// <summary> 
-/// Sistema de Detección de Suelo: Realiza un único SphereCast descendente para determinar si el personaje 
-/// está apoyado en una superficie válida. Incluye un filtro de pendiente máxima (Slope) 
-/// y utiliza optimización NonAlloc para garantizar un rendimiento sin recolección de basura por frame.
-/// </summary>
+using System;
 
 [DisallowMultipleComponent]
 public sealed class GroundCheckRuntime : MonoBehaviour
 {
-    [Header("Layer")] [Tooltip("Capas consideradas 'suelo' (ej: Floor, Box, Interactable).")]
-    [SerializeField] private LayerMask _groundMask = 0;
+    public enum TerrainType { None, Default, Sand }
 
-    [Header("Probe Geometry")] [Tooltip("Offset desde el pivot del player al centro de la sonda.")] 
-    [SerializeField] private Vector3 _originOffset = new(0f, 0.5f, 0f);
-
-    [Tooltip("Radio de la esfera del pie para el SphereCast.")] [Min(0f)] 
-    [SerializeField] private float _footRadius = 0.52f;
-
-    [Tooltip("Alcance del SphereCast hacia abajo.")] [Min(0f)] 
-    [SerializeField] private float _castDistance = 0f;
-
-    [Header("Slope")]
-    [Tooltip("Ángulo máximo (grados) para considerar 'suelo'. 90 = cualquier pendiente.")]
-    [Range(0f, 90f)] [SerializeField] private float _maxGroundAngle = 75f;
-
-    private readonly RaycastHit[] _hits = new RaycastHit[4];
-
-    private bool _lastHit;
-    private Vector3 _lastOrigin, _lastEnd, _lastPoint, _lastNormal;
-    private float _lastRadius;
-
-    private struct GroundInfo
+    [Serializable]
+    public struct TerrainConfig
     {
-        public bool hit;
-        public Vector3 point;
-        public Vector3 normal;
-        public float distance;
-        public Collider collider;
+        public TerrainType Type;
+        public LayerMask Mask;
+        public Color DebugColor;
     }
 
-    public bool IsGrounded(Transform tf) => TryGetGround(tf, out _);
+    [Header("Detection Layers")]
+    [Tooltip("Capa global que bloquea el movimiento (debe incluir todas las capas de abajo).")]
+    [SerializeField] private LayerMask _groundMask = 0;
 
-    private bool TryGetGround(Transform tf, out GroundInfo info)
+    [Tooltip("Configura aquí qué capas corresponden a qué terreno.")]
+    [SerializeField] private TerrainConfig[] _terrains;
+
+    [Header("Probe Geometry")]
+    [SerializeField] private Vector3 _originOffset = new(0f, 0.5f, 0f);
+    [SerializeField] private float _footRadius = 0.52f;
+    [SerializeField] private float _castDistance = 0.1f;
+
+    [Header("Slope")]
+    [Range(0f, 90f)] [SerializeField] private float _maxGroundAngle = 75f;
+
+    // Resultados públicos
+    public bool IsGrounded { get; private set; }
+    public TerrainType CurrentTerrain { get; private set; }
+
+    private readonly RaycastHit[] _hits = new RaycastHit[4];
+    private Vector3 _lastOrigin, _lastEnd, _lastPoint, _lastNormal;
+    private Color _currentDebugColor = Color.red;
+
+    private struct GroundResult
+    {
+        public bool hit;
+        public TerrainType terrain;
+        public Vector3 point;
+        public Vector3 normal;
+        public Color color;
+    }
+
+    /// <summary>
+    /// Actualiza el estado del suelo. Llamar desde el PlayerContext o un Update centralizado.
+    /// </summary>
+    public bool CheckGround(Transform tf)
+    {
+        var result = EvaluateGround(tf);
+        
+        IsGrounded = result.hit;
+        CurrentTerrain = result.terrain;
+        _currentDebugColor = result.color;
+
+        return IsGrounded;
+    }
+
+    private GroundResult EvaluateGround(Transform tf)
     {
         Vector3 origin = tf.position + _originOffset;
         Vector3 dir = Vector3.down;
 
         _lastOrigin = origin;
         _lastEnd = origin + dir * _castDistance;
-        _lastRadius = _footRadius;
 
-        var best = new RaycastHit { distance = float.MaxValue };
         int count = Physics.SphereCastNonAlloc(
-            origin,
-            _footRadius,
-            dir,
-            _hits,
-            _castDistance,
-            _groundMask,
-            QueryTriggerInteraction.Ignore
+            origin, _footRadius, dir, _hits, _castDistance, _groundMask, QueryTriggerInteraction.Ignore
         );
 
-        bool anyValid = false;
+        RaycastHit bestHit = default;
+        bool foundValid = false;
+        float minDistance = float.MaxValue;
+
         for (int i = 0; i < count; i++)
         {
             var h = _hits[i];
             if (!IsSlopeValid(h.normal)) continue;
-            if (h.distance < best.distance)
+
+            if (h.distance < minDistance)
             {
-                best = h;
-                anyValid = true;
+                minDistance = h.distance;
+                bestHit = h;
+                foundValid = true;
             }
         }
 
-        _lastHit = anyValid;
-        _lastPoint = anyValid ? best.point : _lastEnd;
-        _lastNormal = anyValid ? best.normal : Vector3.up;
-
-        info = new GroundInfo
+        if (foundValid)
         {
-            hit = anyValid,
-            point = _lastPoint,
-            normal = _lastNormal,
-            distance = anyValid ? best.distance : _castDistance,
-            collider = anyValid ? best.collider : null
-        };
-        return info.hit;
+            _lastPoint = bestHit.point;
+            _lastNormal = bestHit.normal;
+
+            // Identificar el terreno por Layer
+            var terrainInfo = GetTerrainFromLayer(bestHit.collider.gameObject.layer);
+
+            return new GroundResult
+            {
+                hit = true,
+                terrain = terrainInfo.Type,
+                point = bestHit.point,
+                normal = bestHit.normal,
+                color = terrainInfo.DebugColor
+            };
+        }
+
+        // Si no hay hit
+        _lastPoint = _lastEnd;
+        _lastNormal = Vector3.up;
+        return new GroundResult { hit = false, terrain = TerrainType.None, color = Color.red };
     }
 
-    private bool IsSlopeValid(in Vector3 normal)
+    private TerrainConfig GetTerrainFromLayer(int layer)
     {
-        if (_maxGroundAngle >= 89.99f) return true;
-        float angle = Vector3.Angle(normal, Vector3.up);
-        return angle <= _maxGroundAngle;
+        // Buscamos en nuestro array de configuraciones
+        for (int i = 0; i < _terrains.Length; i++)
+        {
+            if (((1 << layer) & _terrains[i].Mask) != 0)
+            {
+                return _terrains[i];
+            }
+        }
+        // Terreno por defecto si no está en la lista pero el GroundMask lo detectó
+        return new TerrainConfig { Type = TerrainType.Default, DebugColor = Color.green };
     }
+
+    private bool IsSlopeValid(Vector3 normal) => Vector3.Angle(normal, Vector3.up) <= _maxGroundAngle;
 
     #region Gizmos
-    
-    [Header("Debug")] 
-    
+    [Header("Debug")]
     [SerializeField] private bool _drawGizmos = true;
-    [SerializeField] private Color _hitColor = new(0.2f, 1f, 0.2f, 0.9f);
-    [SerializeField] private Color _missColor = new(1f, 0.2f, 0.2f, 0.7f);
-    [SerializeField] private Color _normalColor = new(0.2f, 0.6f, 1f, 0.9f);
 
     private void OnDrawGizmosSelected()
     {
@@ -111,19 +139,16 @@ public sealed class GroundCheckRuntime : MonoBehaviour
 
         Vector3 origin = (_lastOrigin == Vector3.zero) ? transform.position + _originOffset : _lastOrigin;
         Vector3 end = (_lastEnd == Vector3.zero) ? origin + Vector3.down * _castDistance : _lastEnd;
-        float radius = _lastRadius > 0f ? _lastRadius : _footRadius;
 
-        Gizmos.color = _lastHit ? _hitColor : _missColor;
-        Gizmos.DrawWireSphere(origin, radius);
+        Gizmos.color = _currentDebugColor;
+        Gizmos.DrawWireSphere(origin, _footRadius);
         Gizmos.DrawLine(origin, end);
 
-        if (_lastHit)
+        if (IsGrounded)
         {
-            Gizmos.DrawSphere(_lastPoint, Mathf.Max(0.02f, radius * 0.15f));
-            Gizmos.color = _normalColor;
-            Gizmos.DrawLine(_lastPoint, _lastPoint + _lastNormal * (radius * 1.5f));
+            Gizmos.DrawSphere(_lastPoint, 0.1f);
+            Gizmos.DrawLine(_lastPoint, _lastPoint + _lastNormal * 0.5f);
         }
     }
-
     #endregion
 }

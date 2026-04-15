@@ -46,6 +46,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
         bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
 
         // --- LÓGICA AIRE ---
+        
         if (!_ctx.IsGrounded())
         {
             if (_sm.IsCurrent(Swing))

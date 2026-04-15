@@ -16,6 +16,8 @@ public static class Animations
         public const string SWING = "Swing";
         public const string DEAD = "Death";
         public const string WIN = "Win";
+        
+        public const string TERRAIN_TYPE = "TerrainType";
     }
 
     public static class Boss

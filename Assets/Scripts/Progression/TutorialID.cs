@@ -5,7 +5,6 @@ public enum TutorialID
     Drop,
     Shoot,
     Swing,
-    Quicksand,
     Push,
     Pull,
     Smash,
