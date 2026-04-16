@@ -99,17 +99,13 @@ public sealed class WalkState : State
             return;
         }
 
-        // 1. Detectamos el cambio para lógica de una sola ejecución (como el SFX)
         if (_ctx.CurrentTerrain != _lastTerrain)
         {
             _lastTerrain = _ctx.CurrentTerrain;
             StopCurrentSfx();
             PlayTerrainSfx(_lastTerrain);
         }
-
-        // 2. Actualización SUAVE de la animación (Capa de suavizado)
-        // El parámetro 0.1f es el 'dampTime' (tiempo de llegada). 
-        // Cuanto más alto, más tardará en mezclarse la animación.
+        
         _ctx.View.Animator.SetFloat(TERRAIN_TYPE, (float)_lastTerrain, 0.15f, Time.deltaTime);
     }
 
