@@ -19,6 +19,4 @@ public interface IPlayerInput
     // Hold (Estado continuo)
     bool IsSpaceHeld();
     bool IsAimHeld();
-    
-    bool IsAnyActionHeld();
 }
