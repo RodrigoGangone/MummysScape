@@ -9,7 +9,7 @@ public class PlayerFeedbackLibrary : ScriptableObject
     {
         public PlayerStateId state;
         public PlayerSize size;
-        public FeedbackAction[] actions; // Lista de cosas que ocurren juntas
+        public FeedbackAction[] actions;
     }
 
     public FeedbackEntry[] entries;

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using static Animations.Player;
 using static PlayerEnum;
@@ -5,7 +6,7 @@ using static PlayerEnum;
 public class SwingState : State, IBandageRestrictor, IFailableState
 {
     private readonly PlayerContext _ctx;
-    
+
     // Referencia al script del objeto que golpeamos
     private WrapHandler _currentWrapHandler;
 
@@ -20,9 +21,9 @@ public class SwingState : State, IBandageRestrictor, IFailableState
     public override void OnEnter()
     {
         Debug.Log("SwingState - Enter");
-        
+
         _ctx.View.Animator.SetBool(PRESWING, true);
-        
+
         // Reset
         _hasConnected = false;
         _currentWrapHandler = null;
@@ -47,7 +48,7 @@ public class SwingState : State, IBandageRestrictor, IFailableState
         _ctx.View.StartBandage(hookRb.transform, hitPoint, 0.3f);
 
         // 5. Calcular Tiempos
-        _timeReachedTarget = Time.time + 0.3f; 
+        _timeReachedTarget = Time.time + 0.3f;
     }
 
     public override void OnExit()
@@ -60,19 +61,21 @@ public class SwingState : State, IBandageRestrictor, IFailableState
 
         // 2. Limpiar física (Handler)
         _ctx.SwingHandler.Detach();
-        
+
         // 3. Limpiar visuales (View)
         _ctx.View.StopBandage();
-        
+
         // 4. Limpiar referencias
         _currentWrapHandler = null;
         _hasConnected = false;
-        
+
         _ctx.View.Animator.SetBool(SWING, false);
         _ctx.View.Animator.SetBool(PRESWING, false);
     }
 
-    public override void OnUpdate() { }
+    public override void OnUpdate()
+    {
+    }
 
     public override void OnFixedUpdate()
     {
@@ -83,7 +86,7 @@ public class SwingState : State, IBandageRestrictor, IFailableState
         {
             // Gravedad normal mientras viaja la cuerda
             _ctx.Rb.AddForce(Physics.gravity, ForceMode.Acceleration);
-            return; 
+            return;
         }
 
         // ---------------------------------------------------------
@@ -101,16 +104,16 @@ public class SwingState : State, IBandageRestrictor, IFailableState
 
             // B. Activar Joint (Física)
             _ctx.SwingHandler.EnablePhysics(_ctx.Rb);
-            
+
             _hasConnected = true;
         }
 
         // ---------------------------------------------------------
         // FASE 3: BALANCEO (Lógica de movimiento)
         // ---------------------------------------------------------
-        
+
         var joint = _ctx.SwingHandler.SpringJoint;
-        if (joint == null) return; 
+        if (joint == null) return;
 
         var rb = _ctx.Rb;
         Vector2 mv = _ctx.Input.Move;
@@ -159,8 +162,6 @@ public class SwingState : State, IBandageRestrictor, IFailableState
         _ctx.View?.SetMoveSpeedVisual(n);
     }
 
-    public void OnTransitionDenied(PlayerSize currentSize)
-    {
+    public void OnTransitionDenied(PlayerSize currentSize) =>
         _ctx.View.HandleFailedTransition(PlayerStateId.Swing, currentSize, _ctx);
-    }
 }

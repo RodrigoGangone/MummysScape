@@ -5030,6 +5030,54 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+  - eventName: WrapFakeSwing
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 5551968650561424038}
+          m_TargetAssemblyTypeName: PlayerAnimHandler, Assembly-CSharp
+          m_MethodName: WrapFakeSwing
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: UnWrap
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 5551968650561424038}
+          m_TargetAssemblyTypeName: PlayerAnimHandler, Assembly-CSharp
+          m_MethodName: UnWrap
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: KinematicStumble
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 5551968650561424038}
+          m_TargetAssemblyTypeName: PlayerAnimHandler, Assembly-CSharp
+          m_MethodName: KinematicStumble
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &3567129815876788723
 GameObject:
   m_ObjectHideFlags: 0
@@ -20474,14 +20522,12 @@ MonoBehaviour:
   _groundMask:
     serializedVersion: 2
     m_Bits: 17924096
+  _terrains: []
   _originOffset: {x: 0, y: 0.5, z: 0}
   _footRadius: 0.52
   _castDistance: 0.25
   _maxGroundAngle: 75
   _drawGizmos: 1
-  _hitColor: {r: 0.2, g: 1, b: 0.2, a: 0.9}
-  _missColor: {r: 1, g: 0.2, b: 0.2, a: 0.6}
-  _normalColor: {r: 0.2, g: 0.6, b: 1, a: 0.9}
 --- !u!114 &6352385872740916496
 MonoBehaviour:
   m_ObjectHideFlags: 0
