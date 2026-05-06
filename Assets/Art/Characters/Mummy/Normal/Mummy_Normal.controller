@@ -222,7 +222,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnimationEventStateBehaviour
   eventName: UnLocked
-  triggerTime: 0.9
+  triggerTime: 0.99
 --- !u!1102 &-5788458860528684923
 AnimatorState:
   serializedVersion: 6
@@ -460,6 +460,7 @@ AnimatorState:
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 387513869046301044}
+  - {fileID: 2666639629739717204}
   m_StateMachineBehaviours:
   - {fileID: 2103571873923719273}
   - {fileID: 5274823659734641721}
@@ -549,7 +550,7 @@ AnimatorStateMachine:
     m_Position: {x: -170, y: 340, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3931702705964852864}
-    m_Position: {x: 60, y: 190, z: 0}
+    m_Position: {x: 20, y: 180, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions:
   - {fileID: -8765420258328929319}
@@ -1109,6 +1110,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AnimationEventStateBehaviour
   eventName: Locked
   triggerTime: 0
+--- !u!1101 &2666639629739717204
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 1
+    m_ConditionEvent: Walk
+    m_EventTreshold: 0
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: -8281844387714097823}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.1
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1101 &2696722880595573834
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
