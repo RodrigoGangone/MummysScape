@@ -8,7 +8,7 @@ using static PlayerEnum;
 public sealed class PlayerTransitionGuard : IStateTransitionGuard
 {
     private readonly PlayerContext _ctx;
-    private IFailableState _lastFailableCalled;
+    //private IFailableState _lastFailableCalled;
     public PlayerTransitionGuard(PlayerContext ctx) => _ctx = ctx;
 
     public bool Can(Enum from, Enum to)
@@ -22,22 +22,25 @@ public sealed class PlayerTransitionGuard : IStateTransitionGuard
         // REGLAS POR TAMAÑO
         if (!SizeRules.Can(_ctx.Model.Size, t))
         {
-            var targetState = _ctx.StateMachine.GetState(t);
-
-            if (targetState is IFailableState failable)
-            {
-                // Solo disparamos si es un estado de fallo distinto al último registrado
-                if (failable != _lastFailableCalled)
-                {
-                    failable.OnTransitionDenied(_ctx.Model.Size);
-                    _lastFailableCalled = failable;
-                }
-            }
+            
+            
+            // var targetState = _ctx.StateMachine.GetState(t);
+            //
+            // if (targetState is IFailableState failable)
+            // {
+            //     // Solo disparamos si es un estado de fallo distinto al último registrado
+            //     if (failable != _lastFailableCalled)
+            //     {
+            //         failable.OnTransitionDenied(_ctx.Model.Size);
+            //         _lastFailableCalled = failable;
+            //         
+            //     }
+            // }
 
             return false;
         }
         
-        _lastFailableCalled = null;
+        //_lastFailableCalled = null;
         
         return true;
     }

@@ -5,5 +5,8 @@ using UnityEngine;
 public class AnimationAction : FeedbackAction
 {
     public string triggerName;
-    public override void Play(PlayerContext ctx) => ctx.View.Animator.SetTrigger(triggerName);
+    public override void Play(PlayerContext ctx)
+    {
+        ctx.View.Animator.SetTrigger(triggerName);
+    }
 }

@@ -15,6 +15,9 @@ public class StateMachinePlayer : MonoBehaviour
     
     private Enum _currentId;
     private IStateTransitionGuard _guard;
+    private IStateRedirector _redirector;
+
+    public void SetRedirector(IStateRedirector redirector) => _redirector = redirector;
     public void SetGuard(IStateTransitionGuard guard) => _guard = guard;
 
     public void Update() { _currentState?.OnUpdate(); }
@@ -49,10 +52,18 @@ public class StateMachinePlayer : MonoBehaviour
     
     public bool ChangeState(Enum name)
     {
+        // 1. Intercepción: Si hay un redirector, permitimos que cambie el destino (ej: de Swing a Fake)
+        if (_redirector != null)
+        {
+            name = _redirector.RedirectionCheck(name, _currentId);
+        }
+
+        // Tu lógica original de validación
         if (!_allStates.ContainsKey(name) || _allStates[name].Equals(_currentState)) return false;
 
         if (_guard != null && !_guard.Can(_currentId, name)) return false;
-        
+    
+        // Cambio de estado estándar
         _currentState?.OnExit();
         _currentState = _allStates[name];
         _currentId = name;

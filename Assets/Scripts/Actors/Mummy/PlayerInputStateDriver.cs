@@ -22,6 +22,9 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
         _ctx = ctx;
         _sm = sm;
         _input = ctx.Input;
+
+        // Instalamos la lógica de redirección solo para el jugador
+        _sm.SetRedirector(new PlayerSizeRedirector(ctx));
     }
 
     private void Awake()

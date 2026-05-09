@@ -8,7 +8,7 @@ using static SfxIDs;
 /// el desplazamiento conjunto siempre que se mantenga el contacto físico y el suelo bajo ambos. 
 /// </summary>
 
-public sealed class PushState : State, IBandageRestrictor
+public sealed class PushState : State, IBandageRestrictor, IFailableState
 {
     private readonly PlayerContext _ctx;
     private BoxPushAttract _box;
@@ -88,5 +88,14 @@ public sealed class PushState : State, IBandageRestrictor
         Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
         Quaternion smoothRot = Quaternion.Slerp(_ctx.Rb.rotation, targetRot, _ctx.TurnSpeed * Time.fixedDeltaTime);
         _ctx.Rb.MoveRotation(smoothRot);
+    }
+
+    public void OnTransitionDenied(PlayerSize currentSize)
+    {
+        _ctx.View.Animator.SetBool("FakePush", true);
+        
+        _ctx.View.HandleFailedTransition(PlayerStateId.Push,
+            currentSize,
+            _ctx);
     }
 }

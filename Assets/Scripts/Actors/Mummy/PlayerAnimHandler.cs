@@ -30,9 +30,7 @@ public class PlayerAnimHandler : MonoBehaviour
             }
         }
     }
-
     public void Shoot() => GameEventManager.Instance.playerEvents.OnShoot.Raise();
-
     public void WrapFakeSwing()
     {
         Vector3 targetPoint = _ctx.TryGetSwingTarget(out Rigidbody hook)
@@ -41,9 +39,12 @@ public class PlayerAnimHandler : MonoBehaviour
 
         _ctx.View.StartBandage(_ctx.Tf, targetPoint, 0.15f);
     }
-
     public void UnWrap() => _ctx.View.StopBandage();
-    
+    public void CutSwing()
+    {
+        _ctx.View.CutBandage();
+        _ctx.View.StopBandage();
+    }
     private IEnumerator KinematicStumble(float duration, float distance)
     {
         float elapsed = 0f;
@@ -76,12 +77,16 @@ public class PlayerAnimHandler : MonoBehaviour
             // Movemos la posición directamente (al ser kinematic, ignoramos fuerzas)
             _ctx.Rb.position = Vector3.Lerp(startPos, targetPos, curve);
 
+            if (!_ctx.IsGrounded())
+            {
+                _ctx.Rb.linearVelocity = Vector3.zero;
+                break;
+            }
+            
             yield return null;
         }
     }
-
     public void KinematicStumble() => StartCoroutine(KinematicStumble(2f, 1f));
-    
     public void Locked() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise("AnimationEvent", true);
     public void UnLocked() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise("AnimationEvent", false);
 }
