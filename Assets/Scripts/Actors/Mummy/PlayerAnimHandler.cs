@@ -87,6 +87,7 @@ public class PlayerAnimHandler : MonoBehaviour
         }
     }
     public void KinematicStumble() => StartCoroutine(KinematicStumble(2f, 1f));
+    public void FallingDust() => _ctx.View.fallingDust.Play();
     public void Locked() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise("AnimationEvent", true);
     public void UnLocked() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise("AnimationEvent", false);
 }

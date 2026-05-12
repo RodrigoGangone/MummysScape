@@ -19,6 +19,8 @@ public sealed class PushState : State, IBandageRestrictor, IFailableState
 
     public override void OnEnter()
     {
+        Debug.Log("PushState");
+        
         _ctx.View.PlaySfx(Mummy___Normal.WalkPush);
         
         if (!_ctx.TryGetPushTarget(out _box, out _, out _))

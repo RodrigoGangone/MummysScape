@@ -4907,7 +4907,8 @@ MonoBehaviour:
   _avatarHead: {fileID: 9000000, guid: 40057147eadf3b4458da33b27456b085, type: 3}
   _smashFX: {fileID: 4237376819328207346}
   _dropFX: {fileID: 6122208962132014375}
-  _koFX: {fileID: 0}
+  _koFX: {fileID: 2095730954852954967}
+  fallingDust: {fileID: 7246737872928390986}
   shadow: {fileID: 1516780396086283348}
   _decal: {fileID: 1851146678593742490}
   _rangeIndicator: {fileID: 6772962616540694524}
@@ -4915,6 +4916,7 @@ MonoBehaviour:
   _aimAllowed: {r: 12.177079, g: 0, b: 47.93726, a: 1}
   _aimNotAllowed: {r: 68.5935, g: 0, b: 0, a: 1}
   _bandageLine: {fileID: 1042456516121793792}
+  _cutFx: {fileID: 4237376819328207346}
   _handAnchorNormal: {fileID: 1673956697897603027}
   _handAnchorSmall: {fileID: 4651885069105565579}
   _handAnchorHead: {fileID: 0}
@@ -4982,38 +4984,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-  - eventName: Locked
-    OnAnimationEvent:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 5551968650561424038}
-          m_TargetAssemblyTypeName: PlayerAnimHandler, Assembly-CSharp
-          m_MethodName: Locked
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  - eventName: UnLocked
-    OnAnimationEvent:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 5551968650561424038}
-          m_TargetAssemblyTypeName: PlayerAnimHandler, Assembly-CSharp
-          m_MethodName: UnLocked
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
   - eventName: Shoot
     OnAnimationEvent:
       m_PersistentCalls:
@@ -5069,6 +5039,22 @@ MonoBehaviour:
         - m_Target: {fileID: 5551968650561424038}
           m_TargetAssemblyTypeName: PlayerAnimHandler, Assembly-CSharp
           m_MethodName: KinematicStumble
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventName: FallingDust
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 5551968650561424038}
+          m_TargetAssemblyTypeName: PlayerAnimHandler, Assembly-CSharp
+          m_MethodName: FallingDust
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -20430,6 +20416,7 @@ Transform:
   - {fileID: 7935980005289441033}
   - {fileID: 6828043830074461448}
   - {fileID: 4947513349963060432}
+  - {fileID: 4070252938362973842}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3199632888425185226
@@ -20453,6 +20440,7 @@ MonoBehaviour:
   _headTimer: {fileID: 0}
   _interactions: {fileID: 6352385872740916496}
   _ground: {fileID: 4394623111969123832}
+  _feedback: {fileID: 11400000, guid: 8d7304497f4390a44b5e2353ab7b3606, type: 2}
   _bandagePickupPrefab: {fileID: 1813197124771135622, guid: be938534bfdc11943b1c3d90b3b7f8cc, type: 3}
   _sizeVisual: {fileID: 6175992681972326499}
   _capsuleBySize: {fileID: 7410182693108136691}
@@ -20598,6 +20586,9 @@ MonoBehaviour:
   smashLayer:
     serializedVersion: 2
     m_Bits: 33554432
+  _drawGizmos: 1
+  _hitColor: {r: 0.2, g: 1, b: 0.2, a: 0.9}
+  _missColor: {r: 1, g: 0.2, b: 0.2, a: 0.9}
 --- !u!114 &6175992681972326499
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20918,6 +20909,73 @@ MonoBehaviour:
   m_FadeFactor: 1
   version: 1
   m_DecalLayerMask: 4293918719
+--- !u!1001 &544259145521415131
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6578946205384916507}
+    m_Modifications:
+    - target: {fileID: 4607720854482234697, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4607720854482234697, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4607720854482234697, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4607720854482234697, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4607720854482234697, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4607720854482234697, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4607720854482234697, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4607720854482234697, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4607720854482234697, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4607720854482234697, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6114916685617796021, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+      propertyPath: m_Name
+      value: FallingDust
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+--- !u!4 &4070252938362973842 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4607720854482234697, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+  m_PrefabInstance: {fileID: 544259145521415131}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &7246737872928390986 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 7141597937255840913, guid: f2b4b3ee49b8e5d41b67047070cfce63, type: 3}
+  m_PrefabInstance: {fileID: 544259145521415131}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2125604145315483540
 PrefabInstance:
   m_ObjectHideFlags: 0

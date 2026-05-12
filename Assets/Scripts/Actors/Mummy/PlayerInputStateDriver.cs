@@ -44,6 +44,9 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
 
             return;
         }
+        
+        if (_sm.IsCurrent(Fake))
+            return;
 
         var mv = _input.Move;
         bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
