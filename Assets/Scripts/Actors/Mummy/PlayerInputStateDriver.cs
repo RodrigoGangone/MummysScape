@@ -129,35 +129,43 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
         bool isGrounded = _ctx.IsGrounded();
 
         // 1. SWING (Aire y Suelo)
-        if (!CanEnter(Swing) && _ctx.Feedback.HasFeedback(Swing, size) && _input.IsSpaceHeld() && _ctx.TryGetSwingTarget(out _))
+        if (CanStartFake(Swing, size) && _input.IsSpaceHeld() && _ctx.TryGetSwingTarget(out _))
         {
-            _ctx.AttemptedState = Swing;
-            _sm.ChangeState(Fake);
-            return true;
+            return TryStartFake(Swing);
         }
 
         if (isGrounded)
         {
             // 2. ATTRACT
-            if (!CanEnter(Attract) && _ctx.Feedback.HasFeedback(Attract, size) && _input.IsSpaceHeld() && _ctx.TryGetAttractTarget(out _))
+            if (CanStartFake(Attract, size) && _input.IsSpaceHeld() && _ctx.TryGetAttractTarget(out _))
             {
-                _ctx.AttemptedState = Attract;
-                _sm.ChangeState(Fake);
-                return true;
+                return TryStartFake(Attract);
             }
 
             // 7. PUSH (Requiere intención de movimiento y objetivo detectado)
             var mv = _input.Move;
             bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
-            if (moving && !CanEnter(Push) && _ctx.Feedback.HasFeedback(Push, size) && _ctx.TryGetPushTarget(out _, out _, out _))
+            if (moving && CanStartFake(Push, size) && _ctx.TryGetPushTarget(out _, out _, out _))
             {
-                _ctx.AttemptedState = Push;
-                _sm.ChangeState(Fake);
-                return true;
+                return TryStartFake(Push);
             }
         }
 
         return false;
+    }
+
+    private bool TryStartFake(PlayerEnum.PlayerStateId attemptedState)
+    {
+        _ctx.AttemptedState = attemptedState;
+        return _sm.ChangeState(Fake);
+    }
+
+    private bool CanStartFake(PlayerEnum.PlayerStateId attemptedState, PlayerEnum.PlayerSize size)
+    {
+        return _ctx.Model.CanUseAbility(attemptedState)
+               && !SizeRules.Can(size, attemptedState)
+               && _ctx.Feedback != null
+               && _ctx.Feedback.HasFeedback(attemptedState, size);
     }
 
     private bool CanEnter(PlayerEnum.PlayerStateId state) => _ctx.Model.CanUseAbility(state);

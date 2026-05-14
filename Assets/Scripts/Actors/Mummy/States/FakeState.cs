@@ -1,22 +1,33 @@
 using UnityEngine;
+using static Animations.Player;
 using static PlayerEnum;
 using static PlayerEnum.PlayerStateId;
+using static PlayerEnum.PlayerSize;
 
 /// <summary>
 /// Estado de feedback falso: reproduce una animación de intento fallido según la acción solicitada.
-/// Para acciones continuas como Push, mantiene una simulación visual/motriz liviana hasta que
+/// Para acciones continuas como Push, mantiene la animación de intento hasta que
 /// el jugador suelta el input o pierde contacto con el objetivo.
 /// </summary>
-public class FakeState : State
+public class FakeState : State, IBandageRestrictor
 {
     private const float InputDeadZone = 0.05f;
+    private const float OneShotSafetyTimeout = 5f;
+
+    private enum FakeMode
+    {
+        None,
+        OneShot,
+        ContinuousPush
+    }
 
     private readonly PlayerContext _ctx;
 
     private BoxPushAttract _pushTarget;
     private float _timer;
-    private readonly float _maxDuration = 2.3f;
-    private bool _isContinuous;
+    private FakeMode _mode;
+    private PlayerStateId _attemptedState;
+    private PlayerSize _entrySize;
 
     public FakeState(PlayerContext ctx)
     {
@@ -25,67 +36,49 @@ public class FakeState : State
 
     public override void OnEnter()
     {
-        Debug.Log("FakeState.OnEnter");
-        
         _timer = 0f;
         _pushTarget = null;
-        _isContinuous = _ctx.AttemptedState == Push;
+        _attemptedState = _ctx.AttemptedState;
+        _entrySize = _ctx.Model.Size;
+        _mode = GetMode(_attemptedState, _entrySize);
 
-        if (_isContinuous)
+        if (_mode == FakeMode.None || !HasConfiguredFeedback(_attemptedState, _entrySize))
         {
-            if (!_ctx.TryGetPushTarget(out _pushTarget, out _, out _))
-            {
-                StateMachine.ChangeState(Walk);
-                return;
-            }
-        }
-        else
-        {
-            //GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FakeLock", true);
+            StateMachine.ChangeState(Idle);
+            return;
         }
 
-        Debug.Log(_ctx.AttemptedState);
-        
-        _ctx.Feedback.Execute(_ctx.AttemptedState, _ctx.Model.Size, _ctx);
-
-        var stateInstance = StateMachine.GetState(_ctx.AttemptedState);
-        if (stateInstance is IFailableState failable)
+        if (_mode == FakeMode.ContinuousPush && !TryStartContinuousPush())
         {
-            failable.OnTransitionDenied(_ctx.Model.Size);
+            StateMachine.ChangeState(Walk);
+            return;
         }
+
+        _ctx.Feedback.Execute(_attemptedState, _entrySize, _ctx);
     }
 
     public override void OnUpdate()
     {
-        if (!_ctx.IsGrounded())
+        switch (_mode)
         {
-            StateMachine.ChangeState(Fall);
-            return;
+            case FakeMode.ContinuousPush:
+                HandleContinuousPush();
+                break;
+            case FakeMode.OneShot:
+                HandleOneShotTimeout();
+                break;
         }
-
-        if (_isContinuous)
-        {
-            HandleContinuousPush();
-            return;
-        }
-
-        HandleOneShotExit();
     }
 
     public override void OnFixedUpdate()
     {
-        if (!_isContinuous) return;
+        if (_mode != FakeMode.ContinuousPush) return;
 
         Vector2 input = _ctx.Input.Move;
         if (input.sqrMagnitude < InputDeadZone * InputDeadZone) return;
 
         Vector3 direction = _ctx.CameraRelativeDir(input.x, input.y);
         if (direction.sqrMagnitude < 0.0001f) return;
-
-        float fakePushSpeed = _ctx.MoveSpeed * 0.5f;
-        Vector3 delta = direction * (fakePushSpeed * Time.fixedDeltaTime);
-
-        _ctx.Rb.MovePosition(_ctx.Rb.position + delta);
 
         Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
         Quaternion smoothRotation = Quaternion.Slerp(
@@ -99,19 +92,41 @@ public class FakeState : State
 
     public override void OnExit()
     {
-        Debug.Log("FakeState.OnExit");
-        
-        if (!_isContinuous)
+        if (_mode == FakeMode.ContinuousPush)
         {
-        //    GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FakeLock", false);
+            SetAnimatorBoolIfExists(FAKE_PUSH, false);
         }
 
-        _ctx.View.Animator.SetBool("FakePush", false);
+        if (_mode == FakeMode.OneShot)
+        {
+            _ctx.View.StopBandage();
+        }
+
         _pushTarget = null;
+        _mode = FakeMode.None;
+    }
+
+    public void CompleteOneShot()
+    {
+        if (_mode != FakeMode.OneShot || !StateMachine.IsCurrent(Fake)) return;
+
+        StateMachine.ChangeState(Idle);
     }
 
     private void HandleContinuousPush()
     {
+        if (!_ctx.IsGrounded())
+        {
+            StateMachine.ChangeState(Fall);
+            return;
+        }
+
+        if (_ctx.Model.Size != Small)
+        {
+            StateMachine.ChangeState(Idle);
+            return;
+        }
+
         Vector2 input = _ctx.Input.Move;
 
         if (input.sqrMagnitude < InputDeadZone * InputDeadZone)
@@ -132,16 +147,49 @@ public class FakeState : State
         }
     }
 
-    private void HandleOneShotExit()
+    private void HandleOneShotTimeout()
     {
         _timer += Time.deltaTime;
 
-        AnimatorStateInfo stateInfo = _ctx.View.Animator.GetCurrentAnimatorStateInfo(0);
-        bool animationFinished = stateInfo.normalizedTime >= 1f && !_ctx.View.Animator.IsInTransition(0);
-
-        if (animationFinished || _timer >= _maxDuration)
+        if (_timer >= OneShotSafetyTimeout)
         {
-            StateMachine.ChangeState(Idle);
+            Debug.LogWarning($"Fake animation '{_attemptedState}' did not call EndFake. Finishing by timeout.");
+            CompleteOneShot();
+        }
+    }
+
+    private bool TryStartContinuousPush()
+    {
+        if (!_ctx.TryGetPushTarget(out _pushTarget, out _, out _)) return false;
+
+        SetAnimatorBoolIfExists(FAKE_PUSH, true);
+        return true;
+    }
+
+    private bool HasConfiguredFeedback(PlayerStateId state, PlayerSize size)
+    {
+        return _ctx.Feedback != null && _ctx.Feedback.HasFeedback(state, size);
+    }
+
+    private static FakeMode GetMode(PlayerStateId state, PlayerSize size)
+    {
+        if (state is Swing or Attract) return FakeMode.OneShot;
+        if (state == Push && size == Small) return FakeMode.ContinuousPush;
+        return FakeMode.None;
+    }
+
+    private void SetAnimatorBoolIfExists(string parameterName, bool value)
+    {
+        Animator animator = _ctx.View.Animator;
+        if (animator == null) return;
+
+        foreach (AnimatorControllerParameter parameter in animator.parameters)
+        {
+            if (parameter.name == parameterName && parameter.type == AnimatorControllerParameterType.Bool)
+            {
+                animator.SetBool(parameterName, value);
+                return;
+            }
         }
     }
 }

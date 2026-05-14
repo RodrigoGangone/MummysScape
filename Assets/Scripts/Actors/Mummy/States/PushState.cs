@@ -94,10 +94,6 @@ public sealed class PushState : State, IBandageRestrictor, IFailableState
 
     public void OnTransitionDenied(PlayerSize currentSize)
     {
-        _ctx.View.Animator.SetBool("FakePush", true);
-        
-        _ctx.View.HandleFailedTransition(PlayerStateId.Push,
-            currentSize,
-            _ctx);
+        // FakeState owns fake feedback playback.
     }
 }

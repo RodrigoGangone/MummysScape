@@ -26,7 +26,10 @@ public class PlayerFeedbackLibrary : ScriptableObject
         var entry = System.Array.Find(entries, e => e.state == state && e.size == size);
         if (entry.actions != null)
         {
-            foreach (var action in entry.actions) action.Play(ctx);
+            foreach (var action in entry.actions)
+            {
+                if (action != null) action.Play(ctx);
+            }
         }
     }
 }

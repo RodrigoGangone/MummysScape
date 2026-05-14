@@ -12,7 +12,18 @@ public class PlayerAnimHandler : MonoBehaviour
 
     private void Start()
     {
-        _ctx = GetComponentInParent<PlayerController>().Ctx;
+        TryResolveContext();
+    }
+
+    private bool TryResolveContext()
+    {
+        if (_ctx != null) return true;
+
+        PlayerController controller = GetComponentInParent<PlayerController>();
+        if (controller == null || controller.Ctx == null) return false;
+
+        _ctx = controller.Ctx;
+        return true;
     }
 
     public void Smash()
@@ -33,17 +44,36 @@ public class PlayerAnimHandler : MonoBehaviour
     public void Shoot() => GameEventManager.Instance.playerEvents.OnShoot.Raise();
     public void WrapFakeSwing()
     {
+        if (!TryResolveContext()) return;
+
         Vector3 targetPoint = _ctx.TryGetSwingTarget(out Rigidbody hook)
             ? hook.worldCenterOfMass
             : _ctx.Rb.position + (_ctx.Rb.transform.forward * 4f) + Vector3.up;
 
         _ctx.View.StartBandage(_ctx.Tf, targetPoint, 0.15f);
     }
-    public void UnWrap() => _ctx.View.StopBandage();
+    public void UnWrap()
+    {
+        if (!TryResolveContext()) return;
+
+        _ctx.View.StopBandage();
+    }
     public void CutSwing()
     {
+        if (!TryResolveContext()) return;
+
         _ctx.View.CutBandage();
         _ctx.View.StopBandage();
+    }
+
+    public void EndFake()
+    {
+        if (!TryResolveContext()) return;
+
+        if (_ctx.StateMachine.GetState(PlayerEnum.PlayerStateId.Fake) is FakeState fakeState)
+        {
+            fakeState.CompleteOneShot();
+        }
     }
     private IEnumerator KinematicStumble(float duration, float distance)
     {

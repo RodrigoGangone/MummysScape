@@ -14,7 +14,7 @@ public static class TransitionRules
         {
             { PlayerStateId.Idle,        new[]{ PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.Aim, PlayerStateId.Smash, PlayerStateId.DropBandage, PlayerStateId.Push, PlayerStateId.Attract, PlayerStateId.Swing, PlayerStateId.QuickTravel, PlayerStateId.KnockBack, PlayerStateId.Fake, PlayerStateId.Win,PlayerStateId.Dead } },
             { PlayerStateId.Walk,        new[]{ PlayerStateId.Idle, PlayerStateId.Fall, PlayerStateId.Aim, PlayerStateId.Smash, PlayerStateId.DropBandage, PlayerStateId.Push, PlayerStateId.Attract, PlayerStateId.Swing, PlayerStateId.QuickTravel, PlayerStateId.KnockBack, PlayerStateId.Fake, PlayerStateId.Win,PlayerStateId.Dead } },
-            { PlayerStateId.Fall,        new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Swing, PlayerStateId.KnockBack, PlayerStateId.Dead } },
+            { PlayerStateId.Fall,        new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Swing, PlayerStateId.KnockBack, PlayerStateId.Fake, PlayerStateId.Dead } },
             { PlayerStateId.Aim,         new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.Shoot, PlayerStateId.KnockBack, PlayerStateId.Dead } },
             { PlayerStateId.Shoot,       new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.KnockBack, PlayerStateId.Dead} },
             { PlayerStateId.Smash,       new[]{ PlayerStateId.Idle, PlayerStateId.Walk, PlayerStateId.Fall, PlayerStateId.KnockBack, PlayerStateId.Dead } },

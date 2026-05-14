@@ -448,6 +448,20 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &-4005457531169860282
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fecb9e59f9a19429aad3306bc927b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationEventStateBehaviour
+  eventName: EndFake
+  triggerTime: 0.98
 --- !u!1102 &-3931702705964852864
 AnimatorState:
   serializedVersion: 6
@@ -455,13 +469,11 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Reck_L_Hook
+  m_Name: Reck_Fake_Hook
   m_Speed: 1.5
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 387513869046301044}
-  - {fileID: 2666639629739717204}
-  - {fileID: 5946545350629046619}
   m_StateMachineBehaviours:
   - {fileID: 2103571873923719273}
   - {fileID: 5274823659734641721}
@@ -470,6 +482,7 @@ AnimatorState:
   - {fileID: -5853901361258949103}
   - {fileID: 8092331320069972358}
   - {fileID: 7086179780406639969}
+  - {fileID: -4005457531169860282}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -547,13 +560,13 @@ AnimatorStateMachine:
     m_Position: {x: 380, y: -200, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 8348847497145152630}
-    m_Position: {x: 140, y: 560, z: 0}
+    m_Position: {x: -30, y: 420, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 5585446661348902435}
-    m_Position: {x: 150, y: 700, z: 0}
+    m_Position: {x: -30, y: 570, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3931702705964852864}
-    m_Position: {x: 300, y: 580, z: 0}
+    m_Position: {x: 250, y: 500, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions:
   - {fileID: -8765420258328929319}
@@ -563,7 +576,7 @@ AnimatorStateMachine:
   - {fileID: -7512553864356709386}
   m_StateMachineTransitions: {}
   m_StateMachineBehaviours: []
-  m_AnyStatePosition: {x: 160, y: 630, z: 0}
+  m_AnyStatePosition: {x: -10, y: 500, z: 0}
   m_EntryPosition: {x: 10, y: 90, z: 0}
   m_ExitPosition: {x: 950, y: 110, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
@@ -1116,31 +1129,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AnimationEventStateBehaviour
   eventName: Locked
   triggerTime: 0
---- !u!1101 &2666639629739717204
-AnimatorStateTransition:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_Conditions:
-  - m_ConditionMode: 1
-    m_ConditionEvent: Walk
-    m_EventTreshold: 0
-  m_DstStateMachine: {fileID: 0}
-  m_DstState: {fileID: -8281844387714097823}
-  m_Solo: 0
-  m_Mute: 0
-  m_IsExit: 0
-  serializedVersion: 3
-  m_TransitionDuration: 0.25
-  m_TransitionOffset: 0
-  m_ExitTime: 0.9375001
-  m_HasExitTime: 0
-  m_HasFixedDuration: 1
-  m_InterruptionSource: 0
-  m_OrderedInterruption: 1
-  m_CanTransitionToSelf: 1
 --- !u!1101 &2696722880595573834
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -1416,31 +1404,6 @@ AnimatorStateTransition:
   m_TransitionDuration: 0
   m_TransitionOffset: 0
   m_ExitTime: 0.74999994
-  m_HasExitTime: 0
-  m_HasFixedDuration: 1
-  m_InterruptionSource: 0
-  m_OrderedInterruption: 1
-  m_CanTransitionToSelf: 1
---- !u!1101 &5946545350629046619
-AnimatorStateTransition:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_Conditions:
-  - m_ConditionMode: 1
-    m_ConditionEvent: Fall
-    m_EventTreshold: 0
-  m_DstStateMachine: {fileID: 0}
-  m_DstState: {fileID: -7670092674004984546}
-  m_Solo: 0
-  m_Mute: 0
-  m_IsExit: 0
-  serializedVersion: 3
-  m_TransitionDuration: 0.25
-  m_TransitionOffset: 0
-  m_ExitTime: 0.93750006
   m_HasExitTime: 0
   m_HasFixedDuration: 1
   m_InterruptionSource: 0

@@ -3,7 +3,7 @@ using static PlayerEnum;
 
 public class PlayerSizeRedirector : IStateRedirector
 {
-    private PlayerContext _ctx;
+    private readonly PlayerContext _ctx;
 
     public PlayerSizeRedirector(PlayerContext ctx) => _ctx = ctx;
 
@@ -16,7 +16,7 @@ public class PlayerSizeRedirector : IStateRedirector
         if (requestedState is PlayerStateId targetId)
         {
             // Solo evaluamos reglas de tamaño si es un cambio de estado real
-            if (!SizeRules.Can(_ctx.Model.Size, targetId))
+            if (ShouldRedirectToFake(targetId))
             {
                 // Si ya estamos en Fake y la intención es la misma, no hace falta re-asignar
                 if (Equals(currentState, PlayerStateId.Fake) && _ctx.AttemptedState == targetId)
@@ -27,5 +27,15 @@ public class PlayerSizeRedirector : IStateRedirector
             }
         }
         return requestedState;
+    }
+
+    private bool ShouldRedirectToFake(PlayerStateId targetId)
+    {
+        var size = _ctx.Model.Size;
+
+        return _ctx.Model.CanUseAbility(targetId)
+               && !SizeRules.Can(size, targetId)
+               && _ctx.Feedback != null
+               && _ctx.Feedback.HasFeedback(targetId, size);
     }
 }
