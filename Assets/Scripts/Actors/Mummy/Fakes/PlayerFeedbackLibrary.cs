@@ -14,6 +14,13 @@ public class PlayerFeedbackLibrary : ScriptableObject
 
     public FeedbackEntry[] entries;
 
+    // --- NUEVO MÉTODO AUXILIAR ---
+    public bool HasFeedback(PlayerStateId state, PlayerSize size)
+    {
+        if (entries == null) return false;
+        return System.Array.Exists(entries, e => e.state == state && e.size == size);
+    }
+
     public void Execute(PlayerStateId state, PlayerSize size, PlayerContext ctx)
     {
         var entry = System.Array.Find(entries, e => e.state == state && e.size == size);

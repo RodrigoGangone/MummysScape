@@ -25,6 +25,8 @@ public class FakeState : State
 
     public override void OnEnter()
     {
+        Debug.Log("FakeState.OnEnter");
+        
         _timer = 0f;
         _pushTarget = null;
         _isContinuous = _ctx.AttemptedState == Push;
@@ -39,9 +41,11 @@ public class FakeState : State
         }
         else
         {
-            GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FakeLock", true);
+            //GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FakeLock", true);
         }
 
+        Debug.Log(_ctx.AttemptedState);
+        
         _ctx.Feedback.Execute(_ctx.AttemptedState, _ctx.Model.Size, _ctx);
 
         var stateInstance = StateMachine.GetState(_ctx.AttemptedState);
@@ -95,9 +99,11 @@ public class FakeState : State
 
     public override void OnExit()
     {
+        Debug.Log("FakeState.OnExit");
+        
         if (!_isContinuous)
         {
-            GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FakeLock", false);
+        //    GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FakeLock", false);
         }
 
         _ctx.View.Animator.SetBool("FakePush", false);
