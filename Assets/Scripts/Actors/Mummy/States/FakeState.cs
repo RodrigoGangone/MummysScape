@@ -41,7 +41,7 @@ public class FakeState : State
         }
         else
         {
-            //GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FakeLock", true);
+            GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FakeLock", true);
         }
 
         Debug.Log(_ctx.AttemptedState);
@@ -103,7 +103,7 @@ public class FakeState : State
         
         if (!_isContinuous)
         {
-        //    GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FakeLock", false);
+            GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FakeLock", false);
         }
 
         _ctx.View.Animator.SetBool("FakePush", false);
