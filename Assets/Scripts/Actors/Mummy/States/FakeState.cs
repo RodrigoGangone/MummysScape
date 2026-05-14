@@ -12,6 +12,9 @@ using static PlayerEnum.PlayerSize;
 public class FakeState : State, IBandageRestrictor
 {
     private const float InputDeadZone = 0.05f;
+    private const float PushTargetGraceTime = 0.25f;
+    private const float PushInputGraceTime = 0.12f;
+    private const float IdleSettleDuration = 0.12f;
     private const float OneShotSafetyTimeout = 5f;
 
     private enum FakeMode
@@ -25,6 +28,8 @@ public class FakeState : State, IBandageRestrictor
 
     private BoxPushAttract _pushTarget;
     private float _timer;
+    private float _lastPushTargetTime;
+    private float _lastPushInputTime;
     private FakeMode _mode;
     private PlayerStateId _attemptedState;
     private PlayerSize _entrySize;
@@ -37,6 +42,8 @@ public class FakeState : State, IBandageRestrictor
     public override void OnEnter()
     {
         _timer = 0f;
+        _lastPushTargetTime = 0f;
+        _lastPushInputTime = 0f;
         _pushTarget = null;
         _attemptedState = _ctx.AttemptedState;
         _entrySize = _ctx.Model.Size;
@@ -110,7 +117,7 @@ public class FakeState : State, IBandageRestrictor
     {
         if (_mode != FakeMode.OneShot || !StateMachine.IsCurrent(Fake)) return;
 
-        StateMachine.ChangeState(Idle);
+        FinishToIdle();
     }
 
     private void HandleContinuousPush()
@@ -123,27 +130,37 @@ public class FakeState : State, IBandageRestrictor
 
         if (_ctx.Model.Size != Small)
         {
-            StateMachine.ChangeState(Idle);
+            FinishToIdle();
             return;
         }
 
         Vector2 input = _ctx.Input.Move;
 
-        if (input.sqrMagnitude < InputDeadZone * InputDeadZone)
+        if (input.sqrMagnitude >= InputDeadZone * InputDeadZone)
         {
-            StateMachine.ChangeState(Idle);
+            _lastPushInputTime = Time.time;
+        }
+
+        if (Time.time - _lastPushInputTime > PushInputGraceTime)
+        {
+            FinishToIdle();
             return;
         }
 
-        if (!_ctx.TryGetPushTarget(out var currentTarget, out _, out _) || currentTarget != _pushTarget)
+        if (_ctx.TryGetPushTarget(out var currentTarget, out _, out _) && currentTarget == _pushTarget)
         {
-            StateMachine.ChangeState(Walk);
+            _lastPushTargetTime = Time.time;
+        }
+
+        if (Time.time - _lastPushTargetTime > PushTargetGraceTime)
+        {
+            FinishToIdle();
             return;
         }
 
         if (!_pushTarget.IsGroundedForPushAttract())
         {
-            StateMachine.ChangeState(Walk);
+            FinishToIdle();
         }
     }
 
@@ -162,8 +179,17 @@ public class FakeState : State, IBandageRestrictor
     {
         if (!_ctx.TryGetPushTarget(out _pushTarget, out _, out _)) return false;
 
+        _lastPushTargetTime = Time.time;
+        _lastPushInputTime = Time.time;
+
         SetAnimatorBoolIfExists(FAKE_PUSH, true);
         return true;
+    }
+
+    private void FinishToIdle()
+    {
+        _ctx.ForceIdleFor(IdleSettleDuration);
+        StateMachine.ChangeState(Idle);
     }
 
     private bool HasConfiguredFeedback(PlayerStateId state, PlayerSize size)

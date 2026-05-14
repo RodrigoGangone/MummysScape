@@ -40,11 +40,17 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
         if (_sm.IsCurrent(Fake))
             return;
 
-        // --- NUEVA CONSULTA DE TRANSICIONES FAKE ---
-        if (CheckFakeTransitions()) return;
-
         var mv = _input.Move;
-        bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
+        if (_ctx.ShouldForceIdle())
+        {
+            _sm.ChangeState(_ctx.IsGrounded() ? Idle : Fall);
+            return;
+        }
+
+        // --- NUEVA CONSULTA DE TRANSICIONES FAKE ---
+        if (CheckFakeTransitions(mv)) return;
+
+        bool moving = IsMoving(mv);
 
         // --- LÓGICA AIRE ---
         if (!_ctx.IsGrounded())
@@ -123,7 +129,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
     }
 
     // --- MÉTODO AUXILIAR PARA CONTROLAR INTENTOS FALLIDOS (FAKE) ---
-    private bool CheckFakeTransitions()
+    private bool CheckFakeTransitions(Vector2 move)
     {
         var size = _ctx.Model.Size;
         bool isGrounded = _ctx.IsGrounded();
@@ -143,8 +149,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
             }
 
             // 7. PUSH (Requiere intención de movimiento y objetivo detectado)
-            var mv = _input.Move;
-            bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
+            bool moving = IsMoving(move);
             if (moving && CanStartFake(Push, size) && _ctx.TryGetPushTarget(out _, out _, out _))
             {
                 return TryStartFake(Push);
@@ -169,6 +174,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
     }
 
     private bool CanEnter(PlayerEnum.PlayerStateId state) => _ctx.Model.CanUseAbility(state);
+    private bool IsMoving(Vector2 move) => Mathf.Abs(move.x) > _moveDeadZone || Mathf.Abs(move.y) > _moveDeadZone;
 
     public void OnPauseChanged(bool paused) => _paused = paused;
 

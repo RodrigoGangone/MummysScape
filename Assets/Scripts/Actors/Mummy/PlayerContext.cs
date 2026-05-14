@@ -66,6 +66,14 @@ public sealed class PlayerContext
     public Vector3 KnockbackTargetPosition;
     public float KnockbackDuration;
     public bool HasExternalImpact => Observer.HasKnockback;
+    private float _forceIdleUntilTime;
+
+    public void ForceIdleFor(float duration)
+    {
+        _forceIdleUntilTime = Mathf.Max(_forceIdleUntilTime, Time.time + duration);
+    }
+
+    public bool ShouldForceIdle() => Time.time < _forceIdleUntilTime;
 
     public Vector3 CameraRelativeDir(float h, float v)
     {
