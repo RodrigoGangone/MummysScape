@@ -1,4 +1,4 @@
-using static Utils;
+using static Animations.Boss;
 
 /// <summary>
 /// Estado de Habilidad Secundaria: Controla la activación y el ciclo de animación del segundo 

@@ -1,5 +1,6 @@
 using Cinemachine;
 using UnityEngine;
+using static UIIDs;
 
 /// <summary> 
 /// Visualizador de Tiempo: Administra la representación 3D de un reloj de arena, controlando el 
@@ -138,8 +139,8 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
             return;
         }
         
-        if (count < _lastBandages) bank.Play2D("UnWrap");
-        else if (count > _lastBandages) bank.Play2D("Wrap");
+        if (count < _lastBandages) bank.Play2D(Hourglass.UnWrap);
+        else if (count > _lastBandages) bank.Play2D(Hourglass.Wrap);
         
         if (count == 0 && _lastBandages > 0) StartCountdown();
         else if (count > 0 && _lastBandages == 0) ResetAndFill();
@@ -152,7 +153,7 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
         _animator.SetTrigger("Death");
         ExplosionPlay();
 
-        bank.Play2D("Break");
+        bank.Play2D(Hourglass.Break);
         
         SetLiquidsVisible(false);
         SetBaseSandActive(false);
@@ -179,7 +180,7 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
         SetLiquidsVisible(true);
         SetBaseSandActive(false);
 
-        bank.Play2D("Refill");
+        bank.Play2D(Hourglass.Refill);
         
         BeginAnim(_fillTop, 1f, _resetDuration);
         HeartbeatStop();
@@ -242,7 +243,7 @@ public sealed class HourglassManager : MonoBehaviour, IPausable
             _pulsing = true; 
             _pulseTimer = 0f; 
             
-            bank.Play2D("Beat");
+            bank.Play2D(Hourglass.Beat);
             
             if (_impulseSource != null)
             {

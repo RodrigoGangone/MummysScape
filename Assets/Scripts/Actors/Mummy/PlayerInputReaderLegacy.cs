@@ -42,9 +42,6 @@ public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
     public bool ConsumeDropDown()    { var v = _dropDown;   _dropDown  = false; return v; }
     public bool ConsumeSpaceDown()   { var v = _spaceDown;  _spaceDown  = false; return v; }
     
-    public bool IsSpaceHeld() => Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.Joystick1Button0);
+    public bool IsSpaceHeld() => Input.GetKey(KeyCode.Space) || Input.GetButton("Space");
     public bool IsAimHeld() => Input.GetMouseButton(1) || Input.GetAxis("AimRT") > 0.5f;
-    public bool IsAnyActionHeld() => 
-        Input.GetKey(KeyCode.Q) || Input.GetButtonDown("Drop") || 
-        Input.GetKey(KeyCode.Space) || Input.GetButtonDown("Space");
 }

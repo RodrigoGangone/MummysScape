@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using static Tags;
 using static PauseUtils;
 
 /// <summary> 
@@ -43,7 +44,7 @@ public class Bandage : MonoBehaviour, IPausable
 
     private void OnTriggerStay(Collider collision)
     {
-        if (!collision.gameObject.CompareTag("PlayerFather")) return;
+        if (!collision.gameObject.CompareTag(PLAYER_TAG)) return;
         var ctrl = collision.gameObject.GetComponentInParent<PlayerController>();
         if (ctrl != null && ctrl.TryCollectBandage(AMOUNT)) Destroy(gameObject);
     }

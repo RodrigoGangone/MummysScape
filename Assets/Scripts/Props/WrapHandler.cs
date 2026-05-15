@@ -50,7 +50,7 @@ public class WrapHandler : MonoBehaviour
 
         _currentCoroutine = StartCoroutine(AnimateToValue(_wrapValue, _wrapDuration));
 
-        bank.Play3D("Wrap", transform.position);
+        bank.Play3D(SfxIDs.Wrap.Wrap_Key, transform.position);
     }
 
     [ContextMenu("UnWrap (1 -> 0)")]
@@ -60,7 +60,7 @@ public class WrapHandler : MonoBehaviour
 
         _currentCoroutine = StartCoroutine(AnimateToValue(_unwrapValue, _unwrapDuration));
 
-        bank.Play3D("UnWrap", transform.position);
+        bank.Play3D(SfxIDs.Wrap.UnWrap, transform.position);
     }
 
     private IEnumerator AnimateToValue(float targetValue, float duration)

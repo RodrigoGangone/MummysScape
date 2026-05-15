@@ -36,9 +36,7 @@ public class GameEventManager : MonoBehaviour
         public GameEvent OnWin;
         public GameEvent OnDeath;
         public GameEvent OnRequestBandageSpawn;
-        public GameEvent OnPrompt;
-        public GameEvent OnShowFocusMessage;
-        public GameEvent OnHideFocusMessage;
+        public GameEvent OnContextUIChanged;
         public GameEvent OnPauseChanged;
         public GameEvent OnRespawn;
         public GameEvent OnPickedGem;

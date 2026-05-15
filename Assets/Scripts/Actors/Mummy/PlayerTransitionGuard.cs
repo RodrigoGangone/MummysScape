@@ -5,31 +5,40 @@ using static PlayerEnum;
 /// Validador de Transiciones: Cruza los datos del modelo con las matrices de reglas (Transition & Size Rules) 
 /// para autorizar o denegar el paso de un estado a otro en la FSM. 
 /// </summary>
-
 public sealed class PlayerTransitionGuard : IStateTransitionGuard
 {
     private readonly PlayerContext _ctx;
-
+    private IFailableState _lastFailableCalled;
     public PlayerTransitionGuard(PlayerContext ctx) => _ctx = ctx;
-    
+
     public bool Can(Enum from, Enum to)
     {
-        // si a donde va no es un PlayerStateID -> false
         if (to is not PlayerStateId t) return false;
-
-        // si no hay estado previo aún, permitimos el primero (ej: Idle inicial)
         if (from is null) return SizeRules.Can(_ctx.Model.Size, t);
-        
-        // si de donde viene  no es un PlayerStateID -> false
         if (from is not PlayerStateId f) return false;
 
-        // 1) si no puede transicionar de donde viene a donde va -> false
         if (!TransitionRules.Can(f, t)) return false;
 
-        // 2) reglas por tamaño
-        if (!SizeRules.Can(_ctx.Model.Size, t)) return false;
+        // REGLAS POR TAMAÑO
+        if (!SizeRules.Can(_ctx.Model.Size, t))
+        {
+            var targetState = _ctx.StateMachine.GetState(t);
 
+            if (targetState is IFailableState failable)
+            {
+                // Solo disparamos si es un estado de fallo distinto al último registrado
+                if (failable != _lastFailableCalled)
+                {
+                    failable.OnTransitionDenied(_ctx.Model.Size);
+                    _lastFailableCalled = failable;
+                }
+            }
+
+            return false;
+        }
+        
+        _lastFailableCalled = null;
+        
         return true;
     }
 }
-

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static SfxIDs;
 
 public class SmashObject : MonoBehaviour
 {
@@ -28,7 +29,7 @@ public class SmashObject : MonoBehaviour
         _bubbles.SetActive(_inWater);
         
         if(_inWater)
-            bank.Play3D("Bubble", transform.position);
+            bank.Play3D(SmashBox.Bubble, transform.position);
 
         _standingTable.Tables = _tables;
         _standingTable.ArrangeTables += () =>
@@ -44,7 +45,7 @@ public class SmashObject : MonoBehaviour
         _isBroken = true;
 
         _destroyFx.Play();
-        bank.Play3D("Break", transform.position);
+        bank.Play3D(SmashBox.Break, transform.position);
         _fatherView.enabled = false;
         _fatherCollider.enabled = false;
         _triggerCollider.enabled = false;
@@ -53,7 +54,7 @@ public class SmashObject : MonoBehaviour
 
         if (_inWater)
         {
-            bank.Stop("Bubble");
+            bank.Stop(SmashBox.Bubble);
             ActivateTables();
             StartCoroutine(MoveTablesWithDelay());
         }

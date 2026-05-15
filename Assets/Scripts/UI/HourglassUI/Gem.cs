@@ -1,4 +1,6 @@
 using UnityEngine;
+using static SfxIDs;
+using static Tags;
 
 /// <summary> 
 /// Lógica de Coleccionable: Gestiona la recolección de gemas, sincronizando su estado visual con 
@@ -25,9 +27,9 @@ public class Gem : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("PlayerFather")) return;
+        if (!other.CompareTag(PLAYER_TAG)) return;
 
-        gemBank.Play3D("Pick", transform.position);
+        gemBank.Play3D(SfxIDs.Gem.Pick, transform.position);
         
         Save.MarkGemPicked(gemNum);
 

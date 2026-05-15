@@ -1,5 +1,7 @@
 using UnityEngine;
 using static PlayerEnum;
+using static Animations.Player;
+using static SfxIDs;
 
 /// <summary> 
 /// Estado de Atracción: Ejecuta la mecánica de "tirar" de una caja mediante vendas, coordinando la 
@@ -22,9 +24,9 @@ public sealed class AttractState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
-        _ctx.View.PlaySfx("Shoot");
+        _ctx.View.PlaySfx(Mummy___Normal.Shoot);
         
-        _ctx.View.Animator.SetBool("PrePull", true);
+        _ctx.View.Animator.SetBool(PREATTRACT, true);
         
         if (!_ctx.TryGetAttractTarget(out _box))
         {
@@ -33,7 +35,8 @@ public sealed class AttractState : State, IBandageRestrictor
         }
 
         _box.SetPushAttractMode(true, true);
-        _box.bank.Play3D("MoveBox", _box.transform.position);
+        
+        _box.bank.Play3D(Box.MoveBox, _box.transform.position);
         
         _ctx.View.StartBandage(_box.transform, _box.transform.position, 0.4f);
 
@@ -45,7 +48,7 @@ public sealed class AttractState : State, IBandageRestrictor
     public override void OnExit()
     {
         _box?.StopImmediate();
-        _box.bank.Stop("MoveBox");
+        _box.bank.Stop(Box.MoveBox);
         _box?.SetPushAttractMode(false);
         _box = null;
         
@@ -53,8 +56,8 @@ public sealed class AttractState : State, IBandageRestrictor
         
         _currentWrapHandler.UnWrap();
         
-        _ctx.View.Animator.SetBool("Pull", false);
-        _ctx.View.Animator.SetBool("PrePull", false);
+        _ctx.View.Animator.SetBool(PREATTRACT, false);
+        _ctx.View.Animator.SetBool(ATTRACT, false);
     }
 
     public override void OnUpdate() { }
@@ -92,7 +95,7 @@ public sealed class AttractState : State, IBandageRestrictor
 
         if (Time.time < _moveUnlockTime)
         {
-            _ctx.View.Animator.SetBool("Pull", true);
+            _ctx.View.Animator.SetBool(ATTRACT, true);
             _box.StopImmediate(); 
             return; 
         }

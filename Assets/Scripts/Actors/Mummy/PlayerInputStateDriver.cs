@@ -33,6 +33,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
     {
         if (_ctx == null || _sm == null || _input == null || _paused || _locked) return;
 
+        // El Knockback es una reacción externa, no depende de habilidades desbloqueadas
         if (_ctx.HasExternalImpact)
         {
             if (!_sm.IsCurrent(KnockBack))
@@ -44,6 +45,8 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
         var mv = _input.Move;
         bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
 
+        // --- LÓGICA AIRE ---
+        
         if (!_ctx.IsGrounded())
         {
             if (_sm.IsCurrent(Swing))
@@ -56,7 +59,8 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
                 return;
             }
 
-            if (_input.IsSpaceHeld() && _ctx.TryGetSwingTarget(out _))
+            // Verificamos permiso para Swing antes de intentar entrar
+            if (CanEnter(Swing) && _input.IsSpaceHeld() && _ctx.TryGetSwingTarget(out _))
             {
                 _sm.ChangeState(Swing);
                 return;
@@ -67,70 +71,76 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
             return;
         }
 
+        // --- LÓGICA SUELO (ACCIONES) ---
+
+        // Espacio (Presionado único): QuickTravel o Smash
         if (_input.ConsumeSpaceDown())
         {
-            if (_ctx.TryGetQuickTravel(_ctx.Tf, out _))
+            if (CanEnter(QuickTravel) && _ctx.TryGetQuickTravel(_ctx.Tf, out _))
             {
                 _sm.ChangeState(QuickTravel);
                 return;
             }
 
-            if (_sm.ChangeState(Smash)) return;
+            if (CanEnter(Smash) && _sm.ChangeState(Smash)) return;
         }
 
+        // Espacio (Sostenido): Swing o Attract
         if (_input.IsSpaceHeld())
         {
             if (_sm.IsCurrent(Swing) || _sm.IsCurrent(Attract)) return;
 
-            if (_ctx.TryGetSwingTarget(out _))
+            if (CanEnter(Swing) && _ctx.TryGetSwingTarget(out _))
             {
                 _sm.ChangeState(Swing);
                 return;
             }
 
-            if (_ctx.TryGetAttractTarget(out _))
+            if (CanEnter(Attract) && _ctx.TryGetAttractTarget(out _))
             {
                 _sm.ChangeState(Attract);
                 return;
             }
         }
 
-        if (_input.IsAimHeld())
+        // Apuntado y Disparo
+        if (_input.IsAimHeld() && CanEnter(Shoot))
         {
-            if (_sm.IsCurrent(Shoot)) return;
-
-            _sm.ChangeState(Aim);
-
             if (_input.ConsumeShootDown())
             {
                 if (_ctx.IsAimValid)
-                {
                     _sm.ChangeState(Shoot);
-                }
                 else
-                {
-                    _sm.ChangeState(Idle);
-                    Debug.Log("Bloqueado: El sistema dice que el tiro no es válido.");
-                }
+                    _sm.ChangeState(Aim);
+
+                return;
             }
+
+            if (!_sm.IsCurrent(Shoot))
+                _sm.ChangeState(Aim);
 
             return;
         }
 
-        if (_input.ConsumeDropDown())
+        // Soltar venda
+        if (_input.ConsumeDropDown() && CanEnter(DropBandage))
         {
             if (_sm.ChangeState(DropBandage)) return;
         }
 
-        if (moving && _ctx.TryGetPushTarget(out _, out _, out _))
+        // Empujar (Push) requiere movimiento y detección
+        if (moving && CanEnter(Push) && _ctx.TryGetPushTarget(out _, out _, out _))
         {
             if (_sm.IsCurrent(Push)) return;
             if (_sm.ChangeState(Push)) return;
         }
 
+        // Movimiento base
         if (moving) _sm.ChangeState(Walk);
         else _sm.ChangeState(Idle);
     }
+
+    private bool CanEnter(PlayerEnum.PlayerStateId state) => _ctx.Model.CanUseAbility(state);
 
     public void OnPauseChanged(bool paused) => _paused = paused;
 

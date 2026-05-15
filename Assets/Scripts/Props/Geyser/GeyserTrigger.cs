@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Tags;
 
 /// <summary> 
 /// Detector de Geyser: Actúa como puente de colisión para notificar al componente Geyser principal 
@@ -16,7 +17,7 @@ public class GeyserTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("PlayerFather"))
+        if (other.CompareTag(PLAYER_TAG))
         {
             _geyser.OnPlayerEnterTrigger(other);
         }
@@ -24,7 +25,7 @@ public class GeyserTrigger : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("PlayerFather"))
+        if (other.CompareTag(PLAYER_TAG))
         {
             _geyser.OnPlayerExitTrigger(other);
         }

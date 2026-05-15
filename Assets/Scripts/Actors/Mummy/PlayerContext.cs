@@ -46,7 +46,8 @@ public sealed class PlayerContext
     private Camera Cam => _camProvider?.Current ?? Camera.main;
     public float MoveSpeed => _movement.MoveSpeed;
     public float TurnSpeed => _movement.TurnSpeed;
-    public bool IsGrounded() => _ground != null && _ground.IsGrounded(Tf);
+    public bool IsGrounded() => _ground != null && _ground.CheckGround(Tf);
+    public GroundCheckRuntime.TerrainType CurrentTerrain => _ground != null ? _ground.CurrentTerrain : GroundCheckRuntime.TerrainType.None;
     public float AttractMinDistance => _interactions ? _interactions.AttractMinDistance : 1f;
     public float AttractMaxDistance => _interactions ? _interactions.AttractMaxDistance : 5f;
 
@@ -74,7 +75,7 @@ public sealed class PlayerContext
         right.Normalize();
         return (fwd * v + right * h).normalized;
     }
-
+    
     public bool TryGetPushTarget(out BoxPushAttract target, out RaycastHit left, out RaycastHit right)
     {
         target = null;

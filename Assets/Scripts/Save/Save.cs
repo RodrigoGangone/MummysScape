@@ -90,9 +90,10 @@ public static class Save
     public static bool IsSeen(string key) => Get(key, 0) == 1;
 
     // Wrappers específicos
-    public static void MarkTutorialSeen(string tutorialId) => MarkAsSeen(PrefKeys.SeenTutorial(tutorialId));
-    public static bool IsTutorialSeen(string tutorialId)   => IsSeen(PrefKeys.SeenTutorial(tutorialId));
 
+// En Save.cs
+    public static void MarkTutorialSeen(TutorialID id) => MarkAsSeen(PrefKeys.SeenTutorial(id));
+    public static bool IsTutorialSeen(TutorialID id) => IsSeen(PrefKeys.SeenTutorial(id));
     public static void MarkLevelRevealSeen(int index) => MarkAsSeen(PrefKeys.SeenLevelReveal(index));
     public static bool IsLevelRevealSeen(int index)   => IsSeen(PrefKeys.SeenLevelReveal(index));
     public static void MarkZoneRevealSeen(int index) => MarkAsSeen(PrefKeys.SeenZoneReveal(index));

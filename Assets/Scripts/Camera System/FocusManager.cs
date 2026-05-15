@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Cinemachine;
-using System.Linq;
 using static PauseUtils;
 
 /// <summary> 
@@ -16,6 +16,10 @@ public class FocusManager : MonoBehaviour, IPausable
 
     [SerializeField] private CinemachineVirtualCamera focusCam;
     [SerializeField] private float bufferBetweenFocus = 0.5f;
+
+    [Header("Tutorial Replay Cancel")]
+    [SerializeField] private string cancelReplayText = "Presione Y para cancelar";
+    [SerializeField] private Color cancelReplayColor = Color.white;
 
     private class FocusRequest
     {
@@ -31,6 +35,11 @@ public class FocusManager : MonoBehaviour, IPausable
         public Color MessageColor;
         public float MessageDuration;
 
+        public bool CanBeCancelled;
+        public string CancelText;
+        public Color CancelColor;
+        public Action OnCancelled;
+
         public Action OnComplete;
     }
 
@@ -40,8 +49,9 @@ public class FocusManager : MonoBehaviour, IPausable
     private bool _paused;
 
     private const string TUTORIAL_BUTTON_NAME = "Accept";
-    public string TutorialKey => TUTORIAL_BUTTON_NAME;
+    private const string LOCK_ID = "FocusManager";
 
+    public string TutorialKey => TUTORIAL_BUTTON_NAME;
     public bool IsBusy => _isCollectingRequests || _pendingRequests.Count > 0 || _isSequenceRunning;
 
     private void Awake()
@@ -55,44 +65,113 @@ public class FocusManager : MonoBehaviour, IPausable
         Instance = this;
     }
 
-    public void RequestObjectFocus(Transform cameraPos, Transform lookAt, float duration, float zoomAmount,
-        AnimationCurve zoomCurve, string message = "", Color? color = null, float msgDuration = 1.5f)
+    public void RequestObjectFocus(
+        Transform cameraPos,
+        Transform lookAt,
+        float duration,
+        float zoomAmount,
+        AnimationCurve zoomCurve,
+        string message = "",
+        Color? color = null,
+        float msgDuration = 1.5f)
     {
-        AddRequestInternal(9999, cameraPos, lookAt, duration, zoomAmount, zoomCurve, null, message,
-            color ?? Color.white, msgDuration);
+        AddRequestInternal(
+            index: 9999,
+            camT: cameraPos,
+            lookAt: lookAt,
+            duration: duration,
+            zoomAmt: zoomAmount,
+            curve: zoomCurve,
+            onComplete: null,
+            message: message,
+            msgColor: color ?? Color.white,
+            msgDuration: msgDuration
+        );
     }
 
-    public void RequestRevealFocus(int orderIndex, Transform cameraPos, Transform lookAt, float duration, float zoomAmt,
-        AnimationCurve curve, Action onFinishedCallback)
+    public void RequestRevealFocus(
+        int orderIndex,
+        Transform cameraPos,
+        Transform lookAt,
+        float duration,
+        float zoomAmt,
+        AnimationCurve curve,
+        Action onFinishedCallback)
     {
-        AddRequestInternal(orderIndex, cameraPos, lookAt, duration, zoomAmt, curve, onFinishedCallback);
+        AddRequestInternal(
+            index: orderIndex,
+            camT: cameraPos,
+            lookAt: lookAt,
+            duration: duration,
+            zoomAmt: zoomAmt,
+            curve: curve,
+            onComplete: onFinishedCallback
+        );
     }
 
-    public void RequestTutorial(TutorialFocusPoint point)
+    public void RequestTutorial(TutorialFocusPoint point, Action onCancelled = null)
     {
         if (point == null) return;
 
-        bool seen = Save.IsTutorialSeen(point.Id);
+        bool seen = Save.IsTutorialSeen(point.Tutorial);
 
         if (seen)
         {
-            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, point.ZoomAmount, point.ZoomCurve,
-                null, string.Empty, Color.white, 0f);
+            AddRequestInternal(
+                index: 9999,
+                camT: point.CameraPos,
+                lookAt: point.LookAt,
+                duration: point.Time,
+                zoomAmt: point.ZoomAmount,
+                curve: point.ZoomCurve,
+                onComplete: null,
+                message: string.Empty,
+                msgColor: Color.white,
+                msgDuration: 0f,
+                canBeCancelled: true,
+                cancelText: cancelReplayText,
+                cancelColor: cancelReplayColor,
+                onCancelled: onCancelled
+            );
         }
         else
         {
-            AddRequestInternal(9999, point.CameraPos, point.LookAt, point.Time, point.ZoomAmount, point.ZoomCurve,
-                () => { Save.MarkTutorialSeen(point.Id); },
-                point.Message,
-                point.TextColor,
-                point.MessageDuration);
+            AddRequestInternal(
+                index: 9999,
+                camT: point.CameraPos,
+                lookAt: point.LookAt,
+                duration: point.Time,
+                zoomAmt: point.ZoomAmount,
+                curve: point.ZoomCurve,
+                onComplete: () => Save.MarkTutorialSeen(point.Tutorial),
+                message: point.Message,
+                msgColor: point.TextColor,
+                msgDuration: point.MessageDuration,
+                canBeCancelled: false,
+                cancelText: string.Empty,
+                cancelColor: Color.white,
+                onCancelled: null
+            );
         }
     }
 
-    private void AddRequestInternal(int index, Transform camT, Transform lookAt, float duration, float zoomAmt,
-        AnimationCurve curve, Action onComplete, string message = "", Color? msgColor = null, float msgDuration = 1.5f)
+    private void AddRequestInternal(
+        int index,
+        Transform camT,
+        Transform lookAt,
+        float duration,
+        float zoomAmt,
+        AnimationCurve curve,
+        Action onComplete,
+        string message = "",
+        Color? msgColor = null,
+        float msgDuration = 1.5f,
+        bool canBeCancelled = false,
+        string cancelText = "",
+        Color? cancelColor = null,
+        Action onCancelled = null)
     {
-        if (camT == null) return;
+        if (camT == null || focusCam == null) return;
 
         var req = new FocusRequest
         {
@@ -106,7 +185,11 @@ public class FocusManager : MonoBehaviour, IPausable
             Message = message,
             MessageColor = msgColor ?? Color.white,
             MessageDuration = msgDuration,
-            OnComplete = onComplete,
+            CanBeCancelled = canBeCancelled,
+            CancelText = cancelText,
+            CancelColor = cancelColor ?? Color.white,
+            OnCancelled = onCancelled,
+            OnComplete = onComplete
         };
 
         _pendingRequests.Add(req);
@@ -118,16 +201,20 @@ public class FocusManager : MonoBehaviour, IPausable
     private IEnumerator CollectAndSortRoutine()
     {
         _isCollectingRequests = true;
+
         yield return new WaitForEndOfFrame();
+
         _pendingRequests = _pendingRequests.OrderBy(x => x.PriorityIndex).ToList();
+
         yield return StartCoroutine(PlaySequenceRoutine());
+
         _isCollectingRequests = false;
     }
 
     private IEnumerator PlaySequenceRoutine()
     {
         _isSequenceRunning = true;
-        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FocusManager", true);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, true);
 
         float originalFOV = focusCam.m_Lens.FieldOfView;
 
@@ -137,16 +224,27 @@ public class FocusManager : MonoBehaviour, IPausable
             _pendingRequests.RemoveAt(0);
 
             focusCam.transform.position = req.Position;
-            if (req.LookAt != null) focusCam.transform.LookAt(req.LookAt);
-            else focusCam.transform.rotation = req.Rotation;
+
+            if (req.LookAt != null)
+                focusCam.transform.LookAt(req.LookAt);
+            else
+                focusCam.transform.rotation = req.Rotation;
 
             focusCam.LookAt = req.LookAt;
             focusCam.PreviousStateIsValid = false;
             focusCam.m_Lens.FieldOfView = originalFOV;
             focusCam.Priority = 100;
 
+            bool cancelled = false;
             float elapsed = 0f;
             float targetFOV = originalFOV - req.ZoomAmount;
+
+            if (req.CanBeCancelled && !string.IsNullOrEmpty(req.CancelText))
+            {
+                GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+                    ContextUIFactory.Prompt(ContextMessageType.CancelReplay, ButtonType.Y, req.CancelColor)
+                );
+            }
 
             while (elapsed < req.Duration)
             {
@@ -156,20 +254,46 @@ public class FocusManager : MonoBehaviour, IPausable
                     continue;
                 }
 
+                if (req.CanBeCancelled && Input.GetButtonDown(TutorialKey))
+                {
+                    cancelled = true;
+                    break;
+                }
+
                 elapsed += Time.deltaTime;
+
                 float t = elapsed / req.Duration;
                 float curveValue = req.ZoomCurve.Evaluate(t);
                 focusCam.m_Lens.FieldOfView = Mathf.Lerp(originalFOV, targetFOV, curveValue);
+
                 yield return null;
+            }
+
+            if (req.CanBeCancelled)
+            {
+                GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+                    ContextUIFactory.Hidden()
+                );
+            }
+
+            if (cancelled)
+            {
+                req.OnCancelled?.Invoke();
+                continue;
             }
 
             focusCam.m_Lens.FieldOfView = targetFOV;
 
             if (!string.IsNullOrEmpty(req.Message))
             {
-                GameEventManager.Instance.levelEvents.OnShowFocusMessage.Raise(req.Message, req.MessageColor);
+                GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(ContextUIFactory.CustomMessage(req.Message, req.MessageColor)
+                );
+
                 yield return WaitForSecondsPausable(req.MessageDuration, () => _paused);
-                GameEventManager.Instance.levelEvents.OnHideFocusMessage.Raise();
+
+                GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
+                    ContextUIFactory.Hidden()
+                );
             }
 
             req.OnComplete?.Invoke();
@@ -183,10 +307,14 @@ public class FocusManager : MonoBehaviour, IPausable
         focusCam.LookAt = null;
 
         _isSequenceRunning = false;
-        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("FocusManager", false);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, false);
     }
 
     public void OnPauseChanged(bool paused) => _paused = paused;
-    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+
+    private void OnEnable() =>
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+
+    private void OnDisable() =>
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 }

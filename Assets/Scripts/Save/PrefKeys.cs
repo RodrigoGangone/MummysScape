@@ -60,7 +60,11 @@ public static class PrefKeys
         => $"{Prefix[VolumeSound]}{Slug(id)}.mute";
     public static string MuteFxKey(VolumeFxId id)
         => $"{Prefix[VolumeFX]}{Slug(id)}.mute";
-    
+
+    // En PrefKeys.cs
+    public static string SeenTutorial(TutorialID id) 
+        => $"{Prefix[Seen]}tutorial.{id.ToString().ToLowerInvariant()}";
+
     public static string SeenTutorial(string tutorialId) => $"{Prefix[Seen]}tutorial.{tutorialId}";
     public static string SeenLevelReveal(int buildIndex) => $"{Prefix[Seen]}level_reveal.{buildIndex}";
     public static string SeenZoneReveal(int buildIndex)  => $"{Prefix[Seen]}zone_reveal.{buildIndex}";
