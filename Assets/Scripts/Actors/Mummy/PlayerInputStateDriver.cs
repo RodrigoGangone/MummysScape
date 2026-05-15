@@ -1,10 +1,6 @@
 using UnityEngine;
 using static PlayerEnum.PlayerStateId;
 
-/// <summary> 
-/// Driver de Decisiones: Traduce los inputs crudos en solicitudes de cambio de estado para la FSM, 
-/// aplicando una jerarquía de prioridades (caída > acciones > movimiento). 
-/// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(StateMachinePlayer))]
 public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
@@ -22,6 +18,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
         _ctx = ctx;
         _sm = sm;
         _input = ctx.Input;
+        _sm.SetRedirector(new PlayerSizeRedirector(ctx));
     }
 
     private void Awake()
@@ -33,59 +30,48 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
     {
         if (_ctx == null || _sm == null || _input == null || _paused || _locked) return;
 
-        // El Knockback es una reacción externa, no depende de habilidades desbloqueadas
         if (_ctx.HasExternalImpact)
         {
             if (!_sm.IsCurrent(KnockBack))
                 _sm.ChangeState(KnockBack);
+            return;
+        }
+        
+        if (_sm.IsCurrent(Fake))
+            return;
 
+        var mv = _input.Move;
+        if (_ctx.ShouldForceIdle())
+        {
+            _sm.ChangeState(_ctx.IsGrounded() ? Idle : Fall);
             return;
         }
 
-        var mv = _input.Move;
-        bool moving = Mathf.Abs(mv.x) > _moveDeadZone || Mathf.Abs(mv.y) > _moveDeadZone;
+        // --- NUEVA CONSULTA DE TRANSICIONES FAKE ---
+        if (CheckFakeTransitions(mv)) return;
+
+        bool moving = IsMoving(mv);
 
         // --- LÓGICA AIRE ---
-        
         if (!_ctx.IsGrounded())
         {
             if (_sm.IsCurrent(Swing))
             {
-                if (!_input.IsSpaceHeld())
-                {
-                    _sm.ChangeState(Fall);
-                }
-
+                if (!_input.IsSpaceHeld()) _sm.ChangeState(Fall);
                 return;
             }
 
-            // Verificamos permiso para Swing antes de intentar entrar
             if (CanEnter(Swing) && _input.IsSpaceHeld() && _ctx.TryGetSwingTarget(out _))
             {
                 _sm.ChangeState(Swing);
                 return;
             }
 
-            if (!_sm.IsCurrent(Fall))
-                _sm.ChangeState(Fall);
+            if (!_sm.IsCurrent(Fall)) _sm.ChangeState(Fall);
             return;
         }
 
         // --- LÓGICA SUELO (ACCIONES) ---
-
-        // Espacio (Presionado único): QuickTravel o Smash
-        if (_input.ConsumeSpaceDown())
-        {
-            if (CanEnter(QuickTravel) && _ctx.TryGetQuickTravel(_ctx.Tf, out _))
-            {
-                _sm.ChangeState(QuickTravel);
-                return;
-            }
-
-            if (CanEnter(Smash) && _sm.ChangeState(Smash)) return;
-        }
-
-        // Espacio (Sostenido): Swing o Attract
         if (_input.IsSpaceHeld())
         {
             if (_sm.IsCurrent(Swing) || _sm.IsCurrent(Attract)) return;
@@ -102,45 +88,93 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
                 return;
             }
         }
+        
+        if (_input.ConsumeSpaceDown())
+        {
+            if (CanEnter(QuickTravel) && _ctx.TryGetQuickTravel(_ctx.Tf, out _))
+            {
+                _sm.ChangeState(QuickTravel);
+                return;
+            }
 
-        // Apuntado y Disparo
+            if (CanEnter(Smash) && _sm.ChangeState(Smash)) return;
+        }
+
         if (_input.IsAimHeld() && CanEnter(Shoot))
         {
             if (_input.ConsumeShootDown())
             {
-                if (_ctx.IsAimValid)
-                    _sm.ChangeState(Shoot);
-                else
-                    _sm.ChangeState(Aim);
-
+                if (_ctx.IsAimValid) _sm.ChangeState(Shoot);
+                else _sm.ChangeState(Aim);
                 return;
             }
 
-            if (!_sm.IsCurrent(Shoot))
-                _sm.ChangeState(Aim);
-
+            if (!_sm.IsCurrent(Shoot)) _sm.ChangeState(Aim);
             return;
         }
 
-        // Soltar venda
         if (_input.ConsumeDropDown() && CanEnter(DropBandage))
         {
             if (_sm.ChangeState(DropBandage)) return;
         }
 
-        // Empujar (Push) requiere movimiento y detección
         if (moving && CanEnter(Push) && _ctx.TryGetPushTarget(out _, out _, out _))
         {
             if (_sm.IsCurrent(Push)) return;
             if (_sm.ChangeState(Push)) return;
         }
 
-        // Movimiento base
         if (moving) _sm.ChangeState(Walk);
         else _sm.ChangeState(Idle);
     }
 
+    // --- MÉTODO AUXILIAR PARA CONTROLAR INTENTOS FALLIDOS (FAKE) ---
+    private bool CheckFakeTransitions(Vector2 move)
+    {
+        var size = _ctx.Model.Size;
+        bool isGrounded = _ctx.IsGrounded();
+
+        // 1. SWING (Aire y Suelo)
+        if (CanStartFake(Swing, size) && _input.IsSpaceHeld() && _ctx.TryGetSwingTarget(out _))
+        {
+            return TryStartFake(Swing);
+        }
+
+        if (isGrounded)
+        {
+            // 2. ATTRACT
+            if (CanStartFake(Attract, size) && _input.IsSpaceHeld() && _ctx.TryGetAttractTarget(out _))
+            {
+                return TryStartFake(Attract);
+            }
+
+            // 7. PUSH (Requiere intención de movimiento y objetivo detectado)
+            bool moving = IsMoving(move);
+            if (moving && CanStartFake(Push, size) && _ctx.TryGetPushTarget(out _, out _, out _))
+            {
+                return TryStartFake(Push);
+            }
+        }
+
+        return false;
+    }
+
+    private bool TryStartFake(PlayerEnum.PlayerStateId attemptedState)
+    {
+        _ctx.AttemptedState = attemptedState;
+        return _sm.ChangeState(Fake);
+    }
+
+    private bool CanStartFake(PlayerEnum.PlayerStateId attemptedState, PlayerEnum.PlayerSize size)
+    {
+        return _ctx.Model.CanUseAbility(attemptedState)
+               && !SizeRules.Can(size, attemptedState)
+               && _ctx.Feedback != null
+               && _ctx.Feedback.HasFeedback(attemptedState, size);
+    }
+
     private bool CanEnter(PlayerEnum.PlayerStateId state) => _ctx.Model.CanUseAbility(state);
+    private bool IsMoving(Vector2 move) => Mathf.Abs(move.x) > _moveDeadZone || Mathf.Abs(move.y) > _moveDeadZone;
 
     public void OnPauseChanged(bool paused) => _paused = paused;
 
