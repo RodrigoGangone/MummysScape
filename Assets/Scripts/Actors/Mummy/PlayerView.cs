@@ -27,6 +27,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [SerializeField] public ParticleSystem _dropFX;
     [SerializeField] public ParticleSystem _koFX;
     [SerializeField] public ParticleSystem fallingDust;
+    [SerializeField] public ParticleSystem angerFx;
 
     [SerializeField] private DecalProjector shadow;
 

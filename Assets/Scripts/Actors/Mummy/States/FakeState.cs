@@ -60,6 +60,9 @@ public class FakeState : State, IBandageRestrictor
             StateMachine.ChangeState(Walk);
             return;
         }
+        
+        if(_mode == FakeMode.ContinuousPush)
+            _ctx.View.angerFx.Play();
 
         _ctx.Feedback.Execute(_attemptedState, _entrySize, _ctx);
     }
@@ -101,6 +104,9 @@ public class FakeState : State, IBandageRestrictor
     {
         if (_mode == FakeMode.ContinuousPush)
         {
+            if(_ctx.View.angerFx.isPlaying)
+                _ctx.View.angerFx.Stop();
+            
             SetAnimatorBoolIfExists(FAKE_PUSH, false);
         }
 

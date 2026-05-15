@@ -9,6 +9,7 @@ using static SfxIDs;
 public class PlayerAnimHandler : MonoBehaviour
 {
     private PlayerContext _ctx;
+    private WrapHandler _currentBox;
 
     private void Start()
     {
@@ -41,7 +42,11 @@ public class PlayerAnimHandler : MonoBehaviour
             }
         }
     }
+
     public void Shoot() => GameEventManager.Instance.playerEvents.OnShoot.Raise();
+
+    #region Fakes
+
     public void WrapFakeSwing()
     {
         if (!TryResolveContext()) return;
@@ -52,15 +57,33 @@ public class PlayerAnimHandler : MonoBehaviour
 
         _ctx.View.StartBandage(_ctx.Tf, targetPoint, 0.15f);
     }
-    public void UnWrap()
+
+    public void WrapFakeAttract()
     {
         if (!TryResolveContext()) return;
 
-        _ctx.View.StopBandage();
+        Vector3 targetPoint = _ctx.TryGetAttractTarget(out BoxPushAttract box)
+            ? box.transform.position
+            : _ctx.Rb.position + (_ctx.Rb.transform.forward * 4f) + Vector3.up;
+
+        _currentBox = box.GetComponent<WrapHandler>();
+
+        _currentBox.Wrap();
+        _ctx.View.StartBandage(_ctx.Tf, targetPoint, 0.15f);
     }
+
+    public void UnWrapFakeAttract()
+    {
+        _ctx.View.CutBandage();
+        _ctx.View.StopBandage();
+
+        if (_currentBox != null)
+            _currentBox.UnWrap();
+    }
+
     public void CutSwing()
     {
-        if (!TryResolveContext()) return;
+        //if (!TryResolveContext()) return;
 
         _ctx.View.CutBandage();
         _ctx.View.StopBandage();
@@ -75,6 +98,7 @@ public class PlayerAnimHandler : MonoBehaviour
             fakeState.CompleteOneShot();
         }
     }
+
     private IEnumerator KinematicStumble(float duration, float distance)
     {
         float elapsed = 0f;
@@ -112,12 +136,16 @@ public class PlayerAnimHandler : MonoBehaviour
                 _ctx.Rb.linearVelocity = Vector3.zero;
                 break;
             }
-            
+
             yield return null;
         }
     }
+
     public void KinematicStumble() => StartCoroutine(KinematicStumble(2f, 1f));
     public void FallingDust() => _ctx.View.fallingDust.Play();
+
+    #endregion
+
     public void Locked() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise("AnimationEvent", true);
     public void UnLocked() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise("AnimationEvent", false);
 }
