@@ -20341,7 +20341,7 @@ GameObject:
   - component: {fileID: 4165181646893850303}
   - component: {fileID: 4020235548729348076}
   - component: {fileID: 2838942906706915773}
-  m_Layer: 0
+  m_Layer: 23
   m_Name: FX_Explosion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -66318,6 +66318,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: FX_InnerShining
       objectReference: {fileID: 0}
+    - target: {fileID: 1484476700018172392, guid: 14a7745dffb491744a599474ca3b1c9d, type: 3}
+      propertyPath: m_Layer
+      value: 23
+      objectReference: {fileID: 0}
     - target: {fileID: 1529431969759472247, guid: 14a7745dffb491744a599474ca3b1c9d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -67011,6 +67015,42 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5277137551743628533}
     m_Modifications:
+    - target: {fileID: 1348932297079632502, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: TrailModule.sizeAffectsWidth
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348932297079632502, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: TrailModule.inheritParticleColor
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348932297079632502, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.a
+      value: 0.20392157
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348932297079632502, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: TrailModule.colorOverTrail.maxColor.b
+      value: 0.2216981
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348932297079632502, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: TrailModule.colorOverTrail.maxColor.g
+      value: 0.9671159
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348932297079632502, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: TrailModule.colorOverTrail.maxColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348932297079632502, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: TrailModule.colorOverLifetime.maxColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348932297079632502, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: TrailModule.colorOverLifetime.maxColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348932297079632502, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: TrailModule.colorOverLifetime.maxColor.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2530262977339795432, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.00030000685
@@ -67055,10 +67095,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: FX_Shining
       objectReference: {fileID: 0}
+    - target: {fileID: 3956162632895784359, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
+      propertyPath: m_Layer
+      value: 23
+      objectReference: {fileID: 0}
     - target: {fileID: 8249488619765309045, guid: a2b5a30d28ee78b4abebaef8d48b4f97, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
+      objectReference: {fileID: 10308, guid: 0000000000000000f000000000000000, type: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
