@@ -1,4 +1,3 @@
-// Nuevo script: SceneTransitionLocal.cs
 using System;
 using System.Collections;
 using UnityEngine;
@@ -12,41 +11,61 @@ public class SceneTransitionManager : MonoBehaviour
 
     private void Awake()
     {
-        // Asegurarse de que la imagen esté visible (negra) al empezar
         SetAlpha(1f);
     }
     
     private void Start()
     {
-        // Al cargar la escena, hacer el fade-out (aclarar) automáticamente
         TriggerFadeOut(null);
     }
-    
+
+    private void Update()
+    {
+        // Detectar si se presionó cualquier tecla del Numpad
+        if (Input.anyKeyDown)
+        {
+            CheckNumpadInput();
+        }
+    }
+
+    // --- Métodos de Debug / Selección de Nivel ---
+
+    private void CheckNumpadInput()
+    {
+        int targetSceneIndex = -1;
+
+        // Evaluamos con KeyCode uno por uno
+        if (Input.GetKeyDown(KeyCode.Keypad0))      targetSceneIndex = 2;  // Intro
+        else if (Input.GetKeyDown(KeyCode.Keypad1)) targetSceneIndex = 3;  // Zone 1 - 1
+        else if (Input.GetKeyDown(KeyCode.Keypad2)) targetSceneIndex = 4;  // Zone 1 - 2
+        else if (Input.GetKeyDown(KeyCode.Keypad3)) targetSceneIndex = 5;  // Zone 1 - 3
+        else if (Input.GetKeyDown(KeyCode.Keypad4)) targetSceneIndex = 6;  // Zone 1 - 4
+        else if (Input.GetKeyDown(KeyCode.Keypad5)) targetSceneIndex = 7;  // Zone 1 - 5
+        else if (Input.GetKeyDown(KeyCode.Keypad6)) targetSceneIndex = 8;  // Zone 1 - Boss
+        else if (Input.GetKeyDown(KeyCode.Keypad7)) targetSceneIndex = 9;  // Selector 2
+        else if (Input.GetKeyDown(KeyCode.Keypad8)) targetSceneIndex = 10; // Zone 2 - 1
+        else if (Input.GetKeyDown(KeyCode.Keypad9)) targetSceneIndex = 11; // Zone 2 - 2
+
+        // Si se presionó alguno, transicionamos
+        if (targetSceneIndex != -1)
+        {
+            FadeInAndLoadScene(targetSceneIndex);
+        }
+    }
+
     // --- Métodos Públicos ---
 
-    /**
-     * Llamar para SALIR de la escena actual.
-     * Hará un fundido a negro y luego cargará la nueva escena.
-     */
     public void FadeInAndLoadScene(int sceneIndex)
     {
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise("SceneTransition", true);
         StartCoroutine(FadeInRoutine(sceneIndex));
     }
     
-    /**
-     * Llamar para los paneles de Win/Lose (dentro de la misma escena).
-     * Hará un fundido a negro (Fade IN).
-     */
     public Coroutine TriggerFadeIn(Action onComplete)
     {
         return StartCoroutine(Fade(1f, onComplete));
     }
 
-    /**
-     * Llamar para aclarar la pantalla (Fade OUT).
-     * (Ya se llama automáticamente en Start).
-     */
     public Coroutine TriggerFadeOut(Action onComplete)
     {
         return StartCoroutine(Fade(0f, onComplete));
@@ -56,10 +75,7 @@ public class SceneTransitionManager : MonoBehaviour
     
     private IEnumerator FadeInRoutine(int sceneIndex)
     {
-        // 1. Fade IN (oscurecer la pantalla)
         yield return StartCoroutine(Fade(1f, null));
-        
-        // 2. Cargar la escena
         SceneManager.LoadScene(sceneIndex);
     }
 
@@ -71,7 +87,6 @@ public class SceneTransitionManager : MonoBehaviour
 
         while (time < fadeDuration)
         {
-            // Usar UnscaledDeltaTime por si el juego está en pausa (Time.timeScale = 0)
             time += Time.unscaledDeltaTime; 
             float alpha = Mathf.Lerp(startAlpha, targetAlpha, time / fadeDuration);
             SetAlpha(alpha);

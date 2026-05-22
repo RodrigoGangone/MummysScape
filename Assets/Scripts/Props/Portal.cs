@@ -38,6 +38,7 @@ public class Portal : MonoBehaviour
     private const string LOCK_ID = "Sarcofagus";
 
     private bool _canInteract;
+    private bool _isPromptActive;
     private PlayerController _cachedPlayer;
 
     private void Start()
@@ -72,8 +73,10 @@ public class Portal : MonoBehaviour
         _canInteract = true;
 
         GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-            ContextUIFactory.Prompt(ContextMessageType.Interact, ButtonType.Y, Color.red)
+            ContextUIFactory.Prompt(ContextMessageType.Interact, ButtonType.Y)
         );
+
+        _isPromptActive = true;
     }
 
     private void OnTriggerExit(Collider other)
@@ -83,8 +86,11 @@ public class Portal : MonoBehaviour
         _canInteract = false;
         _cachedPlayer = null;
 
-        GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(ContextUIFactory.Hidden()
-        );
+        if (_isPromptActive)
+        {
+            GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(ContextUIFactory.Hidden());
+            _isPromptActive = false;
+        }
     }
 
     private void StartWinSequence(PlayerController player)

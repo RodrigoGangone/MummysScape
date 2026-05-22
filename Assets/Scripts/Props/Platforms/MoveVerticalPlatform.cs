@@ -378,18 +378,27 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     public void OnLockChanged(bool locked)
     {
+        // Esta es la validación clave que evita el error si el objeto ya está siendo destruido.
+        if (this == null || !gameObject.activeInHierarchy) return;
+
         _isLocked = locked;
         RefreshFeedback();
     }
 
+    // Cambiado a OnEnable / OnDisable. Awake/OnDestroy puede causar problemas 
+    // de orden de ejecución con Event Managers globales que son Singletons.
     private void OnEnable()
     {
+        if (GameEventManager.Instance == null) return;
+        
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
     }
 
     private void OnDisable()
     {
+        // Es crucial desuscribirse aquí para que el Event Manager no llame 
+        // a una plataforma destruida o desactivada al recargar escena/morir.
         if (GameEventManager.Instance == null) return;
 
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
