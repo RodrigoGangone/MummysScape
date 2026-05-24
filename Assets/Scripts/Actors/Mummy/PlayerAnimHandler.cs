@@ -9,7 +9,7 @@ using static SfxIDs;
 public class PlayerAnimHandler : MonoBehaviour
 {
     private PlayerContext _ctx;
-    private WrapHandler _currentBox;
+    private WrapHandler _currentWrap;
 
     private void Start()
     {
@@ -55,6 +55,9 @@ public class PlayerAnimHandler : MonoBehaviour
             ? hook.worldCenterOfMass
             : _ctx.Rb.position + (_ctx.Rb.transform.forward * 4f) + Vector3.up;
 
+        _currentWrap = hook.GetComponent<WrapHandler>();
+        _currentWrap.Wrap();
+
         _ctx.View.StartBandage(_ctx.Tf, targetPoint, 0.15f);
     }
 
@@ -66,9 +69,9 @@ public class PlayerAnimHandler : MonoBehaviour
             ? box.transform.position
             : _ctx.Rb.position + (_ctx.Rb.transform.forward * 4f) + Vector3.up;
 
-        _currentBox = box.GetComponent<WrapHandler>();
+        _currentWrap = box.GetComponent<WrapHandler>();
 
-        _currentBox.Wrap();
+        _currentWrap.Wrap();
         _ctx.View.StartBandage(_ctx.Tf, targetPoint, 0.15f);
     }
 
@@ -77,14 +80,17 @@ public class PlayerAnimHandler : MonoBehaviour
         _ctx.View.CutBandage();
         _ctx.View.StopBandage();
 
-        if (_currentBox != null)
-            _currentBox.UnWrap();
+        if (_currentWrap != null)
+            _currentWrap.UnWrap();
     }
 
     public void CutSwing()
     {
         //if (!TryResolveContext()) return;
-
+        
+        if (_currentWrap != null)
+            _currentWrap.UnWrap();
+        
         _ctx.View.CutBandage();
         _ctx.View.StopBandage();
     }

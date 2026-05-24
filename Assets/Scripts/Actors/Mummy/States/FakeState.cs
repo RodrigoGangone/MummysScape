@@ -15,7 +15,7 @@ public class FakeState : State, IBandageRestrictor
     private const float PushTargetGraceTime = 0.25f;
     private const float PushInputGraceTime = 0.12f;
     private const float IdleSettleDuration = 0.12f;
-    private const float OneShotSafetyTimeout = 5f;
+    private const float OneShotSafetyTimeout = 2.5f;
 
     private enum FakeMode
     {
