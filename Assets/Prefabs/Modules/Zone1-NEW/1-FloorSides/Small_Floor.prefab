@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5018752314495666454}
   - component: {fileID: 1121508587966012543}
   - component: {fileID: 8085311071980693213}
+  - component: {fileID: 8125650752608636140}
   m_Layer: 0
   m_Name: Small_Floor
   m_TagString: Untagged
@@ -201,3 +202,24 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: -6674237591353891504, guid: ee409cef4151ccf40b18002f64b9dc7d, type: 3}
   m_Mode: 0
+--- !u!65 &8125650752608636140
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8385659590432488661}
+  m_Material: {fileID: 13400000, guid: f2cc16ad81f6028489433eacceb90bdb, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5258877955716226350}
   - component: {fileID: 5690588944460058604}
   - component: {fileID: 2840221842617231129}
+  - component: {fileID: -3574081841932509298}
   m_Layer: 0
   m_Name: Big_ClosedCornerWall
   m_TagString: Untagged
@@ -90,3 +91,24 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &-3574081841932509298
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4804191544831420959}
+  m_Material: {fileID: 13400000, guid: 79b8f8c9e2e3aa64db86e8399ce69f12, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.333, y: 2.0000005, z: 2.0000005}
+  m_Center: {x: 0, y: 0.0713674, z: -0.0713674}

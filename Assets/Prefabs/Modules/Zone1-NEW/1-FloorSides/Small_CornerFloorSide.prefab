@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6504553970398960547}
   - component: {fileID: 8472620565281723019}
   - component: {fileID: 5000231105968898298}
+  - component: {fileID: 2547070303444835581}
   m_Layer: 0
   m_Name: Small_CornerFloorSide
   m_TagString: Untagged
@@ -106,7 +107,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Polybrush::UnityEngine.Polybrush.PolybrushMesh
   m_PolyMesh:
-    name: PolybrushMesh83488
+    name: PolybrushMesh92302
     vertices:
     - {x: 0.122542135, y: -0.12254299, z: 0.063307256}
     - {x: 0.12254223, y: -0.1225421, z: 0.2299735}
@@ -1312,3 +1313,24 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 8052159802936747531, guid: ee409cef4151ccf40b18002f64b9dc7d, type: 3}
   m_Mode: 0
+--- !u!65 &2547070303444835581
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4632694486617381004}
+  m_Material: {fileID: 13400000, guid: f2cc16ad81f6028489433eacceb90bdb, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}

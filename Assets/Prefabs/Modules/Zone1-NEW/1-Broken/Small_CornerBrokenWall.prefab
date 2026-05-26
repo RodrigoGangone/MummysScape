@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 567335577259750655}
   - component: {fileID: 8204863216963643742}
   - component: {fileID: -6699124748561930566}
+  - component: {fileID: -75472249914378668}
   m_Layer: 0
   m_Name: Small_CornerBrokenWall
   m_TagString: Untagged
@@ -98,7 +99,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 50330586672231762}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 79b8f8c9e2e3aa64db86e8399ce69f12, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -112,3 +113,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.0053176875, y: 0.011971509, z: 0.012642718}
   m_Center: {x: -6.9849193e-10, y: 0.0005949199, z: 0.0010090556}
+--- !u!65 &-75472249914378668
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 50330586672231762}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.333, y: 1.0000001, z: 1.0000002}
+  m_Center: {x: -0.000000007450581, y: 0.057105318, z: 0.07703279}
