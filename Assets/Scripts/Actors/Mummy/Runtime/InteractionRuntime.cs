@@ -328,75 +328,75 @@ public sealed class InteractionRuntime : MonoBehaviour
         return portal != null;
     }
 
-//     #region Gizmos
+     #region Gizmos
+
+     [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
+     [SerializeField] private Color _hitColor = new(0.2f, 1f, 0.2f, 0.9f);
+     [SerializeField] private Color _missColor = new(1f, 0.2f, 0.2f, 0.9f);
+
+ private void OnDrawGizmos()
+ {
+     if (!_drawGizmos) return;
+
+     // PUSH rays
+     Gizmos.color = _leftHitInteract ? _hitColor : _missColor;
+     Gizmos.DrawLine(_oLeft, _oLeft + _dLeft * _distance);
+     Gizmos.DrawSphere(_leftHitPoint, 0.03f);
+
+     Gizmos.color = _rightHitInteract ? _hitColor : _missColor;
+     Gizmos.DrawLine(_oRight, _oRight + _dRight * _distance);
+     Gizmos.DrawSphere(_rightHitPoint, 0.03f);
+
+     // ATTRACT LOS
+     //Gizmos.color = _aEligible ? _hitColor : _missColor;
+     //Gizmos.DrawLine(_aOrigin, _aEnd);
+     //Gizmos.DrawSphere(_aHitPoint, 0.03f);
+     //
+     //var minMark = _aOrigin + ((_aEnd - _aOrigin).normalized * _attractMinDistance);
+     //Gizmos.DrawWireSphere(minMark, 0.05f);
+
+     //// SWING
+     //Transform tf = transform;
+     //Vector3 swingCenter = tf.TransformPoint(origin);
+     //Quaternion swingRot = tf.rotation;
+     //
+     //Collider[] swingHits = Physics.OverlapBox(swingCenter, halfExtents, swingRot, _interactMask);
+     //bool anyHook = false;
+     //
+     //foreach (var hit in swingHits)
+     //{
+     //    if (!hit) continue;
+     //    if (hit.CompareTag("Hook"))
+     //    {
+     //        anyHook = true;
+     //        break;
+     //    }
+     //}
 //
-//     [Header("Debug")] [SerializeField] private bool _drawGizmos = true;
-//     [SerializeField] private Color _hitColor = new(0.2f, 1f, 0.2f, 0.9f);
-//     [SerializeField] private Color _missColor = new(1f, 0.2f, 0.2f, 0.9f);
+     //Gizmos.color = anyHook ? _hitColor : _missColor;
+     //Matrix4x4 oldMatrix = Gizmos.matrix;
+     //Gizmos.matrix = Matrix4x4.TRS(swingCenter, swingRot, Vector3.one);
+     //Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2f);
+     //Gizmos.matrix = oldMatrix;
 //
-// private void OnDrawGizmos()
-// {
-//     if (!_drawGizmos) return;
+     //// AIM
+     //if (SimpleShootData.Path != null && SimpleShootData.Path.Count > 1)
+     //{
+     //    Gizmos.color = _hitColor;
+     //    for (int i = 0; i < SimpleShootData.Path.Count - 1; i++)
+     //    {
+     //        Gizmos.DrawLine(SimpleShootData.Path[i], SimpleShootData.Path[i + 1]);
+     //    }
 //
-//     // PUSH rays
-//     Gizmos.color = _leftHitInteract ? _hitColor : _missColor;
-//     Gizmos.DrawLine(_oLeft, _oLeft + _dLeft * _distance);
-//     Gizmos.DrawSphere(_leftHitPoint, 0.03f);
+     //    Vector3 impactPoint = SimpleShootData.Path[SimpleShootData.Path.Count - 1];
+     //    Gizmos.DrawSphere(impactPoint, 0.25f);
+     //}
 //
-//     Gizmos.color = _rightHitInteract ? _hitColor : _missColor;
-//     Gizmos.DrawLine(_oRight, _oRight + _dRight * _distance);
-//     Gizmos.DrawSphere(_rightHitPoint, 0.03f);
-//
-//     // ATTRACT LOS
-//     Gizmos.color = _aEligible ? _hitColor : _missColor;
-//     Gizmos.DrawLine(_aOrigin, _aEnd);
-//     Gizmos.DrawSphere(_aHitPoint, 0.03f);
-//
-//     var minMark = _aOrigin + ((_aEnd - _aOrigin).normalized * _attractMinDistance);
-//     Gizmos.DrawWireSphere(minMark, 0.05f);
-//
-//     // SWING
-//     Transform tf = transform;
-//     Vector3 swingCenter = tf.TransformPoint(origin);
-//     Quaternion swingRot = tf.rotation;
-//
-//     Collider[] swingHits = Physics.OverlapBox(swingCenter, halfExtents, swingRot, _interactMask);
-//     bool anyHook = false;
-//
-//     foreach (var hit in swingHits)
-//     {
-//         if (!hit) continue;
-//         if (hit.CompareTag("Hook"))
-//         {
-//             anyHook = true;
-//             break;
-//         }
-//     }
-//
-//     Gizmos.color = anyHook ? _hitColor : _missColor;
-//     Matrix4x4 oldMatrix = Gizmos.matrix;
-//     Gizmos.matrix = Matrix4x4.TRS(swingCenter, swingRot, Vector3.one);
-//     Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2f);
-//     Gizmos.matrix = oldMatrix;
-//
-//     // AIM
-//     if (SimpleShootData.Path != null && SimpleShootData.Path.Count > 1)
-//     {
-//         Gizmos.color = _hitColor;
-//         for (int i = 0; i < SimpleShootData.Path.Count - 1; i++)
-//         {
-//             Gizmos.DrawLine(SimpleShootData.Path[i], SimpleShootData.Path[i + 1]);
-//         }
-//
-//         Vector3 impactPoint = SimpleShootData.Path[SimpleShootData.Path.Count - 1];
-//         Gizmos.DrawSphere(impactPoint, 0.25f);
-//     }
-//
-//     // SMASH
-//     bool smashHit = Physics.CheckSphere(transform.position, smashRange, smashLayer);
-//     Gizmos.color = smashHit ? _hitColor : new Color(1f, 1f, 0f, 0.5f);
-//     Gizmos.DrawWireSphere(transform.position, smashRange);
-// }
-//
-//     #endregion
+     //// SMASH
+     //bool smashHit = Physics.CheckSphere(transform.position, smashRange, smashLayer);
+     //Gizmos.color = smashHit ? _hitColor : new Color(1f, 1f, 0f, 0.5f);
+     //Gizmos.DrawWireSphere(transform.position, smashRange);
+ }
+
+     #endregion
 }

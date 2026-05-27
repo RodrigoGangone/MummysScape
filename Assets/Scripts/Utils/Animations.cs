@@ -14,6 +14,7 @@ public static class Animations
         public const string ATTRACT = "Pull";
         public const string PRESWING = "PreSwing";
         public const string SWING = "Swing";
+        public const string FAKE_PUSH = "FakePush";
         public const string DEAD = "Death";
         public const string WIN = "Win";
         

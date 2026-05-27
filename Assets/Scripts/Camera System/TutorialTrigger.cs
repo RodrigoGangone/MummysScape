@@ -35,6 +35,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private bool _canPlayTutorial;
 
     private bool IsTutorialAlreadySeen => focusPoint != null && Save.IsTutorialSeen(focusPoint.Tutorial);
+
     private void Awake()
     {
         _boxCollider = GetComponent<BoxCollider>();
@@ -43,6 +44,11 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         if (focusPoint != null)
             SetColliderShape(!IsTutorialAlreadySeen);
 
+        _tutorialVideo.errorReceived += (videoPlayer, message) => 
+        {
+            Debug.LogError("Error del VideoPlayer: " + message);
+        };
+        
         ToggleEffects(false);
     }
 
@@ -53,13 +59,16 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
         if (_canPlayTutorial && !_isPlaying && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
         {
-            ExecuteTutorialSequence(isReplay: true);
+            StartCoroutine(StartReplayWithDelay());
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag(PLAYER_TAG) || focusPoint == null) return;
+
+        // SOLUCIÓN 1: Siempre habilitamos que pueda jugar el tutorial al entrar.
+        _canPlayTutorial = true; 
 
         if (!IsTutorialAlreadySeen)
         {
@@ -75,8 +84,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
             );
             _isPromptActive = true;
         }
-
-        _canPlayTutorial = true;
     }
 
     private void OnTriggerExit(Collider other)
@@ -89,6 +96,15 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
             ContextUIFactory.Hidden()
         );
+    }
+
+    // SOLUCIÓN 3: Esperamos al final del frame para que el botón "Y" se suelte,
+    // evitando que el FocusManager cancele el tutorial instantáneamente.
+    private IEnumerator StartReplayWithDelay()
+    {
+        _isPlaying = true; // Bloqueamos el input inmediatamente
+        yield return new WaitForEndOfFrame(); 
+        ExecuteTutorialSequence(isReplay: true);
     }
 
     private void ExecuteTutorialSequence(bool isReplay)
@@ -118,6 +134,10 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
         if (!isReplay && !string.IsNullOrEmpty(focusPoint.Message))
             totalDuration += focusPoint.MessageDuration;
+
+        // Fallback de seguridad: Si el replay dura 0 segundos, le damos un tiempo base.
+        if (totalDuration <= 0.1f) 
+            totalDuration = 3f; 
 
         _effectRoutine = StartCoroutine(TutorialDurationRoutine(totalDuration));
     }
@@ -174,8 +194,16 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
         if (_tutorialVideo != null)
         {
-            if (active) _tutorialVideo.Play();
-            else _tutorialVideo.Stop();
+            if (active) 
+            {
+                // SOLUCIÓN 2: Forzamos al video a volver al segundo 0 antes de reproducir
+                _tutorialVideo.time = 0; 
+                _tutorialVideo.Play();
+            }
+            else 
+            {
+                _tutorialVideo.Stop();
+            }
         }
     }
 

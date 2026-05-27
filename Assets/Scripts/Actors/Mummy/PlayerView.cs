@@ -7,7 +7,6 @@ using static PlayerEnum;
 /// Gestor Audiovisual: Coordina el cambio de animadores, avatares y bancos de sonido según el tamaño, 
 /// además de gestionar visuales complejos como el dibujo de las vendas y efectos de partículas. 
 /// </summary>
-
 public sealed class PlayerView : MonoBehaviour, IPausable
 {
     [Header("Anim & FX")] [SerializeField] private Animator _anim;
@@ -27,6 +26,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [SerializeField] public ParticleSystem _smashFX;
     [SerializeField] public ParticleSystem _dropFX;
     [SerializeField] public ParticleSystem _koFX;
+    [SerializeField] public ParticleSystem fallingDust;
+    [SerializeField] public ParticleSystem angerFx;
 
     [SerializeField] private DecalProjector shadow;
 
@@ -36,23 +37,29 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [SerializeField] private DecalProjector _rangeIndicator;
     [SerializeField] private LineRenderer _arcRenderer;
 
-    [ColorUsage(true, true), SerializeField] private Color _aimAllowed;
-    [ColorUsage(true, true), SerializeField] private Color _aimNotAllowed;
-    
-    [Header("Bandage Visuals System")] 
-    [SerializeField] private LineRenderer _bandageLine;
+    [ColorUsage(true, true), SerializeField]
+    private Color _aimAllowed;
 
-    [Header("Hand Anchors (Asignar transforms de las manos)")]
-    [SerializeField] private Transform _handAnchorNormal;
+    [ColorUsage(true, true), SerializeField]
+    private Color _aimNotAllowed;
+
+    [Header("Bandage Visuals System")] [SerializeField]
+    private LineRenderer _bandageLine;
+
+    [SerializeField] private ParticleSystem _cutFx;
+
+    [Header("Hand Anchors (Asignar transforms de las manos)")] [SerializeField]
+    private Transform _handAnchorNormal;
+
     [SerializeField] private Transform _handAnchorSmall;
     [SerializeField] private Transform _handAnchorHead;
 
-    [Header("Feedback System")]
-    [SerializeField] private PlayerFeedbackLibrary _feedbackLibrary;
-    
-    private Transform _currentHandAnchor; 
-    private Transform _bandageTarget; 
-    private Vector3 _bandageTargetLocalOffset; 
+    [Header("Feedback System")] [SerializeField]
+    private PlayerFeedbackLibrary _feedbackLibrary;
+
+    private Transform _currentHandAnchor;
+    private Transform _bandageTarget;
+    private Vector3 _bandageTargetLocalOffset;
     private bool _isBandageActive;
 
     private Coroutine _drawCoroutine;
@@ -62,9 +69,10 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     private const float MAT_START_VAL = 1.5f;
     private const float MAT_END_VAL = 0f;
 
-    private PlayerSize _currentSize = PlayerSize.Normal; 
+    private PlayerSize _currentSize = PlayerSize.Normal;
     private FxBank _currentBank;
-    
+    private Vector3 _lastCutMidPoint;
+
     public GameObject Decal => _decal;
     public DecalProjector Shadow => shadow;
     public DecalProjector RangeIndicator => _rangeIndicator;
@@ -87,17 +95,24 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         }
 
         _currentHandAnchor = _handAnchorNormal;
-
     }
 
     private void LateUpdate()
     {
         if (_isBandageActive && _bandageLine != null && _currentHandAnchor != null && _bandageTarget != null)
         {
-            _bandageLine.SetPosition(0, _currentHandAnchor.position);
+// 1. Obtener la posición inicial (Mano)
+            Vector3 startPos = _currentHandAnchor.position;
+        
+            // 2. Obtener la posición final (Objetivo)
             Vector3 targetWorldPos = _bandageTarget.TransformPoint(_bandageTargetLocalOffset);
+
+            // 3. Actualizar el LineRenderer
+            _bandageLine.SetPosition(0, startPos);
             _bandageLine.SetPosition(1, targetWorldPos);
-        }
+        
+            // 4. Calcular el punto medio para el efecto de corte
+            _lastCutMidPoint = (startPos + targetWorldPos) * 0.5f;        }
     }
 
     public void StartBandage(Transform targetTransform, Vector3 worldHitPoint, float duration)
@@ -151,30 +166,30 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     public void PlaySfx(string key, Vector3? position = null)
     {
         if (_currentBank == null) _currentBank = GetBankForCurrentSize();
-        
+
         if (position.HasValue)
             _currentBank.Play3D(key, position.Value);
         else
             _currentBank.Play2D(key);
     }
-    
+
     public void StopSfx(string key)
     {
         if (_currentBank == null) _currentBank = GetBankForCurrentSize();
-        
+
         _currentBank?.Stop(key);
     }
 
     private FxBank GetBankForCurrentSize(PlayerSize? size = null)
     {
-        PlayerSize targetSize = size ?? _currentSize; 
+        PlayerSize targetSize = size ?? _currentSize;
 
         return targetSize switch
         {
             PlayerSize.Normal => bankNormal,
-            PlayerSize.Small  => bankSmall,
-            PlayerSize.Head   => bankHead,
-            _                 => null
+            PlayerSize.Small => bankSmall,
+            PlayerSize.Head => bankHead,
+            _ => null
         };
     }
 
@@ -209,9 +224,9 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
         _anim.enabled = true;
         _anim.Rebind();
-        _currentSize = newSize; 
+        _currentSize = newSize;
         _currentBank = GetBankForCurrentSize(newSize);
-        
+
         if (_anim.runtimeAnimatorController != null)
         {
             _anim.SetBool("Walk", wasWalking);
@@ -226,7 +241,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     {
         //if (_anim) _anim.SetFloat("Speed", normalized);
     }
-    
+
     private void PlayDropFx(PlayerSize playerSize)
     {
         if (_dropFX == null) return;
@@ -254,7 +269,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         _dropFX.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         _dropFX.Play();
     }
-    
+
     public void HandleFailedTransition(PlayerStateId state, PlayerSize size, PlayerContext ctx)
     {
         if (_feedbackLibrary != null)
@@ -275,5 +290,13 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(OnSizeChanged);
         GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(PlayDropFx);
+    }
+
+    public void CutBandage()
+    {
+        if (_cutFx == null) return;
+
+        _cutFx.transform.position = _lastCutMidPoint;
+        _cutFx.Play();
     }
 }
