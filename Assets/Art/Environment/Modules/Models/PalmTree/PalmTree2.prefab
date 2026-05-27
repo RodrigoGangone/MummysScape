@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1269669998584519699}
   - component: {fileID: 424076237689461815}
   - component: {fileID: 496075346461480045}
-  m_Layer: 24
+  m_Layer: 23
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -58,6 +58,11 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -79,9 +84,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &4534554114106661323
 GameObject:
@@ -93,7 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 215234554409040711}
   - component: {fileID: 543804262633863523}
-  m_Layer: 0
+  m_Layer: 23
   m_Name: PalmTree2
   m_TagString: Untagged
   m_Icon: {fileID: 0}

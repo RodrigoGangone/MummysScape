@@ -5287,7 +5287,7 @@ MonoBehaviour:
   m_Mode: 0
 --- !u!95 &2680829863816091478
 Animator:
-  serializedVersion: 5
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5301,6 +5301,7 @@ Animator:
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -10084,7 +10085,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &6914077000858700605
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -10100,6 +10101,11 @@ ParticleSystemRenderer:
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -10121,9 +10127,11 @@ ParticleSystemRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -10138,13 +10146,15 @@ ParticleSystemRenderer:
   m_RenderAlignment: 0
   m_Pivot: {x: 0, y: 0, z: 0}
   m_Flip: {x: 0, y: 0, z: 0}
-  m_UseCustomVertexStreams: 0
   m_EnableGPUInstancing: 1
   m_ApplyActiveColorSpace: 1
   m_AllowRoll: 1
   m_FreeformStretching: 0
   m_RotateWithStretchDirection: 1
+  m_UseCustomVertexStreams: 0
   m_VertexStreams: 00010304
+  m_UseCustomTrailVertexStreams: 0
+  m_TrailVertexStreams: 00010304
   m_Mesh: {fileID: 0}
   m_Mesh1: {fileID: 0}
   m_Mesh2: {fileID: 0}
@@ -10153,7 +10163,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &7301835605903165654
 GameObject:
   m_ObjectHideFlags: 0
@@ -14930,7 +14939,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &6521213235460538259
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -14946,6 +14955,11 @@ ParticleSystemRenderer:
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -14967,9 +14981,11 @@ ParticleSystemRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -14984,13 +15000,15 @@ ParticleSystemRenderer:
   m_RenderAlignment: 0
   m_Pivot: {x: 0, y: 0, z: 0}
   m_Flip: {x: 0, y: 0, z: 0}
-  m_UseCustomVertexStreams: 0
   m_EnableGPUInstancing: 1
   m_ApplyActiveColorSpace: 1
   m_AllowRoll: 1
   m_FreeformStretching: 0
   m_RotateWithStretchDirection: 1
+  m_UseCustomVertexStreams: 0
   m_VertexStreams: 00010304
+  m_UseCustomTrailVertexStreams: 0
+  m_TrailVertexStreams: 00010304
   m_Mesh: {fileID: 0}
   m_Mesh1: {fileID: 0}
   m_Mesh2: {fileID: 0}
@@ -14999,7 +15017,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1001 &3736609774224434766
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15069,11 +15086,11 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -7514595835873524498, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: bf6b42ae7deb3bc47afa87df1a3e1f8f, type: 2}
     - target: {fileID: -7514595835873524498, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 3872fa47348ee18439e546586b3ac6cf, type: 2}
     - target: {fileID: -5106175353745224938, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
@@ -15081,11 +15098,11 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -5106175353745224938, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: faeb8562c7cd84d488861e2c2eeeea62, type: 2}
     - target: {fileID: -5106175353745224938, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 3872fa47348ee18439e546586b3ac6cf, type: 2}
     - target: {fileID: -1762919629002808102, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
@@ -15093,11 +15110,11 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -1762919629002808102, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: bf6b42ae7deb3bc47afa87df1a3e1f8f, type: 2}
     - target: {fileID: -1762919629002808102, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 3872fa47348ee18439e546586b3ac6cf, type: 2}
     - target: {fileID: -1569098885063221510, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
@@ -15105,11 +15122,11 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -1569098885063221510, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: faeb8562c7cd84d488861e2c2eeeea62, type: 2}
     - target: {fileID: -1569098885063221510, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 3872fa47348ee18439e546586b3ac6cf, type: 2}
     - target: {fileID: -536102411414964430, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
@@ -15117,11 +15134,11 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -536102411414964430, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: faeb8562c7cd84d488861e2c2eeeea62, type: 2}
     - target: {fileID: -536102411414964430, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 3872fa47348ee18439e546586b3ac6cf, type: 2}
     - target: {fileID: 919132149155446097, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
@@ -15133,11 +15150,11 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6041934869309243841, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: faeb8562c7cd84d488861e2c2eeeea62, type: 2}
     - target: {fileID: 6041934869309243841, guid: 8b5dab65f871e0f41881fb33b0c735e2, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 3872fa47348ee18439e546586b3ac6cf, type: 2}
     m_RemovedComponents: []
@@ -15158,6 +15175,46 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 9215326096175249589}
     m_Modifications:
+    - target: {fileID: 6624211405919825175, guid: 94619a202181a014eb7405925c707d2f, type: 3}
+      propertyPath: TrailModule.inheritParticleColor
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6624211405919825175, guid: 94619a202181a014eb7405925c707d2f, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.a
+      value: 0.6117647
+      objectReference: {fileID: 0}
+    - target: {fileID: 6624211405919825175, guid: 94619a202181a014eb7405925c707d2f, type: 3}
+      propertyPath: InitialModule.startColor.minColor.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6624211405919825175, guid: 94619a202181a014eb7405925c707d2f, type: 3}
+      propertyPath: TrailModule.colorOverTrail.maxColor.b
+      value: 0.13679248
+      objectReference: {fileID: 0}
+    - target: {fileID: 6624211405919825175, guid: 94619a202181a014eb7405925c707d2f, type: 3}
+      propertyPath: TrailModule.colorOverTrail.maxColor.g
+      value: 0.9759779
+      objectReference: {fileID: 0}
+    - target: {fileID: 6624211405919825175, guid: 94619a202181a014eb7405925c707d2f, type: 3}
+      propertyPath: TrailModule.colorOverTrail.maxColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6624211405919825175, guid: 94619a202181a014eb7405925c707d2f, type: 3}
+      propertyPath: TrailModule.colorOverTrail.minColor.b
+      value: 0.9449339
+      objectReference: {fileID: 0}
+    - target: {fileID: 6624211405919825175, guid: 94619a202181a014eb7405925c707d2f, type: 3}
+      propertyPath: TrailModule.colorOverTrail.minColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6624211405919825175, guid: 94619a202181a014eb7405925c707d2f, type: 3}
+      propertyPath: TrailModule.colorOverTrail.minColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6624211405919825175, guid: 94619a202181a014eb7405925c707d2f, type: 3}
+      propertyPath: TrailModule.colorOverTrail.minMaxState
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 7658651739631106185, guid: 94619a202181a014eb7405925c707d2f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.00030004978

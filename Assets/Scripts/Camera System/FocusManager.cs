@@ -195,13 +195,14 @@ public class FocusManager : MonoBehaviour, IPausable
         _pendingRequests.Add(req);
 
         if (!_isCollectingRequests)
+        {
+            _isCollectingRequests = true;
             StartCoroutine(CollectAndSortRoutine());
+        }
     }
 
     private IEnumerator CollectAndSortRoutine()
     {
-        _isCollectingRequests = true;
-
         yield return new WaitForEndOfFrame();
 
         _pendingRequests = _pendingRequests.OrderBy(x => x.PriorityIndex).ToList();

@@ -20,6 +20,7 @@ public sealed class PlayerContext
     private readonly MovementRuntime _movement;
     private readonly InteractionRuntime _interactions;
     private readonly GroundCheckRuntime _ground;
+    public readonly PlayerFeedbackLibrary Feedback;
 
     public PlayerContext(
         Transform tf, Rigidbody rb,
@@ -27,7 +28,7 @@ public sealed class PlayerContext
         ICameraProvider camProvider,
         PlayerModel model, PlayerView view,
         MovementRuntime movement, IPlayerInput input, InteractionRuntime interactionRuntime,
-        GroundCheckRuntime ground, StateMachinePlayer sm)
+        GroundCheckRuntime ground, StateMachinePlayer sm, PlayerFeedbackLibrary feedback)
     {
         Tf = tf;
         Rb = rb;
@@ -41,12 +42,14 @@ public sealed class PlayerContext
         _interactions = interactionRuntime;
         _ground = ground;
         StateMachine = sm;
+        Feedback = feedback;
     }
 
     private Camera Cam => _camProvider?.Current ?? Camera.main;
     public float MoveSpeed => _movement.MoveSpeed;
     public float TurnSpeed => _movement.TurnSpeed;
     public bool IsGrounded() => _ground != null && _ground.CheckGround(Tf);
+    public PlayerEnum.PlayerStateId AttemptedState { get; set; }
     public GroundCheckRuntime.TerrainType CurrentTerrain => _ground != null ? _ground.CurrentTerrain : GroundCheckRuntime.TerrainType.None;
     public float AttractMinDistance => _interactions ? _interactions.AttractMinDistance : 1f;
     public float AttractMaxDistance => _interactions ? _interactions.AttractMaxDistance : 5f;
@@ -63,6 +66,14 @@ public sealed class PlayerContext
     public Vector3 KnockbackTargetPosition;
     public float KnockbackDuration;
     public bool HasExternalImpact => Observer.HasKnockback;
+    private float _forceIdleUntilTime;
+
+    public void ForceIdleFor(float duration)
+    {
+        _forceIdleUntilTime = Mathf.Max(_forceIdleUntilTime, Time.time + duration);
+    }
+
+    public bool ShouldForceIdle() => Time.time < _forceIdleUntilTime;
 
     public Vector3 CameraRelativeDir(float h, float v)
     {

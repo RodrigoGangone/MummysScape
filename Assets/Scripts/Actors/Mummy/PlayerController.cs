@@ -23,6 +23,7 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
     [SerializeField] private HeadTimerController _headTimer; 
     [SerializeField] private InteractionRuntime _interactions;
     [SerializeField] private GroundCheckRuntime _ground;
+    [SerializeField] private PlayerFeedbackLibrary _feedback;
     [SerializeField] private GameObject _bandagePickupPrefab;
 
     [Header("Size Runtime")] [SerializeField]
@@ -66,7 +67,7 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
 
         _ctx = new PlayerContext(transform, _rb, _swingHandler, _observer, _cameraProvider, _model, _view, _movement,
             _input,
-            _interactions, _ground, _sm);
+            _interactions, _ground, _sm, _feedback);
 
         _sm.AddState(PlayerStateId.Idle, new IdleState(_ctx));
         _sm.AddState(PlayerStateId.Walk, new WalkState(_ctx));
@@ -80,6 +81,7 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
         _sm.AddState(PlayerStateId.Swing, new SwingState(_ctx));
         _sm.AddState(PlayerStateId.QuickTravel, new QuickTravelState(_ctx));
         _sm.AddState(PlayerStateId.KnockBack, new KnockBackState(_ctx, _bandagePickupPrefab));
+        _sm.AddState(PlayerStateId.Fake, new FakeState(_ctx));
         _sm.AddState(PlayerStateId.Dead, new DeadState(_ctx));
         _sm.AddState(PlayerStateId.Win, new WinState(_ctx));
 

@@ -9,10 +9,22 @@ using static SfxIDs;
 public class PlayerAnimHandler : MonoBehaviour
 {
     private PlayerContext _ctx;
+    private WrapHandler _currentWrap;
 
     private void Start()
     {
-        _ctx = GetComponentInParent<PlayerController>().Ctx;
+        TryResolveContext();
+    }
+
+    private bool TryResolveContext()
+    {
+        if (_ctx != null) return true;
+
+        PlayerController controller = GetComponentInParent<PlayerController>();
+        if (controller == null || controller.Ctx == null) return false;
+
+        _ctx = controller.Ctx;
+        return true;
     }
 
     public void Smash()
@@ -33,17 +45,66 @@ public class PlayerAnimHandler : MonoBehaviour
 
     public void Shoot() => GameEventManager.Instance.playerEvents.OnShoot.Raise();
 
+    #region Fakes
+
     public void WrapFakeSwing()
     {
+        if (!TryResolveContext()) return;
+
         Vector3 targetPoint = _ctx.TryGetSwingTarget(out Rigidbody hook)
             ? hook.worldCenterOfMass
             : _ctx.Rb.position + (_ctx.Rb.transform.forward * 4f) + Vector3.up;
 
+        _currentWrap = hook.GetComponent<WrapHandler>();
+        _currentWrap.Wrap();
+
         _ctx.View.StartBandage(_ctx.Tf, targetPoint, 0.15f);
     }
 
-    public void UnWrap() => _ctx.View.StopBandage();
-    
+    public void WrapFakeAttract()
+    {
+        if (!TryResolveContext()) return;
+
+        Vector3 targetPoint = _ctx.TryGetAttractTarget(out BoxPushAttract box)
+            ? box.transform.position
+            : _ctx.Rb.position + (_ctx.Rb.transform.forward * 4f) + Vector3.up;
+
+        _currentWrap = box.GetComponent<WrapHandler>();
+
+        _currentWrap.Wrap();
+        _ctx.View.StartBandage(_ctx.Tf, targetPoint, 0.15f);
+    }
+
+    public void UnWrapFakeAttract()
+    {
+        _ctx.View.CutBandage();
+        _ctx.View.StopBandage();
+
+        if (_currentWrap != null)
+            _currentWrap.UnWrap();
+    }
+
+    public void CutSwing()
+    {
+        //if (!TryResolveContext()) return;
+        
+        if (_currentWrap != null)
+            _currentWrap.UnWrap();
+        
+        _ctx.View.CutBandage();
+        _ctx.View.StopBandage();
+    }
+
+    public void EndFake()
+    {
+        if (!TryResolveContext()) return;
+
+        if (_ctx.StateMachine.GetState(PlayerEnum.PlayerStateId.Fake) is FakeState fakeState)
+        {
+            fakeState.CompleteOneShot();
+        }
+    }
+
     private IEnumerator KinematicStumble(float duration, float distance)
     {
         float elapsed = 0f;
@@ -76,12 +137,21 @@ public class PlayerAnimHandler : MonoBehaviour
             // Movemos la posición directamente (al ser kinematic, ignoramos fuerzas)
             _ctx.Rb.position = Vector3.Lerp(startPos, targetPos, curve);
 
+            if (!_ctx.IsGrounded())
+            {
+                _ctx.Rb.linearVelocity = Vector3.zero;
+                break;
+            }
+
             yield return null;
         }
     }
 
     public void KinematicStumble() => StartCoroutine(KinematicStumble(2f, 1f));
-    
+    public void FallingDust() => _ctx.View.fallingDust.Play();
+
+    #endregion
+
     public void Locked() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise("AnimationEvent", true);
     public void UnLocked() => GameEventManager.Instance.playerEvents.OnLockRequested.Raise("AnimationEvent", false);
 }

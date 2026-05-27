@@ -162,6 +162,10 @@ public class SwingState : State, IBandageRestrictor, IFailableState
         _ctx.View?.SetMoveSpeedVisual(n);
     }
 
-    public void OnTransitionDenied(PlayerSize currentSize) =>
-        _ctx.View.HandleFailedTransition(PlayerStateId.Swing, currentSize, _ctx);
+    public void OnTransitionDenied(PlayerSize currentSize)
+    {
+        //_ctx.View.HandleFailedTransition(PlayerStateId.Swing,
+        //    currentSize,
+        //    _ctx);
+    }
 }
