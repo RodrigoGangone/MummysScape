@@ -62,6 +62,11 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -83,9 +88,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &824141173160084453
 MonoBehaviour:
@@ -1068,11 +1075,11 @@ PrefabInstance:
     m_TransformParent: {fileID: 7297052234291616562}
     m_Modifications:
     - target: {fileID: 716855092365191799, guid: 9f8a20e1681c20644af4d408ecef97a6, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 3872fa47348ee18439e546586b3ac6cf, type: 2}
     - target: {fileID: 716855092365191799, guid: 9f8a20e1681c20644af4d408ecef97a6, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 1262bdbf169642d43b5066ae2c5bbac6, type: 2}
     - target: {fileID: 906301810664536286, guid: 9f8a20e1681c20644af4d408ecef97a6, type: 3}
