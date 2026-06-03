@@ -1,12 +1,29 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Spears : MonoBehaviour
 {
-    Animator animatorController;
+    private Animator _animatorController;
+    private BoxCollider _collider;
+    
+    private void Start()
+    {
+        _animatorController = GetComponent<Animator>();
+        _collider = GetComponent<BoxCollider>();
+    }
 
-    private void Start() => animatorController = GetComponent<Animator>();
+    public void Up()
+    {
+        _animatorController.SetBool("Up", true);
+        _animatorController.SetBool("Down", false);
+        
+        _collider.enabled = true;
+    }
 
-    private void Up() => animatorController.SetTrigger("Up");
-
-    private void Down() => animatorController.SetTrigger("Down");
+    public void Down()
+    {
+        _animatorController.SetBool("Up", false);
+        _animatorController.SetBool("Down", true);
+        _collider.enabled = false;
+    }
 }

@@ -1,19 +1,19 @@
-using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class SeesawController : MonoBehaviour
 {
     [Header("Configuración de Rotación (Offsets)")]
-    [SerializeField] private float rotationSpeed = 2f;
-    [Tooltip("Curva que dicta la aceleración/desaceleración del movimiento")]
-    [SerializeField] private AnimationCurve rotationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [Tooltip("Velocidad a la que se inclina la tabla")]
+    [SerializeField] private float rotationSpeed = 5f;
     [Tooltip("Cuánto se suma/resta al X original cuando la izquierda baja")]
     [SerializeField] private float leftAngle = 15f;   
     [Tooltip("Cuánto se suma/resta al X original cuando la derecha baja")]
     [SerializeField] private float rightAngle = -15f; 
-    [Tooltip("Offset inicial respecto al X original (usualmente 0)")]
-    [SerializeField] private float neutralAngle = 0f; 
+    [Tooltip("Offset inicial respecto al X original")]
+    [SerializeField] private float neutralAngle = 0f;
+    [Tooltip("Si es true, la tabla vuelve al centro cuando no hay nadie. Si es false, se queda inclinada.")]
+    [SerializeField] private bool returnToNeutral = false;
 
     [Header("Configuración de Detección (Box)")]
     [SerializeField] private LayerMask playerLayer;
@@ -22,8 +22,8 @@ public class SeesawController : MonoBehaviour
     [SerializeField] private Vector3 rightBoxCenter = new Vector3(2f, 0.5f, 0f); 
 
     private Rigidbody rb;
-    private bool isRotating = false;
     private float currentAngleOffset; 
+    private float targetAngleOffset; 
     
     // Variables para guardar la rotación original exacta del objeto en la escena
     private float originalX;
@@ -37,23 +37,53 @@ public class SeesawController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.isKinematic = true;
-        currentAngleOffset = neutralAngle;
         
         // Guardamos los ángulos iniciales
         originalX = transform.rotation.eulerAngles.x;
         originalY = transform.rotation.eulerAngles.y;
         originalZ = transform.rotation.eulerAngles.z;
+
+        currentAngleOffset = neutralAngle;
+        targetAngleOffset = neutralAngle;
     }
 
     private void FixedUpdate()
     {
-        if (isRotating) return;
+        // Revisamos en tiempo real. Si cambia de Size, esto devuelve false automáticamente.
+        bool isLeftOccupied = CheckSide(leftBoxCenter);
+        bool isRightOccupied = CheckSide(rightBoxCenter);
 
-        CheckSide(leftBoxCenter, leftAngle);
-        CheckSide(rightBoxCenter, rightAngle);
+        if (isLeftOccupied && !isRightOccupied)
+        {
+            targetAngleOffset = leftAngle;
+        }
+        else if (isRightOccupied && !isLeftOccupied)
+        {
+            targetAngleOffset = rightAngle;
+        }
+        else 
+        {
+            // CASO: La momia se bajó de la tabla O cambió a un Size que no activa la tabla.
+            if (returnToNeutral) 
+            {
+                targetAngleOffset = neutralAngle;
+            }
+            else
+            {
+                // INTERRUPCIÓN: Igualamos el target a la posición actual. 
+                // Esto congela la rotación en el acto, simulando tu antiguo 'break;'.
+                targetAngleOffset = currentAngleOffset; 
+            }
+        }
+
+        currentAngleOffset = Mathf.Lerp(currentAngleOffset, targetAngleOffset, Time.fixedDeltaTime * rotationSpeed);
+        
+        float finalXAngle = originalX + currentAngleOffset;
+        Quaternion targetRotation = Quaternion.Euler(finalXAngle, originalY, originalZ);
+        rb.MoveRotation(targetRotation);
     }
 
-    private void CheckSide(Vector3 localCenter, float targetOffset)
+    private bool CheckSide(Vector3 localCenter)
     {
         Vector3 worldCenter = transform.TransformPoint(localCenter);
         
@@ -69,63 +99,14 @@ public class SeesawController : MonoBehaviour
         {
             PlayerController mummy = hitColliders[0].GetComponentInParent<PlayerController>();
             
-            // NOTA: Sigo usando PlayerSize.Normal como estaba en tu código. 
-            // Cámbialo al tamaño "Grande" si esa es la regla de diseño final.
+            // Validamos que sea la momia y tenga el tamaño correcto
             if (mummy != null && mummy.Ctx.Model.Size == PlayerEnum.PlayerSize.Normal)
             {
-                if (!Mathf.Approximately(currentAngleOffset, targetOffset))
-                {
-                    // Pasamos la referencia de la momia a la corrutina
-                    StartCoroutine(RotateToAngle(targetOffset, mummy));
-                }
+                return true;
             }
         }
-    }
-
-    private IEnumerator RotateToAngle(float targetOffset, PlayerController mummy)
-    {
-        isRotating = true;
-        currentAngleOffset = targetOffset;
-
-        Quaternion startRotation = rb.rotation;
         
-        float finalXAngle = originalX + targetOffset;
-        Quaternion targetRotation = Quaternion.Euler(finalXAngle, originalY, originalZ);
-        
-        float t = 0;
-        bool wasInterrupted = false;
-
-        while (t < 1f)
-        {
-            // Validamos si la momia se destruyó o si cambió de tamaño a uno que no activa la tabla
-            if (mummy == null || mummy.Ctx.Model.Size != PlayerEnum.PlayerSize.Normal)
-            {
-                wasInterrupted = true;
-                break; // Rompemos el ciclo while para detener el movimiento instantáneamente
-            }
-
-            t += Time.fixedDeltaTime * rotationSpeed;
-            
-            float curveValue = rotationCurve.Evaluate(t);
-            rb.MoveRotation(Quaternion.Lerp(startRotation, targetRotation, curveValue));
-            
-            yield return new WaitForFixedUpdate(); 
-        }
-
-        if (!wasInterrupted)
-        {
-            // Si terminó naturalmente, aseguramos la rotación final exacta
-            rb.MoveRotation(targetRotation);
-        }
-        else
-        {
-            // Si fue interrumpido, liberamos el target actual. 
-            // Esto permite que el CheckSide vuelva a disparar la corrutina hacia el mismo lado
-            // una vez que la momia recupere el tamaño adecuado.
-            currentAngleOffset = -999f; 
-        }
-
-        isRotating = false;
+        return false;
     }
 
     private void OnDrawGizmos()

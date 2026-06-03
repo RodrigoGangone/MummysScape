@@ -8,8 +8,9 @@ public abstract class BasePressureButton : MonoBehaviour
 {
     [Header("Base Detection Settings")]
     [SerializeField] protected LayerMask detectionLayer;
-    [SerializeField] protected Vector3 boxSize = new Vector3(0.8f, 0.2f, 0.8f);
+    [SerializeField] protected Vector3 boxSize = new(0.8f, 0.2f, 0.8f);
     [SerializeField] protected float checkDistance = 0.5f;
+    [SerializeField] protected float timer;
 
     protected bool isOccupied;
 
