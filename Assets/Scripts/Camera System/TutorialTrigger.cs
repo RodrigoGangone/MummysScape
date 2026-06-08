@@ -1,9 +1,11 @@
+using System;
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Video;
 using static Tags;
 using static PauseUtils;
 using static SfxIDs;
+using DragonBones;
 
 /// <summary> 
 /// Controlador de Tutorial: Gestiona la activación de tutoriales en escena, coordinando efectos visuales, 
@@ -12,23 +14,24 @@ using static SfxIDs;
 [RequireComponent(typeof(BoxCollider))]
 public class TutorialTrigger : MonoBehaviour, IPausable
 {
-    [Header("Referencias")]
-    [SerializeField] private TutorialFocusPoint focusPoint;
-    [SerializeField] private ParticleSystem[] braziers;
+    [Header("Referencias")] [SerializeField]
+    private TutorialFocusPoint focusPoint;
 
-    [Header("Configuración de Áreas")]
-    [SerializeField] private Vector3 sizeA = Vector3.one;
+    [SerializeField] private ParticleSystem[] braziers;
+    private string _animationDBName;
+
+    [Header("Configuración de Áreas")] [SerializeField]
+    private Vector3 sizeA = Vector3.one;
+
     [SerializeField] private Vector3 sizeB = Vector3.one * 2f;
     [SerializeField] private Vector3 centerOffsetA = Vector3.zero;
     [SerializeField] private Vector3 centerOffsetB = Vector3.zero;
 
-    [Header("Audio")]
-    [SerializeField] private FxBank _bank;
+    [Header("Audio")] [SerializeField] private FxBank _bank;
 
     private BoxCollider _boxCollider;
-    private VideoPlayer _tutorialVideo;
+    [SerializeField] private UnityArmatureComponent _armatureComponent;
     private Coroutine _effectRoutine;
-
     private bool _isPromptActive;
     private bool _paused;
     private bool _isPlaying;
@@ -39,16 +42,15 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private void Awake()
     {
         _boxCollider = GetComponent<BoxCollider>();
-        _tutorialVideo = GetComponentInChildren<VideoPlayer>();
 
         if (focusPoint != null)
             SetColliderShape(!IsTutorialAlreadySeen);
+    }
 
-        _tutorialVideo.errorReceived += (videoPlayer, message) => 
-        {
-            Debug.LogError("Error del VideoPlayer: " + message);
-        };
-        
+    private void Start()
+    {
+        _animationDBName = _armatureComponent.animation.animationNames[1];
+        _armatureComponent.animation.Stop(_animationDBName);
         ToggleEffects(false);
     }
 
@@ -68,7 +70,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         if (!other.CompareTag(PLAYER_TAG) || focusPoint == null) return;
 
         // SOLUCIÓN 1: Siempre habilitamos que pueda jugar el tutorial al entrar.
-        _canPlayTutorial = true; 
+        _canPlayTutorial = true;
 
         if (!IsTutorialAlreadySeen)
         {
@@ -103,7 +105,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private IEnumerator StartReplayWithDelay()
     {
         _isPlaying = true; // Bloqueamos el input inmediatamente
-        yield return new WaitForEndOfFrame(); 
+        yield return new WaitForEndOfFrame();
         ExecuteTutorialSequence(isReplay: true);
     }
 
@@ -136,8 +138,8 @@ public class TutorialTrigger : MonoBehaviour, IPausable
             totalDuration += focusPoint.MessageDuration;
 
         // Fallback de seguridad: Si el replay dura 0 segundos, le damos un tiempo base.
-        if (totalDuration <= 0.1f) 
-            totalDuration = 3f; 
+        if (totalDuration <= 0.1f)
+            totalDuration = 3f;
 
         _effectRoutine = StartCoroutine(TutorialDurationRoutine(totalDuration));
     }
@@ -192,17 +194,19 @@ public class TutorialTrigger : MonoBehaviour, IPausable
             else brazier.Stop();
         }
 
-        if (_tutorialVideo != null)
+        if (_armatureComponent != null)
         {
-            if (active) 
+            if (active)
             {
+                _armatureComponent.animation.Play(_animationDBName, 1);
                 // SOLUCIÓN 2: Forzamos al video a volver al segundo 0 antes de reproducir
-                _tutorialVideo.time = 0; 
-                _tutorialVideo.Play();
+                //_tutorialVideo.time = 0; 
+                //_tutorialVideo.Play();
             }
-            else 
+            else
             {
-                _tutorialVideo.Stop();
+                _armatureComponent.animation.Reset();
+                _armatureComponent.animation.Stop();
             }
         }
     }
@@ -224,6 +228,7 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 
     #region Gizmos
+
     private void OnDrawGizmos()
     {
         if (focusPoint == null) return;
@@ -235,5 +240,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         Gizmos.color = IsTutorialAlreadySeen ? Color.yellow : new Color(1, 0.92f, 0.016f, 0.2f);
         Gizmos.DrawWireCube(centerOffsetB, sizeB);
     }
+
     #endregion
 }
