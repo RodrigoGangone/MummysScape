@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine;
 using System.Linq;
@@ -13,6 +14,12 @@ public abstract class BasePressureButton : MonoBehaviour
     [SerializeField] protected float timer;
 
     protected bool isOccupied;
+    private Animator _animator;
+
+    private void Awake()
+    {
+        _animator = GetComponentInChildren<Animator>();
+    }
 
     protected virtual void FixedUpdate()
     {
@@ -50,9 +57,15 @@ public abstract class BasePressureButton : MonoBehaviour
         return false;
     }
 
-    // Métodos que cada tipo de botón implementará a su gusto
-    protected abstract void OnPress();
-    protected abstract void OnRelease();
+    protected virtual void OnPress()
+    {
+        if (_animator != null) _animator.SetBool("Pressed", true);
+    }
+
+    protected virtual void OnRelease()
+    {
+        if (_animator != null) _animator.SetBool("Pressed", false);
+    }
 
     private void OnDrawGizmos()
     {
