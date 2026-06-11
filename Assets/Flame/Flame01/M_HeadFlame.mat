@@ -38,23 +38,29 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _BaseEnd: 0.18
+    - _BaseEnd: 0.2
     - _BaseStart: 0.05
+    - _CenterFlameBoost: 0.18
+    - _CenterFlameWidth: 0.45
+    - _EmissionStrength: 0
     - _Extinguish: 0
     - _FlickerAmount: 0.08
     - _FlickerSpeed: 2.2
     - _FresnelIntensity: 1.4
-    - _FresnelPower: 3
-    - _HeightMax: 0.5
-    - _HeightMin: -0.5
-    - _NoiseScale: 4
-    - _NoiseSpeed: 0.25
-    - _NoiseStrength: 0.08
-    - _Opacity: 1
+    - _FresnelPower: 3.5
+    - _GlobalAlpha: 1
+    - _HeightMax: 0.43
+    - _HeightMin: -0.18
+    - _NoiseScale: 3.5
+    - _NoiseSpeed: 1.2
+    - _NoiseStrength: 0.04
+    - _Opacity: 0.85
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _TipStart: 0.55
-    - _UpwardStretch: 0.1
+    - _TipSharpness: 1.5
+    - _TipStart: 0.65
+    - _UpwardStretch: 0.025
+    - _UseEmission: 0
     m_Colors:
     - _BottomColor: {r: 1, g: 0.9320468, b: 0, a: 1}
     - _MiddleColor: {r: 1, g: 0.41772816, b: 0, a: 1}
