@@ -8,8 +8,8 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_HeadFlame
-  m_Shader: {fileID: -6465566751694194690, guid: 581a27480dada3748b51870e966974b9, type: 3}
-  m_Parent: {fileID: 0}
+  m_Shader: {fileID: -6465566751694194690, guid: 40d202464840873459f0ce6327b69dc5, type: 3}
+  m_Parent: {fileID: 2100000, guid: a62ce4ab6d6134c4f9e1cc5014b17a2f, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -23,48 +23,10 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs:
-    - unity_Lightmaps:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_LightmapsInd:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_ShadowMasks:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
+    m_TexEnvs: []
     m_Ints: []
-    m_Floats:
-    - _BaseEnd: 0.2
-    - _BaseStart: 0.05
-    - _CenterFlameBoost: 0.18
-    - _CenterFlameWidth: 0.45
-    - _EmissionStrength: 0
-    - _Extinguish: 0
-    - _FlickerAmount: 0.08
-    - _FlickerSpeed: 2.2
-    - _FresnelIntensity: 1.4
-    - _FresnelPower: 3.5
-    - _GlobalAlpha: 1
-    - _HeightMax: 0.43
-    - _HeightMin: -0.18
-    - _NoiseScale: 3.5
-    - _NoiseSpeed: 1.2
-    - _NoiseStrength: 0.04
-    - _Opacity: 0.85
-    - _QueueControl: 0
-    - _QueueOffset: 0
-    - _TipSharpness: 1.5
-    - _TipStart: 0.65
-    - _UpwardStretch: 0.025
-    - _UseEmission: 0
-    m_Colors:
-    - _BottomColor: {r: 1, g: 0.9320468, b: 0, a: 1}
-    - _MiddleColor: {r: 1, g: 0.41772816, b: 0, a: 1}
-    - _TopColor: {r: 1, g: 0, b: 0, a: 1}
+    m_Floats: []
+    m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &7520928801220151978
