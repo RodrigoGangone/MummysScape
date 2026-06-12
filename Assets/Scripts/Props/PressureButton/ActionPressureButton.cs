@@ -13,8 +13,6 @@ public class ActionPressureButton : BasePressureButton
     [SerializeField] private DecalProjector runesDecal;
     [Tooltip("El nombre exacto de la variable en tu Shader (ej: _Fill, _Emission, etc).")]
     [SerializeField] private string shaderPropertyName = "_Progress";
-    [Tooltip("El tiempo que tarda en volver a estar disponible tras desactivarse.")]
-    [SerializeField] private float cooldownTime = 2f;
 
     public UnityEngine.Events.UnityEvent OnActivated;
     public UnityEngine.Events.UnityEvent OnDeactivated;
@@ -113,10 +111,10 @@ public class ActionPressureButton : BasePressureButton
         isOnCooldown = true;
         float elapsedTime = 0f;
 
-        while (elapsedTime < cooldownTime)
+        while (elapsedTime < timer)
         {
             elapsedTime += Time.deltaTime;
-            float fillValue = Mathf.Lerp(1f, 0f, elapsedTime / cooldownTime);
+            float fillValue = Mathf.Lerp(1f, 0f, elapsedTime / timer);
             UpdateRuneVisual(fillValue);
             
             yield return null;
