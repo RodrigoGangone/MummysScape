@@ -29,31 +29,45 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Alpha: 0.45
-    - _AlphaClip: 0.114
-    - _BottomFill: 0.55
-    - _Brightness: 2.25
-    - _CoreFill: 0.4
-    - _Cull: 0
-    - _DistortScale: 2.82
-    - _DistortStrength: 1
-    - _FlameHeight: 1
-    - _InnerNoiseContribution: 0.215
-    - _MaskStretchY: 2.74
-    - _MaskTilingX: 2.58
-    - _ObjectBottomY: -0.75
-    - _ObjectTopY: 2
-    - _RimPower: 2.22
-    - _RimStrength: 0.533
-    - _SecondaryContribution: 0.135
-    - _Speed: 0.7
-    - _SwayStrength: 0
-    - _TipSoftness: 0.25
-    - _TopTaper: 0.291
-    - _VertexDisplacement: 0.0931
+    - _Alpha: 0.02
+    - _AlphaClip: 0
+    - _BaseFlameDetail: 2
+    - _BaseHeight: 0.24
+    - _BaseSoftness: 0.28
+    - _BaseStrength: 1
+    - _BaseTransparency: 0.7
+    - _BottomEmission: 1.2
+    - _CoreFill: 0.36
+    - _Cull: 2
+    - _DistortScale: 3.4
+    - _DistortStrength: 0.25
+    - _FadeEnd: 1.126
+    - _FadePower: 1.63
+    - _FadeStart: 0.56
+    - _GlobalBrightness: 1
+    - _InnerNoiseContribution: 0.22
+    - _MaskStretchY: 1
+    - _MaskTilingX: 3
+    - _MiddleEmission: 2
+    - _ObjectBottomY: -0.5
+    - _ObjectTopY: 0.5
+    - _PrimaryContribution: 0.8
+    - _RimPower: 2
+    - _RimStrength: 0.72
+    - _SecondaryContribution: 0.6
+    - _Speed: 1
+    - _SwayStrength: 0.09
+    - _ThirdContribution: 0.35
+    - _TopEmission: 3
+    - _TopTaper: 0.42
+    - _VertexDisplacement: 0.04
+    - _XZMotionStrength: 0.035
+    - _XZNoiseScale: 2.6
+    - _XZNoiseSpeed: 1.1
     m_Colors:
-    - _BaseColor: {r: 1, g: 0, b: 0.60764885, a: 1}
-    - _CoreColor: {r: 0.8207547, g: 0.80069053, b: 0.76268244, a: 1}
-    - _OuterGlowColor: {r: 1, g: 0, b: 0.9208169, a: 1}
+    - _BottomColor: {r: 0.84085923, g: 0.10196079, b: 0.9019608, a: 0.8862745}
+    - _GlowColor: {r: 4.131186, g: 0, b: 3.892851, a: 0.77254903}
+    - _MiddleColor: {r: 1.2, g: 0.35183245, b: 0.7807687, a: 0.94509804}
+    - _TopColor: {r: 6.4, g: 2.8146598, b: 6.1186194, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
