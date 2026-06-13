@@ -26,6 +26,7 @@ public class ActionPressureButton : BasePressureButton
     // Variables para manejar el material instanciado
     private Material _instancedMaterial;
     private int _shaderPropertyID;
+    private FocusOnActivation focus => GetComponent<FocusOnActivation>();
 
     private void Start()
     {
@@ -44,6 +45,8 @@ public class ActionPressureButton : BasePressureButton
     protected override void OnPress()
     {
         base.OnPress(); 
+        
+        if(focus != null) focus.Activate();
         
         if ((isOneShot && hasBeenActivated) || isOnCooldown) return;
 
