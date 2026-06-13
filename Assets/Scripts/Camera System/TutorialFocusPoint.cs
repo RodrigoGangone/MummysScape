@@ -4,7 +4,6 @@ using UnityEngine;
 /// Datos de Tutorial: Estructura que almacena la configuración visual (posición, rotación, zoom) 
 /// y el contenido del mensaje para un punto de interés tutorial específico. 
 /// </summary>
-
 public class TutorialFocusPoint : MonoBehaviour
 {
     [Header("Identificador")] 

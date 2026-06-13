@@ -7,14 +7,16 @@ using Cinemachine;
 using static PauseUtils;
 
 /// <summary> 
-/// Orquestador de Foco: Sistema centralizado que gestiona colas de peticiones para dirigir la cámara hacia 
-/// objetivos, controlando parámetros de zoom, duración y mensajes de interfaz asociados. 
+/// Orquestador de Foco: Sistema centralizado que gestiona colas de peticiones para dirigir una 
+/// única Virtual Camera nativa hacia objetivos, controlando parámetros de zoom, duración y mensajes. 
 /// </summary>
 public class FocusManager : MonoBehaviour, IPausable
 {
     public static FocusManager Instance { get; private set; }
 
-    [SerializeField] private CinemachineVirtualCamera focusCam;
+    [Header("Cámara Nativa")]
+    [SerializeField, Tooltip("La Virtual Camera compartida para todos los focos.")] 
+    private CinemachineVirtualCamera focusCam;
     [SerializeField] private float bufferBetweenFocus = 0.5f;
 
     [Header("Tutorial Replay Cancel")]
@@ -39,7 +41,6 @@ public class FocusManager : MonoBehaviour, IPausable
         public string CancelText;
         public Color CancelColor;
         public Action OnCancelled;
-
         public Action OnComplete;
     }
 
@@ -224,6 +225,7 @@ public class FocusManager : MonoBehaviour, IPausable
             FocusRequest req = _pendingRequests[0];
             _pendingRequests.RemoveAt(0);
 
+            // Preparar la cámara antes de activarla
             focusCam.transform.position = req.Position;
 
             if (req.LookAt != null)
@@ -232,8 +234,10 @@ public class FocusManager : MonoBehaviour, IPausable
                 focusCam.transform.rotation = req.Rotation;
 
             focusCam.LookAt = req.LookAt;
-            focusCam.PreviousStateIsValid = false;
             focusCam.m_Lens.FieldOfView = originalFOV;
+            
+            // Truco para evitar tirones desde la posición del foco anterior
+            focusCam.PreviousStateIsValid = false;
             focusCam.Priority = 100;
 
             bool cancelled = false;
@@ -279,6 +283,7 @@ public class FocusManager : MonoBehaviour, IPausable
 
             if (cancelled)
             {
+                focusCam.Priority = 0;
                 req.OnCancelled?.Invoke();
                 continue;
             }
@@ -287,8 +292,7 @@ public class FocusManager : MonoBehaviour, IPausable
 
             if (!string.IsNullOrEmpty(req.Message))
             {
-                GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(ContextUIFactory.CustomMessage(req.Message, req.MessageColor)
-                );
+                GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(ContextUIFactory.CustomMessage(req.Message, req.MessageColor));
 
                 yield return WaitForSecondsPausable(req.MessageDuration, () => _paused);
 
@@ -298,6 +302,8 @@ public class FocusManager : MonoBehaviour, IPausable
             }
 
             req.OnComplete?.Invoke();
+
+            focusCam.Priority = 0; // Devolver a la cámara del jugador
 
             if (_pendingRequests.Count > 0)
                 yield return WaitForSecondsPausable(bufferBetweenFocus, () => _paused);
@@ -311,7 +317,11 @@ public class FocusManager : MonoBehaviour, IPausable
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, false);
     }
 
-    public void OnPauseChanged(bool paused) => _paused = paused;
+    public void OnPauseChanged(bool paused) 
+    {
+        _paused = paused;
+        CinemachineCore.UniformDeltaTimeOverride = paused ? 0f : -1f;
+    }
 
     private void OnEnable() =>
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
