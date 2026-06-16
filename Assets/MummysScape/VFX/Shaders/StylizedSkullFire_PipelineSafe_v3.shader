@@ -9,33 +9,33 @@ Shader "MummysScape/VFX/Stylized Skull Fire Pipeline Safe v6"
         [HDR]_TopColor ("Top Color", Color) = (0.90, 1.60, 0.70, 1.0)
         [HDR]_GlowColor ("Glow Color", Color) = (0.05, 0.70, 0.18, 1.0)
 
-        _GlobalBrightness ("Global Brightness", Range(0, 8)) = 1.8
-        _Alpha ("Alpha", Range(0, 1)) = 0.92
-        _AlphaClip ("Alpha Clip", Range(0, 0.25)) = 0.01
+        _GlobalBrightness ("Global Brightness", Range(0, 8)) = 3.5
+        _Alpha ("Alpha", Range(0, 1)) = 0.02
+        _AlphaClip ("Alpha Clip", Range(0, 0.25)) = 0.0
 
         _ObjectBottomY ("Object Bottom Y", Float) = -0.5
         _ObjectTopY ("Object Top Y", Float) = 0.5
 
-        _Speed ("Speed", Range(0, 4)) = 1.2
-        _MaskTilingX ("Mask Tiling X", Range(1, 12)) = 4.2
-        _MaskStretchY ("Mask Stretch Y", Range(0.5, 5)) = 2.15
-        _DistortStrength ("Distort Strength", Range(0, 1)) = 0.20
+        _Speed ("Speed", Range(0, 4)) = 1.0
+        _MaskTilingX ("Mask Tiling X", Range(1, 12)) = 3.0
+        _MaskStretchY ("Mask Stretch Y", Range(0.5, 5)) = 1.0
+        _DistortStrength ("Distort Strength", Range(0, 1)) = 0.25
         _DistortScale ("Distort Scale", Range(0.5, 8)) = 3.4
         _SwayStrength ("Sway Strength", Range(0, 1)) = 0.09
 
-        _PrimaryContribution ("Primary Contribution", Range(0, 1)) = 1.0
+        _PrimaryContribution ("Primary Contribution", Range(0, 1)) = 0.8
         _SecondaryContribution ("Secondary Contribution", Range(0, 1)) = 0.60
         _ThirdContribution ("Third Contribution", Range(0, 1)) = 0.35
 
         _BaseHeight ("Base Height", Range(0.01, 0.6)) = 0.24
         _BaseSoftness ("Base Softness", Range(0.01, 0.6)) = 0.28
-        _BaseStrength ("Base Strength", Range(0, 1)) = 0.60
+        _BaseStrength ("Base Strength", Range(0, 1)) = 1.0
         _BaseFlameDetail ("Base Flame Detail", Range(0, 8)) = 2.0
         _BaseTransparency ("Base Transparency", Range(0, 1)) = 0.70
 
         _FadeStart ("Fade Start", Range(0, 1.2)) = 0.56
-        _FadeEnd ("Fade End", Range(0, 1.4)) = 0.96
-        _FadePower ("Fade Power", Range(0.5, 4)) = 1.35
+        _FadeEnd ("Fade End", Range(0, 1.4)) = 0.9
+        _FadePower ("Fade Power", Range(0.5, 4)) = 1.63
         _TopTaper ("Top Taper", Range(0, 1)) = 0.42
 
         _CoreFill ("Core Fill", Range(0, 1)) = 0.36
@@ -51,7 +51,7 @@ Shader "MummysScape/VFX/Stylized Skull Fire Pipeline Safe v6"
 
         _BottomEmission ("Bottom Emission", Range(0, 8)) = 1.2
         _MiddleEmission ("Middle Emission", Range(0, 8)) = 2.0
-        _TopEmission ("Top Emission", Range(0, 8)) = 3.0
+        _TopEmission ("Top Emission", Range(0, 8)) = 5.0
 
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 0
     }
