@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections;
-using UnityEngine.Rendering.Universal; // Necesario para acceder al DecalProjector
+using UnityEngine.Rendering.Universal;
 
 public class ActionPressureButton : BasePressureButton
 {
@@ -16,12 +16,12 @@ public class ActionPressureButton : BasePressureButton
 
     public UnityEngine.Events.UnityEvent OnActivated;
     public UnityEngine.Events.UnityEvent OnDeactivated;
+    public UnityEngine.Events.UnityEvent OnFailedActivate;
 
     private bool hasBeenActivated;
     
     private Coroutine releaseTimerCoroutine;
 
-    // Variables para manejar el material instanciado
     private Material _instancedMaterial;
     private int _shaderPropertyID;
     private FocusOnActivation focus => GetComponent<FocusOnActivation>();
@@ -30,7 +30,6 @@ public class ActionPressureButton : BasePressureButton
     {
         _shaderPropertyID = Shader.PropertyToID(shaderPropertyName);
         
-        // Si tenemos asignado el Decal, le creamos una instancia única de su material
         if (runesDecal != null && runesDecal.material != null)
         {
             _instancedMaterial = new Material(runesDecal.material);
@@ -66,9 +65,15 @@ public class ActionPressureButton : BasePressureButton
 
     protected override void OnRelease()
     {
+        // Esto subirá el botón físicamente (animación base), lo cual es correcto
+        // porque la momia (aunque sea la incorrecta) se bajó del botón.
         base.OnRelease(); 
         
         if (isOneShot) return;
+
+        // SOLUCIÓN: Si el botón nunca se activó con éxito (ej. venimos de un estado Failed),
+        // abortamos la lógica de desactivación/timer para que no se pisen.
+        if (!hasBeenActivated) return;
 
         if (useTimer)
         {
@@ -79,6 +84,16 @@ public class ActionPressureButton : BasePressureButton
         {
             Deactivate();
         }
+    }
+
+    protected override void OnFailedPress()
+    {
+        // IMPORTANTE: Lo tenías comentado. Si quieres que el Animator en la clase base
+        // ejecute _animator.SetTrigger("Failed"), necesitas descomentar esta línea.
+        //base.OnFailedPress(); 
+        if (hasBeenActivated) return;
+        
+        OnFailed();
     }
 
     private IEnumerator TimerRoutine()
@@ -104,9 +119,13 @@ public class ActionPressureButton : BasePressureButton
         OnDeactivated.Invoke();
     }
 
+    private void OnFailed()
+    {
+        OnFailedActivate.Invoke();
+    }
+    
     private void UpdateRuneVisual(float value)
     {
-        // Modificamos directamente el material instanciado
         if (_instancedMaterial != null)
         {
             _instancedMaterial.SetFloat(_shaderPropertyID, value);
@@ -115,7 +134,6 @@ public class ActionPressureButton : BasePressureButton
 
     private void OnDestroy()
     {
-        // Es vital destruir el material clonado al destruir el objeto para liberar la memoria
         if (_instancedMaterial != null)
         {
             Destroy(_instancedMaterial);

@@ -16027,7 +16027,7 @@ MonoBehaviour:
   detectionLayer:
     serializedVersion: 2
     m_Bits: 256
-  boxSize: {x: 1, y: 0.2, z: 1}
+  boxSize: {x: 0.5, y: 0.2, z: 0.5}
   checkDistance: 0
   timer: 5
   isOneShot: 0
@@ -16079,6 +16079,33 @@ MonoBehaviour:
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Spears, Assembly-CSharp
         m_MethodName: Up
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnFailedActivate:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: Spears, Assembly-CSharp
+        m_MethodName: Failed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: Spears, Assembly-CSharp
+        m_MethodName: Failed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
