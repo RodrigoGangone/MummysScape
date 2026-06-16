@@ -18,10 +18,8 @@ public class ActionPressureButton : BasePressureButton
     public UnityEngine.Events.UnityEvent OnDeactivated;
 
     private bool hasBeenActivated;
-    private bool isOnCooldown; 
     
     private Coroutine releaseTimerCoroutine;
-    private Coroutine cooldownCoroutine;
 
     // Variables para manejar el material instanciado
     private Material _instancedMaterial;
@@ -48,7 +46,7 @@ public class ActionPressureButton : BasePressureButton
         
         if(focus != null) focus.Activate();
         
-        if ((isOneShot && hasBeenActivated) || isOnCooldown) return;
+        if ((isOneShot && hasBeenActivated)) return;
 
         if (releaseTimerCoroutine != null)
         {
@@ -70,7 +68,7 @@ public class ActionPressureButton : BasePressureButton
     {
         base.OnRelease(); 
         
-        if (isOneShot || isOnCooldown) return;
+        if (isOneShot) return;
 
         if (useTimer)
         {
@@ -104,27 +102,6 @@ public class ActionPressureButton : BasePressureButton
     {
         hasBeenActivated = false;
         OnDeactivated.Invoke();
-
-        if (cooldownCoroutine != null) StopCoroutine(cooldownCoroutine);
-        cooldownCoroutine = StartCoroutine(CooldownRoutine());
-    }
-
-    private IEnumerator CooldownRoutine()
-    {
-        isOnCooldown = true;
-        float elapsedTime = 0f;
-
-        while (elapsedTime < timer)
-        {
-            elapsedTime += Time.deltaTime;
-            float fillValue = Mathf.Lerp(1f, 0f, elapsedTime / timer);
-            UpdateRuneVisual(fillValue);
-            
-            yield return null;
-        }
-
-        UpdateRuneVisual(0f);
-        isOnCooldown = false; 
     }
 
     private void UpdateRuneVisual(float value)
