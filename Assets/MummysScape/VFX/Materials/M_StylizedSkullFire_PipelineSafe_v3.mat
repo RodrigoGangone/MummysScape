@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_StylizedSkullFire_PipelineSafe_v3
+  m_Shader: {fileID: 4800000, guid: 7f0d8e831f0448bca1bb46b93431ff31, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _FlameMaskTex:
+        m_Texture: {fileID: 2800000, guid: 37b9048b5f9747509f32f7090f88df4c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Alpha: 0.02
+    - _AlphaClip: 0
+    - _BaseFlameDetail: 2
+    - _BaseHeight: 0.24
+    - _BaseSoftness: 0.28
+    - _BaseStrength: 1
+    - _BaseTransparency: 0.7
+    - _BottomEmission: 1.2
+    - _CoreFill: 0.36
+    - _Cull: 2
+    - _DistortScale: 3.4
+    - _DistortStrength: 0.25
+    - _FadeEnd: 0.9
+    - _FadePower: 1.63
+    - _FadeStart: 0.56
+    - _GlobalBrightness: 3.5
+    - _InnerNoiseContribution: 0.22
+    - _MaskStretchY: 1
+    - _MaskTilingX: 3
+    - _MiddleEmission: 2
+    - _ObjectBottomY: -0.5
+    - _ObjectTopY: 0.5
+    - _PrimaryContribution: 0.8
+    - _RimPower: 2
+    - _RimStrength: 0.72
+    - _SecondaryContribution: 0.6
+    - _Speed: 1
+    - _SwayStrength: 0.09
+    - _ThirdContribution: 0.35
+    - _TopEmission: 5
+    - _TopTaper: 0.42
+    - _VertexDisplacement: 0.04
+    - _XZMotionStrength: 0.035
+    - _XZNoiseScale: 2.6
+    - _XZNoiseSpeed: 1.1
+    m_Colors:
+    - _BottomColor: {r: 1.6817185, g: 0.20392159, b: 1.8039216, a: 0.8862745}
+    - _GlowColor: {r: 4.2370954, g: 0, b: 3.9926505, a: 0.77254903}
+    - _MiddleColor: {r: 1.4980392, g: 0.43921566, b: 0.9746851, a: 0.94509804}
+    - _TopColor: {r: 11.984314, g: 5.2705884, b: 11.457415, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
