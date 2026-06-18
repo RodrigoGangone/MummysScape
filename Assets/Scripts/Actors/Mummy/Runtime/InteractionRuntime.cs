@@ -36,7 +36,8 @@ public sealed class InteractionRuntime : MonoBehaviour
     private LayerMask _aimCollisionMask = ~0;
 
     [SerializeField] private Transform _shootOriginTransform;
-    [SerializeField, Range(0, 30)] private float _aimMaxDistance;
+    [SerializeField, Range(1, 30)] private float _aimMaxDistance;
+    [SerializeField, Range(0, 5)] private float _aimMinDistance;
     [SerializeField, Range(-5, 5)] private float _maxAimHeight;
     [SerializeField, Range(0, 30)] private float _arcHeight;
     [SerializeField, Range(0.01f, 0.5f)] private float _arcRadius = 0.1f;
@@ -55,6 +56,7 @@ public sealed class InteractionRuntime : MonoBehaviour
     public float AttractSpeedBase => _attractSpeedBase;
     public Transform ShootOrigin => _shootOriginTransform;
     public float AimMaxDistance => _aimMaxDistance;
+    public float AimMinDistance => _aimMinDistance;
     public float AimMaxHeight => _maxAimHeight;
     public bool IsAimValid { get; private set; }
 
@@ -202,95 +204,120 @@ public sealed class InteractionRuntime : MonoBehaviour
     /// Calcula una trayectoria parabólica basada en la posición del cursor, simulando el arco 
     /// paso a paso para detectar el punto exacto de impacto mediante SphereCast. 
     /// </summary>
-    public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3 hitPoint, out Vector3 hitNormal)
+public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3 hitPoint, out Vector3 hitNormal)
+{
+    hitPoint = default;
+    hitNormal = Vector3.up;
+    SimpleShootData.Path = null;
+
+    // El arco y la distancia SIEMPRE nacen desde el jugador/arma
+    Vector3 origin = _shootOriginTransform != null
+        ? _shootOriginTransform.position
+        : playertf.position + Vector3.up * 1.0f;
+        
+    Ray ray = Camera.main.ScreenPointToRay(aimScreenPosition);
+    Vector3 desired =
+        Physics.Raycast(ray, out RaycastHit camHit, 200f, _aimCollisionMask, QueryTriggerInteraction.Ignore)
+            ? camHit.point
+            : ray.GetPoint(50f);
+
+    Vector3 toDesired = desired - origin;
+    Vector3 dirXZ = new Vector3(toDesired.x, 0f, toDesired.z);
+    float rawDistXZ = dirXZ.magnitude;
+    
+    // Si el raycast choca con el propio jugador al iniciar, forzamos la dirección hacia adelante
+    if (rawDistXZ < 0.5f) 
     {
-        hitPoint = default;
-        hitNormal = Vector3.up;
-        SimpleShootData.Path = null;
-
-        Vector3 start = _shootOriginTransform != null
-            ? _shootOriginTransform.position
-            : playertf.position + Vector3.up * 1.0f;
-        Ray ray = Camera.main.ScreenPointToRay(aimScreenPosition);
-        Vector3 desired =
-            Physics.Raycast(ray, out RaycastHit camHit, 200f, _aimCollisionMask, QueryTriggerInteraction.Ignore)
-                ? camHit.point
-                : ray.GetPoint(50f);
-
-        Vector3 toDesired = desired - start;
-        Vector3 dirXZ = new Vector3(toDesired.x, 0f, toDesired.z);
-        float distXZ = dirXZ.magnitude;
-        if (distXZ > 1e-3f) dirXZ.Normalize();
-        else dirXZ = playertf.forward;
-
-        bool isValid = true;
-
-        if (distXZ > _aimMaxDistance)
-            isValid = false;
-
-        if (toDesired.y > _maxAimHeight)
-            isValid = false;
-
-        float L = distXZ;
-        float height = toDesired.y;
-        int steps = Mathf.Max(6, _simMaxSteps);
-        var points = new List<Vector3>(steps + 1);
-        Vector3 prev = start;
-        points.Add(prev);
-        float maxWorldHeight = start.y + _maxAimHeight;
-        bool collisionFound = false;
-
-        for (int i = 1; i <= steps; i++)
-        {
-            float s = i / (float)steps;
-            Vector3 flat = start + dirXZ * (L * s);
-            float y = Mathf.Lerp(0f, height, s) + 4f * _arcHeight * s * (1f - s);
-            Vector3 p = new Vector3(flat.x, start.y + y, flat.z);
-
-            if (p.y > maxWorldHeight) isValid = false;
-
-            Vector3 dir = p - prev;
-            float dist = dir.magnitude;
-            if (dist > 0.001f)
-            {
-                if (Physics.SphereCast(prev, _arcRadius, dir, out RaycastHit h, dist, _aimCollisionMask,
-                        QueryTriggerInteraction.Ignore))
-                {
-                    Vector3 hitVector = h.point - start;
-                    float hitDistXZ = new Vector3(hitVector.x, 0f, hitVector.z).magnitude;
-                    if (hitDistXZ > _aimMaxDistance) isValid = false;
-
-                    hitPoint = h.point;
-                    hitNormal = h.normal;
-                    points.Add(hitPoint);
-                    collisionFound = true;
-                    break;
-                }
-            }
-
-            points.Add(p);
-            prev = p;
-        }
-
-        SimpleShootData.Path = points;
-
-        if (SimpleShootData.Path == null || SimpleShootData.Path.Count < 2)
-        {
-            SimpleShootData.Path = new List<Vector3> { start, start + playertf.forward * 0.1f };
-        }
-
-        if (!collisionFound)
-        {
-            if (distXZ > _aimMaxDistance) isValid = false;
-            hitPoint = points[points.Count - 1];
-        }
-
-        IsAimValid = isValid;
-
-        return isValid;
+        dirXZ = playertf.forward;
     }
-    // -------------------- QuickTravel --------------------
+    else 
+    {
+        dirXZ.Normalize();
+    }
 
+    // --- NUEVO: Cálculo del Punto Final ---
+    // Empujamos el OBJETIVO hacia adelante. Si rawDistXZ es menor que la dona, 
+    // lo forzamos a ser la distancia mínima + 0.1f de offset.
+    float targetDistXZ = Mathf.Max(rawDistXZ, _aimMinDistance + 0.1f);
+
+    bool isValid = true;
+
+    // Solo invalidamos si se pasa de la distancia máxima
+    if (targetDistXZ > _aimMaxDistance)
+        isValid = false;
+
+    if (toDesired.y > _maxAimHeight)
+        isValid = false;
+
+    // El largo total del arco ahora es nuestro targetDistXZ empujado
+    float L = targetDistXZ; 
+    float height = toDesired.y; 
+    
+    int steps = Mathf.Max(6, _simMaxSteps);
+    var points = new List<Vector3>(steps + 1);
+    
+    // El arco VUELVE a iniciar desde el origen (el jugador)
+    Vector3 prev = origin;
+    points.Add(prev);
+    
+    float maxWorldHeight = origin.y + _maxAimHeight;
+    bool collisionFound = false;
+
+    for (int i = 1; i <= steps; i++)
+    {
+        float s = i / (float)steps;
+        
+        // Calculamos la parábola normal desde el jugador hasta el targetDistXZ
+        Vector3 flat = origin + dirXZ * (L * s);
+        float y = Mathf.Lerp(0f, height, s) + 4f * _arcHeight * s * (1f - s);
+        Vector3 p = new Vector3(flat.x, origin.y + y, flat.z);
+
+        if (p.y > maxWorldHeight) isValid = false;
+
+        Vector3 dir = p - prev;
+        float dist = dir.magnitude;
+        if (dist > 0.001f)
+        {
+            if (Physics.SphereCast(prev, _arcRadius, dir, out RaycastHit h, dist, _aimCollisionMask, QueryTriggerInteraction.Ignore))
+            {
+                Vector3 hitVector = h.point - origin;
+                float hitDistXZ = new Vector3(hitVector.x, 0f, hitVector.z).magnitude;
+                
+                // Si la parábola choca con algo (como una pared) DENTRO de la zona mínima, es inválido (rojo)
+                if (hitDistXZ > _aimMaxDistance || hitDistXZ < _aimMinDistance) 
+                    isValid = false;
+
+                hitPoint = h.point;
+                hitNormal = h.normal;
+                points.Add(hitPoint);
+                collisionFound = true;
+                break;
+            }
+        }
+
+        points.Add(p);
+        prev = p;
+    }
+
+    SimpleShootData.Path = points;
+
+    if (SimpleShootData.Path == null || SimpleShootData.Path.Count < 2)
+    {
+        SimpleShootData.Path = new List<Vector3> { origin, origin + dirXZ * 0.1f };
+    }
+
+    if (!collisionFound)
+    {
+        if (targetDistXZ > _aimMaxDistance) 
+            isValid = false;
+            
+        hitPoint = points[points.Count - 1];
+    }
+
+    IsAimValid = isValid;
+
+    return isValid;
+}
     /// <summary> 
     /// Localiza el componente de transporte (HippoTravel) más cercano al jugador dentro de 
     /// un radio de búsqueda reducido. 

@@ -10,13 +10,14 @@ public interface IPlayerInput
     Vector2 Move { get; }
     Vector2 AimMove { get; }
 
-    // OnPress (Eventos de un solo frame)
-    bool ConsumeAimHeld();
-    bool ConsumeShootDown();
+    bool ConsumeAimDown();
+    bool ConsumeAimUp();
+
     bool ConsumeDropDown();
     bool ConsumeSpaceDown();
-    
-    // Hold (Estado continuo)
+
+    bool ConsumeCancelAim();
+
     bool IsSpaceHeld();
     bool IsAimHeld();
 }

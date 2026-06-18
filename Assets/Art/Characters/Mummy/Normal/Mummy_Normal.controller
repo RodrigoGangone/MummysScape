@@ -144,9 +144,9 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0
+  m_TransitionDuration: 0.25
   m_TransitionOffset: 0
-  m_ExitTime: 0
+  m_ExitTime: 0.9
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
@@ -511,10 +511,10 @@ AnimatorStateMachine:
     m_Position: {x: 800, y: 260, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 782758512290825971}
-    m_Position: {x: 660, y: -110, z: 0}
+    m_Position: {x: 700, y: -100, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -8281844387714097823}
-    m_Position: {x: 620, y: 50, z: 0}
+    m_Position: {x: 640, y: 90, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -5487158036099661323}
     m_Position: {x: 70, y: 350, z: 0}
@@ -753,7 +753,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   eventName: Shoot
-  triggerTime: 0.961
+  triggerTime: 0.9
 --- !u!1102 &-513090550742965500
 AnimatorState:
   serializedVersion: 6
@@ -992,9 +992,9 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0
+  m_TransitionDuration: 0.25
   m_TransitionOffset: 0
-  m_ExitTime: 0
+  m_ExitTime: 0.9
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0

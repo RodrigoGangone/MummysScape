@@ -59,6 +59,7 @@ public sealed class PlayerContext
 
     public float AttractSpeedBase => _interactions ? _interactions.AttractSpeedBase : 1f;
     public float AimMaxDistance => _interactions.AimMaxDistance;
+    public float AimMinDistance => _interactions.AimMinDistance;
     public float AimMaxHeight => _interactions.AimMaxHeight;
     public float SmashRange => _interactions.smashRange;
     public LayerMask SmashLayer => _interactions.smashLayer;

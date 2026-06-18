@@ -8,19 +8,29 @@ using UnityEngine;
 public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
 {
     private bool _aimDown, _shootDown, _dropDown, _spaceDown;
-    private float _lastAimRt; 
+
+    private bool _aimUp;
     
+    private bool _cancelAim;
+
+    private float _lastAimRt;    
     private void Update()
     {
-        float aimRt = Input.GetAxis("AimRT"); 
+        float aimRt = Input.GetAxis("AimRT");
 
-        bool mouseAimDown = Input.GetMouseButtonDown(1);
-        bool triggerAimDown = aimRt > 0.5f && _lastAimRt <= 0.5f;
+        bool currentAim = aimRt > 0.5f;
+        bool previousAim = _lastAimRt > 0.5f;
 
-        if (mouseAimDown || triggerAimDown)
+        if (currentAim && !previousAim)
             _aimDown = true;
-            
+
+        if (!currentAim && previousAim)
+            _aimUp = true;
+
         _lastAimRt = aimRt;
+
+        if (Input.GetButtonDown("Space")) // A del joystick
+            _cancelAim = true;
         
         if (Input.GetMouseButtonDown(0) || Input.GetButtonDown("Shoot"))     
             _shootDown = true;
@@ -37,8 +47,26 @@ public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
     public Vector2 Move => new(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
     public Vector2 AimMove { get; private set; } 
 
-    public bool ConsumeAimHeld()     { var v = _aimDown;    _aimDown  = false; return v; }
-    public bool ConsumeShootDown()   { var v = _shootDown;  _shootDown  = false; return v; }
+public bool ConsumeAimDown()
+{
+    bool v = _aimDown;
+    _aimDown = false;
+    return v;
+}
+
+public bool ConsumeAimUp()
+{
+    bool v = _aimUp;
+    _aimUp = false;
+    return v;
+}
+
+public bool ConsumeCancelAim()
+{
+    bool v = _cancelAim;
+    _cancelAim = false;
+    return v;
+}    public bool ConsumeShootDown()   { var v = _shootDown;  _shootDown  = false; return v; }
     public bool ConsumeDropDown()    { var v = _dropDown;   _dropDown  = false; return v; }
     public bool ConsumeSpaceDown()   { var v = _spaceDown;  _spaceDown  = false; return v; }
     
