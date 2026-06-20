@@ -101,38 +101,46 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
             if (CanEnter(Smash) && _sm.ChangeState(Smash)) return;
         }
 
+// --- LÓGICA DE APUNTADO Y DISPARO (MODIFICADA) ---
         if (!_input.IsAimHeld())
         {
             _aimCanceledLock = false;
         }
 
-        // 2. Si presionamos cancelar MIENTRAS estamos apuntando.
-        if (_input.ConsumeCancelAim() && _sm.IsCurrent(Aim))
+        // Condicional principal: Solo procesamos apuntado/disparo si la habilidad Aim está desbloqueada
+        if (CanEnter(Aim))
         {
-            _aimCanceledLock = true; // Ponemos el candado para ignorar el gatillo
-            _sm.ChangeState(Idle);
-            return;
-        }
-
-        // 3. Mientras mantiene RT (solo entramos si NO está bloqueado por el candado)
-        if (_input.IsAimHeld() && !_aimCanceledLock)
-        {
-            if (!_sm.IsCurrent(Aim))
-                _sm.ChangeState(Aim);
-            return;
-        }
-
-        // 4. Soltó RT (Disparo)
-        if (_input.ConsumeAimUp())
-        {
-            // CRÍTICO: Solo disparamos si actualmente estamos en el estado Aim.
-            // Si el jugador canceló, la máquina estará en Idle o Walk, por lo 
-            // que al soltar el gatillo ignorará el disparo silenciosamente.
-            if (_sm.IsCurrent(Aim) && _ctx.IsAimValid && CanEnter(Shoot))
+            // 2. Si presionamos cancelar MIENTRAS estamos apuntando.
+            if (_input.ConsumeCancelAim() && _sm.IsCurrent(Aim))
             {
-                _sm.ChangeState(Shoot);
+                _aimCanceledLock = true; 
+                _sm.ChangeState(Idle);
                 return;
             }
+
+            // 3. Mientras mantiene RT (solo entramos si NO está bloqueado por el candado)
+            if (_input.IsAimHeld() && !_aimCanceledLock)
+            {
+                if (!_sm.IsCurrent(Aim))
+                    _sm.ChangeState(Aim);
+                return;
+            }
+
+            // 4. Soltó RT (Disparo) - Ya no requiere CanEnter(Shoot) por separado si dependen de la misma skill
+            if (_input.ConsumeAimUp())
+            {
+                if (_sm.IsCurrent(Aim) && _ctx.IsAimValid)
+                {
+                    _sm.ChangeState(Shoot);
+                    return;
+                }
+            }
+        }
+        else
+        {
+            // Opcional: Consumir inputs por limpieza si la habilidad está bloqueada
+            if (_input.IsAimHeld()) _input.ConsumeCancelAim(); 
+            _input.ConsumeAimUp();
         }
 
         if (_input.ConsumeDropDown() && CanEnter(DropBandage))

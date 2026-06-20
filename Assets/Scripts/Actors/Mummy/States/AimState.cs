@@ -78,9 +78,9 @@ public class AimState : State, IBandageRestrictor
         );
     }
 
-    public override void OnUpdate() { }
+    public override void OnFixedUpdate() { }
 
-    public override void OnFixedUpdate()
+    public override void OnUpdate()
     {
         // Posicionar el proyector de rango (el círculo en el suelo)
         if (_rangeIndicator != null && _rangeIndicator.gameObject.activeSelf)
