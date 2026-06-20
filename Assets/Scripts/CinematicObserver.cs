@@ -45,7 +45,7 @@ public class CinematicObserver : MonoBehaviour
         if (!Save.IsCinematicSeen(cinematicId))
             Save.MarkCinematicSeen(cinematicId);
 
-        Transition.FadeInAndLoadScene(1);
+        Transition.FadeInAndLoadScene(3);
     }
 
     private void ShowInteractionInput(bool value, ButtonType button)
