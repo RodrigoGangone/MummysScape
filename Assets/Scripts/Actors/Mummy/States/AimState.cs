@@ -49,8 +49,12 @@ public class AimState : State, IBandageRestrictor
         _ctx.View.Animator.SetBool(AIM, true);
 
         SimpleShootData.Path = null;
-        _aimScreenPos = new Vector2(Screen.width / 2, Screen.height / 2);
-        _lastMousePos = Input.mousePosition;
+        Vector3 worldPoint =
+            _ctx.Tf.position +
+            _ctx.Tf.forward * _ctx.AimMinDistance;
+
+        _aimScreenPos =
+            Camera.main.WorldToScreenPoint(worldPoint);        _lastMousePos = Input.mousePosition;
         _canRotateByAim = false;
 
         if (_arcRenderer != null)
