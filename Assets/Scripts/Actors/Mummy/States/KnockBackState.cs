@@ -2,9 +2,9 @@ using UnityEngine;
 
 /// <summary> 
 /// Estado de Retroceso: Desplaza al jugador por una curva Bézier al recibir daño, forzando la expulsión 
-/// de vendas del stock como un efecto visual de "drop" por impacto. 
+/// de vendas del stock como un efecto visual de "drop" por impacto.
+/// Detecta colisiones contra cualquier objeto (excepto el propio jugador y triggers) en la trayectoria.
 /// </summary>
-
 public class KnockBackState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
@@ -13,6 +13,8 @@ public class KnockBackState : State, IBandageRestrictor
     private Vector3 _start, _end, _control;
     private float _duration, _timer;
     private bool _isActive;
+
+    private readonly float _playerRadius = 0.4f; 
 
     public bool isActive => _isActive;
     
@@ -51,7 +53,6 @@ public class KnockBackState : State, IBandageRestrictor
                 Vector3 spawnPos = spawnOrigin + randomOffset;
 
                 GameObject bandage = Object.Instantiate(_bandagePrefab, spawnPos, Random.rotation);
-
                 bandage.GetComponent<Bandage>().SetupPickupDelay();
                 
                 if (bandage.TryGetComponent<Rigidbody>(out var rb))
@@ -62,6 +63,7 @@ public class KnockBackState : State, IBandageRestrictor
                 }
             }
         }
+        
         _start = _ctx.Tf.position;
         _end = data.TargetPosition; 
         _duration = data.Duration;
@@ -83,12 +85,29 @@ public class KnockBackState : State, IBandageRestrictor
     {
         if (!_isActive) return;
 
-        _timer += Time.deltaTime;
-        float t = Mathf.Clamp01(_timer / _duration);
-
+        float nextTimer = _timer + Time.deltaTime;
+        float t = Mathf.Clamp01(nextTimer / _duration);
         float u = 1f - t;
-        Vector3 pos = (u * u * _start) + (2f * u * t * _control) + (t * t * _end);
-        _ctx.Tf.position = pos;
+        
+        Vector3 nextPos = (u * u * _start) + (2f * u * t * _control) + (t * t * _end);
+
+        // 2. Calculamos la dirección y distancia de este paso
+        Vector3 direction = nextPos - _ctx.Tf.position;
+        float distance = direction.magnitude;
+
+        int layerMask = ~(1 << _ctx.Tf.gameObject.layer);
+
+        if (distance > 0f && Physics.SphereCast(_ctx.Tf.position, _playerRadius, direction.normalized, out RaycastHit hit, distance, layerMask, QueryTriggerInteraction.Ignore))
+        {
+            _ctx.Tf.position = hit.point + (hit.normal * _playerRadius);
+            
+            _ctx.Observer.ConsumeKnockback();
+            _isActive = false;
+            return;
+        }
+
+        _timer = nextTimer;
+        _ctx.Tf.position = nextPos;
 
         if (t >= 1f) 
         {
@@ -107,10 +126,9 @@ public class KnockBackState : State, IBandageRestrictor
         }
 
         _ctx.Rb.isKinematic = false;
-        _ctx.Rb.linearVelocity = Vector3.zero;
+        _ctx.Rb.linearVelocity = Vector3.zero; 
         _isActive = false;
         
         _ctx.View._koFX.Stop();
-
     }
 }

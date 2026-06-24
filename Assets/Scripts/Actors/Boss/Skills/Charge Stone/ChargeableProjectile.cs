@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections;
 using UnityEngine;
 using static PauseUtils;
@@ -46,7 +47,7 @@ public class ChargeableProjectile : MonoBehaviour, IPausable, IImpactSource
         if (_hasImpacted) return new KnockbackData();
 
         // Elevamos el punto de destino 1 metro para evitar el suelo
-        Vector3 targetPoint = victimPosition + Vector3.up * 1.0f; 
+        Vector3 targetPoint = victimPosition + Vector3.up * 1.0f;
 
         if (Physics.Linecast(transform.position, targetPoint, wallMask))
         {
@@ -103,6 +104,11 @@ public class ChargeableProjectile : MonoBehaviour, IPausable, IImpactSource
         if (Physics.SphereCast(_lastPos, hitRadius, _direction, out RaycastHit hitInfo, distance, wallMask,
                 QueryTriggerInteraction.Ignore))
         {
+            var possibleWall = hitInfo.transform.gameObject.GetComponent<DestroyWall?>();
+
+            if (possibleWall != null)
+                possibleWall.Activate(hitInfo.point, _direction);
+            
             transform.position = hitInfo.point;
             BeginImpactSequence();
             return;
