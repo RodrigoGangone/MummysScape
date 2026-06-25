@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6548241575727104427}
   - component: {fileID: 6951255228241343118}
   - component: {fileID: 2622241093011729055}
-  m_Layer: 0
+  m_Layer: 23
   m_Name: Dust
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -48,7 +48,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
@@ -5212,6 +5212,22 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+  - eventName: FailedDust
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6951255228241343118}
+          m_TargetAssemblyTypeName: UnityEngine.ParticleSystem, UnityEngine
+          m_MethodName: Play
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &3132467924023716761
 GameObject:
   m_ObjectHideFlags: 0
@@ -5223,7 +5239,7 @@ GameObject:
   - component: {fileID: 3463680622732849745}
   - component: {fileID: 2334929582971830371}
   - component: {fileID: 830326214376203729}
-  m_Layer: 0
+  m_Layer: 23
   m_Name: Puff
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5260,7 +5276,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
@@ -10291,7 +10307,7 @@ GameObject:
   - component: {fileID: 1346278736573754983}
   - component: {fileID: 5021117143487697591}
   - component: {fileID: 321314684755774527}
-  m_Layer: 0
+  m_Layer: 23
   m_Name: Smoke
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10328,7 +10344,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
@@ -16039,7 +16055,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Spears, Assembly-CSharp
-        m_MethodName: Down
+        m_MethodName: Interact
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -16051,7 +16067,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Spears, Assembly-CSharp
-        m_MethodName: Down
+        m_MethodName: Interact
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -16066,7 +16082,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Spears, Assembly-CSharp
-        m_MethodName: Up
+        m_MethodName: ReturnUp
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -16078,7 +16094,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Spears, Assembly-CSharp
-        m_MethodName: Up
+        m_MethodName: ReturnUp
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -16106,6 +16122,33 @@ MonoBehaviour:
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Spears, Assembly-CSharp
         m_MethodName: Failed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnFailedDeactivate:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: Spears, Assembly-CSharp
+        m_MethodName: ReturnUpFromFailed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: Spears, Assembly-CSharp
+        m_MethodName: ReturnUpFromFailed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -16144,6 +16187,22 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+  - eventName: FailedDust
+    OnAnimationEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6951255228241343118}
+          m_TargetAssemblyTypeName: UnityEngine.ParticleSystem, UnityEngine
+          m_MethodName: Play
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!114 &553738495388872641
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16159,7 +16218,7 @@ MonoBehaviour:
   cameraFocusPos: {fileID: 5422758863432447406}
   cameraFocusLookAt: {fileID: 0}
   focusDuration: 2
-  onlyOnce: 1
+  onlyOnce: 0
   zoomAmount: 3
   zoomCurve:
     serializedVersion: 2
@@ -16199,7 +16258,7 @@ GameObject:
   - component: {fileID: 6230330630313164446}
   - component: {fileID: 2086674931204355424}
   - component: {fileID: 3932812709582674384}
-  m_Layer: 0
+  m_Layer: 23
   m_Name: DustParticless
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -16239,7 +16298,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0

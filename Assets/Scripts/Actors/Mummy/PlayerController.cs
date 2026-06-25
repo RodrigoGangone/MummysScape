@@ -131,7 +131,7 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
 
         //_sm.enabled = !locked;
         
-        GetComponent<Collider>().enabled = !locked;
+        //GetComponent<Collider>().enabled = !locked;
     }
 
     private void OnEnable()

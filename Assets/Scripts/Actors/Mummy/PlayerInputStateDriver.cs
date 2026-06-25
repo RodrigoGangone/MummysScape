@@ -12,7 +12,7 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
     private PlayerContext _ctx;
     private IPlayerInput _input;
     private bool _paused, _locked;
-    private bool _aimCanceledLock; // NUEVO: Bloquea el reingreso a Aim
+    private bool _aimCanceledLock;
 
     public void Bind(PlayerContext ctx, StateMachinePlayer sm)
     {
