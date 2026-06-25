@@ -53,6 +53,20 @@ public class Spears : MonoBehaviour
     }
 
     /// <summary>
+    /// Vincular al evento OnFailedDeactivate del ActionPressureButton.
+    /// </summary>
+    public void ReturnUpFromFailed()
+    {
+        // Solo permitimos que suba si actualmente está a la mitad (Failed).
+        if (_currentState == SpearState.Failed)
+        {
+            _currentState = SpearState.Up;
+            _collider.enabled = true; // El collider ya estaba true, pero lo aseguramos
+            _animatorController.SetTrigger("Up");
+        }
+    }
+    
+    /// <summary>
     /// Vincular al evento OnDeactivated del ActionPressureButton.
     /// </summary>
     public void ReturnUp()

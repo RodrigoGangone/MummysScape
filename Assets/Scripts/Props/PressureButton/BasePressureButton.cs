@@ -1,10 +1,10 @@
 using System;
 using UnityEngine;
-using System.Linq;
+using static PauseUtils;
 using static Tags;
 using static PlayerEnum.PlayerSize;
 
-public abstract class BasePressureButton : MonoBehaviour
+public abstract class BasePressureButton : MonoBehaviour, IPausable
 {
     // 1. Definimos los estados posibles del botón
     protected enum ButtonState
@@ -23,6 +23,7 @@ public abstract class BasePressureButton : MonoBehaviour
 
     // 2. Reemplazamos el booleano por el estado actual
     protected ButtonState currentState = ButtonState.Empty;
+    protected bool _paused;
     private Animator _animator;
 
     private void Awake()
@@ -110,6 +111,13 @@ public abstract class BasePressureButton : MonoBehaviour
     {
         if (_animator != null) _animator.SetTrigger("Failed");
     }
+    
+    public void OnPauseChanged(bool paused)
+    {
+        _paused = paused;
+
+        if (_animator) _animator.enabled = !paused;
+    }
 
     private void OnDrawGizmos()
     {
@@ -118,5 +126,15 @@ public abstract class BasePressureButton : MonoBehaviour
             ? Color.green
             : (currentState == ButtonState.InvalidPress ? Color.yellow : Color.red);
         Gizmos.DrawWireCube(transform.position + Vector3.up * checkDistance, boxSize);
+    }
+    
+    private void OnEnable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    }
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
     }
 }

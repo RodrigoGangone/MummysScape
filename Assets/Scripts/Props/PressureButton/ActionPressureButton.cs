@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using static PauseUtils;
 using UnityEngine.Rendering.Universal;
 
 public class ActionPressureButton : BasePressureButton
@@ -20,10 +21,15 @@ public class ActionPressureButton : BasePressureButton
     public UnityEngine.Events.UnityEvent OnActivated;
     public UnityEngine.Events.UnityEvent OnDeactivated;
     public UnityEngine.Events.UnityEvent OnFailedActivate;
+    public UnityEngine.Events.UnityEvent OnFailedDeactivate;
 
     private bool hasBeenActivated;
     private Coroutine releaseTimerCoroutine;
-
+    
+    // Flags para controlar que el focus suceda una sola vez
+    private bool _hasFocusedOnSuccess;
+    private bool _hasFocusedOnFail;
+ 
     private Material _instancedMaterial;
     private int _shaderPropertyID;
     private FocusOnActivation focus => GetComponent<FocusOnActivation>();
@@ -45,7 +51,12 @@ public class ActionPressureButton : BasePressureButton
     {
         base.OnPress(); // El botón baja físicamente.
 
-        if (focus != null) focus.Activate();
+        // Validamos si hay focus y si NO lo hemos activado por éxito aún
+        if (focus != null && !_hasFocusedOnSuccess)
+        {
+            focus.Activate();
+            _hasFocusedOnSuccess = true; // Lo marcamos como usado
+        }
 
         if (isOneShot && hasBeenActivated) return;
 
@@ -74,7 +85,8 @@ public class ActionPressureButton : BasePressureButton
         // dejamos que se levante físicamente de forma normal y abortamos.
         if (!hasBeenActivated)
         {
-            base.OnRelease();
+            //base.OnRelease();
+            OnFailedDeactivate.Invoke(); 
             return;
         }
 
@@ -95,6 +107,14 @@ public class ActionPressureButton : BasePressureButton
     protected override void OnFailedPress()
     {
         if (hasBeenActivated) return;
+        
+        // Validamos si hay focus y si NO lo hemos activado por fallo aún
+        if (focus != null && !_hasFocusedOnFail)
+        {
+            focus.Activate();
+            _hasFocusedOnFail = true; // Lo marcamos como usado
+        }
+        
         OnFailed();
     }
 
@@ -108,7 +128,7 @@ public class ActionPressureButton : BasePressureButton
             float fillValue = Mathf.Clamp01(elapsedTime / timer);
             UpdateRuneVisual(fillValue);
 
-            yield return null;
+            yield return WaitWhilePaused(() => _paused);
         }
 
         UpdateRuneVisual(1f);

@@ -5,17 +5,19 @@ using UnityEngine;
 /// procesando ejes de movimiento, sticks de control y el estado de los botones de acción. 
 /// </summary>
 
-public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput
+public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput, IPausable, ILocked
 {
     private bool _aimDown, _shootDown, _dropDown, _spaceDown;
-
     private bool _aimUp;
-    
     private bool _cancelAim;
-
     private float _lastAimRt;    
+    
+    private bool _paused, _locked;
+
     private void Update()
     {
+        if (_paused || _locked) return;
+        
         float aimRt = Input.GetAxis("AimRT");
 
         bool currentAim = aimRt > 0.5f;
@@ -72,4 +74,19 @@ public bool ConsumeCancelAim()
     
     public bool IsSpaceHeld() => Input.GetKey(KeyCode.Space) || Input.GetButton("Space");
     public bool IsAimHeld() => Input.GetMouseButton(1) || Input.GetAxis("AimRT") > 0.5f;
+    
+    public void OnLockChanged(bool isLocked) => _locked = isLocked;
+    public void OnPauseChanged(bool paused) => _paused = paused;
+    
+    private void OnEnable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+        GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
+    }
+
+    private void OnDisable()
+    {
+        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+        GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
+    }
 }
