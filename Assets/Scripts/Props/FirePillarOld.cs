@@ -4,7 +4,7 @@ using UnityEngine;
 /// Emisor de Peligro: Script de control simple para activar o desactivar sistemas de partículas 
 /// de fuego, optimizando la emisión y limpieza de partículas en tiempo real. 
 /// </summary>
-public class FirePillar : MonoBehaviour
+public class FirePillarOld : MonoBehaviour
 {
     [Header("Settings")] [SerializeField] private bool playOnAwake = true;
 
