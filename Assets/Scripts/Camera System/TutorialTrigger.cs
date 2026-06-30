@@ -68,6 +68,10 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     {
         if (!other.CompareTag(PLAYER_TAG) || focusPoint == null) return;
 
+        // NUEVO: Bloqueamos la re-evaluación provocada por el SetColliderShape
+        // Si el tutorial ya arrancó, ignoramos este falso Enter.
+        if (_isPlaying) return;
+
         // SOLUCIÓN 1: Siempre habilitamos que pueda jugar el tutorial al entrar.
         _canPlayTutorial = true;
 
@@ -91,6 +95,10 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     {
         if (!other.CompareTag(PLAYER_TAG)) return;
 
+        // NUEVO: Evitamos que el resize apague las variables mientras 
+        // la cinemática se está reproduciendo y el jugador está quieto.
+        if (_isPlaying) return;
+
         _canPlayTutorial = false;
         _isPromptActive = false;
 
@@ -98,7 +106,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
             ContextUIFactory.Hidden()
         );
     }
-
     // SOLUCIÓN 3: Esperamos al final del frame para que el botón "Y" se suelte,
     // evitando que el FocusManager cancele el tutorial instantáneamente.
     private IEnumerator StartReplayWithDelay()
@@ -198,9 +205,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
             if (active)
             {
                 _armatureComponent.animation.Play(_animationDBName, 1);
-                // SOLUCIÓN 2: Forzamos al video a volver al segundo 0 antes de reproducir
-                //_tutorialVideo.time = 0; 
-                //_tutorialVideo.Play();
             }
             else
             {

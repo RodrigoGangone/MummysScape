@@ -299,6 +299,8 @@ public class UIManager : MonoBehaviour
 
     private void HandleContextUIChanged(ContextUIData data)
     {
+        Debug.Log($"UI -> {data.MessageType}");
+
         if (!data.Visible)
         {
             HideContextUI();
