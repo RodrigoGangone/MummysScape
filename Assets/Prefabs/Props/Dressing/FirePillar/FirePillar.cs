@@ -2,8 +2,10 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Controla un pilar de fuego individual: mantiene el fuego apagado o encendido, reproduce el encendido inicial
-/// con destellos/chispas y sincroniza la iluminación principal con un flicker suave para simular fuego real.
+/// Controla un pilar de fuego individual.
+/// Mantiene el fuego apagado o encendido, reproduce el efecto inicial de ignición con chispas/destello
+/// y aplica un flicker suave sobre el Point Light principal usando rangos configurables de intensidad y alcance.
+/// El script toma los valores iniciales del FirePointLight como referencia base y no modifica color, sombras ni tipo de luz.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class FirePillar : MonoBehaviour
@@ -28,32 +30,44 @@ public sealed class FirePillar : MonoBehaviour
 
     [Header("Main Fire Light")]
     [SerializeField] private Light _fireLight;
-    [SerializeField] private Color _fireColor = new(1f, 0.45f, 0.08f, 1f);
-    [SerializeField, Min(0f)] private float _idleIntensity = 2.2f;
-    [SerializeField, Min(0f)] private float _idleRange = 2.4f;
-    [SerializeField, Min(0f)] private float _flashIntensity = 7f;
-    [SerializeField, Min(0f)] private float _flashRange = 4f;
-    [SerializeField, Min(0f)] private float _flashDuration = 0.16f;
 
-    [Header("Flicker")]
+    [Header("Light Flicker Bounds")]
     [SerializeField] private bool _useFlicker = true;
-    [SerializeField, Min(0f)] private float _intensityFlicker = 0.35f;
-    [SerializeField, Min(0f)] private float _rangeFlicker = 0.2f;
+
+    [Tooltip("Intensidad mínima final entre la que oscila el FirePointLight.")]
+    [SerializeField, Min(0f)] private float _minIntensity = 1.25f;
+
+    [Tooltip("Intensidad máxima final entre la que oscila el FirePointLight.")]
+    [SerializeField, Min(0f)] private float _maxIntensity = 1.75f;
+
+    [Tooltip("Rango mínimo final entre el que oscila el FirePointLight.")]
+    [SerializeField, Min(0f)] private float _minRange = 3.5f;
+
+    [Tooltip("Rango máximo final entre el que oscila el FirePointLight.")]
+    [SerializeField, Min(0f)] private float _maxRange = 4.25f;
+
     [SerializeField, Min(0.01f)] private float _flickerSpeed = 8f;
 
     [Header("State")]
     [SerializeField] private bool _startLit;
     [SerializeField] private bool _allowReplayIgnition;
 
+    private const float IgnitionFlashIntensityMultiplier = 1.85f;
+    private const float IgnitionFlashRangeMultiplier = 1.15f;
+
     private MaterialPropertyBlock _propertyBlock;
     private Coroutine _igniteRoutine;
+
     private bool _isLit;
     private float _flickerSeed;
+
+    private float _initialLightIntensity;
+    private float _initialLightRange;
 
     public bool IsLit => _isLit;
 
     public float EstimatedIgnitionDuration =>
-        (_flashDuration * 1.75f) + _secondSparkBurstDelay + Mathf.Max(0f, _fireRevealDuration);
+        (_fireRevealDuration + _secondSparkBurstDelay + 0.28f);
 
     private void Awake()
     {
@@ -61,20 +75,18 @@ public sealed class FirePillar : MonoBehaviour
         _flickerSeed = Random.Range(0f, 1000f);
 
         ResolveMissingReferences();
-        ConfigureLightBaseValues();
+        CacheInitialLightValues();
+        ValidateFlickerBounds();
+
         SetLitImmediate(_startLit);
     }
 
     private void Update()
     {
-        if (!_isLit || !_useFlicker || _fireLight == null)
+        if (!_isLit || !_useFlicker || _fireLight == null || _igniteRoutine != null)
             return;
 
-        float noise = Mathf.PerlinNoise(_flickerSeed, Time.time * _flickerSpeed);
-        float centeredNoise = (noise * 2f) - 1f;
-
-        _fireLight.intensity = Mathf.Max(0f, _idleIntensity + centeredNoise * _intensityFlicker);
-        _fireLight.range = Mathf.Max(0f, _idleRange + centeredNoise * _rangeFlicker);
+        ApplyLightFlicker();
     }
 
     /// <summary>
@@ -108,6 +120,35 @@ public sealed class FirePillar : MonoBehaviour
         SetLitImmediate(false);
     }
 
+    /// <summary>
+    /// Copia los valores actuales del FirePointLight y arma rangos suaves de flicker alrededor de ellos.
+    /// Usalo desde el menú contextual del componente si ajustaste la luz visualmente en el Inspector.
+    /// </summary>
+    [ContextMenu("Capture Light Values As Flicker Bounds")]
+    private void CaptureLightValuesAsFlickerBounds()
+    {
+        ResolveMissingReferences();
+
+        if (_fireLight == null)
+            return;
+
+        float currentIntensity = Mathf.Max(0f, _fireLight.intensity);
+        float currentRange = Mathf.Max(0f, _fireLight.range);
+
+        _minIntensity = currentIntensity * 0.85f;
+        _maxIntensity = currentIntensity * 1.15f;
+
+        _minRange = currentRange * 0.9f;
+        _maxRange = currentRange * 1.1f;
+
+        CacheInitialLightValues();
+        ValidateFlickerBounds();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+#endif
+    }
+
     private IEnumerator IgniteRoutine()
     {
         _isLit = true;
@@ -124,13 +165,22 @@ public sealed class FirePillar : MonoBehaviour
         PlayParticle(_sparksParticle, true);
         EmitSparks(_firstSparkBurstAmount);
 
-        yield return FlashLight(_flashDuration, _flashIntensity, _flashRange);
+        yield return FlashLight(
+            duration: 0.16f,
+            targetIntensity: GetIgnitionFlashIntensity(),
+            targetRange: GetIgnitionFlashRange()
+        );
 
         if (_secondSparkBurstDelay > 0f)
             yield return new WaitForSeconds(_secondSparkBurstDelay);
 
         EmitSparks(_secondSparkBurstAmount);
-        yield return FlashLight(_flashDuration * 0.75f, _flashIntensity * 0.65f, _flashRange * 0.85f);
+
+        yield return FlashLight(
+            duration: 0.12f,
+            targetIntensity: GetIgnitionFlashIntensity() * 0.65f,
+            targetRange: GetIgnitionFlashRange() * 0.85f
+        );
 
         SetFireVisible(true);
         PlayParticle(_fireLoopParticle, true);
@@ -139,7 +189,8 @@ public sealed class FirePillar : MonoBehaviour
         yield return RevealFireAndLight();
 
         SetAppearThreshold(_visibleAppearThreshold);
-        SetLightValues(_idleIntensity, _idleRange, true);
+        SetLightValues(_initialLightIntensity, _initialLightRange, true);
+
         _igniteRoutine = null;
     }
 
@@ -153,11 +204,16 @@ public sealed class FirePillar : MonoBehaviour
         while (elapsed < _fireRevealDuration)
         {
             elapsed += Time.deltaTime;
+
             float t = Mathf.Clamp01(elapsed / _fireRevealDuration);
             float easedT = Mathf.SmoothStep(0f, 1f, t);
 
             SetAppearThreshold(Mathf.Lerp(_hiddenAppearThreshold, _visibleAppearThreshold, easedT));
-            SetLightValues(Mathf.Lerp(0f, _idleIntensity, easedT), Mathf.Lerp(0f, _idleRange, easedT), true);
+
+            float intensity = Mathf.Lerp(0f, _initialLightIntensity, easedT);
+            float range = Mathf.Lerp(0f, _initialLightRange, easedT);
+
+            SetLightValues(intensity, range, true);
 
             yield return null;
         }
@@ -173,14 +229,26 @@ public sealed class FirePillar : MonoBehaviour
         for (float elapsed = 0f; elapsed < halfDuration; elapsed += Time.deltaTime)
         {
             float t = Mathf.Clamp01(elapsed / halfDuration);
-            SetLightValues(Mathf.Lerp(0f, targetIntensity, t), Mathf.Lerp(0f, targetRange, t), true);
+
+            SetLightValues(
+                Mathf.Lerp(0f, targetIntensity, t),
+                Mathf.Lerp(0f, targetRange, t),
+                true
+            );
+
             yield return null;
         }
 
         for (float elapsed = 0f; elapsed < halfDuration; elapsed += Time.deltaTime)
         {
             float t = Mathf.Clamp01(elapsed / halfDuration);
-            SetLightValues(Mathf.Lerp(targetIntensity, 0f, t), Mathf.Lerp(targetRange, 0f, t), true);
+
+            SetLightValues(
+                Mathf.Lerp(targetIntensity, 0f, t),
+                Mathf.Lerp(targetRange, 0f, t),
+                true
+            );
+
             yield return null;
         }
 
@@ -199,23 +267,72 @@ public sealed class FirePillar : MonoBehaviour
         {
             PlayParticle(_fireLoopParticle, true);
             PlayParticle(_sparksParticle, true);
-            SetLightValues(_idleIntensity, _idleRange, true);
+            SetLightValues(_initialLightIntensity, _initialLightRange, true);
+            return;
         }
-        else
+
+        StopParticle(_fireLoopParticle, true);
+        StopParticle(_sparksParticle, true);
+        SetLightValues(0f, 0f, false);
+    }
+
+    private void ApplyLightFlicker()
+    {
+        float noise = Mathf.PerlinNoise(_flickerSeed, Time.time * _flickerSpeed);
+        float intensity = Mathf.Lerp(_minIntensity, _maxIntensity, noise);
+
+        float rangeNoise = Mathf.PerlinNoise(_flickerSeed + 31.7f, Time.time * _flickerSpeed * 0.85f);
+        float range = Mathf.Lerp(_minRange, _maxRange, rangeNoise);
+
+        SetLightValues(intensity, range, true);
+    }
+
+    private void CacheInitialLightValues()
+    {
+        if (_fireLight == null)
         {
-            StopParticle(_fireLoopParticle, true);
-            StopParticle(_sparksParticle, true);
-            SetLightValues(0f, 0f, false);
+            _initialLightIntensity = 0f;
+            _initialLightRange = 0f;
+            return;
+        }
+
+        _initialLightIntensity = Mathf.Max(0f, _fireLight.intensity);
+        _initialLightRange = Mathf.Max(0f, _fireLight.range);
+
+        // Si los bounds están sin configurar, se inicializan usando los valores actuales del Point Light.
+        // Si ya los configuraste manualmente, no se pisan.
+        if (_minIntensity <= 0f && _maxIntensity <= 0f)
+        {
+            _minIntensity = _initialLightIntensity * 0.85f;
+            _maxIntensity = _initialLightIntensity * 1.15f;
+        }
+
+        if (_minRange <= 0f && _maxRange <= 0f)
+        {
+            _minRange = _initialLightRange * 0.9f;
+            _maxRange = _initialLightRange * 1.1f;
         }
     }
 
-    private void ConfigureLightBaseValues()
+    private void ValidateFlickerBounds()
     {
-        if (_fireLight == null)
-            return;
+        if (_maxIntensity < _minIntensity)
+            (_minIntensity, _maxIntensity) = (_maxIntensity, _minIntensity);
 
-        _fireLight.color = _fireColor;
-        _fireLight.shadows = LightShadows.None;
+        if (_maxRange < _minRange)
+            (_minRange, _maxRange) = (_maxRange, _minRange);
+    }
+
+    private float GetIgnitionFlashIntensity()
+    {
+        float reference = Mathf.Max(_initialLightIntensity, _maxIntensity);
+        return reference * IgnitionFlashIntensityMultiplier;
+    }
+
+    private float GetIgnitionFlashRange()
+    {
+        float reference = Mathf.Max(_initialLightRange, _maxRange);
+        return reference * IgnitionFlashRangeMultiplier;
     }
 
     private void SetLightValues(float intensity, float range, bool enabled)
@@ -224,9 +341,8 @@ public sealed class FirePillar : MonoBehaviour
             return;
 
         _fireLight.enabled = enabled;
-        _fireLight.color = _fireColor;
-        _fireLight.intensity = intensity;
-        _fireLight.range = range;
+        _fireLight.intensity = Mathf.Max(0f, intensity);
+        _fireLight.range = Mathf.Max(0f, range);
     }
 
     private void SetFireVisible(bool visible)
@@ -241,6 +357,7 @@ public sealed class FirePillar : MonoBehaviour
             return;
 
         _propertyBlock ??= new MaterialPropertyBlock();
+
         int propertyId = Shader.PropertyToID(_appearThresholdProperty);
 
         _fireRenderer.GetPropertyBlock(_propertyBlock);
@@ -293,6 +410,12 @@ public sealed class FirePillar : MonoBehaviour
                 continue;
             }
 
+            if (_igniteBurstParticle == null && particleName.Contains("ignite"))
+            {
+                _igniteBurstParticle = particle;
+                continue;
+            }
+
             if (_fireLoopParticle == null)
                 _fireLoopParticle = particle;
         }
@@ -304,9 +427,12 @@ public sealed class FirePillar : MonoBehaviour
             return;
 
         Light[] lights = GetComponentsInChildren<Light>(true);
+
         foreach (Light light in lights)
         {
-            if (!light.name.ToLowerInvariant().Contains("spark"))
+            string lightName = light.name.ToLowerInvariant();
+
+            if (!lightName.Contains("spark"))
             {
                 _fireLight = light;
                 return;
@@ -320,8 +446,8 @@ public sealed class FirePillar : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        if (!Application.isPlaying)
-            ResolveMissingReferences();
+        ResolveMissingReferences();
+        ValidateFlickerBounds();
     }
 #endif
 }

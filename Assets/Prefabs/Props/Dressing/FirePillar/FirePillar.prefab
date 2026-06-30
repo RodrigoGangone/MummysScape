@@ -11,11 +11,11 @@ GameObject:
   - component: {fileID: 590181211705235510}
   - component: {fileID: 3255593549003404651}
   - component: {fileID: 8083602542214365941}
+  - component: {fileID: 3406972912554028046}
   - component: {fileID: 3340513401483740784}
   - component: {fileID: 4418557341692824395}
   - component: {fileID: 4375632127568320507}
   - component: {fileID: 8266107517102602898}
-  - component: {fileID: 6558548582748209849}
   m_Layer: 11
   m_Name: FirePillar
   m_TagString: Untagged
@@ -38,6 +38,7 @@ Transform:
   m_Children:
   - {fileID: 1641526701348886973}
   - {fileID: 6279008622605629512}
+  - {fileID: 8084950952428673226}
   - {fileID: 6495999951210780009}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -98,6 +99,39 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3406972912554028046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 745467184508475858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdc0250b780737042835aa55f98ae308, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FirePillar
+  _fireLoopParticle: {fileID: 6238400944726240390}
+  _igniteBurstParticle: {fileID: 0}
+  _sparksParticle: {fileID: 7766247644517778247}
+  _fireRenderer: {fileID: 332339886073199541}
+  _animateAppearThreshold: 1
+  _appearThresholdProperty: _AppearThreshold
+  _hiddenAppearThreshold: 0
+  _visibleAppearThreshold: 1
+  _fireRevealDuration: 0.25
+  _firstSparkBurstAmount: 24
+  _secondSparkBurstAmount: 12
+  _secondSparkBurstDelay: 0.08
+  _fireLight: {fileID: 912216760137136012}
+  _useFlicker: 1
+  _minIntensity: 1.25
+  _maxIntensity: 1.6
+  _minRange: 3.5
+  _maxRange: 4
+  _flickerSpeed: 8
+  _startLit: 0
+  _allowReplayIgnition: 0
 --- !u!114 &3340513401483740784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3885,43 +3919,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &6558548582748209849
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 745467184508475858}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fdc0250b780737042835aa55f98ae308, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FirePillar
-  _fireLoopParticle: {fileID: 6238400944726240390}
-  _igniteBurstParticle: {fileID: 0}
-  _sparksParticle: {fileID: 7766247644517778247}
-  _fireRenderer: {fileID: 332339886073199541}
-  _animateAppearThreshold: 1
-  _appearThresholdProperty: _AppearThreshold
-  _hiddenAppearThreshold: 0
-  _visibleAppearThreshold: 1
-  _fireRevealDuration: 0.25
-  _firstSparkBurstAmount: 24
-  _secondSparkBurstAmount: 12
-  _secondSparkBurstDelay: 0.08
-  _fireLight: {fileID: 912216760137136012}
-  _fireColor: {r: 1, g: 0.45, b: 0.08, a: 1}
-  _idleIntensity: 2.2
-  _idleRange: 2.4
-  _flashIntensity: 7
-  _flashRange: 4
-  _flashDuration: 0.16
-  _useFlicker: 1
-  _intensityFlicker: 0.35
-  _rangeFlicker: 0.2
-  _flickerSpeed: 8
-  _startLit: 0
-  _allowReplayIgnition: 0
 --- !u!1 &2100016496206555075
 GameObject:
   m_ObjectHideFlags: 0
@@ -3949,8 +3946,8 @@ Transform:
   m_GameObject: {fileID: 2100016496206555075}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.0000006407499, z: -0, w: 1}
-  m_LocalPosition: {x: -0, y: 1.28, z: 1}
-  m_LocalScale: {x: 5.770591, y: 6.3516006, z: 0.5}
+  m_LocalPosition: {x: -0, y: 0.76, z: 1.33}
+  m_LocalScale: {x: 5.770591, y: 3.86089, z: 0.38764662}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 590181211705235510}
@@ -3988,7 +3985,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: -876546973899608171, guid: 1ff5a8c2c94811a48b2611f7059f5a2c, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4078,7 +4075,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: -876546973899608171, guid: 1ff5a8c2c94811a48b2611f7059f5a2c, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4129,7 +4126,7 @@ Transform:
   m_GameObject: {fileID: 6409369430029314375}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: 0.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0.45, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4152,10 +4149,10 @@ Light:
   m_InnerSpotAngle: 19.997341
   m_CookieSize2D: {x: 10, y: 10}
   m_Shadows:
-    m_Type: 0
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 1
+    m_Strength: 0.5
     m_Bias: 0.05
     m_NormalBias: 0.4
     m_NearPlane: 0.2
@@ -4212,12 +4209,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
+  m_UsePipelineSettings: 0
+  m_AdditionalLightsShadowResolutionTier: 1
   m_CustomShadowLayers: 0
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
-  m_SoftShadowQuality: 0
+  m_SoftShadowQuality: 2
   m_RenderingLayersMask:
     serializedVersion: 0
     m_Bits: 1
@@ -4318,7 +4315,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 4e-45, z: 6e-45, w: 7e-45}
+  m_BoundingSphereOverride: {x: 6.2097996e+22, y: 7.7140256e+31, z: 538860700, w: 3.9415303e+12}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -5406,6 +5403,96 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 3221054366424623579, guid: e7d89d8eb0859f34fbe0cb889d96bd9f, type: 3}
   m_Mode: 0
+--- !u!1 &8924127065338536500
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8084950952428673226}
+  - component: {fileID: 1468218707224730584}
+  - component: {fileID: 5533068191249303727}
+  m_Layer: 11
+  m_Name: TEST WALL (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &8084950952428673226
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8924127065338536500}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.50000024, y: 0.4999997, z: -0.49999967, w: 0.5000004}
+  m_LocalPosition: {x: -0.8, y: -0.87, z: -1.56}
+  m_LocalScale: {x: 5.770591, y: 4.188055, z: 0.70212}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 590181211705235510}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: -90}
+--- !u!33 &1468218707224730584
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8924127065338536500}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &5533068191249303727
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8924127065338536500}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: -876546973899608171, guid: 1ff5a8c2c94811a48b2611f7059f5a2c, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1001 &7962590605330823143
 PrefabInstance:
   m_ObjectHideFlags: 0
