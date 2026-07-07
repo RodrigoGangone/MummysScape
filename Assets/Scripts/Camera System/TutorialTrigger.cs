@@ -68,10 +68,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     {
         if (!other.CompareTag(PLAYER_TAG) || focusPoint == null) return;
 
-        // NUEVO: Bloqueamos la re-evaluación provocada por el SetColliderShape
-        // Si el tutorial ya arrancó, ignoramos este falso Enter.
-        if (_isPlaying) return;
-
         // SOLUCIÓN 1: Siempre habilitamos que pueda jugar el tutorial al entrar.
         _canPlayTutorial = true;
 
@@ -94,10 +90,6 @@ public class TutorialTrigger : MonoBehaviour, IPausable
     private void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag(PLAYER_TAG)) return;
-
-        // NUEVO: Evitamos que el resize apague las variables mientras 
-        // la cinemática se está reproduciendo y el jugador está quieto.
-        if (_isPlaying) return;
 
         _canPlayTutorial = false;
         _isPromptActive = false;
