@@ -4,7 +4,7 @@ using UnityEngine;
 /// Lector de Inputs (Legacy): Implementa la interfaz IPlayerInput utilizando el sistema clásico de Unity, 
 /// procesando ejes de movimiento, sticks de control y el estado de los botones de acción. 
 /// </summary>
-
+[DefaultExecutionOrder(-100)] // <--- AÑADE ESTA LÍNEA
 public sealed class PlayerInputReaderLegacy : MonoBehaviour, IPlayerInput, IPausable, ILocked
 {
     private bool _aimDown, _shootDown, _dropDown, _spaceDown;

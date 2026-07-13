@@ -1,17 +1,14 @@
-using System;
-using UnityEngine;
 using System.Collections;
-using UnityEngine.Video;
+using UnityEngine;
 using static Tags;
 using static PauseUtils;
 using static SfxIDs;
 using DragonBones;
 
 /// <summary> 
-/// Controlador de Tutorial: Gestiona la activación de tutoriales en escena, coordinando efectos visuales, 
-/// videos y la validación de persistencia para evitar la repetición de guías ya completadas. 
+/// Controlador de Tutorial: Simula triggers mediante OverlapBox para evitar fallos de físicas.
+/// Versión optimizada y centralizada.
 /// </summary>
-[RequireComponent(typeof(BoxCollider))]
 public class TutorialTrigger : MonoBehaviour, IPausable
 {
     [Header("Referencias")] [SerializeField]
@@ -19,38 +16,44 @@ public class TutorialTrigger : MonoBehaviour, IPausable
 
     [SerializeField] private ParticleSystem[] braziers;
     [SerializeField] private string _animationDBName;
+    [SerializeField] private UnityArmatureComponent _armatureComponent;
 
-    [Header("Configuración de Áreas")] [SerializeField]
+    [Header("Configuración de Áreas (Simuladas)")] [SerializeField]
     private Vector3 sizeA = Vector3.one;
 
     [SerializeField] private Vector3 sizeB = Vector3.one * 2f;
     [SerializeField] private Vector3 centerOffsetA = Vector3.zero;
     [SerializeField] private Vector3 centerOffsetB = Vector3.zero;
+    [SerializeField] private LayerMask playerLayerMask = ~0;
 
     [Header("Audio")] [SerializeField] private FxBank _bank;
 
-    private BoxCollider _boxCollider;
-    [SerializeField] private UnityArmatureComponent _armatureComponent;
     private Coroutine _effectRoutine;
     private bool _isPromptActive;
     private bool _paused;
     private bool _isPlaying;
-    private bool _canPlayTutorial;
+    private bool _firstView;
+    private bool _wasPlayerInside;
+
+    private readonly Collider[] _overlapResults = new Collider[2];
 
     private bool IsTutorialAlreadySeen => focusPoint != null && Save.IsTutorialSeen(focusPoint.Tutorial);
 
-    private void Awake()
-    {
-        _boxCollider = GetComponent<BoxCollider>();
-
-        if (focusPoint != null)
-            SetColliderShape(!IsTutorialAlreadySeen);
-    }
+    private void Awake() => _firstView = !IsTutorialAlreadySeen;
 
     private void Start()
     {
-        _armatureComponent.animation.Stop(_animationDBName);
+        _armatureComponent.animation.GotoAndStopByFrame(_animationDBName, 0);
+
         ToggleEffects(false);
+    }
+
+    private void FixedUpdate()
+    {
+        if (_paused || FocusManager.Instance == null)
+            return;
+
+        EvaluatePlayerInArea();
     }
 
     private void Update()
@@ -58,189 +61,153 @@ public class TutorialTrigger : MonoBehaviour, IPausable
         if (_paused || FocusManager.Instance == null)
             return;
 
-        if (_canPlayTutorial && !_isPlaying && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
-        {
+        if (_wasPlayerInside && !_isPlaying && Input.GetButtonDown(FocusManager.Instance.TutorialKey))
             StartCoroutine(StartReplayWithDelay());
-        }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void EvaluatePlayerInArea()
     {
-        if (!other.CompareTag(PLAYER_TAG) || focusPoint == null) return;
+        Vector3 size = _firstView ? sizeA : sizeB;
+        Vector3 worldCenter = transform.TransformPoint(_firstView ? centerOffsetA : centerOffsetB);
+        Vector3 halfExtents = Vector3.Scale(size, transform.lossyScale) * 0.5f;
 
-        // NUEVO: Bloqueamos la re-evaluación provocada por el SetColliderShape
-        // Si el tutorial ya arrancó, ignoramos este falso Enter.
-        if (_isPlaying) return;
+        int hitCount = Physics.OverlapBoxNonAlloc(worldCenter, halfExtents, _overlapResults, transform.rotation,
+            playerLayerMask);
 
-        // SOLUCIÓN 1: Siempre habilitamos que pueda jugar el tutorial al entrar.
-        _canPlayTutorial = true;
+        bool isInside = false;
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            if (_overlapResults[i].CompareTag(PLAYER_TAG))
+            {
+                isInside = true;
+                break;
+            }
+        }
+
+        if (isInside && !_wasPlayerInside) OnPlayerEnter();
+        else if (!isInside && _wasPlayerInside) OnPlayerExit();
+
+        _wasPlayerInside = isInside;
+    }
+
+    private void OnPlayerEnter()
+    {
+        if (focusPoint == null || _isPlaying)
+            return;
 
         if (!IsTutorialAlreadySeen)
         {
             ExecuteTutorialSequence(isReplay: false);
-            SetColliderShape(false);
-            return;
+            _firstView = false;
         }
-
-        if (!_isPromptActive)
-        {
-            GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, ButtonType.Y)
-            );
-            _isPromptActive = true;
-        }
+        else
+            TogglePrompt(true);
     }
 
-    private void OnTriggerExit(Collider other)
+    private void OnPlayerExit()
     {
-        if (!other.CompareTag(PLAYER_TAG)) return;
+        if (_isPlaying)
+            return;
 
-        // NUEVO: Evitamos que el resize apague las variables mientras 
-        // la cinemática se está reproduciendo y el jugador está quieto.
-        if (_isPlaying) return;
-
-        _canPlayTutorial = false;
-        _isPromptActive = false;
-
-        GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-            ContextUIFactory.Hidden()
-        );
+        TogglePrompt(false);
     }
-    // SOLUCIÓN 3: Esperamos al final del frame para que el botón "Y" se suelte,
-    // evitando que el FocusManager cancele el tutorial instantáneamente.
+
     private IEnumerator StartReplayWithDelay()
     {
-        _isPlaying = true; // Bloqueamos el input inmediatamente
+        _isPlaying = true;
         yield return new WaitForEndOfFrame();
         ExecuteTutorialSequence(isReplay: true);
     }
 
     private void ExecuteTutorialSequence(bool isReplay)
     {
-        if (focusPoint == null || FocusManager.Instance == null) return;
+        if (focusPoint == null || FocusManager.Instance == null)
+            return;
 
         _bank?.Play2D(Tutorial.See);
         _isPlaying = true;
+        TogglePrompt(false);
 
-        if (_isPromptActive)
-        {
-            GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-                ContextUIFactory.Hidden()
-            );
-            _isPromptActive = false;
-        }
+        FocusManager.Instance.RequestTutorial(focusPoint, EndTutorial);
 
-        FocusManager.Instance.RequestTutorial(
-            focusPoint,
-            isReplay ? OnTutorialReplayCancelled : null
-        );
+        if (_effectRoutine != null) StopCoroutine(_effectRoutine);
 
-        if (_effectRoutine != null)
-            StopCoroutine(_effectRoutine);
-
-        float totalDuration = focusPoint.Time;
-
-        if (!isReplay && !string.IsNullOrEmpty(focusPoint.Message))
-            totalDuration += focusPoint.MessageDuration;
-
-        // Fallback de seguridad: Si el replay dura 0 segundos, le damos un tiempo base.
-        if (totalDuration <= 0.1f)
-            totalDuration = 3f;
-
-        _effectRoutine = StartCoroutine(TutorialDurationRoutine(totalDuration));
+        float duration = focusPoint.Time +
+                         (!isReplay && !string.IsNullOrEmpty(focusPoint.Message) ? focusPoint.MessageDuration : 0);
+        _effectRoutine = StartCoroutine(TutorialDurationRoutine(duration <= 0.1f ? 3f : duration));
     }
 
     private IEnumerator TutorialDurationRoutine(float duration)
     {
         ToggleEffects(true);
-
         yield return WaitForSecondsPausable(duration, () => _paused);
+        EndTutorial();
+    }
 
-        ToggleEffects(false);
+    private void EndTutorial()
+    {
+        if (_effectRoutine != null)
+            StopCoroutine(_effectRoutine);
 
         _effectRoutine = null;
         _isPlaying = false;
+        ToggleEffects(false);
 
-        if (_canPlayTutorial && IsTutorialAlreadySeen && !_isPromptActive)
-        {
-            GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, ButtonType.Y)
-            );
-            _isPromptActive = true;
-        }
+        if (_wasPlayerInside)
+            TogglePrompt(true);
     }
 
-    private void OnTutorialReplayCancelled()
+    private void TogglePrompt(bool show)
     {
-        if (_effectRoutine != null)
-        {
-            StopCoroutine(_effectRoutine);
-            _effectRoutine = null;
-        }
+        if (_isPromptActive == show)
+            return;
 
-        ToggleEffects(false);
-        _isPlaying = false;
-
-        if (_canPlayTutorial && !_isPromptActive)
-        {
-            GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
-                ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, ButtonType.Y)
-            );
-            _isPromptActive = true;
-        }
+        _isPromptActive = show;
+        var message = show
+            ? ContextUIFactory.Prompt(ContextMessageType.ReplayTutorial, ButtonType.Y)
+            : ContextUIFactory.Hidden();
+        GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(message);
     }
 
     private void ToggleEffects(bool active)
     {
-        foreach (var brazier in braziers)
+        if (braziers != null)
         {
-            if (brazier == null) continue;
-
-            if (active) brazier.Play();
-            else brazier.Stop();
-        }
-
-        if (_armatureComponent != null)
-        {
-            if (active)
+            foreach (var b in braziers)
             {
-                _armatureComponent.animation.Play(_animationDBName, 1);
-            }
-            else
-            {
-                _armatureComponent.animation.Reset();
-                _armatureComponent.animation.Stop();
+                // Safety check: Skip this iteration if the array element is empty
+                if (b == null) 
+                    continue;
+
+                if (active) b.Play();
+                else b.Stop();
             }
         }
-    }
 
-    private void SetColliderShape(bool useSizeA)
-    {
-        if (_boxCollider == null) return;
-
-        _boxCollider.size = useSizeA ? sizeA : sizeB;
-        _boxCollider.center = useSizeA ? centerOffsetA : centerOffsetB;
+        if (active)
+            _armatureComponent.animation.Play(_animationDBName, 1);
+        else
+            _armatureComponent.animation.GotoAndStopByFrame(_animationDBName, 0);
     }
 
     public void OnPauseChanged(bool paused) => _paused = paused;
-
-    private void OnEnable() =>
-        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-
-    private void OnDisable() =>
-        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+    private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
 
     #region Gizmos
 
     private void OnDrawGizmos()
     {
         if (focusPoint == null) return;
-
         Gizmos.matrix = transform.localToWorldMatrix;
-        Gizmos.color = !IsTutorialAlreadySeen ? Color.green : new Color(0, 1, 0, 0.2f);
+
+        bool isA_Active = Application.isPlaying ? _firstView : !IsTutorialAlreadySeen;
+
+        Gizmos.color = isA_Active ? Color.green : new Color(0, 1, 0, 0.2f);
         Gizmos.DrawWireCube(centerOffsetA, sizeA);
 
-        Gizmos.color = IsTutorialAlreadySeen ? Color.yellow : new Color(1, 0.92f, 0.016f, 0.2f);
+        Gizmos.color = !isA_Active ? Color.yellow : new Color(1, 0.92f, 0.016f, 0.2f);
         Gizmos.DrawWireCube(centerOffsetB, sizeB);
     }
 
