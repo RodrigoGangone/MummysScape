@@ -85,7 +85,7 @@ public class ActionPressureButton : BasePressureButton
         // dejamos que se levante físicamente de forma normal y abortamos.
         if (!hasBeenActivated)
         {
-            //base.OnRelease();
+            base.OnRelease();
             OnFailedDeactivate.Invoke(); 
             return;
         }
