@@ -32,7 +32,8 @@ public sealed class DropBandageState : State, IBandageRestrictor
     {
         Vector3 spawnPos = _ctx.Rb.position + _ctx.Tf.forward * 0.5f + Vector3.up * 1.0f;
         
-        GameObject bandage = Object.Instantiate(_bandagePickupPrefab, spawnPos, Random.rotation);
+        // 1. Usar la rotación del prefab (o Quaternion.identity) en lugar de Random.rotation
+        GameObject bandage = Object.Instantiate(_bandagePickupPrefab, spawnPos, _bandagePickupPrefab.transform.rotation);
 
         Rigidbody bandageRb = bandage.GetComponent<Rigidbody>();
 
@@ -42,15 +43,17 @@ public sealed class DropBandageState : State, IBandageRestrictor
             
             bandageRb.AddForce(forceDirection, ForceMode.Impulse);
 
-            bandageRb.AddTorque(Random.insideUnitSphere * 10f, ForceMode.Impulse);
+            // 2. Comentado/Eliminado el AddTorque para no forzar giros físicos
+            // bandageRb.AddTorque(Random.insideUnitSphere * 10f, ForceMode.Impulse); 
         }
 
         var pickupScript = bandage.GetComponent<Bandage>(); 
         
         if (pickupScript != null)
+        {
             pickupScript.SetupPickupDelay();
+        }
     }
-
     public override void OnUpdate() { }
     public override void OnFixedUpdate() { }
     public override void OnExit() { }

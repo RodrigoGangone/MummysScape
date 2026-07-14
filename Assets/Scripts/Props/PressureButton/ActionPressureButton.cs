@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System;
 using static PauseUtils;
 using UnityEngine.Rendering.Universal;
 
@@ -24,9 +25,10 @@ public class ActionPressureButton : BasePressureButton
     public UnityEngine.Events.UnityEvent OnFailedDeactivate;
 
     private bool hasBeenActivated;
-    private Coroutine releaseTimerCoroutine;
     
-    // Flags para controlar que el focus suceda una sola vez
+    private Coroutine _transitionCoroutine;
+    private float _currentVisualValue = 0f; 
+    
     private bool _hasFocusedOnSuccess;
     private bool _hasFocusedOnFail;
  
@@ -44,28 +46,27 @@ public class ActionPressureButton : BasePressureButton
             runesDecal.material = _instancedMaterial;
         }
 
-        UpdateRuneVisual(0f);
+        // Estado inicial: 0f (Cargado/Listo)
+        _currentVisualValue = 0f;
+        UpdateRuneVisual(_currentVisualValue);
     }
 
     protected override void OnPress()
     {
-        base.OnPress(); // El botón baja físicamente.
+        base.OnPress(); 
 
-        // Validamos si hay focus y si NO lo hemos activado por éxito aún
         if (focus != null && !_hasFocusedOnSuccess)
         {
             focus.Activate();
-            _hasFocusedOnSuccess = true; // Lo marcamos como usado
+            _hasFocusedOnSuccess = true; 
         }
 
         if (isOneShot && hasBeenActivated) return;
 
-        // Si pisan el botón mientras el timer de liberación está corriendo, lo cancelamos.
-        if (releaseTimerCoroutine != null)
+        if (_transitionCoroutine != null)
         {
-            StopCoroutine(releaseTimerCoroutine);
-            releaseTimerCoroutine = null;
-            UpdateRuneVisual(0f);
+            StopCoroutine(_transitionCoroutine);
+            _transitionCoroutine = null;
         }
 
         if (!hasBeenActivated)
@@ -74,15 +75,21 @@ public class ActionPressureButton : BasePressureButton
             OnActivated.Invoke();
         }
 
-        if (isOneShot) this.enabled = false;
+        if (isOneShot) 
+        {
+            this.enabled = false;
+        }
+        else
+        {
+            // Volvemos a cargarlo (0f) rápido si lo volvés a pisar
+            _transitionCoroutine = StartCoroutine(TransitionMaterialRoutine(0f, 0.2f));
+        }
     }
 
     protected override void OnRelease()
     {
         if (isOneShot) return;
 
-        // Si el botón nunca se activó con éxito (ej. se subió una momia de tamaño incorrecto),
-        // dejamos que se levante físicamente de forma normal y abortamos.
         if (!hasBeenActivated)
         {
             base.OnRelease();
@@ -90,15 +97,19 @@ public class ActionPressureButton : BasePressureButton
             return;
         }
 
+        if (_transitionCoroutine != null) StopCoroutine(_transitionCoroutine);
+
         if (useTimer)
         {
-            // IMPORTANTE: Si usamos timer, NO llamamos a base.OnRelease() todavía.
-            if (releaseTimerCoroutine != null) StopCoroutine(releaseTimerCoroutine);
-            releaseTimerCoroutine = StartCoroutine(TimerRoutine());
+            // Empezamos a transicionar hacia 1f (vacío/gastado).
+            _transitionCoroutine = StartCoroutine(TransitionMaterialRoutine(1f, timer, () => 
+            {
+                base.OnRelease(); 
+                Deactivate();     
+            }));
         }
         else
         {
-            // Si no hay timer, se levanta físicamente y se desactiva al instante.
             base.OnRelease();
             Deactivate();
         }
@@ -108,46 +119,53 @@ public class ActionPressureButton : BasePressureButton
     {
         if (hasBeenActivated) return;
         
-        // Validamos si hay focus y si NO lo hemos activado por fallo aún
         if (focus != null && !_hasFocusedOnFail)
         {
             focus.Activate();
-            _hasFocusedOnFail = true; // Lo marcamos como usado
+            _hasFocusedOnFail = true; 
         }
         
         OnFailed();
-    }
-
-    private IEnumerator TimerRoutine()
-    {
-        float elapsedTime = 0f;
-
-        while (elapsedTime < timer)
-        {
-            elapsedTime += Time.deltaTime;
-            float fillValue = Mathf.Clamp01(elapsedTime / timer);
-            UpdateRuneVisual(fillValue);
-
-            yield return WaitWhilePaused(() => _paused);
-        }
-
-        UpdateRuneVisual(1f);
-        
-        // AHORA SÍ: El timer terminó, levantamos el botón físicamente en el Animator.
-        base.OnRelease(); 
-        Deactivate();
     }
 
     private void Deactivate()
     {
         hasBeenActivated = false;
         OnDeactivated.Invoke();
+
+        if (_transitionCoroutine != null) StopCoroutine(_transitionCoroutine);
+        _transitionCoroutine = StartCoroutine(TransitionMaterialRoutine(0f, 0.5f));
+
+        currentState = ButtonState.Empty; 
     }
 
     private void OnFailed()
     {
-        base.OnFailedPress(); // Dispara el trigger "Failed" en la clase base
+        base.OnFailedPress(); 
         OnFailedActivate.Invoke();
+    }
+
+    private IEnumerator TransitionMaterialRoutine(float targetValue, float duration, Action onComplete = null)
+    {
+        float startValue = _currentVisualValue;
+        float elapsedTime = 0f;
+
+        if (duration > 0f)
+        {
+            while (elapsedTime < duration)
+            {
+                elapsedTime += Time.deltaTime;
+                _currentVisualValue = Mathf.Lerp(startValue, targetValue, elapsedTime / duration);
+                UpdateRuneVisual(_currentVisualValue);
+
+                yield return WaitWhilePaused(() => _paused);
+            }
+        }
+
+        _currentVisualValue = targetValue;
+        UpdateRuneVisual(_currentVisualValue);
+
+        onComplete?.Invoke();
     }
 
     private void UpdateRuneVisual(float value)

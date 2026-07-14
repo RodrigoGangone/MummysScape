@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using static PauseUtils;
-using static Tags;
+using static Layers;
 using static PlayerEnum.PlayerSize;
 
 public abstract class BasePressureButton : MonoBehaviour, IPausable
@@ -35,10 +36,11 @@ public abstract class BasePressureButton : MonoBehaviour, IPausable
     {
         ButtonState newState = CheckOccupancyState();
 
-        // Si el estado no cambió, no hacemos nada
         if (newState == currentState) return;
 
-        // 3. Ejecutamos el método correspondiente según el nuevo estado
+        if (currentState == ButtonState.ValidPress && newState == ButtonState.InvalidPress)
+            OnRelease();
+
         switch (newState)
         {
             case ButtonState.ValidPress:
@@ -54,45 +56,64 @@ public abstract class BasePressureButton : MonoBehaviour, IPausable
 
         currentState = newState;
     }
-
-    private ButtonState CheckOccupancyState()
+private ButtonState CheckOccupancyState()
     {
-        RaycastHit[] hits = Physics.BoxCastAll(transform.position, boxSize / 2, Vector3.up, Quaternion.identity,
-            checkDistance, detectionLayer);
+        Vector3 boxCenter = transform.position + (Vector3.up * checkDistance);
+        Collider[] colliders = Physics.OverlapBox(boxCenter, boxSize / 2f, Quaternion.identity, detectionLayer);
 
-        bool foundInvalidMummy = false;
+        int totalWeight = 0;
+        
+        HashSet<Transform> processedObjects = new HashSet<Transform>();
 
-        foreach (var hit in hits)
+        foreach (var col in colliders)
         {
-            // 1. Es una caja -> Presión válida inmediata
-            if (hit.collider.gameObject.layer == LayerMask.NameToLayer(BOX_TAG))
-                return ButtonState.ValidPress;
+            Transform rootObj = col.transform.root;
 
-            // 2. Es la Momia
-            if (hit.collider.CompareTag(PLAYER_TAG))
+            if (processedObjects.Contains(rootObj)) continue;
+            
+            processedObjects.Add(rootObj);
+
+            int hitLayer = rootObj.gameObject.layer;
+
+            // 1. Es una caja -> Peso pesado (2)
+            if (hitLayer == LayerMask.NameToLayer(INTERACTABLE_LAYER))
             {
-                var mummy = hit.collider.GetComponent<PlayerController>();
+                totalWeight += 2;
+            }
+            // 2. Es una venda -> Peso ligero (1)
+            else if (hitLayer == LayerMask.NameToLayer(BANDAGE_MOUND_LAYER))
+            {
+                totalWeight += 1;
+            }
+            // 3. Es la Momia
+            else if (hitLayer == LayerMask.NameToLayer(PLAYER_LAYER))
+            {
+                // Buscamos en el root (o en los hijos por si el script está en otro lado)
+                var mummy = rootObj.GetComponentInChildren<PlayerController>();
                 if (mummy != null)
                 {
-                    // Si el tamaño es Normal, es válido y salimos del loop
                     if (mummy.Ctx.Model.Size == Normal)
                     {
-                        return ButtonState.ValidPress;
+                        totalWeight += 2;
                     }
                     else if (mummy.Ctx.Model.Size == Small)
                     {
-                        // Registramos el fallo pero seguimos buscando 
-                        // por si hay una caja también en el botón
-                        foundInvalidMummy = true;
+                        totalWeight += 1;
                     }
                 }
             }
+
+            // Optimización: Si ya llegamos al peso requerido (2), salimos del loop al toque
+            if (totalWeight >= 2)
+            {
+                return ButtonState.ValidPress;
+            }
         }
 
-        // Si encontramos una momia de tamaño incorrecto y NO había nada válido
-        if (foundInvalidMummy) return ButtonState.InvalidPress;
+        // Si salimos del loop y el peso quedó en 1
+        if (totalWeight == 1) return ButtonState.InvalidPress;
 
-        // Si no detectamos nada relevante
+        // Si no detectamos nada
         return ButtonState.Empty;
     }
 
