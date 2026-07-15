@@ -10,7 +10,7 @@ using UnityEngine.Rendering.Universal;
 [RequireComponent(typeof(DecalProjector))]
 public sealed class PressureButtonRuneProgressView : MonoBehaviour
 {
-    private const string DefaultProgressProperty = "Progress";
+    private const string DefaultProgressProperty = "_Progress";
     private const float MinReturnDuration = 0.01f;
 
     [Header("References")]
