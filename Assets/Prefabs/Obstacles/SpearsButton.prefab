@@ -15439,6 +15439,7 @@ GameObject:
   - component: {fileID: 7274962393591044654}
   - component: {fileID: 2210164109208734481}
   - component: {fileID: 3960280412314331136}
+  - component: {fileID: 8922370010957642452}
   m_Layer: 0
   m_Name: SpearsButton
   m_TagString: Untagged
@@ -16218,6 +16219,22 @@ MonoBehaviour:
   message: 
   textColor: {r: 1, g: 1, b: 1, a: 1}
   messageDuration: 1.5
+--- !u!114 &8922370010957642452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5809979924432719744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7377a6d7253023458564f60dad37edc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PressureButtonOneShotFocusTrigger
+  _stateResolver: {fileID: 8025793199812087418}
+  _focusOnActivation: {fileID: 3960280412314331136}
+  _activateOnHalfPressed: 1
+  _activateOnFullyPressed: 1
 --- !u!1 &7909621370645918976
 GameObject:
   m_ObjectHideFlags: 0

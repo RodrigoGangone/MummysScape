@@ -10,7 +10,7 @@ public sealed class PressureButtonCoordinator : MonoBehaviour
     [SerializeField] private PressureButtonStateResolver _stateResolver;
     [SerializeField] private PressureButtonPlateMover _plateMover;
     [SerializeField] private MonoBehaviour[] _spikeTrapTargets;
-
+    
     private void OnEnable()
     {
         if (_stateResolver != null)
