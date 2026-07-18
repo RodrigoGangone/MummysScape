@@ -23,7 +23,7 @@ public sealed class PressureButtonOneShotFocusTrigger : MonoBehaviour
     {
         if (_stateResolver == null || _focusOnActivation == null)
         {
-            Debug.LogError(
+            Debug.Log(
                 $"{nameof(PressureButtonOneShotFocusTrigger)} tiene referencias sin asignar.",
                 this);
 
