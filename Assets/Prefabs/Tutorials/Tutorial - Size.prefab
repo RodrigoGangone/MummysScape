@@ -459,7 +459,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5258091763553836308}
-  - component: {fileID: 6433111757376213051}
   - component: {fileID: 2399274341945321037}
   - component: {fileID: 3995285439664085421}
   m_Layer: 23
@@ -499,27 +498,6 @@ Transform:
   - {fileID: 4695650777461063863}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
---- !u!65 &6433111757376213051
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1630170389699973822}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2399274341945321037
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -581,12 +559,15 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   _animationDBName: "Tutorial_Tama\xF1o"
+  _armatureComponent: {fileID: 8460389010534128877}
   sizeA: {x: 7, y: 2, z: 5}
   sizeB: {x: 2, y: 2, z: 4}
   centerOffsetA: {x: -3.5, y: 4, z: 0}
   centerOffsetB: {x: -1, y: 4, z: 1.68}
+  playerLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
   _bank: {fileID: 11400000, guid: 3c3aca3cbe05e2b4f9a5b2cfd48e07c4, type: 2}
-  _armatureComponent: {fileID: 8460389010534128877}
 --- !u!1 &1652049969436533888
 GameObject:
   m_ObjectHideFlags: 0
