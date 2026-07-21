@@ -89,12 +89,27 @@ public class LevelTile : MonoBehaviour
     private void ApplyLockedMaterial()
     {
         if (lockedMaterial == null) return;
+        
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         foreach (var r in renderers)
         {
-            Material[] mats = new Material[r.sharedMaterials.Length];
-            for (int i = 0; i < mats.Length; i++) mats[i] = lockedMaterial;
-            r.materials = mats;
+            // Obtenemos los materiales originales
+            Material[] currentMats = r.sharedMaterials;
+            
+            // Creamos un nuevo arreglo con 1 espacio extra
+            Material[] newMats = new Material[currentMats.Length + 1];
+            
+            // Copiamos los materiales actuales al nuevo arreglo
+            for (int i = 0; i < currentMats.Length; i++) 
+            {
+                newMats[i] = currentMats[i];
+            }
+            
+            // Asignamos el lockedMaterial en la última posición (como material adicional)
+            newMats[currentMats.Length] = lockedMaterial;
+            
+            // Aplicamos el nuevo arreglo al renderer
+            r.materials = newMats;
         }
     }
 

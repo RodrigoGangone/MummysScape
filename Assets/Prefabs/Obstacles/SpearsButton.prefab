@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6548241575727104427}
   - component: {fileID: 6951255228241343118}
   - component: {fileID: 2622241093011729055}
-  m_Layer: 0
+  m_Layer: 23
   m_Name: Dust
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -48,7 +48,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
@@ -5079,8 +5079,6 @@ GameObject:
   - component: {fileID: 3934948043108379325}
   - component: {fileID: 1431992474864409392}
   - component: {fileID: 5354975575158220828}
-  - component: {fileID: 7528519918499387423}
-  - component: {fileID: 5344954127247942822}
   m_Layer: 0
   m_Name: SpearsButton
   m_TagString: Untagged
@@ -5097,7 +5095,7 @@ Transform:
   m_GameObject: {fileID: 1080996428843336280}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.125}
   m_LocalScale: {x: 0.80555, y: 0.80555, z: 0.80555}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5161,57 +5159,102 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!95 &7528519918499387423
-Animator:
-  serializedVersion: 7
+--- !u!1 &1099669216670962785
+GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1080996428843336280}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4018584769142751779}
+  - component: {fileID: 2848940011794063088}
+  - component: {fileID: 1290672729419833573}
+  - component: {fileID: 8109291697883059525}
+  m_Layer: 0
+  m_Name: WeightDetectionVolume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4018584769142751779
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1099669216670962785}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7481157236270865117}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &2848940011794063088
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1099669216670962785}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 17957632
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 2397961470
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: f7bfd523dcfc93641a9f2aa95f018199, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
---- !u!114 &5344954127247942822
+  serializedVersion: 3
+  m_Size: {x: 0.76, y: 0.79, z: 0.52060866}
+  m_Center: {x: 0, y: -2.2016017e-16, z: 0.14691031}
+--- !u!54 &1290672729419833573
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1099669216670962785}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 0
+--- !u!114 &8109291697883059525
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1080996428843336280}
+  m_GameObject: {fileID: 1099669216670962785}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a1199243ee0d664892dbed486eab9a4, type: 3}
+  m_Script: {fileID: 11500000, guid: c66c9d27d247c5446861a97d0c67cc5d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AnimationEventReceiver
-  animationEvents:
-  - eventName: Dust
-    OnAnimationEvent:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 2086674931204355424}
-          m_TargetAssemblyTypeName: UnityEngine.ParticleSystem, UnityEngine
-          m_MethodName: Play
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
+  m_EditorClassIdentifier: Assembly-CSharp::PressureButtonWeightSensor
+  _cleanupInterval: 0.25
+  _staleColliderGrace: 0.5
 --- !u!1 &3132467924023716761
 GameObject:
   m_ObjectHideFlags: 0
@@ -5223,7 +5266,7 @@ GameObject:
   - component: {fileID: 3463680622732849745}
   - component: {fileID: 2334929582971830371}
   - component: {fileID: 830326214376203729}
-  m_Layer: 0
+  m_Layer: 23
   m_Name: Puff
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5260,7 +5303,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
@@ -10291,7 +10334,7 @@ GameObject:
   - component: {fileID: 1346278736573754983}
   - component: {fileID: 5021117143487697591}
   - component: {fileID: 321314684755774527}
-  m_Layer: 0
+  m_Layer: 23
   m_Name: Smoke
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10328,7 +10371,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
@@ -15388,10 +15431,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7481157236270865117}
+  - component: {fileID: 5417497602141762954}
+  - component: {fileID: 8025793199812087418}
+  - component: {fileID: 3896179305553096130}
+  - component: {fileID: 7349777601622183250}
+  - component: {fileID: 5707509477329145900}
+  - component: {fileID: 7274962393591044654}
   - component: {fileID: 2210164109208734481}
-  - component: {fileID: 8167998395851647327}
-  - component: {fileID: 2361239089957238203}
-  - component: {fileID: 553738495388872641}
+  - component: {fileID: 3960280412314331136}
+  - component: {fileID: 8922370010957642452}
   m_Layer: 0
   m_Name: SpearsButton
   m_TagString: Untagged
@@ -15413,10 +15461,125 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3934948043108379325}
+  - {fileID: 4018584769142751779}
   - {fileID: 6230330630313164446}
   - {fileID: 5422758863432447406}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+--- !u!114 &5417497602141762954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5809979924432719744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 976df551a3cb1024dad339b63700c2cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PressureButtonHoldTimer
+  _timerService: {fileID: 7274962393591044654}
+  _duration: 10
+--- !u!114 &8025793199812087418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5809979924432719744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbbc6e5b3265fad43866da2ddd2ef496, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PressureButtonStateResolver
+  _weightSensor: {fileID: 8109291697883059525}
+  _holdTimer: {fileID: 5417497602141762954}
+--- !u!114 &3896179305553096130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5809979924432719744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15d9cdbb71687a54482cce2df3514dae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PressureButtonPlateMover
+  _plate: {fileID: 3934948043108379325}
+  _releasedLocalPosition: {x: 0, y: 0, z: 0.12}
+  _halfPressedLocalPosition: {x: 0, y: 0, z: 0.075}
+  _fullyPressedLocalPosition: {x: 0, y: 0, z: 0}
+  _duration: 0.2
+  _movementCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _initialState: 0
+--- !u!114 &7349777601622183250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5809979924432719744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f5621827a4dc754babd0c78430e197d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PressureButtonCoordinator
+  _stateResolver: {fileID: 8025793199812087418}
+  _plateMover: {fileID: 3896179305553096130}
+  _spikeTrapTargets: []
+--- !u!114 &5707509477329145900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5809979924432719744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2411ee8474bc99d469414e1d2f86b158, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PressureButtonParticleFeedback
+  _stateResolver: {fileID: 8025793199812087418}
+  _particlesRoot: {fileID: 6230330630313164446}
+  _playOnHalfPressed: 1
+  _playOnFullyPressed: 1
+  _restartIfAlreadyPlaying: 1
+--- !u!114 &7274962393591044654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5809979924432719744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a87034bfc280ef74c87d4be6892c8b34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TimerService
 --- !u!114 &2210164109208734481
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15554,12 +15717,12 @@ MonoBehaviour:
     - {x: 0.31318897, y: 0, z: 0.94969076}
     - {x: 0.83399665, y: 0, z: 0.5517694}
     - {x: 0.31318897, y: 0, z: 0.94969076}
-    - {x: 0.8339966, y: 0, z: 0.5517695}
+    - {x: 0.83399665, y: 0, z: 0.5517695}
     - {x: 0.31318897, y: 0, z: 0.9496909}
     - {x: 0.97245127, y: 0, z: 0.23310618}
     - {x: 0.97245127, y: 0, z: 0.23310618}
     - {x: 0.8705766, y: 0.3885791, z: 0.30183223}
-    - {x: 0.78449875, y: 0.29530036, z: 0.54530674}
+    - {x: 0.7844988, y: 0.29530036, z: 0.54530674}
     - {x: 0.7844986, y: -0.29529917, z: 0.5453075}
     - {x: 0.26824257, y: -0.2682417, z: 0.92525256}
     - {x: 0.29530093, y: -0.7844974, z: 0.54530823}
@@ -15592,8 +15755,8 @@ MonoBehaviour:
     - {x: 0, y: 0.8339972, z: 0.55176866}
     - {x: 0, y: 0.83399737, z: 0.55176854}
     - {x: 0.29530096, y: 0.78449875, z: 0.5453064}
-    - {x: 0.78449875, y: 0.29530036, z: 0.54530674}
-    - {x: 0.8339966, y: 0, z: 0.5517695}
+    - {x: 0.7844988, y: 0.29530036, z: 0.54530674}
+    - {x: 0.83399665, y: 0, z: 0.5517695}
     - {x: -0.78449833, y: -0.2953005, z: 0.5453073}
     - {x: -0.29529983, y: -0.7844982, z: 0.54530776}
     - {x: -0.2682424, y: -0.26824203, z: 0.92525256}
@@ -15610,7 +15773,7 @@ MonoBehaviour:
     - {x: -0.26824206, y: 0.2682428, z: 0.9252524}
     - {x: -0.78449833, y: 0.29530096, z: 0.54530704}
     - {x: -0.9724514, y: 0, z: 0.23310582}
-    - {x: -0.29529962, y: 0.78449917, z: 0.5453065}
+    - {x: -0.2952996, y: 0.78449917, z: 0.5453065}
     - {x: -0.87057626, y: 0.38858068, z: 0.30183122}
     - {x: -0.38857943, y: 0.87057686, z: 0.3018309}
     - {x: -0.29529983, y: -0.7844982, z: 0.54530776}
@@ -15635,7 +15798,7 @@ MonoBehaviour:
     - {x: -0.38857904, y: -0.8705763, z: 0.30183303}
     - {x: 0.8705766, y: 0.3885791, z: 0.30183223}
     - {x: 0.29530096, y: 0.78449875, z: 0.5453064}
-    - {x: 0.78449875, y: 0.29530036, z: 0.54530674}
+    - {x: 0.7844988, y: 0.29530036, z: 0.54530674}
     - {x: 0.3885807, y: 0.87057596, z: 0.30183202}
     - {x: 0, y: 0.9724514, z: 0.23310551}
     - {x: 0, y: 0.8339972, z: 0.55176866}
@@ -15644,7 +15807,7 @@ MonoBehaviour:
     - {x: 0, y: 0.9724515, z: 0.23310529}
     - {x: 0, y: 0.83399737, z: 0.55176854}
     - {x: -0.38857943, y: 0.87057686, z: 0.3018309}
-    - {x: -0.29529962, y: 0.78449917, z: 0.5453065}
+    - {x: -0.2952996, y: 0.78449917, z: 0.5453065}
     - {x: 0, y: 0.31318963, z: 0.9496905}
     - {x: 0, y: 0.31318954, z: 0.94969064}
     - {x: 0, y: 0.31318957, z: 0.9496905}
@@ -15662,19 +15825,19 @@ MonoBehaviour:
     colors: []
     tangents:
     - {x: 0.1473714, y: -0.76537436, z: -0.6264852, w: -1}
-    - {x: 0.22166863, y: -0.22963107, z: -0.9476986, w: -1}
+    - {x: 0.22166862, y: -0.22963105, z: -0.9476986, w: -1}
     - {x: 0.22434743, y: -0.23247579, z: -0.94637376, w: -1}
     - {x: 0.07337054, y: -0.95197356, z: -0.29725942, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0.11632735, y: -0.9775235, z: -0.17582847, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
-    - {x: 0.062117245, y: -0.9936428, z: -0.09388986, w: -1}
+    - {x: 0.06211726, y: -0.9936428, z: -0.09388986, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0.045731917, y: -0.9805669, z: -0.19078027, w: -1}
     - {x: 0.11537249, y: -0.8689295, z: -0.4813012, w: -1}
-    - {x: -0.22434363, y: -0.23248185, z: 0.94637316, w: -1}
-    - {x: -0.08906604, y: -0.8165712, z: 0.57033217, w: -1}
+    - {x: -0.22434364, y: -0.23248184, z: 0.94637316, w: -1}
+    - {x: -0.08906611, y: -0.8165711, z: 0.5703322, w: -1}
     - {x: 0.1473714, y: -0.76537436, z: -0.6264852, w: -1}
     - {x: 0.07337054, y: -0.95197356, z: -0.29725942, w: -1}
     - {x: 0.20220712, y: -0.506513, z: -0.8381866, w: -1}
@@ -15683,7 +15846,7 @@ MonoBehaviour:
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
-    - {x: 0, y: -0.94969076, z: -0.31318903, w: -1}
+    - {x: 0, y: -0.94969076, z: -0.313189, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
@@ -15692,7 +15855,7 @@ MonoBehaviour:
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
-    - {x: -0.07334816, y: -0.9519769, z: -0.2972543, w: -1}
+    - {x: -0.07334818, y: -0.9519769, z: -0.29725426, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
@@ -15700,47 +15863,47 @@ MonoBehaviour:
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0.07337768, y: -0.9519721, z: 0.2972623, w: -1}
-    - {x: 0.047500618, y: -0.94861865, z: 0.31283608, w: -1}
+    - {x: 0.047500618, y: -0.94861865, z: 0.31283602, w: -1}
     - {x: -0.0014648825, y: -0.94968957, z: 0.3131893, w: -1}
     - {x: -0.048954375, y: -0.9485519, z: 0.31281403, w: -1}
-    - {x: -0.07340566, y: -0.9519677, z: 0.29726955, w: -1}
+    - {x: -0.07340565, y: -0.9519677, z: 0.29726952, w: -1}
     - {x: -0.101189665, y: -0.5489364, z: 0.8297164, w: -1}
     - {x: 0.008249879, y: -0.5517497, z: 0.833969, w: -1}
     - {x: -0.16834342, y: -0.51910514, z: 0.83796805, w: -1}
-    - {x: -0.08906604, y: -0.8165712, z: 0.57033217, w: -1}
-    - {x: 0.07054798, y: -0.99179256, z: -0.10663289, w: -1}
+    - {x: -0.08906611, y: -0.8165711, z: 0.5703322, w: -1}
+    - {x: 0.070548005, y: -0.99179256, z: -0.106632896, w: -1}
     - {x: 0.06468091, y: -0.91351, z: -0.4016413, w: -1}
     - {x: -0.16320542, y: -0.5209514, z: -0.83783865, w: -1}
-    - {x: -0.07334816, y: -0.9519769, z: -0.2972543, w: -1}
+    - {x: -0.07334818, y: -0.9519769, z: -0.29725426, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
-    - {x: 0.07054785, y: -0.99179256, z: 0.106632955, w: -1}
+    - {x: 0.07054786, y: -0.99179256, z: 0.106632955, w: -1}
     - {x: 0.1501932, y: -0.7940286, z: -0.5890336, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
     - {x: 0.05288124, y: -0.9739284, z: 0.22060597, w: -1}
-    - {x: 0.3329108, y: -0.7974753, z: 0.50319344, w: -1}
+    - {x: 0.3329109, y: -0.7974753, z: 0.50319344, w: -1}
     - {x: 0.11537237, y: -0.8689292, z: 0.4813015, w: -1}
     - {x: 0, y: -1, z: 0, w: -1}
-    - {x: -0.09908694, y: -0.98374325, z: -0.1497694, w: -1}
+    - {x: -0.09908696, y: -0.98374325, z: -0.1497694, w: -1}
     - {x: 0.07337768, y: -0.9519721, z: 0.2972623, w: -1}
     - {x: -0.040149063, y: -0.901683, z: 0.4305299, w: -1}
     - {x: -0.11389177, y: -0.872517, z: -0.47512388, w: -1}
-    - {x: 0.09910363, y: -0.5425288, z: 0.8341708, w: -1}
+    - {x: 0.09910365, y: -0.54252887, z: 0.83417076, w: -1}
     - {x: -0.10370042, y: -0.74456084, z: 0.6594509, w: -1}
     - {x: 0.24428768, y: -0.21851371, z: 0.944762, w: -1}
     - {x: -0.16320542, y: -0.5209514, z: -0.83783865, w: -1}
     - {x: 0.06468091, y: -0.91351, z: -0.4016413, w: -1}
     - {x: 0.1501932, y: -0.7940286, z: -0.5890336, w: -1}
     - {x: -0.22072506, y: -0.23008959, z: -0.9478076, w: -1}
-    - {x: -0.07334816, y: -0.9519769, z: -0.2972543, w: -1}
+    - {x: -0.07334818, y: -0.9519769, z: -0.29725426, w: -1}
     - {x: -0.09625769, y: -0.54920757, z: -0.8301237, w: -1}
     - {x: -0.047488242, y: -0.94861925, z: -0.31283584, w: -1}
     - {x: 0, y: -0.5517698, z: -0.83399653, w: -1}
-    - {x: 0, y: -0.94969076, z: -0.31318903, w: -1}
+    - {x: 0, y: -0.94969076, z: -0.313189, w: -1}
     - {x: 0.09628962, y: -0.54920614, z: -0.830121, w: -1}
     - {x: 0.04750194, y: -0.94861895, z: -0.312835, w: -1}
     - {x: 0.20220712, y: -0.506513, z: -0.8381866, w: -1}
-    - {x: 0.22166863, y: -0.22963107, z: -0.9476986, w: -1}
+    - {x: 0.22166862, y: -0.22963105, z: -0.9476986, w: -1}
     - {x: 0.1473714, y: -0.76537436, z: -0.6264852, w: -1}
     - {x: 0.22198722, y: -0.22729069, z: -0.9481881, w: -1}
     - {x: 1, y: 0, z: 0, w: -1}
@@ -15748,9 +15911,9 @@ MonoBehaviour:
     - {x: 0.92484117, y: -0.3779294, z: -0.04287344, w: 1}
     - {x: 0.22198676, y: 0.22729118, z: 0.9481881, w: 1}
     - {x: 0.22278805, y: 0.22908567, z: 0.94756806, w: 1}
-    - {x: -0.22434363, y: -0.23248185, z: 0.94637316, w: -1}
+    - {x: -0.22434364, y: -0.23248184, z: 0.94637316, w: -1}
     - {x: -0.16834342, y: -0.51910514, z: 0.83796805, w: -1}
-    - {x: -0.08906604, y: -0.8165712, z: 0.57033217, w: -1}
+    - {x: -0.08906611, y: -0.8165711, z: 0.5703322, w: -1}
     - {x: -0.22071698, y: -0.23009217, z: 0.94780886, w: -1}
     - {x: -0.11576193, y: -0.23153834, z: 0.9659136, w: -1}
     - {x: -0.101189665, y: -0.5489364, z: 0.8297164, w: -1}
@@ -15759,10 +15922,10 @@ MonoBehaviour:
     - {x: 0.07741705, y: -0.23240572, z: 0.969533, w: -1}
     - {x: 0.10970717, y: -0.54843795, z: 0.8289632, w: -1}
     - {x: 0.24428768, y: -0.21851371, z: 0.944762, w: -1}
-    - {x: 0.09910363, y: -0.5425288, z: 0.8341708, w: -1}
+    - {x: 0.09910365, y: -0.54252887, z: 0.83417076, w: -1}
     - {x: -0.0014648825, y: -0.94968957, z: 0.3131893, w: -1}
     - {x: -0.048954375, y: -0.9485519, z: 0.31281403, w: -1}
-    - {x: 0.047500618, y: -0.94861865, z: 0.31283608, w: -1}
+    - {x: 0.047500618, y: -0.94861865, z: 0.31283602, w: -1}
     - {x: 0.07337768, y: -0.9519721, z: 0.2972623, w: -1}
     - {x: 0.31513682, y: -0.567496, z: -0.7606819, w: 1}
     - {x: 0.22702025, y: -0.22702093, z: -0.94706035, w: 1}
@@ -15770,10 +15933,10 @@ MonoBehaviour:
     - {x: -0.18204302, y: -0.9440069, z: 0.27515677, w: 1}
     - {x: 0, y: -1, z: 0, w: 1}
     - {x: 0, y: -1, z: 0, w: 1}
-    - {x: 0.042133693, y: -0.99708015, z: 0.063684985, w: 1}
+    - {x: 0.0421337, y: -0.99708015, z: 0.06368498, w: 1}
     - {x: 0, y: -1, z: 0, w: 1}
     - {x: 0.066739626, y: -0.9581379, z: 0.27841955, w: 1}
-    - {x: 0.1952262, y: -0.93531406, z: 0.29508385, w: 1}
+    - {x: 0.19522622, y: -0.93531406, z: 0.29508385, w: 1}
     uv0:
     - {x: 0.23178084, y: 0.67897874, z: 0, w: 0}
     - {x: 0.23302749, y: 0.6801849, z: 0, w: 0}
@@ -16012,139 +16175,7 @@ MonoBehaviour:
   m_SkinMeshRef: {fileID: 0}
   m_OriginalMeshObject: {fileID: 1418583151482114088, guid: ee409cef4151ccf40b18002f64b9dc7d, type: 3}
   m_Mode: 0
---- !u!114 &8167998395851647327
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5809979924432719744}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af45df75a0d5fa649a621a4e9c33a604, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ActionPressureButton
-  detectionLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  boxSize: {x: 0.5, y: 0.2, z: 0.5}
-  checkDistance: 0
-  timer: 5
-  isOneShot: 0
-  useTimer: 1
-  runesDecal: {fileID: 5659495810161725221}
-  shaderPropertyName: _Progress
-  OnActivated:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Spears, Assembly-CSharp
-        m_MethodName: Down
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Spears, Assembly-CSharp
-        m_MethodName: Down
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnDeactivated:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Spears, Assembly-CSharp
-        m_MethodName: Up
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Spears, Assembly-CSharp
-        m_MethodName: Up
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnFailedActivate:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Spears, Assembly-CSharp
-        m_MethodName: Failed
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Spears, Assembly-CSharp
-        m_MethodName: Failed
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &2361239089957238203
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5809979924432719744}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a1199243ee0d664892dbed486eab9a4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AnimationEventReceiver
-  animationEvents:
-  - eventName: Dust
-    OnAnimationEvent:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 2086674931204355424}
-          m_TargetAssemblyTypeName: UnityEngine.ParticleSystem, UnityEngine
-          m_MethodName: Play
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
---- !u!114 &553738495388872641
+--- !u!114 &3960280412314331136
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -16158,8 +16189,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FocusOnActivation
   cameraFocusPos: {fileID: 5422758863432447406}
   cameraFocusLookAt: {fileID: 0}
-  focusDuration: 2
-  onlyOnce: 1
+  focusDuration: 1.5
+  onlyOnce: 0
   zoomAmount: 3
   zoomCurve:
     serializedVersion: 2
@@ -16187,7 +16218,23 @@ MonoBehaviour:
     m_RotationOrder: 4
   message: 
   textColor: {r: 1, g: 1, b: 1, a: 1}
-  messageDuration: 2.5
+  messageDuration: 1.5
+--- !u!114 &8922370010957642452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5809979924432719744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7377a6d7253023458564f60dad37edc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PressureButtonOneShotFocusTrigger
+  _stateResolver: {fileID: 8025793199812087418}
+  _focusOnActivation: {fileID: 3960280412314331136}
+  _activateOnHalfPressed: 1
+  _activateOnFullyPressed: 1
 --- !u!1 &7909621370645918976
 GameObject:
   m_ObjectHideFlags: 0
@@ -16199,7 +16246,7 @@ GameObject:
   - component: {fileID: 6230330630313164446}
   - component: {fileID: 2086674931204355424}
   - component: {fileID: 3932812709582674384}
-  m_Layer: 0
+  m_Layer: 23
   m_Name: DustParticless
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -16239,7 +16286,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
@@ -16795,7 +16842,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 1000
+    maxNumParticles: 50
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -17056,12 +17103,12 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
   EmissionModule:
-    enabled: 0
+    enabled: 1
     serializedVersion: 4
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 50
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -21036,6 +21083,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1577744834714313384}
+  - component: {fileID: 1481804282169585251}
   - component: {fileID: 5659495810161725221}
   m_Layer: 0
   m_Name: Runes
@@ -21059,6 +21107,46 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3934948043108379325}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1481804282169585251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8803106763340892095}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79f8afc1904921d4ca3bb1fe5d7c4e49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PressureButtonRuneProgressView
+  _holdTimer: {fileID: 5417497602141762954}
+  _decalProjector: {fileID: 5659495810161725221}
+  _progressProperty: _Progress
+  _returnDuration: 0.1
+  _returnCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &5659495810161725221
 MonoBehaviour:
   m_ObjectHideFlags: 0

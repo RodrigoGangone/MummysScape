@@ -8,13 +8,12 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Flama
-  m_Shader: {fileID: -6465566751694194690, guid: da396841461e5f0439fcdfece737c31c, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
+  m_Shader: {fileID: 4800000, guid: 7f0d8e831f0448bca1bb46b93431ff31, type: 3}
+  m_Parent: {fileID: 2100000, guid: 824fddbfde0a4b988b3e5f57cb68d9aa, type: 2}
+  m_ModifiedSerializedProperties: 2
   m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _EMISSION
-  m_LightmapFlags: 2
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
@@ -25,38 +24,44 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _MainTxture:
-        m_Texture: {fileID: 2800000, guid: 385e865566ef267478686772baec83a2, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_Lightmaps:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_LightmapsInd:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_ShadowMasks:
-        m_Texture: {fileID: 0}
+    - _FlameMaskTex:
+        m_Texture: {fileID: 2800000, guid: 37b9048b5f9747509f32f7090f88df4c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Deformation_Amopunt: 17.38
-    - _Deformation_Intensity: 0.04
-    - _Deformation_Speed: 0.53
-    - _Dissolve_Distortion: 1
-    - _DistortionAmount: 0.178
-    - _Distortion_A_Scale: 7.26
-    - _Distortion_B_Scale: 3.04
-    - _QueueControl: 0
-    - _QueueOffset: 0
-    - _isActive: 1
+    - _Alpha: 0.064
+    - _AlphaClip: 0.074
+    - _BottomFill: 0.581
+    - _Brightness: 3.43
+    - _CoreFill: 0.5
+    - _Cull: 0
+    - _DistortScale: 3.4
+    - _DistortStrength: 0.22
+    - _FadeEnd: 0.662
+    - _FadeStart: 0.443
+    - _FlameHeight: 0.811
+    - _InnerNoiseContribution: 0.5
+    - _MaskStretchY: 1.95
+    - _MaskTilingX: 3.2
+    - _ObjectBottomY: -0.75
+    - _ObjectTopY: 2
+    - _RimPower: 3.5
+    - _RimStrength: 1
+    - _SecondaryContribution: 0.3
+    - _Speed: 1
+    - _SwayStrength: 0.172
+    - _TipSoftness: 0.442
+    - _TopTaper: 0.25
+    - _VertexDisplacement: 0.0931
+    - _XZNoiseSpeed: 1.5
     m_Colors:
-    - _Color: {r: 2.3927126, g: 0, b: 33.896763, a: 0}
-    - _Distortion_A_Speed: {r: 0, g: -0.39, b: 0, a: 0}
-    - _Distortion_B_Speed: {r: 0, g: -0.4, b: 0, a: 0}
+    - _BaseColor: {r: 1, g: 0, b: 0.60764885, a: 1}
+    - _BottomColor: {r: 1, g: 0, b: 0.7389393, a: 1}
+    - _CoreColor: {r: 0.8207547, g: 0.80069053, b: 0.76268244, a: 1}
+    - _MiddleColor: {r: 1, g: 0.2980392, b: 0.83706117, a: 1}
+    - _OuterGlowColor: {r: 1, g: 0, b: 0.9215689, a: 1}
+    - _TopColor: {r: 1, g: 0.6509804, b: 0.93877554, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &6995168256314611634

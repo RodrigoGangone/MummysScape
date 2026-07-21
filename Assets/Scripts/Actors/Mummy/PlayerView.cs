@@ -1,15 +1,17 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Serialization;
 using static PlayerEnum;
 
 /// <summary> 
 /// Gestor Audiovisual: Coordina el cambio de animadores, avatares y bancos de sonido según el tamaño, 
-/// además de gestionar visuales complejos como el dibujo de las vendas y efectos de partículas. 
+/// además de gestionar visuales complejos como el dibujo de las vendas, efectos de partículas y colores de materiales.
 /// </summary>
 public sealed class PlayerView : MonoBehaviour, IPausable
 {
-    [Header("Anim & FX")] [SerializeField] private Animator _anim;
+    [Header("Anim & FX")] 
+    [SerializeField] private Animator _anim;
 
     [SerializeField] private FxBank bankNormal;
     [SerializeField] private FxBank bankSmall;
@@ -31,8 +33,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
     [SerializeField] private DecalProjector shadow;
 
-    [Header("Shoot Visual")] [SerializeField]
-    private GameObject _decal;
+    [Header("Shoot Visual")] 
+    [SerializeField] private GameObject _decal;
 
     [SerializeField] private DecalProjector _rangeIndicator;
     [SerializeField] private LineRenderer _arcRenderer;
@@ -43,19 +45,31 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [ColorUsage(true, true), SerializeField]
     private Color _aimNotAllowed;
 
-    [Header("Bandage Visuals System")] [SerializeField]
-    private LineRenderer _bandageLine;
+    [Header("Bandage Visuals System")] 
+    [SerializeField] private LineRenderer _bandageLine;
 
     [SerializeField] private ParticleSystem _cutFx;
 
-    [Header("Hand Anchors (Asignar transforms de las manos)")] [SerializeField]
-    private Transform _handAnchorNormal;
+    [Header("Hand Anchors (Asignar transforms de las manos)")] 
+    [SerializeField] private Transform _handAnchorNormal;
 
     [SerializeField] private Transform _handAnchorSmall;
     [SerializeField] private Transform _handAnchorHead;
 
-    [Header("Feedback System")] [SerializeField]
-    private PlayerFeedbackLibrary _feedbackLibrary;
+    [Header("Feedback System")] 
+    [SerializeField] private PlayerFeedbackLibrary _feedbackLibrary;
+
+    [Header("Color Settings (Scriptable Objects)")]
+    [SerializeField] private MummyColorSetSO _colorSetNormal;
+    [SerializeField] private MummyColorSetSO _colorSetSmall;
+    [SerializeField] private MummyColorSetSO _colorSetHead;
+
+    [Header("Direct Material Assets")]
+    //[SerializeField] private Material _skullMat; // Comentado por si lo necesitas a futuro
+    [FormerlySerializedAs("_fire1Renderer")] // Mantenemos el tag por si Unity logra recuperar alguna referencia, aunque al cambiar el tipo suele perderse
+    [SerializeField] private Material _fire1Mat;
+    [FormerlySerializedAs("_fire2Renderer")] 
+    [SerializeField] private Material _fire2Mat;
 
     private Transform _currentHandAnchor;
     private Transform _bandageTarget;
@@ -72,6 +86,13 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     private PlayerSize _currentSize = PlayerSize.Normal;
     private FxBank _currentBank;
     private Vector3 _lastCutMidPoint;
+
+    // IDs de propiedades de Shaders cacheados
+    private static readonly int BaseColorProp = Shader.PropertyToID("_BaseColor");
+    private static readonly int BottomColorProp = Shader.PropertyToID("_BottomColor");
+    private static readonly int MidColorProp = Shader.PropertyToID("_MidColor");
+    private static readonly int TopColorProp = Shader.PropertyToID("_TopColor");
+    private static readonly int GlowColorProp = Shader.PropertyToID("_GlowColor");
 
     public GameObject Decal => _decal;
     public DecalProjector Shadow => shadow;
@@ -95,13 +116,16 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         }
 
         _currentHandAnchor = _handAnchorNormal;
+        
+        // Eliminamos las instanciaciones de materiales (.material) que tenías aquí
+        // para afectar directamente a los assets globales de _fire1Mat y _fire2Mat.
     }
 
     private void LateUpdate()
     {
         if (_isBandageActive && _bandageLine != null && _currentHandAnchor != null && _bandageTarget != null)
         {
-// 1. Obtener la posición inicial (Mano)
+            // 1. Obtener la posición inicial (Mano)
             Vector3 startPos = _currentHandAnchor.position;
         
             // 2. Obtener la posición final (Objetivo)
@@ -112,7 +136,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
             _bandageLine.SetPosition(1, targetWorldPos);
         
             // 4. Calcular el punto medio para el efecto de corte
-            _lastCutMidPoint = (startPos + targetWorldPos) * 0.5f;        }
+            _lastCutMidPoint = (startPos + targetWorldPos) * 0.5f;        
+        }
     }
 
     public void StartBandage(Transform targetTransform, Vector3 worldHitPoint, float duration)
@@ -193,13 +218,35 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         };
     }
 
+    private void ApplyColorSet(MummyColorSetSO colorSet)
+    {
+        if (colorSet == null) return;
+
+        //if (_skullMat != null)
+        //    _skullMat.SetColor(BaseColorProp, colorSet.skullAlbedo);
+
+        if (_fire1Mat != null)
+        {
+            _fire1Mat.SetColor(BottomColorProp, colorSet.fire1Bottom);
+            _fire1Mat.SetColor(MidColorProp, colorSet.fire1Mid);
+            _fire1Mat.SetColor(TopColorProp, colorSet.fire1Top);
+        }
+
+        if (_fire2Mat != null)
+        {
+            _fire2Mat.SetColor(BottomColorProp, colorSet.fire2Bottom);
+            _fire2Mat.SetColor(MidColorProp, colorSet.fire2Mid);
+            _fire2Mat.SetColor(TopColorProp, colorSet.fire2Top);
+            _fire2Mat.SetColor(GlowColorProp, colorSet.fire2Glow);
+        }
+    }
+
     private void OnSizeChanged(PlayerSize newSize)
     {
         if (_anim == null) return;
 
         bool wasWalking = _anim.parameterCount > 0 && _anim.GetBool("Walk");
         bool wasIdle = _anim.parameterCount > 0 && _anim.GetBool("Idle");
-        //float currentSpeed = _anim.GetFloat("Speed");
 
         _anim.enabled = false;
 
@@ -209,16 +256,19 @@ public sealed class PlayerView : MonoBehaviour, IPausable
                 _anim.runtimeAnimatorController = _controllerNormal;
                 _anim.avatar = _avatarNormal;
                 _currentHandAnchor = _handAnchorNormal;
+                ApplyColorSet(_colorSetNormal);
                 break;
             case PlayerSize.Small:
                 _anim.runtimeAnimatorController = _controllerSmall;
                 _anim.avatar = _avatarSmall;
                 _currentHandAnchor = _handAnchorSmall;
+                ApplyColorSet(_colorSetSmall);
                 break;
             case PlayerSize.Head:
                 _anim.runtimeAnimatorController = _controllerHead;
                 _anim.avatar = _avatarHead;
                 _currentHandAnchor = _handAnchorHead;
+                ApplyColorSet(_colorSetHead);
                 break;
         }
 
@@ -231,7 +281,6 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         {
             _anim.SetBool("Walk", wasWalking);
             _anim.SetBool("Idle", wasIdle);
-            //_anim.SetFloat("Speed", currentSpeed);
 
             _anim.Play(0, -1, 0f);
         }

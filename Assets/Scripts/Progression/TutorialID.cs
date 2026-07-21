@@ -4,7 +4,7 @@ public enum TutorialID
     None = 0,
     Drop,
     Quicksand,
-    Shoot,
+    Aim,
     Swing,
     Push,
     Pull,
