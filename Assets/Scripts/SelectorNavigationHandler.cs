@@ -19,8 +19,8 @@ public class SelectorNavigationHandler : MonoBehaviour
 
         if (targetTile != null)
         {
-            playerTransform.position = targetTile.Playerpos.transform.position;
-            playerTransform.forward = targetTile.Playerpos.transform.forward;
+            playerTransform.position = targetTile.PlayerPos.transform.position;
+            playerTransform.forward = targetTile.PlayerPos.transform.forward;
             
             Debug.Log($"[Navigation] Player reposicionado en Nivel {lastIndex}");
         }

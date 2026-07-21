@@ -1,150 +1,242 @@
+using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
-using static Tags;
+using static Tags; 
 
-/// <summary> 
-/// Gestor de Nivel: Controla el estado de desbloqueo de un nivel individual, gestionando la visualización 
-/// de gemas obtenidas y disparando secuencias de "revelación" de cámara. 
-/// </summary>
 public class LevelTile : MonoBehaviour
 {
     [Header("Configuración Nivel")]
-    [Tooltip("El índice de la escena para verificar progreso y gemas.")]
-    [SerializeField]
-    private int buildIndex;
-
+    [SerializeField] private int buildIndex;
     [SerializeField] private bool isFirstLevel;
-    [SerializeField] private bool isBossLevel;
+    [SerializeField] private Portal portal;
 
-    [Header("Referencias Visuales")] [SerializeField]
-    private ParticleSystem portalFx;
-
-    [SerializeField] private GameObject[] gemIcons = new GameObject[3];
+    [Header("Referencias Visuales")]
+    [SerializeField] private ParticleSystem portalFx;
     [SerializeField] private Material lockedMaterial;
 
-    [Header("Focus Reveal (Al desbloquearse)")] [SerializeField]
-    private float revealDuration = 3.0f;
+    [Header("Gemas")]
+    [SerializeField] private GameObject[] gemIcons = new GameObject[3];
+    [SerializeField] private float gemPulseScale = 1.5f;
+    [SerializeField] private float gemPulseDuration = 0.5f;
 
-    [SerializeField] private float revealZoomAmount = 2.0f;
-    [SerializeField] private AnimationCurve revealZoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [Header("Timeline & Reveal")]
+    [SerializeField] private PlayableDirector director;
 
-    [Header("Referencias de Cámara")] [SerializeField]
-    private Transform entryFocusPos;
+    [Header("Animación de Material")]
+    [SerializeField] private float glowDuration = 2.0f;
+    [SerializeField] private float cutOffDuration = 1.5f;
 
-    [SerializeField] private Transform entryLookAt;
-
+    [Header("Referencias Generales")]
     [SerializeField] private Transform playerPos;
-    
-    bool _isUnlocked;
 
     public int BuildIndex => buildIndex;
-    public Transform Playerpos => playerPos;
+    public Transform PlayerPos => playerPos;
 
-    void Start()
+    private bool _isUnlocked;
+    private Action _onRevealCompleteCallback;
+
+    private Renderer[] _renderers;
+    private MaterialPropertyBlock _propBlock;
+    
+    private static readonly int GlowStrengthProperty = Shader.PropertyToID("_Glow_Strength");
+    private static readonly int CutOffHeightProperty = Shader.PropertyToID("_Cut_Off_Height");
+
+    private void Awake()
     {
-        bool isValidIndex = IsBuildIndexValid(buildIndex);
+        _renderers = GetComponentsInChildren<Renderer>();
+        _propBlock = new MaterialPropertyBlock();
+    }
+    
+    public bool EvaluateStateAndCheckReveal()
+    {
+        if (!IsBuildIndexValid(buildIndex))
+        {
+            Debug.LogWarning($"El Build Index {buildIndex} no es válido en el objeto {gameObject.name}.");
+            return false;
+        }
 
-        if (isFirstLevel) _isUnlocked = true;
-        else _isUnlocked = Save.IsLevelCompleted(buildIndex - 1);
+        _isUnlocked = isFirstLevel || Save.IsLevelCompleted(buildIndex - 1);
+        bool hasSeenReveal = Save.IsLevelRevealSeen(buildIndex);
+        
+        bool needsReveal = _isUnlocked && !hasSeenReveal;
 
-        if (!_isUnlocked || !isValidIndex)
+        if (!_isUnlocked || needsReveal)
         {
             ApplyLockedMaterial();
             SetAllGems(false);
-
-            var portal = GetComponentInChildren<Portal>(true);
-            if (portal != null)
-            {
-                portal.enabled = false;
-
-                // Si el GameObject del portal tiene SphereCollider lo desactivamos
-                SphereCollider sphere = portal.GetComponent<SphereCollider>();
-                if (sphere != null)
-                    sphere.enabled = false;
-            }
-            
-            return;
+            if (portal != null) portal.enabled = false;
         }
-
-        if (!Save.IsLevelRevealSeen(buildIndex))
+        else
         {
-            if (FocusManager.Instance != null)
-            {
-                FocusManager.Instance.RequestRevealFocus(
-                    buildIndex,
-                    entryFocusPos != null ? entryFocusPos : transform,
-                    entryLookAt,
-                    revealDuration,
-                    revealZoomAmount,
-                    revealZoomCurve,
-                    () => Save.MarkLevelRevealSeen(buildIndex)
-                );
-            }
+            if (portal != null) portal.enabled = true;
         }
         
-        if (!isBossLevel) RefreshGems();
-        else SetAllGems(false);
+        RefreshGemsInstant();
+        
+        // Devolvemos la respuesta al Manager para que él decida si lo encola o no
+        return needsReveal;
+    }
+
+    public void PlayRevealSequence(Action onComplete)
+    {
+        _onRevealCompleteCallback = onComplete;
+
+        if (director != null)
+        {
+            director.stopped += OnTimelineStopped;
+            director.Play();
+        }
+        else
+        {
+            Debug.Log("Fail - Reveal");
+            CompleteReveal();
+        }
+    }
+
+    // =========================================================
+    // MÉTODOS PÚBLICOS DE ANIMACIÓN DE MATERIALES
+    // =========================================================
+
+    public void AnimateGlowBlink()
+    {
+        StartCoroutine(GlowBlinkRoutine());
+
+        IEnumerator GlowBlinkRoutine()
+        {
+            float timer = 0f;
+            float halfGlow = glowDuration / 2f;
+
+            while (timer < halfGlow)
+            {
+                timer += Time.deltaTime;
+                ApplyPropertyValue(GlowStrengthProperty, Mathf.Lerp(0f, 1f, timer / halfGlow));
+                yield return null;
+            }
+
+            timer = 0f;
+            while (timer < halfGlow)
+            {
+                timer += Time.deltaTime;
+                ApplyPropertyValue(GlowStrengthProperty, Mathf.Lerp(1f, 0f, timer / halfGlow));
+                yield return null;
+            }
+
+            ApplyPropertyValue(GlowStrengthProperty, 0f);
+        }
+    }
+
+    public void AnimateCutOffReveal()
+    {
+        StartCoroutine(CutOffRoutine());
+
+        IEnumerator CutOffRoutine()
+        {
+            float timer = 0f;
+            float startCutOff = lockedMaterial != null ? lockedMaterial.GetFloat(CutOffHeightProperty) : 1f;
+
+            while (timer < cutOffDuration)
+            {
+                timer += Time.deltaTime;
+                ApplyPropertyValue(CutOffHeightProperty, Mathf.Lerp(startCutOff, 0f, timer / cutOffDuration));
+                yield return null;
+            }
+
+            ApplyPropertyValue(CutOffHeightProperty, 0f);
+        }
+    }
+
+    // =========================================================
+    // MÉTODOS DE GEMAS (TIMELINE & ESTÁTICOS)
+    // =========================================================
+    
+    private void RefreshGemsInstant()
+    {
+        for (int i = 0; i < gemIcons.Length; i++)
+        {
+            if (gemIcons[i] != null)
+            {
+                gemIcons[i].SetActive(Save.WasGemPickedInLevel(i + 1, buildIndex));
+            }
+        }
+    }
+
+    private void SetAllGems(bool state)
+    {
+        foreach (var gem in gemIcons)
+        {
+            if (gem != null) gem.SetActive(state);
+        }
+    }
+
+    // =========================================================
+    // MÉTODOS PRIVADOS Y DE SOPORTE
+    // =========================================================
+
+    private void ApplyPropertyValue(int propertyId, float value)
+    {
+        if (_renderers == null || _renderers.Length == 0) return;
+
+        foreach (var r in _renderers)
+        {
+            r.GetPropertyBlock(_propBlock);
+            _propBlock.SetFloat(propertyId, value);
+            r.SetPropertyBlock(_propBlock);
+        }
+    }
+
+    private void OnTimelineStopped(PlayableDirector dir)
+    {
+        if (director != null)
+        {
+            director.stopped -= OnTimelineStopped;
+        }
+        CompleteReveal();
+    }
+
+    private void CompleteReveal()
+    {
+        if (portal != null) portal.enabled = true;
+        
+        Save.MarkLevelRevealSeen(buildIndex);
+        _onRevealCompleteCallback?.Invoke();
     }
 
     private void ApplyLockedMaterial()
     {
         if (lockedMaterial == null) return;
-        
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        foreach (var r in renderers)
+
+        foreach (var r in _renderers)
         {
-            // Obtenemos los materiales originales
             Material[] currentMats = r.sharedMaterials;
-            
-            // Creamos un nuevo arreglo con 1 espacio extra
             Material[] newMats = new Material[currentMats.Length + 1];
-            
-            // Copiamos los materiales actuales al nuevo arreglo
-            for (int i = 0; i < currentMats.Length; i++) 
-            {
-                newMats[i] = currentMats[i];
-            }
-            
-            // Asignamos el lockedMaterial en la última posición (como material adicional)
+
+            Array.Copy(currentMats, newMats, currentMats.Length);
             newMats[currentMats.Length] = lockedMaterial;
-            
-            // Aplicamos el nuevo arreglo al renderer
+
             r.materials = newMats;
         }
     }
 
-    private void RefreshGems()
+    private bool IsBuildIndexValid(int index)
     {
-        for (int i = 0; i < gemIcons.Length; i++)
-        {
-            if (gemIcons[i] == null) continue;
-            bool picked = Save.WasGemPickedInLevel(i + 1, buildIndex);
-            gemIcons[i].SetActive(picked);
-        }
-    }
-
-    private void SetAllGems(bool on)
-    {
-        foreach (var g in gemIcons)
-            if (g)
-                g.SetActive(on);
+        return !string.IsNullOrEmpty(SceneUtility.GetScenePathByBuildIndex(index));
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag(PLAYER_TAG) && _isUnlocked)
-            portalFx.Play();
+        if (_isUnlocked && other.CompareTag(PLAYER_TAG))
+        {
+            if (portalFx != null) portalFx.Play();
+        }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.CompareTag(PLAYER_TAG) && _isUnlocked)
-            portalFx.Stop();
-    }
-    
-    private bool IsBuildIndexValid(int index)
-    {
-        //path vacío si el índice no existe en BuildSettings
-        return !string.IsNullOrEmpty(SceneUtility.GetScenePathByBuildIndex(index));
+        if (_isUnlocked && other.CompareTag(PLAYER_TAG))
+        {
+            if (portalFx != null) portalFx.Stop();
+        }
     }
 }
