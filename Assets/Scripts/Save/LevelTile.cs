@@ -70,10 +70,11 @@ public class LevelTile : MonoBehaviour
         }
         else
         {
-            RefreshGemsInstant();
             if (portal != null) portal.enabled = true;
         }
-
+        
+        RefreshGemsInstant();
+        
         // Devolvemos la respuesta al Manager para que él decida si lo encola o no
         return needsReveal;
     }
