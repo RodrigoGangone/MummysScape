@@ -10,7 +10,7 @@ public sealed class PressureButtonStateResolver : MonoBehaviour
 {
     private const int FullPressThreshold = 2;
 
-    [SerializeField] private PressureButtonWeightSensor _weightSensor;
+    [SerializeField] private WeightSensor _weightSensor;
     [SerializeField] private PressureButtonHoldTimer _holdTimer;
 
     private bool _fullyPressedWasReached;
@@ -136,7 +136,7 @@ public sealed class PressureButtonStateResolver : MonoBehaviour
     {
         if (_weightSensor == null)
         {
-            _weightSensor = GetComponentInChildren<PressureButtonWeightSensor>(true);
+            _weightSensor = GetComponentInChildren<WeightSensor>(true);
         }
 
         if (_holdTimer == null)
