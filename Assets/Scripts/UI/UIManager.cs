@@ -124,8 +124,7 @@ public class UIManager : MonoBehaviour
 
         AddButtonProps(_endGameUI.BtnEndGameRetry, RetryLevel);
         AddButtonProps(_endGameUI.BtnEndGameMenu, GoToMainMenu);
-        AddButtonProps(_endGameUI.BtnEndGameNextLvl, () => StartLoadingTransition(_sceneConfig.SelectorSceneIndex));
-
+        AddButtonProps(_endGameUI.BtnEndGameNextLvl, LoadNextLevel);
         if (_pauseUI.PauseMaterial != null)
             _pauseUI.PauseMaterial.SetFloat(PAUSE_FILL, 0f);
 
@@ -150,6 +149,18 @@ public class UIManager : MonoBehaviour
     {
         if (Input.GetButtonDown("Pause") && !PlayerLock.Instance.IsLocked)
             Toggle();
+
+        if (Input.GetButtonDown("Drop") && _isPaused && !_pauseCharging)
+        {
+            if (_pauseUI.OptionsPanel != null && _pauseUI.OptionsPanel.activeSelf)
+            {
+                BackFromOptions();
+            }
+            else if (_pauseUI.PausePanel != null && _pauseUI.PausePanel.activeSelf)
+            {
+                Toggle(); 
+            }
+        }
     }
 
     #region Win - Lose - Loading
@@ -267,6 +278,21 @@ public class UIManager : MonoBehaviour
         _endGameUI.Gems.SetActive(true);
     }
 
+    private void LoadNextLevel()
+    {
+        // Obtenemos el índice de la escena actual y le sumamos 1
+        int nextBuildIndex = SceneManager.GetActiveScene().buildIndex + 1;
+    
+        // Obtenemos la cantidad total de escenas en el Build Settings
+        int totalScenesInBuild = SceneManager.sceneCountInBuildSettings;
+
+        // Evaluamos: si el próximo índice existe, vamos a ese. Si nos pasamos del límite, vamos al HUB.
+        int targetScene = (nextBuildIndex < totalScenesInBuild) 
+            ? nextBuildIndex 
+            : _sceneConfig.SelectorSceneIndex;
+
+        StartLoadingTransition(targetScene);
+    }
     
     #endregion
 
