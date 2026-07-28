@@ -20,6 +20,7 @@ public class LevelRevealManager : MonoBehaviour
 
     private void Start()
     {
+        // El Manager toma el control: evalúa todos los tiles en orden estricto
         InitializeAllTiles();
     }
 
