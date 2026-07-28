@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Rota de forma cinemática y controlada la tabla alrededor de su pivote mediante Rigidbody.MoveRotation.
+/// Aplica la posición inicial sin transición y rota cinemáticamente la tabla hacia el estado objetivo recibido.
 /// Respeta aceleración, límites angulares, pausa y bloqueos independientes del suelo en cada punta.
 /// </summary>
 [DisallowMultipleComponent]
@@ -61,6 +61,7 @@ public sealed class SeesawMover : MonoBehaviour, IPausable
     private Collider[] _selfColliders = System.Array.Empty<Collider>();
     private Quaternion _neutralLocalRotation;
     private SeesawResolution _resolution;
+    private bool _isInitialized;
 
     public bool IsLeftGroundBlocked => _isLeftGroundBlocked;
     public bool IsRightGroundBlocked => _isRightGroundBlocked;
@@ -71,24 +72,7 @@ public sealed class SeesawMover : MonoBehaviour, IPausable
 
     private void Awake()
     {
-        if (_rigidbody == null)
-        {
-            _rigidbody = GetComponent<Rigidbody>();
-        }
-
-        _neutralLocalRotation = _useInitialLocalRotationAsNeutral
-            ? transform.localRotation
-            : Quaternion.Euler(_neutralLocalEulerAngles);
-
-        if (_useInitialLocalRotationAsNeutral)
-        {
-            _neutralLocalEulerAngles = transform.localEulerAngles;
-        }
-
-        _selfColliders = GetComponentsInChildren<Collider>(includeInactive: true);
-        ConfigureRigidbody();
-        ApplyTargetFromResolution();
-        UpdateRuntimeDebug();
+        EnsureInitialized();
     }
 
     private void OnEnable()
@@ -111,6 +95,7 @@ public sealed class SeesawMover : MonoBehaviour, IPausable
 
     private void FixedUpdate()
     {
+        EnsureInitialized();
         _currentAngle = ReadCurrentAngle();
         UpdateGroundBlocks();
 
@@ -151,8 +136,21 @@ public sealed class SeesawMover : MonoBehaviour, IPausable
         UpdateRuntimeDebug();
     }
 
+    public void Initialize(SeesawResolution initialResolution)
+    {
+        EnsureInitialized();
+
+        _resolution = initialResolution;
+        _currentState = initialResolution.State;
+        _currentSpeedLevel = initialResolution.SpeedLevel;
+        ApplyTargetFromResolution();
+        SnapToTarget();
+    }
+
     public void SetResolution(SeesawResolution resolution)
     {
+        EnsureInitialized();
+
         _resolution = resolution;
         _currentState = resolution.State;
         _currentSpeedLevel = resolution.SpeedLevel;
@@ -163,6 +161,46 @@ public sealed class SeesawMover : MonoBehaviour, IPausable
     {
         _isPaused = paused;
         _currentAngularSpeed = 0f;
+    }
+
+    private void EnsureInitialized()
+    {
+        if (_isInitialized)
+        {
+            return;
+        }
+
+        if (_rigidbody == null)
+        {
+            _rigidbody = GetComponent<Rigidbody>();
+        }
+
+        _neutralLocalRotation = _useInitialLocalRotationAsNeutral
+            ? transform.localRotation
+            : Quaternion.Euler(_neutralLocalEulerAngles);
+
+        if (_useInitialLocalRotationAsNeutral)
+        {
+            _neutralLocalEulerAngles = transform.localEulerAngles;
+        }
+
+        _selfColliders = GetComponentsInChildren<Collider>(includeInactive: true);
+        ConfigureRigidbody();
+
+        _currentAngle = ReadCurrentAngle();
+        _targetAngle = _currentAngle;
+        _currentAngularSpeed = 0f;
+        _isInitialized = true;
+        UpdateRuntimeDebug();
+    }
+
+    private void SnapToTarget()
+    {
+        Quaternion targetWorldRotation = CalculateWorldRotation(_targetAngle);
+        _rigidbody.rotation = targetWorldRotation;
+        _currentAngle = _targetAngle;
+        _currentAngularSpeed = 0f;
+        UpdateRuntimeDebug();
     }
 
     private void ApplyTargetFromResolution()

@@ -51,8 +51,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 6.8, y: 0.1, z: 2}
-  m_Center: {x: 0, y: 0.05, z: 0}
+  m_Size: {x: 6.8, y: 0.3, z: 2}
+  m_Center: {x: 0, y: -0.045, z: 0}
 --- !u!1 &975031477851339413
 GameObject:
   m_ObjectHideFlags: 0
@@ -175,12 +175,12 @@ MonoBehaviour:
   _mediumAngularSpeed: 25
   _highAngularSpeed: 40
   _returnToBalanceSpeed: 15
-  _groundCheckDistance: 0.2
-  _groundCheckRadius: 0.08
+  _groundCheckDistance: 0
+  _groundCheckRadius: 0.001
   _groundLayers:
     serializedVersion: 2
     m_Bits: 18057984
-  _groundSafetyDistance: 0.02
+  _groundSafetyDistance: 0
   _showGroundCheckGizmos: 1
   _currentState: 0
   _currentSpeedLevel: 0
@@ -675,6 +675,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d09dbae77b042df8f0dd14a8420325a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SeesawStateResolver
+  _initialPosition: 1
   _minimumActivationWeight: 1
   _minimumWeightDifference: 1
   _mediumSpeedThreshold: 3
@@ -686,6 +687,8 @@ MonoBehaviour:
   _weightDifference: 0
   _currentState: 0
   _currentSpeedLevel: 0
+  _lastStableState: 0
+  _lastStableSpeedLevel: 0
 --- !u!114 &3846605599150211120
 MonoBehaviour:
   m_ObjectHideFlags: 0

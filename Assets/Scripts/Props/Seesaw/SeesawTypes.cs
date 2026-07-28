@@ -1,7 +1,8 @@
 using System;
 
 /// <summary>
-/// Define el estado lógico del balancín según qué lado posee mayor peso efectivo.
+/// Define el estado lógico objetivo del sube y baja según el lado que debe permanecer abajo.
+/// Balanced se utiliza únicamente mientras la posición estable siga siendo el centro.
 /// </summary>
 public enum SeesawState
 {
@@ -22,8 +23,8 @@ public enum SeesawSpeedLevel
 }
 
 /// <summary>
-/// Contiene el resultado inmutable de resolver los pesos reales del balancín, incluyendo
-/// pesos efectivos, diferencia, estado y nivel de velocidad sin controlar la física.
+/// Contiene el resultado inmutable de resolver los pesos del sube y baja.
+/// Separa la decisión lógica del estado objetivo respecto del movimiento físico de la tabla.
 /// </summary>
 public readonly struct SeesawResolution : IEquatable<SeesawResolution>
 {

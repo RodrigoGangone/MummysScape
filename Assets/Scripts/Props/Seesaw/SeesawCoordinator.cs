@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Coordina los sensores izquierdo y derecho, elimina el doble conteo de proveedores compartidos
-/// y comunica una única resolución de peso al resolver lógico y al controlador de movimiento.
+/// Coordina los sensores izquierdo y derecho, inicializa la posición estable configurada, evita el doble
+/// conteo de proveedores compartidos y comunica una única resolución lógica al controlador de movimiento.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(SeesawStateResolver))]
@@ -73,6 +73,19 @@ public sealed class SeesawCoordinator : MonoBehaviour
     public int RightRawWeight => _rightRawWeight;
     public int SharedProviderCount => _sharedProviderCount;
     public bool HasSharedProviders => _hasSharedProviders;
+
+    private void Awake()
+    {
+        ResolveReferences();
+
+        if (_stateResolver == null || _mover == null)
+        {
+            return;
+        }
+
+        _stateResolver.Initialize();
+        _mover.Initialize(_stateResolver.CurrentResolution);
+    }
 
     private void OnEnable()
     {
@@ -355,15 +368,8 @@ public sealed class SeesawCoordinator : MonoBehaviour
             : (int)value;
     }
 
-    private void OnValidate()
+    private void ResolveReferences()
     {
-        _sharedProviderCenterDeadZone = Mathf.Max(0f, _sharedProviderCenterDeadZone);
-
-        if (_leftRightLocalAxis.sqrMagnitude <= Mathf.Epsilon)
-        {
-            _leftRightLocalAxis = Vector3.right;
-        }
-
         if (_stateResolver == null)
         {
             _stateResolver = GetComponent<SeesawStateResolver>();
@@ -373,5 +379,17 @@ public sealed class SeesawCoordinator : MonoBehaviour
         {
             _mover = GetComponentInChildren<SeesawMover>(true);
         }
+    }
+
+    private void OnValidate()
+    {
+        _sharedProviderCenterDeadZone = Mathf.Max(0f, _sharedProviderCenterDeadZone);
+
+        if (_leftRightLocalAxis.sqrMagnitude <= Mathf.Epsilon)
+        {
+            _leftRightLocalAxis = Vector3.right;
+        }
+
+        ResolveReferences();
     }
 }

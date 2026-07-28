@@ -2,12 +2,16 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// Convierte los pesos reales de ambos extremos en pesos efectivos, estado y nivel de velocidad.
-/// Aplica únicamente umbrales inferiores y conserva los valores completos sin controlar movimiento.
+/// Convierte los pesos de ambos extremos en el estado objetivo del sube y baja.
+/// Equilibra la tabla cuando existen pesos activos iguales, conserva la última inclinación cuando queda vacía
+/// y cambia de lado únicamente cuando una diferencia válida determina un nuevo extremo dominante.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class SeesawStateResolver : MonoBehaviour
 {
+    [Header("Initial State")]
+    [SerializeField] private SeesawInitialPosition _initialPosition = SeesawInitialPosition.Middle;
+
     [Header("Activation")]
     [SerializeField, Min(0)] private int _minimumActivationWeight = 1;
     [SerializeField, Min(0)] private int _minimumWeightDifference = 1;
@@ -24,9 +28,13 @@ public sealed class SeesawStateResolver : MonoBehaviour
     [SerializeField] private int _weightDifference;
     [SerializeField] private SeesawState _currentState = SeesawState.Balanced;
     [SerializeField] private SeesawSpeedLevel _currentSpeedLevel = SeesawSpeedLevel.None;
+    [SerializeField] private SeesawState _lastStableState = SeesawState.Balanced;
+    [SerializeField] private SeesawSpeedLevel _lastStableSpeedLevel = SeesawSpeedLevel.None;
 
     private SeesawResolution _currentResolution;
+    private bool _isInitialized;
 
+    public SeesawInitialPosition InitialPosition => _initialPosition;
     public int MinimumActivationWeight => _minimumActivationWeight;
     public int MinimumWeightDifference => _minimumWeightDifference;
     public int LeftRawWeight => _leftRawWeight;
@@ -35,6 +43,7 @@ public sealed class SeesawStateResolver : MonoBehaviour
     public int RightEffectiveWeight => _rightEffectiveWeight;
     public int WeightDifference => _weightDifference;
     public SeesawState CurrentState => _currentState;
+    public SeesawState LastStableState => _lastStableState;
     public SeesawSpeedLevel CurrentSpeedLevel => _currentSpeedLevel;
     public SeesawResolution CurrentResolution => _currentResolution;
 
@@ -42,30 +51,51 @@ public sealed class SeesawStateResolver : MonoBehaviour
     public event Action<SeesawSpeedLevel> SpeedLevelChanged;
     public event Action<SeesawResolution> ResolutionChanged;
 
+    private void Awake()
+    {
+        Initialize();
+    }
+
+    public void Initialize()
+    {
+        if (_isInitialized)
+        {
+            return;
+        }
+
+        _lastStableState = ConvertInitialPositionToState(_initialPosition);
+        _lastStableSpeedLevel = SeesawSpeedLevel.None;
+
+        SeesawResolution initialResolution = new SeesawResolution(
+            0,
+            0,
+            0,
+            0,
+            0,
+            _lastStableState,
+            SeesawSpeedLevel.None);
+
+        _isInitialized = true;
+        ApplyResolution(initialResolution);
+    }
+
     public SeesawResolution Resolve(int leftRawWeight, int rightRawWeight)
     {
+        Initialize();
+
         int safeLeftRawWeight = Mathf.Max(0, leftRawWeight);
         int safeRightRawWeight = Mathf.Max(0, rightRawWeight);
 
-        int leftEffectiveWeight = safeLeftRawWeight >= _minimumActivationWeight
-            ? safeLeftRawWeight
-            : 0;
+        int leftEffectiveWeight = ResolveEffectiveWeight(safeLeftRawWeight);
+        int rightEffectiveWeight = ResolveEffectiveWeight(safeRightRawWeight);
+        int difference = CalculateSafeDifference(leftEffectiveWeight, rightEffectiveWeight);
 
-        int rightEffectiveWeight = safeRightRawWeight >= _minimumActivationWeight
-            ? safeRightRawWeight
-            : 0;
-
-        long differenceLong = Math.Abs((long)leftEffectiveWeight - rightEffectiveWeight);
-        int difference = differenceLong > int.MaxValue
-            ? int.MaxValue
-            : (int)differenceLong;
-
-        SeesawState state = ResolveState(
+        ResolveTarget(
             leftEffectiveWeight,
             rightEffectiveWeight,
-            difference);
-
-        SeesawSpeedLevel speedLevel = ResolveSpeedLevel(state, difference);
+            difference,
+            out SeesawState targetState,
+            out SeesawSpeedLevel targetSpeedLevel);
 
         SeesawResolution nextResolution = new SeesawResolution(
             safeLeftRawWeight,
@@ -73,36 +103,82 @@ public sealed class SeesawStateResolver : MonoBehaviour
             leftEffectiveWeight,
             rightEffectiveWeight,
             difference,
-            state,
-            speedLevel);
+            targetState,
+            targetSpeedLevel);
 
         ApplyResolution(nextResolution);
         return nextResolution;
     }
 
-    private SeesawState ResolveState(
-        int leftEffectiveWeight,
-        int rightEffectiveWeight,
-        int difference)
+    private int ResolveEffectiveWeight(int rawWeight)
     {
-        if (leftEffectiveWeight == rightEffectiveWeight ||
-            difference < _minimumWeightDifference)
-        {
-            return SeesawState.Balanced;
-        }
-
-        return leftEffectiveWeight > rightEffectiveWeight
-            ? SeesawState.LeftHeavy
-            : SeesawState.RightHeavy;
+        return rawWeight >= _minimumActivationWeight
+            ? rawWeight
+            : 0;
     }
 
-    private SeesawSpeedLevel ResolveSpeedLevel(SeesawState state, int difference)
+    private void ResolveTarget(
+        int leftEffectiveWeight,
+        int rightEffectiveWeight,
+        int difference,
+        out SeesawState targetState,
+        out SeesawSpeedLevel targetSpeedLevel)
     {
-        if (state == SeesawState.Balanced)
+        bool bothSidesAreEmpty = leftEffectiveWeight == 0 && rightEffectiveWeight == 0;
+
+        if (bothSidesAreEmpty)
         {
-            return SeesawSpeedLevel.None;
+            ResolveLastStableTarget(out targetState, out targetSpeedLevel);
+            return;
         }
 
+        bool hasEqualActiveWeight =
+            leftEffectiveWeight > 0 &&
+            leftEffectiveWeight == rightEffectiveWeight;
+
+        if (hasEqualActiveWeight)
+        {
+            targetState = SeesawState.Balanced;
+            targetSpeedLevel = SeesawSpeedLevel.None;
+            return;
+        }
+
+        if (difference < _minimumWeightDifference)
+        {
+            ResolveLastStableTarget(out targetState, out targetSpeedLevel);
+            return;
+        }
+
+        targetState = leftEffectiveWeight > rightEffectiveWeight
+            ? SeesawState.LeftHeavy
+            : SeesawState.RightHeavy;
+
+        targetSpeedLevel = ResolveSpeedLevel(difference);
+
+        _lastStableState = targetState;
+        _lastStableSpeedLevel = targetSpeedLevel;
+    }
+
+    private void ResolveLastStableTarget(
+        out SeesawState targetState,
+        out SeesawSpeedLevel targetSpeedLevel)
+    {
+        targetState = _lastStableState;
+        targetSpeedLevel = _lastStableState == SeesawState.Balanced
+            ? SeesawSpeedLevel.None
+            : _lastStableSpeedLevel;
+    }
+
+    private static int CalculateSafeDifference(int leftWeight, int rightWeight)
+    {
+        long difference = Math.Abs((long)leftWeight - rightWeight);
+        return difference > int.MaxValue
+            ? int.MaxValue
+            : (int)difference;
+    }
+
+    private SeesawSpeedLevel ResolveSpeedLevel(int difference)
+    {
         if (difference >= _highSpeedThreshold)
         {
             return SeesawSpeedLevel.High;
@@ -114,6 +190,16 @@ public sealed class SeesawStateResolver : MonoBehaviour
         }
 
         return SeesawSpeedLevel.Low;
+    }
+
+    private static SeesawState ConvertInitialPositionToState(SeesawInitialPosition initialPosition)
+    {
+        return initialPosition switch
+        {
+            SeesawInitialPosition.Left => SeesawState.LeftHeavy,
+            SeesawInitialPosition.Right => SeesawState.RightHeavy,
+            _ => SeesawState.Balanced
+        };
     }
 
     private void ApplyResolution(SeesawResolution nextResolution)
