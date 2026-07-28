@@ -62,7 +62,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 740144773252941611}
-  m_Layer: 15
+  m_Layer: 0
   m_Name: RightGroundCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -171,9 +171,9 @@ MonoBehaviour:
   _maximumRightAngle: 15
   _rotationAcceleration: 80
   _rotationDeceleration: 120
-  _lowAngularSpeed: 15
-  _mediumAngularSpeed: 25
-  _highAngularSpeed: 40
+  _lowAngularSpeed: 60
+  _mediumAngularSpeed: 90
+  _highAngularSpeed: 120
   _returnToBalanceSpeed: 15
   _groundCheckDistance: 0
   _groundCheckRadius: 0.001
@@ -201,7 +201,7 @@ GameObject:
   - component: {fileID: 6041595298270828787}
   - component: {fileID: 8307110458965688859}
   - component: {fileID: 8037442544183907851}
-  m_Layer: 15
+  m_Layer: 0
   m_Name: LeftWeightDetectionVolume
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -217,7 +217,7 @@ Transform:
   m_GameObject: {fileID: 1868274630946441336}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.2, y: 0.3, z: 0}
+  m_LocalPosition: {x: -2.2, y: 0.45, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -270,7 +270,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3219843682870281543}
   - component: {fileID: 8797476071424421957}
-  m_Layer: 15
+  m_Layer: 11
   m_Name: BasePhysicalColliders
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -311,8 +311,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 1, z: 1.9278941}
+  m_Center: {x: 0, y: 0, z: -0.000000029802322}
 --- !u!1 &5925203460240058385
 GameObject:
   m_ObjectHideFlags: 0
@@ -324,7 +324,7 @@ GameObject:
   - component: {fileID: 3837091888890560876}
   - component: {fileID: 1083365167418665994}
   - component: {fileID: 1542456058136656485}
-  m_Layer: 15
+  m_Layer: 0
   m_Name: RightWeightDetectionVolume
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -340,7 +340,7 @@ Transform:
   m_GameObject: {fileID: 5925203460240058385}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.2, y: 0.3, z: 0}
+  m_LocalPosition: {x: 2.2, y: 0.45, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -484,7 +484,7 @@ GameObject:
   - component: {fileID: 7672741280132816873}
   - component: {fileID: 8592845794483404312}
   - component: {fileID: 1675673807223095525}
-  m_Layer: 15
+  m_Layer: 11
   m_Name: BaseVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -573,7 +573,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5095089877454847951}
-  m_Layer: 15
+  m_Layer: 0
   m_Name: LeftGroundCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -639,7 +639,7 @@ GameObject:
   - component: {fileID: 7476797023942782094}
   - component: {fileID: 5470927320019526334}
   - component: {fileID: 3846605599150211120}
-  m_Layer: 15
+  m_Layer: 0
   m_Name: Seesaw
   m_TagString: Untagged
   m_Icon: {fileID: 0}
