@@ -295,6 +295,12 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     {
         if (_dropFX == null) return;
 
+        if (!_dropFX.gameObject.activeSelf)
+        {
+            _dropFX.gameObject.SetActive(true);
+            return;
+        }
+
         var main = _dropFX.main;
 
         switch (playerSize)

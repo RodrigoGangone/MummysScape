@@ -9,12 +9,6 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class StageSetTransition : MonoBehaviour, IPausable
 {
-    [Header("Boss Handler")] [SerializeField]
-    private BossActor boss;
-
-    [SerializeField] private float delayToReactivateBoss = 1.5f;
-    [SerializeField] private bool activateBossOnStart = true;
-
     [Header("Stage Roots (empties contenedores)")]
     [Tooltip("Un Transform por stage, en orden. Cada uno agrupa los assets de ese stage.")]
     [SerializeField]
@@ -37,6 +31,7 @@ public class StageSetTransition : MonoBehaviour, IPausable
     private void Awake()
     {
         _basePos.Clear();
+        
         for (int i = 0; i < stageRoots.Count; i++)
         {
             var t = stageRoots[i];
@@ -48,12 +43,6 @@ public class StageSetTransition : MonoBehaviour, IPausable
             t.gameObject.SetActive(active);
 
             if (active) SetPos(t, _basePos[t]);
-        }
-
-        if (boss != null && activateBossOnStart)
-        {
-            boss.gameObject.SetActive(false);
-            StartCoroutine(InitialBossActivation());
         }
     }
 
@@ -69,20 +58,9 @@ public class StageSetTransition : MonoBehaviour, IPausable
         GameEventManager.Instance.bossEvents.OnStageCompleted.Unregister<int>(OnBossStageChanged);
     }
 
-    private IEnumerator InitialBossActivation()
-    {
-        yield return new WaitForSeconds(delayToReactivateBoss);
-
-        if (boss != null)
-        {
-            boss.gameObject.SetActive(true);
-            Debug.Log("[StageHandler] Boss activado por primera vez.");
-        }
-    }
-
     private void OnBossStageChanged(int nextIndex) => TransitionTo(nextIndex);
 
-    public void TransitionTo(int nextIndex)
+    private void TransitionTo(int nextIndex)
     {
         if (nextIndex == currentStageIndex) return;
 

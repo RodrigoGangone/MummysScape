@@ -42,6 +42,7 @@ public class GameEventManager : MonoBehaviour
         public GameEvent OnPickedGem;
         public GameEvent OnRumbleLow;
         public GameEvent OnRumbleHigh;
+        public GameEvent OnCinematicToggled;
     }
 
     [Header("Boss Events")] [SerializeField]
