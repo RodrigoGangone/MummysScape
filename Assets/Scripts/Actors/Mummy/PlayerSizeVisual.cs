@@ -5,7 +5,6 @@ using static PlayerEnum;
 /// Conmutador de Mallas: Escucha los cambios de tamaño del modelo para activar o desactivar 
 /// los GameObjects visuales correspondientes (Normal, Small, Head). 
 /// </summary>
-
 [DisallowMultipleComponent]
 public sealed class PlayerSizeVisual : MonoBehaviour
 {
@@ -14,6 +13,7 @@ public sealed class PlayerSizeVisual : MonoBehaviour
 
     [SerializeField] private GameObject _meshSmall;
     [SerializeField] private GameObject _meshHead;
+    [SerializeField] private GameObject _meshEmpowered;
 
     private PlayerModel _model;
 
@@ -28,6 +28,7 @@ public sealed class PlayerSizeVisual : MonoBehaviour
         if (_meshNormal) _meshNormal.SetActive(size == PlayerSize.Normal);
         if (_meshSmall) _meshSmall.SetActive(size == PlayerSize.Small);
         if (_meshHead) _meshHead.SetActive(size == PlayerSize.Head);
+        if (_meshEmpowered) _meshEmpowered.SetActive(size == PlayerSize.Empowered);
     }
 
     public void MeshTurn(bool show)
@@ -67,7 +68,11 @@ public sealed class PlayerSizeVisual : MonoBehaviour
 // #endif
 
     #endregion
-    
+
     private void OnEnable() => GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(Apply);
+    
+
     private void OnDisable() => GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(Apply);
+    
+    
 }

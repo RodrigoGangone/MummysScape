@@ -6,7 +6,6 @@ using static PlayerEnum;
 /// Ajuste de Colisión: Modifica dinámicamente las dimensiones del CapsuleCollider del jugador 
 /// (centro, radio y altura) basándose en su tamaño actual (Small, Head o Normal). 
 /// </summary>
-
 [DisallowMultipleComponent]
 [RequireComponent(typeof(CapsuleCollider))]
 public sealed class CapsuleBySizeRuntime : MonoBehaviour
@@ -27,6 +26,8 @@ public sealed class CapsuleBySizeRuntime : MonoBehaviour
 
     [SerializeField] private CapsulePreset _head = new() { center = new(0f, 0.5f, 0f), radius = 0.5f, height = 1f };
 
+    [SerializeField] private CapsulePreset _empowered = new() { center = new(0f, 1f, 0f), radius = 0.5f, height = 2f };
+
     private CapsuleCollider _capsule;
     private PlayerModel _model;
 
@@ -43,6 +44,7 @@ public sealed class CapsuleBySizeRuntime : MonoBehaviour
         {
             PlayerSize.Small => _small,
             PlayerSize.Head => _head,
+            PlayerSize.Empowered => _empowered,
             _ => _normal
         };
 

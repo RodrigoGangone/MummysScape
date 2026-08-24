@@ -62,6 +62,7 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
         _headTimer?.Bind(_model);
         _sizeVisual?.Bind(_model);
         _capsuleBySize?.Bind(_model);
+        pe.OnSizeChanged.Raise(_model.Size);
 
         _ground = GetComponent<GroundCheckRuntime>();
 
@@ -90,7 +91,6 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
         _sm.ChangeState(PlayerStateId.Idle); 
 
         pe.OnBandagesCountChanged.Raise(_model.Bandages);
-        pe.OnSizeChanged.Raise(_model.Size);
     }
 
     public bool TryCollectBandage(int amount)
@@ -103,6 +103,18 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
         int before = _model.Bandages;
         _model.AddBandages(amount);
         return _model.Bandages > before;
+    }
+    
+    public bool TryCollectSpecialBandage(int amount)
+    {
+        if (_sm.CurrentStateImplement<IBandageRestrictor>())
+        {
+            return false;
+        }
+
+        int before = _model.SpecialBandages;
+        _model.AddSpecialBandage(amount);
+        return _model.SpecialBandages > before;
     }
 
     private void Kill() => _sm.ChangeState(PlayerStateId.Dead);
