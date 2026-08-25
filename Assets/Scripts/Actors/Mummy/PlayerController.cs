@@ -53,7 +53,6 @@ public sealed class  PlayerController : MonoBehaviour, IPausable, ILocked
         _swingHandler = GetComponent<SwingHandler>();
         _inputDriver = GetComponent<PlayerInputStateDriver>();
 
-
         var pe = GameEventManager.Instance.playerEvents;
 
         _model = new PlayerModel(pe.OnBandagesCountChanged, pe.OnSizeChanged, _progressionSettings);

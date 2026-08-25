@@ -33,7 +33,7 @@ public sealed class PlayerModel
         
         GameEventManager.Instance.playerEvents.OnShoot.Register((() => { TryConsumeBandage(); }));
         GameEventManager.Instance.playerEvents.OnHit.Register((() => { TryConsumeBandage(Bandages); }));
-        GameEventManager.Instance.playerEvents.OnEmpowered.Register((() => { TryConsumeBandage(Bandages); }));
+        GameEventManager.Instance.playerEvents.OnEmpoweredCompleted.Register((() => { AddSpecialBandage(-MaxSpecialBandages); }));
         
         Bandages = Clamp(MaxBandages, MinBandages, MaxBandages);
     }

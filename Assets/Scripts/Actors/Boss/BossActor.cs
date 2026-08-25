@@ -2,33 +2,42 @@ using UnityEngine;
 using static BossCommonState;
 using System;
 using System.Collections;
+using Unity.VisualScripting;
+using UnityEngine.Playables;
 using static Layers;
 
 /// <summary>
 /// Controlador Central: Integra el sistema de estados (FSM), el planificador de decisiones (GOAP) 
 /// y el contexto de batalla, gestionando además la progresión de fases y la secuencia de muerte.
 /// </summary>
-
 [DisallowMultipleComponent]
 public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 {
-    [Header("Config & Refs")] 
-    [SerializeField] private BossConfigSO config;
+    [Header("Config & Refs")] [SerializeField]
+    private BossConfigSO config;
 
     [SerializeField] private PlayerController player;
     [SerializeField] private Animator animator;
     [SerializeField] private FxBank bank;
-    [SerializeField] public FocusOnActivation focus;
-    
-    [Header("FSM")] public StateMachinePlayer stateMachine;
+    //[SerializeField] public FocusOnActivation focus;
 
-    [Header("Percepción")] [Tooltip("Layers que bloquean la visión y largo del LoS")]
-    [SerializeField] private LayerMask losObstacleMask;
+    private StateMachinePlayer _stateMachine;
+
+    [Tooltip("Layers que bloquean la visión y largo del LoS")] [Header("Percepción")] [SerializeField]
+    private LayerMask losObstacleMask;
+
     [SerializeField] private float losRayHeight = 1.5f;
-    
-    [Header("Cinematic Death")]
-    [SerializeField] private ParticleSystem deathImpactFx;
-    [SerializeField] private Transform headSocket;
+
+    [Header("Cinematic's")]
+
+    //[SerializeField] private PlayableDirector entryTimeLine;
+    [SerializeField]
+    private PlayableDirector angryTimeLine;
+
+    [SerializeField] private PlayableDirector endedTimeLine;
+
+    //[SerializeField] private ParticleSystem deathImpactFx;
+    //[SerializeField] private Transform headSocket;
 
     public Transform Transform => transform;
     public Animator Animator => animator;
@@ -38,55 +47,50 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     public BossConfigSO Config => config;
 
     private GoapBrain _goap;
-    private int _stageIndex; 
-    private float _time; 
+    private int _stageIndex;
+    private float _time;
     private string _lastIntent = "";
 
     private BossSkillSO _runtimePrimarySkill;
     private BossSkillSO _runtimeSecondarySkill;
 
-    private bool _isEntry = true;
-    public bool IsEntry => _isEntry;
-    public void NotifyEntryEnded() => _isEntry = false;
+    public bool IsEntry { get; private set; } = true;
+    public void NotifyEntryEnded() => IsEntry = false;
 
     public bool IsExecutingSkill { get; private set; }
     public void NotifySkillStarted() => IsExecutingSkill = true;
     public void NotifySkillEnded() => IsExecutingSkill = false;
 
-    public bool IsDamaged { get; private set; }
-    private void NotifyDamaged() => IsDamaged = true;
-    public void NotifyRecovery() => IsDamaged = false;
+    public bool IsAngry { get; private set; }
+    private void NotifyAngry() => IsAngry = true;
+    public void NotifyRecovery() => IsAngry = false;
 
     public bool IsDie { get; private set; }
     private void NotifyDie() => IsDie = true;
 
     public Func<bool> OnPrimarySkill;
     public Func<bool> OnSecondarySkill;
-    
-    private bool _paused;    
-    private bool _isLocked;  
 
-    public event Action<int> OnStageChanged;
-    public event Action OnDeath;
-    public event Action OnDamaged;
-    
+    private bool _paused;
+    private bool _isLocked;
+
     private void Awake()
     {
         if (animator == null) animator = GetComponentInChildren<Animator>();
-        if (stateMachine == null) stateMachine = gameObject.AddComponent<StateMachinePlayer>();
+        if (_stateMachine == null) _stateMachine = gameObject.AddComponent<StateMachinePlayer>();
 
         _runtimePrimarySkill = config.PrimarySkill != null ? Instantiate(config.PrimarySkill) : null;
         _runtimeSecondarySkill = config.SecondarySkill != null ? Instantiate(config.SecondarySkill) : null;
 
-        stateMachine.AddState(Entry, new BS_Entry(this));
-        stateMachine.AddState(Idle, new BS_Idle(this));
-        stateMachine.AddState(Chase, new BS_Chase(this));
-        stateMachine.AddState(Damaged, new BS_Damaged(this));
-        stateMachine.AddState(Primary, new BS_UseSkillA(this));
-        stateMachine.AddState(Secondary, new BS_UseSkillB(this));
-        stateMachine.AddState(Die, new BS_Die(this));
+        _stateMachine.AddState(Entry, new BS_Entry(this));
+        _stateMachine.AddState(Idle, new BS_Idle(this));
+        _stateMachine.AddState(Chase, new BS_Chase(this));
+        _stateMachine.AddState(Angry, new BS_Angry(this));
+        _stateMachine.AddState(Primary, new BS_UseSkillA(this));
+        _stateMachine.AddState(Secondary, new BS_UseSkillB(this));
+        _stateMachine.AddState(Die, new BS_Die(this));
 
-        stateMachine.ChangeState(Entry);
+        _stateMachine.ChangeState(Entry);
 
         _goap = new GoapBrain();
         _stageIndex = 0;
@@ -95,7 +99,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     private void Update()
     {
         if (_paused || _isLocked) return;
-        
+
         _time = Time.time;
         if (player == null || config == null || config.StageCount == 0) return;
 
@@ -107,15 +111,9 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
             _lastIntent = intent;
             TriggerFsm(intent);
         }
-    }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.layer == LayerMask.NameToLayer(INTERACTABLE_LAYER))
-        {
-            OnDamaged?.Invoke();
-            other.gameObject.SetActive(false);
-        }
+        if (Input.GetKeyDown(KeyCode.L))
+            GameEventManager.Instance.bossEvents.OnAngry.Raise();
     }
 
     private void AdvanceStage()
@@ -126,11 +124,13 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         if (_stageIndex >= config.StageCount)
         {
             _stageIndex = config.StageCount;
-            OnDeath?.Invoke();
+            GameEventManager.Instance.bossEvents.OnDeath.Raise();
+            endedTimeLine.Play();
         }
         else
         {
-            OnStageChanged?.Invoke(_stageIndex);
+            GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
+            angryTimeLine.Play();
         }
     }
 
@@ -171,17 +171,32 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     {
         switch (intentOrEvent)
         {
-            case "Entry": stateMachine.ChangeState(Entry); break;
-            case "Idle": stateMachine.ChangeState(Idle); break;
-            case "Chase": stateMachine.ChangeState(Chase); break;
-            case "Damaged": stateMachine.ChangeState(Damaged); break;
-            case "Primary": stateMachine.ChangeState(Primary); break;
-            case "Secondary": stateMachine.ChangeState(Secondary); break;
-            case "Die": stateMachine.ChangeState(Die); break;
+            case "Entry":
+                _stateMachine.ChangeState(Entry);
+                break;
+            case "Idle":
+                _stateMachine.ChangeState(Idle);
+                break;
+            case "Chase":
+                _stateMachine.ChangeState(Chase);
+                break;
+            case "Angry":
+                _stateMachine.ChangeState(Angry);
+                break;
+            case "Primary":
+                _stateMachine.ChangeState(Primary);
+                break;
+            case "Secondary":
+                _stateMachine.ChangeState(Secondary);
+                break;
+            case "Die":
+                _stateMachine.ChangeState(Die);
+                break;
             default:
                 Debug.LogWarning($"[BossActor] Intent desconocido: {intentOrEvent}");
                 break;
         }
+
         _lastIntent = intentOrEvent;
     }
 
@@ -189,26 +204,19 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private IEnumerator DeathSequenceCo()
     {
-        NotifyDie(); 
+        NotifyDie();
         _isLocked = true;
-        UpdateControlState(); 
+        UpdateControlState();
 
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Boss", true);
-        
-        //float originalTimeScale = Time.timeScale;
-        //Time.timeScale = 0.05f;
-    
-        GameEventManager.Instance.bossEvents.OnDeath.Raise(); 
-    
-        if (deathImpactFx != null && headSocket != null)
-            deathImpactFx.Play();
 
-        yield return new WaitForSecondsRealtime(0.15f); 
-        //Time.timeScale = originalTimeScale; 
+        GameEventManager.Instance.bossEvents.OnDeath.Raise();
 
-        stateMachine.ChangeState(Die); 
-        
-        GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
+        yield return new WaitForSecondsRealtime(0.15f);
+
+        _stateMachine.ChangeState(Die);
+
+        //GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
     }
 
     private void UpdateControlState()
@@ -219,45 +227,45 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         bool shouldFreezeByLock = _isLocked && !IsEntry && !IsDie;
 
         if (animator != null) animator.enabled = !shouldFreezeByLock;
-        if (stateMachine != null) stateMachine.enabled = !shouldFreezeByLock;
+        if (_stateMachine != null) _stateMachine.enabled = !shouldFreezeByLock;
     }
-    
+
     private void OnEnable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
-    
+
+        GameEventManager.Instance.bossEvents.OnAngry.Register(NotifyAngry);
+        GameEventManager.Instance.bossEvents.OnAngry.Register(AdvanceStage);
+
+        GameEventManager.Instance.bossEvents.OnDeath.Register(StartDeathSequence);
+
         OnPrimarySkill += TryUseSkillA;
         OnSecondarySkill += TryUseSkillB;
-
-        OnDamaged += NotifyDamaged;
-        OnDamaged += AdvanceStage;
-        OnDamaged += () => GameEventManager.Instance.bossEvents.OnDamaged.Raise();
-
-        OnDeath += StartDeathSequence;
     }
+
     private void OnDisable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
-        
+
+        GameEventManager.Instance.bossEvents.OnAngry.Unregister(NotifyAngry);
+        GameEventManager.Instance.bossEvents.OnAngry.Unregister(AdvanceStage);
+
+        GameEventManager.Instance.bossEvents.OnDeath.Unregister(StartDeathSequence);
+
         OnPrimarySkill -= TryUseSkillA;
         OnSecondarySkill -= TryUseSkillB;
-
-        OnDamaged -= NotifyDamaged;
-        OnDamaged -= AdvanceStage;
-
-        OnDeath -= StartDeathSequence;
     }
-    
+
     public void OnPauseChanged(bool paused)
     {
         _paused = paused;
         animator.enabled = !paused;
-        stateMachine.enabled = !paused;
+        _stateMachine.enabled = !paused;
         if (_goap != null) _goap.Paused = paused;
     }
-    
+
     public void OnLockChanged(bool locked)
     {
         _isLocked = locked;
@@ -270,7 +278,7 @@ public enum BossCommonState
     Entry,
     Idle,
     Chase,
-    Damaged,
+    Angry,
     Primary,
     Secondary,
     Die

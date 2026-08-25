@@ -48,14 +48,14 @@ public class StageSetTransition : MonoBehaviour, IPausable
 
     private void OnEnable()
     {
-        GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
-        GameEventManager.Instance.bossEvents.OnStageCompleted.Register<int>(OnBossStageChanged);
+     //   GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+     //   GameEventManager.Instance.bossEvents.OnStageCompleted.Register<int>(OnBossStageChanged);
     }
 
     private void OnDisable()
     {
-        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
-        GameEventManager.Instance.bossEvents.OnStageCompleted.Unregister<int>(OnBossStageChanged);
+       // GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+       // GameEventManager.Instance.bossEvents.OnStageCompleted.Unregister<int>(OnBossStageChanged);
     }
 
     private void OnBossStageChanged(int nextIndex) => TransitionTo(nextIndex);
@@ -149,7 +149,7 @@ public class StageSetTransition : MonoBehaviour, IPausable
 
     public void OnPauseChanged(bool paused) => _paused = paused;
 
-    public void ForceSetInitialStage(int index)
+    private void ForceSetInitialStage(int index)
     {
         if (!IsValidIndex(index)) return;
         for (int i = 0; i < stageRoots.Count; i++)

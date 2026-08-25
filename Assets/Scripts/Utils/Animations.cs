@@ -28,7 +28,7 @@ public static class Animations
         public const string PRIMARY_ANIM_SCORPION = "isPrimary";
         public const string SECONDARY_ANIM_SCORPION = "isSecondary";
         public const string CHASE_ANIM_SCORPION = "isChase";
-        public const string DAMAGED_ANIM_SCORPION = "isDamaged";
+        public const string ANGRY_ANIM_SCORPION = "isAngry";
         public const string DIE_ANIM_SCORPION = "isDie";
     }
 

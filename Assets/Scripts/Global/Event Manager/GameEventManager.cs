@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary> 
 /// Repositorio Global de Eventos: Singleton persistente que centraliza todas las instancias de 
@@ -13,7 +14,7 @@ public class GameEventManager : MonoBehaviour
     [Serializable]
     public struct BossEvents
     {
-        public GameEvent OnDamaged;
+        [FormerlySerializedAs("OnDamaged")] public GameEvent OnAngry;
         public GameEvent OnDeath;
         public GameEvent OnStageCompleted;
     }
@@ -23,7 +24,7 @@ public class GameEventManager : MonoBehaviour
     {
         public GameEvent OnBandagesCountChanged;
         public GameEvent OnSizeChanged;
-        public GameEvent OnEmpowered;
+        public GameEvent OnEmpoweredCompleted;
         public GameEvent OnShoot;
         public GameEvent OnHit;
         public GameEvent OnLocked;
