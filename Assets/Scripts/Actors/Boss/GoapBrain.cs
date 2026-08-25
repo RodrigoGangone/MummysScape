@@ -11,7 +11,7 @@ public sealed class GoapBrain
     {
         public const string None      = "None";
         public const string Die   = "Die";
-        public const string Damaged   = "Damaged";
+        public const string Angry   = "Angry";
         public const string Primary   = "Primary";
         public const string Secondary = "Secondary";
         public const string Idle      = "Idle";
@@ -32,7 +32,7 @@ public sealed class GoapBrain
         if (boss.IsExecutingSkill)   return Intent.None;
 
         // Priorizamos daño si aplica.
-        if (boss.IsDamaged)          return Intent.Damaged;
+        if (boss.IsAngry)          return Intent.Angry;
 
         // Cacheamos Time.time para evitar leerlo dos veces.
         float now = Time.time;

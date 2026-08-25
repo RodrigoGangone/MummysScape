@@ -10,51 +10,43 @@ using static PlayerEnum;
 /// </summary>
 public sealed class PlayerView : MonoBehaviour, IPausable
 {
-    [Header("Anim & FX")] 
-    [SerializeField] private Animator _anim;
+    [Header("Animators (Asignar cada malla individual)")] 
+    [SerializeField] private Animator _animNormal;
+    [SerializeField] private Animator _animSmall;
+    [SerializeField] private Animator _animHead;
+    [SerializeField] private Animator _animEmpowered;
 
+    [Header("FX Banks")]
     [SerializeField] private FxBank bankNormal;
     [SerializeField] private FxBank bankSmall;
     [SerializeField] private FxBank bankHead;
+    [SerializeField] private FxBank bankEmpowered;
 
-    [SerializeField] private RuntimeAnimatorController _controllerNormal;
-    [SerializeField] private RuntimeAnimatorController _controllerSmall;
-    [SerializeField] private RuntimeAnimatorController _controllerHead;
-
-    [SerializeField] private Avatar _avatarNormal;
-    [SerializeField] private Avatar _avatarSmall;
-    [SerializeField] private Avatar _avatarHead;
-
+    [Header("Particles")]
     [SerializeField] public ParticleSystem _smashFX;
     [SerializeField] public ParticleSystem _dropFX;
     [SerializeField] public ParticleSystem _koFX;
     [SerializeField] public ParticleSystem fallingDust;
     [SerializeField] public ParticleSystem angerFx;
-
     [SerializeField] private DecalProjector shadow;
 
     [Header("Shoot Visual")] 
     [SerializeField] private GameObject _decal;
-
     [SerializeField] private DecalProjector _rangeIndicator;
     [SerializeField] private LineRenderer _arcRenderer;
 
-    [ColorUsage(true, true), SerializeField]
-    private Color _aimAllowed;
-
-    [ColorUsage(true, true), SerializeField]
-    private Color _aimNotAllowed;
+    [ColorUsage(true, true), SerializeField] private Color _aimAllowed;
+    [ColorUsage(true, true), SerializeField] private Color _aimNotAllowed;
 
     [Header("Bandage Visuals System")] 
     [SerializeField] private LineRenderer _bandageLine;
-
     [SerializeField] private ParticleSystem _cutFx;
 
     [Header("Hand Anchors (Asignar transforms de las manos)")] 
     [SerializeField] private Transform _handAnchorNormal;
-
     [SerializeField] private Transform _handAnchorSmall;
     [SerializeField] private Transform _handAnchorHead;
+    [SerializeField] private Transform _handAnchorEmpowered;
 
     [Header("Feedback System")] 
     [SerializeField] private PlayerFeedbackLibrary _feedbackLibrary;
@@ -63,14 +55,15 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [SerializeField] private MummyColorSetSO _colorSetNormal;
     [SerializeField] private MummyColorSetSO _colorSetSmall;
     [SerializeField] private MummyColorSetSO _colorSetHead;
+    [SerializeField] private MummyColorSetSO _colorSetEmpowered;
 
     [Header("Direct Material Assets")]
-    //[SerializeField] private Material _skullMat; // Comentado por si lo necesitas a futuro
-    [FormerlySerializedAs("_fire1Renderer")] // Mantenemos el tag por si Unity logra recuperar alguna referencia, aunque al cambiar el tipo suele perderse
+    [FormerlySerializedAs("_fire1Renderer")] 
     [SerializeField] private Material _fire1Mat;
     [FormerlySerializedAs("_fire2Renderer")] 
     [SerializeField] private Material _fire2Mat;
 
+    [SerializeField] private Animator _currentAnim; // Referencia interna al animator activo
     private Transform _currentHandAnchor;
     private Transform _bandageTarget;
     private Vector3 _bandageTargetLocalOffset;
@@ -98,14 +91,19 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     public DecalProjector Shadow => shadow;
     public DecalProjector RangeIndicator => _rangeIndicator;
     public LineRenderer ArcRenderer => _arcRenderer;
-    public Animator Animator => _anim;
+    
+    // Tus PlayerStates accederán siempre al Animator activo a través de esta propiedad
+    public Animator Animator => _currentAnim; 
+    
     public Color AimAllowed => _aimAllowed;
     public Color AimNotAllowed => _aimNotAllowed;
-    public Transform handAnchor => _handAnchorNormal;
+    public Transform handAnchor => _currentHandAnchor; 
 
     private void Awake()
     {
-        _currentBank = bankNormal;
+        //_currentBank = bankNormal;
+        //_currentAnim = _animNormal; // Default
+        //_currentHandAnchor = _handAnchorNormal; // Default
 
         _thresholdPropID = Shader.PropertyToID(THRESHOLD_NAME);
 
@@ -114,11 +112,6 @@ public sealed class PlayerView : MonoBehaviour, IPausable
             _bandageMatInst = _bandageLine.material;
             _bandageLine.enabled = false;
         }
-
-        _currentHandAnchor = _handAnchorNormal;
-        
-        // Eliminamos las instanciaciones de materiales (.material) que tenías aquí
-        // para afectar directamente a los assets globales de _fire1Mat y _fire2Mat.
     }
 
     private void LateUpdate()
@@ -214,6 +207,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
             PlayerSize.Normal => bankNormal,
             PlayerSize.Small => bankSmall,
             PlayerSize.Head => bankHead,
+            PlayerSize.Empowered => bankEmpowered,
             _ => null
         };
     }
@@ -221,9 +215,6 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     private void ApplyColorSet(MummyColorSetSO colorSet)
     {
         if (colorSet == null) return;
-
-        //if (_skullMat != null)
-        //    _skullMat.SetColor(BaseColorProp, colorSet.skullAlbedo);
 
         if (_fire1Mat != null)
         {
@@ -243,57 +234,59 @@ public sealed class PlayerView : MonoBehaviour, IPausable
 
     private void OnSizeChanged(PlayerSize newSize)
     {
-        if (_anim == null) return;
-
-        bool wasWalking = _anim.parameterCount > 0 && _anim.GetBool("Walk");
-        bool wasIdle = _anim.parameterCount > 0 && _anim.GetBool("Idle");
-
-        _anim.enabled = false;
+        // Rescatamos el estado del Animator anterior antes de cambiarlo
+        bool wasWalking = _currentAnim != null && _currentAnim.parameterCount > 0 && _currentAnim.GetBool("Walk");
+        bool wasIdle = _currentAnim != null && _currentAnim.parameterCount > 0 && _currentAnim.GetBool("Idle");
 
         switch (newSize)
         {
             case PlayerSize.Normal:
-                _anim.runtimeAnimatorController = _controllerNormal;
-                _anim.avatar = _avatarNormal;
+                _currentAnim = _animNormal;
                 _currentHandAnchor = _handAnchorNormal;
                 ApplyColorSet(_colorSetNormal);
                 break;
             case PlayerSize.Small:
-                _anim.runtimeAnimatorController = _controllerSmall;
-                _anim.avatar = _avatarSmall;
+                _currentAnim = _animSmall;
                 _currentHandAnchor = _handAnchorSmall;
                 ApplyColorSet(_colorSetSmall);
                 break;
             case PlayerSize.Head:
-                _anim.runtimeAnimatorController = _controllerHead;
-                _anim.avatar = _avatarHead;
+                _currentAnim = _animHead;
                 _currentHandAnchor = _handAnchorHead;
                 ApplyColorSet(_colorSetHead);
+                break;    
+            case PlayerSize.Empowered:
+                _currentAnim = _animEmpowered;
+                _currentHandAnchor = _handAnchorEmpowered;
+                ApplyColorSet(_colorSetEmpowered);
                 break;
         }
 
-        _anim.enabled = true;
-        _anim.Rebind();
         _currentSize = newSize;
         _currentBank = GetBankForCurrentSize(newSize);
 
-        if (_anim.runtimeAnimatorController != null)
+        // Si existe el nuevo Animator, le pasamos los estados que tenía el anterior
+        if (_currentAnim != null)
         {
-            _anim.SetBool("Walk", wasWalking);
-            _anim.SetBool("Idle", wasIdle);
-
-            _anim.Play(0, -1, 0f);
+            _currentAnim.SetBool("Walk", wasWalking);
+            _currentAnim.SetBool("Idle", wasIdle);
         }
     }
 
     public void SetMoveSpeedVisual(float normalized)
     {
-        //if (_anim) _anim.SetFloat("Speed", normalized);
+        //if (_currentAnim) _currentAnim.SetFloat("Speed", normalized);
     }
 
     private void PlayDropFx(PlayerSize playerSize)
     {
         if (_dropFX == null) return;
+
+        if (!_dropFX.gameObject.activeSelf)
+        {
+            _dropFX.gameObject.SetActive(true);
+            return;
+        }
 
         var main = _dropFX.main;
 
@@ -312,6 +305,10 @@ public sealed class PlayerView : MonoBehaviour, IPausable
             case PlayerSize.Head:
                 main.startSize = new ParticleSystem.MinMaxCurve(1f, 2.5f);
                 main.startColor = new Color(0.6f, 1f, 1f, 0.5f);
+                break;   
+            case PlayerSize.Empowered:
+                main.startSize = new ParticleSystem.MinMaxCurve(1f, 2.5f);
+                main.startColor = new Color(1f, 1f, 0f, 0.5f);
                 break;
         }
 
@@ -325,7 +322,11 @@ public sealed class PlayerView : MonoBehaviour, IPausable
             _feedbackLibrary.Execute(state, size, ctx);
     }
 
-    public void OnPauseChanged(bool paused) => _anim.enabled = !paused;
+    public void OnPauseChanged(bool paused)
+    {
+        if (_currentAnim != null)
+            _currentAnim.enabled = !paused;
+    }
 
     private void OnEnable()
     {

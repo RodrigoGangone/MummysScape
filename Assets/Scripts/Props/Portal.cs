@@ -47,8 +47,8 @@ public class Portal : MonoBehaviour
 
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, true);
 
-        Focus.Activate();
-        OpenAnim();
+        //Focus.Activate();
+        //OpenAnim();
 
         if (directorEnter != null)
             directorEnter.Play();
@@ -168,12 +168,6 @@ public class Portal : MonoBehaviour
     }
 
     public void WinPlayer() => GameEventManager.Instance.playerEvents.OnWin.Raise();
-
-    private void OpenAnim()
-    {
-        if (anim != null)
-            anim.SetTrigger(OPEN);
-    }
 
     public void CloseAnim()
     {
