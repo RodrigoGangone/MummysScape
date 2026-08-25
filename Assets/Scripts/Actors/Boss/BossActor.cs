@@ -226,7 +226,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
         bool shouldFreezeByLock = _isLocked && !IsEntry && !IsDie;
 
-        if (animator != null) animator.enabled = !shouldFreezeByLock;
+        //if (animator != null) animator.enabled = !shouldFreezeByLock;
         if (_stateMachine != null) _stateMachine.enabled = !shouldFreezeByLock;
     }
 
