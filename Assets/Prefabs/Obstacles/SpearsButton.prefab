@@ -5170,7 +5170,7 @@ GameObject:
   - component: {fileID: 4018584769142751779}
   - component: {fileID: 2848940011794063088}
   - component: {fileID: 1290672729419833573}
-  - component: {fileID: 8109291697883059525}
+  - component: {fileID: 7188189733516832205}
   m_Layer: 0
   m_Name: WeightDetectionVolume
   m_TagString: Untagged
@@ -5241,7 +5241,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 0
---- !u!114 &8109291697883059525
+--- !u!114 &7188189733516832205
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5250,11 +5250,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1099669216670962785}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c66c9d27d247c5446861a97d0c67cc5d, type: 3}
+  m_Script: {fileID: 11500000, guid: 179ebe44023c98e458e956691aefa126, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PressureButtonWeightSensor
+  m_EditorClassIdentifier: Assembly-CSharp::WeightSensor
   _cleanupInterval: 0.25
   _staleColliderGrace: 0.5
+  _totalWeight: 0
+  _providerCount: 0
 --- !u!1 &3132467924023716761
 GameObject:
   m_ObjectHideFlags: 0
@@ -15492,7 +15494,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbbc6e5b3265fad43866da2ddd2ef496, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PressureButtonStateResolver
-  _weightSensor: {fileID: 8109291697883059525}
+  _weightSensor: {fileID: 0}
   _holdTimer: {fileID: 5417497602141762954}
 --- !u!114 &3896179305553096130
 MonoBehaviour:

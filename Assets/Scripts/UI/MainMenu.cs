@@ -75,6 +75,17 @@ public class MainMenu : MonoBehaviour
         SetMenuInteractable(true);
     }
     
+    private void Update()
+    {
+        if (Input.GetButtonDown("Drop") && !_isTransitioning && _canvasGroup.interactable)
+        {
+            if (_optionsPanel != null && _optionsPanel.activeSelf)
+            {
+                ShowMain();
+            }
+        }
+    }
+    
     private void StartFadeTitle(float start, float end, float duration = DEFAULT_TITLE_FADE_DURATION)
     {
         // Si no está seteado en inspector, no hacemos nada pero dejamos huella (solo una vez)
