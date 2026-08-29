@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.Playables;
 using UnityEngine.UI;
 using static Options;
+using static Utils;
 
 public class MainMenu : MonoBehaviour
 {
@@ -287,7 +288,7 @@ public class MainMenu : MonoBehaviour
 
     public void SelectFeedback()
     {
-        if (Save.IsCinematicSeen("mainMenuCinematic"))
+        if (Save.IsCinematicSeen(INTRO_ZONE_1_CINEMATIC))
             sarcofagusAnim.Play("Reck_L_WakeUp");
     }
 

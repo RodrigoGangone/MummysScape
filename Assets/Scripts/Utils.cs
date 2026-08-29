@@ -99,4 +99,10 @@ public static class Utils
     
 
     #endregion
+
+    #region Cinematics ID
+
+    internal const string INTRO_ZONE_1_CINEMATIC = "INTRO_ZONE_1_CINEMATIC";
+    
+    #endregion
 }
