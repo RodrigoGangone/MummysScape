@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Aplica la posición inicial sin transición y rota cinemáticamente la tabla hacia el estado objetivo recibido.
-/// Respeta aceleración, límites angulares, pausa y bloqueos independientes del suelo en cada punta.
+/// Respeta aceleración, límites angulares, pausa y bloqueos independientes del suelo en cada punta usando BoxCasts.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Rigidbody))]
@@ -38,9 +38,10 @@ public sealed class SeesawMover : MonoBehaviour, IPausable
     [SerializeField, Min(0f)] private float _highAngularSpeed = 40f;
     [SerializeField, Min(0f)] private float _returnToBalanceSpeed = 15f;
 
-    [Header("Ground Checks")]
+    [Header("Ground Checks (Box)")]
     [SerializeField, Min(0f)] private float _groundCheckDistance = 0.2f;
-    [SerializeField, Min(0.001f)] private float _groundCheckRadius = 0.08f;
+    [Tooltip("Mitad del tamaño de la caja de colisión (Half Extents).")]
+    [SerializeField] private Vector3 _groundCheckExtents = new Vector3(0.5f, 0.1f, 0.5f);
     [SerializeField] private LayerMask _groundLayers;
     [SerializeField, Min(0f)] private float _groundSafetyDistance = 0.02f;
     [SerializeField] private bool _showGroundCheckGizmos = true;
@@ -55,7 +56,7 @@ public sealed class SeesawMover : MonoBehaviour, IPausable
     [SerializeField] private float _currentAngularSpeed;
     [SerializeField] private bool _isPaused;
 
-    private readonly RaycastHit[] _sphereCastHits = new RaycastHit[PhysicsQueryBufferSize];
+    private readonly RaycastHit[] _castHits = new RaycastHit[PhysicsQueryBufferSize];
     private readonly Collider[] _overlapHits = new Collider[PhysicsQueryBufferSize];
 
     private Collider[] _selfColliders = System.Array.Empty<Collider>();
@@ -306,11 +307,13 @@ public sealed class SeesawMover : MonoBehaviour, IPausable
         }
 
         Vector3 origin = groundCheck.position;
+        Quaternion rotation = groundCheck.rotation; // Alineamos la caja a la rotación del transform
 
-        int overlapCount = Physics.OverlapSphereNonAlloc(
+        int overlapCount = Physics.OverlapBoxNonAlloc(
             origin,
-            _groundCheckRadius,
+            _groundCheckExtents,
             _overlapHits,
+            rotation,
             _groundLayers,
             QueryTriggerInteraction.Ignore);
 
@@ -324,18 +327,19 @@ public sealed class SeesawMover : MonoBehaviour, IPausable
         }
 
         float castDistance = _groundCheckDistance + _groundSafetyDistance;
-        int hitCount = Physics.SphereCastNonAlloc(
+        int hitCount = Physics.BoxCastNonAlloc(
             origin,
-            _groundCheckRadius,
-            Vector3.down,
-            _sphereCastHits,
+            _groundCheckExtents,
+            Vector3.down, 
+            _castHits,
+            rotation,
             castDistance,
             _groundLayers,
             QueryTriggerInteraction.Ignore);
 
         for (int i = 0; i < hitCount; i++)
         {
-            Collider collider = _sphereCastHits[i].collider;
+            Collider collider = _castHits[i].collider;
             if (collider != null && !IsSelfCollider(collider))
             {
                 return true;
@@ -416,7 +420,9 @@ public sealed class SeesawMover : MonoBehaviour, IPausable
         _highAngularSpeed = Mathf.Max(_mediumAngularSpeed, _highAngularSpeed);
         _returnToBalanceSpeed = Mathf.Max(0f, _returnToBalanceSpeed);
         _groundCheckDistance = Mathf.Max(0f, _groundCheckDistance);
-        _groundCheckRadius = Mathf.Max(0.001f, _groundCheckRadius);
+        _groundCheckExtents.x = Mathf.Max(0.001f, _groundCheckExtents.x);
+        _groundCheckExtents.y = Mathf.Max(0.001f, _groundCheckExtents.y);
+        _groundCheckExtents.z = Mathf.Max(0.001f, _groundCheckExtents.z);
         _groundSafetyDistance = Mathf.Max(0f, _groundSafetyDistance);
 
         if (_localRotationAxis.sqrMagnitude <= Mathf.Epsilon)
@@ -516,11 +522,25 @@ public sealed class SeesawMover : MonoBehaviour, IPausable
         }
 
         Vector3 origin = groundCheck.position;
+        Quaternion rotation = groundCheck.rotation;
         float castDistance = _groundCheckDistance + _groundSafetyDistance;
         Vector3 end = origin + (Vector3.down * castDistance);
 
-        Gizmos.DrawWireSphere(origin, _groundCheckRadius);
+        // Guardamos la matriz original de Gizmos para poder dibujar con rotación local
+        Matrix4x4 originalMatrix = Gizmos.matrix;
+
+        // Dibujamos la caja en la posición inicial
+        Gizmos.matrix = Matrix4x4.TRS(origin, rotation, Vector3.one);
+        Gizmos.DrawWireCube(Vector3.zero, _groundCheckExtents * 2f);
+
+        // Dibujamos la caja en la posición final proyectada
+        Gizmos.matrix = Matrix4x4.TRS(end, rotation, Vector3.one);
+        Gizmos.DrawWireCube(Vector3.zero, _groundCheckExtents * 2f);
+
+        // Restauramos la matriz
+        Gizmos.matrix = originalMatrix;
+
+        // Línea central de proyección
         Gizmos.DrawLine(origin, end);
-        Gizmos.DrawWireSphere(end, _groundCheckRadius);
     }
 }
