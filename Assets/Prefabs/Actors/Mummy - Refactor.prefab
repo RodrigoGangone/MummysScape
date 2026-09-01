@@ -29481,6 +29481,8 @@ MonoBehaviour:
   _colorSetEmpowered: {fileID: 11400000, guid: deb0166ac2c35354783a598a62237b25, type: 2}
   _fire1Mat: {fileID: 2100000, guid: a4b2cc5d13217054cbea46708b19b319, type: 2}
   _fire2Mat: {fileID: 2100000, guid: 824fddbfde0a4b988b3e5f57cb68d9aa, type: 2}
+  _mainMaterial1: {fileID: 2100000, guid: 0628cfa20f01aa54cbe431f3a48c99d5, type: 2}
+  _mainMaterial2: {fileID: 2100000, guid: 1dabfbafefd1440478057af3858e1676, type: 2}
   _currentAnim: {fileID: 0}
 --- !u!114 &5551968650561424038
 MonoBehaviour:
@@ -80930,7 +80932,7 @@ PrefabInstance:
     - target: {fileID: 7188028876505924648, guid: 40057147eadf3b4458da33b27456b085, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 2ac86e53db7622e4bb1364c3391838a8, type: 2}
+      objectReference: {fileID: 2100000, guid: 1dabfbafefd1440478057af3858e1676, type: 2}
     - target: {fileID: 7290307355867438801, guid: 40057147eadf3b4458da33b27456b085, type: 3}
       propertyPath: m_Layer
       value: 8
@@ -81593,7 +81595,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 7d2c687109e5ca6478884cd3e1e60fd5, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1101994771436319264, guid: 7d2c687109e5ca6478884cd3e1e60fd5, type: 3}
       propertyPath: m_Layer
@@ -82072,7 +82074,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 7d2c687109e5ca6478884cd3e1e60fd5, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1093563819682509897, guid: 7d2c687109e5ca6478884cd3e1e60fd5, type: 3}
       propertyPath: m_LocalRotation.x

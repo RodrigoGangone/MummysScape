@@ -62,6 +62,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     [SerializeField] private Material _fire1Mat;
     [FormerlySerializedAs("_fire2Renderer")] 
     [SerializeField] private Material _fire2Mat;
+    [SerializeField] private Material _mainMaterial1;
+    [SerializeField] private Material _mainMaterial2;
 
     [SerializeField] private Animator _currentAnim; // Referencia interna al animator activo
     private Transform _currentHandAnchor;
@@ -86,7 +88,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     private static readonly int MidColorProp = Shader.PropertyToID("_MidColor");
     private static readonly int TopColorProp = Shader.PropertyToID("_TopColor");
     private static readonly int GlowColorProp = Shader.PropertyToID("_GlowColor");
-
+    private static readonly int EmissionColorProp = Shader.PropertyToID("_EmissionColor");
+    
     public GameObject Decal => _decal;
     public DecalProjector Shadow => shadow;
     public DecalProjector RangeIndicator => _rangeIndicator;
@@ -230,6 +233,13 @@ public sealed class PlayerView : MonoBehaviour, IPausable
             _fire2Mat.SetColor(TopColorProp, colorSet.fire2Top);
             _fire2Mat.SetColor(GlowColorProp, colorSet.fire2Glow);
         }
+        
+        if(_mainMaterial1 != null)
+            _mainMaterial1.SetColor(EmissionColorProp, colorSet.skull);    
+        
+        if(_mainMaterial2 != null)
+            _mainMaterial2.SetColor(EmissionColorProp, colorSet.skull);    
+
     }
 
     private void OnSizeChanged(PlayerSize newSize)
