@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: M_Flame01
+  m_Name: M_Flame_BandageSpecial
   m_Shader: {fileID: -6465566751694194690, guid: 581a27480dada3748b51870e966974b9, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -85,7 +85,7 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _BaseEnd: 1.25
+    - _BaseEnd: 1.29
     - _BaseStart: 0.25
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
@@ -102,10 +102,10 @@ Material:
     - _DstBlendAlpha: 0
     - _EmissionStrength: 0
     - _EnvironmentReflections: 1
-    - _Extinguish: 0
-    - _FlickerAmount: 0.25
-    - _FlickerSpeed: 5
-    - _FresnelIntensity: 1.2
+    - _Extinguish: 0.21
+    - _FlickerAmount: 0.12
+    - _FlickerSpeed: 3.45
+    - _FresnelIntensity: 2.99
     - _FresnelPower: 3
     - _GlobalAlpha: 1
     - _GlossMapScale: 0
@@ -116,7 +116,7 @@ Material:
     - _Metallic: 0
     - _NoiseScale: 22.9
     - _NoiseSpeed: 0.15
-    - _NoiseStrength: 0.07
+    - _NoiseStrength: 0.45
     - _OcclusionStrength: 1
     - _Opacity: 0.5
     - _Parallax: 0.005
@@ -134,20 +134,20 @@ Material:
     - _TipCurlStrength: 0.02
     - _TipSharpness: 0.9
     - _TipStart: 0
-    - _TopHeightOffset: 0.1
-    - _UpwardStretch: 0.035
+    - _TopHeightOffset: 0
+    - _UpwardStretch: 0.06
     - _UseEmission: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _BottomColor: {r: 0.7607843, g: 0.81960785, b: 0.73333335, a: 1}
+    - _BottomColor: {r: 1, g: 0.7391077, b: 0, a: 0.94509804}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _MiddleColor: {r: 0.8039216, g: 0.43137255, b: 0.8862745, a: 1}
+    - _MiddleColor: {r: 1, g: 0.8441373, b: 0, a: 0.6666667}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
-    - _TopColor: {r: 1, g: 0, b: 0.8509804, a: 1}
+    - _TopColor: {r: 1, g: 0.6907488, b: 0.031372547, a: 0.84313726}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &2666700444546927287
