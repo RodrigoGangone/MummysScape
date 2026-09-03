@@ -1,221 +1,160 @@
-using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 using static PlayerEnum;
 using static PauseUtils;
 
 /// <summary> 
-/// Elevador de Arena: Controla el movimiento de una plataforma invisible entre waypoints, gestionando 
-/// modos de intensidad (Basic/Intense) y aplicando penalizaciones de vendas al jugador si no está en estado "Head". 
+/// Controlador central del Geyser.
+/// Extrae los tiempos del ParticleSystem y eleva la plataforma SOLO si el jugador está dentro durante la erupción.
 /// </summary>
-
 public class Geyser : MonoBehaviour, IPausable
 {
-    private PlayerContext _playerContext;
+    [Header("VFX")]
+    [SerializeField] private ParticleSystem _mainGeyserVFX;      
+    [SerializeField] private ParticleSystem _eruptionParticle;   
 
-    [FormerlySerializedAs("geyserType")] [SerializeField]
-    GeyserType _currentGeyserType;
+    [Header("TIMING (Cooldown Manual)")]
+    [SerializeField] private float _cooldownTime = 3.0f;     
+    
+    private float _anticipationTime; 
+    private float _eruptionTime;     
 
-    [SerializeField] private Transform _viewBasic;
-    [SerializeField] private Transform _viewIntense;
+    [Header("MOVIMIENTO")]
+    [SerializeField] private Transform _platform; 
+    [SerializeField] private Transform _pos1;     
+    [SerializeField] private Transform _pos2;     
+    [SerializeField] private float _platformRiseSpeed = 15f; 
 
-    [SerializeField] private Transform _invisiblePlatform;
-    [SerializeField] private Transform _triggerTransform;
+    private PlayerContext _currentPlayerContext; 
+    private Transform _playerTransform;
 
-    private bool _isPausedPos;
-    private bool _upInvisiblePlatform;
-    public bool _isIntenseModeActive;
-
-    [Header("SPEED BASIC")] [SerializeField]
-    private float speedSand = 3;
-
-    [SerializeField] private float speedInvisiblePlatform = 5;
-    [SerializeField] private float stopTimeBase = 3f;
-    [SerializeField] private float stopTimeTop = 3f;
-
-    [Header("SPEED INTENSE")] [SerializeField]
-    private float stoptimeTopIntense = 3f;
-
-    [SerializeField] private float intenseSpeed = 10f;
-
-    [Header("WAYPOINTS")] [SerializeField] private Transform[] waypoints;
-    private int _currentWaypointIndex;
-
-    [Header("WAYPOINTS")] [SerializeField] private ParticleSystem _preUp1, _preUp2;
     private bool _paused;
+    private bool _isErupting;
+    private bool _playerInTrigger;
+    private bool _penaltyApplied;
+
+    private void Awake()
+    {
+        var mainModule = _eruptionParticle.main;
+        _anticipationTime = mainModule.startDelay.constant; 
+        _eruptionTime = mainModule.startLifetime.constant;                
+    }
 
     private void Start()
     {
-        _playerContext = FindObjectOfType<PlayerController>().Ctx;
-
-        Transform selectedView = _currentGeyserType == GeyserType.Intense ? _viewIntense : _viewBasic;
-        _viewIntense.gameObject.SetActive(selectedView == _viewIntense);
-        _viewBasic.gameObject.SetActive(selectedView == _viewBasic);
+        _platform.position = _pos1.position;
+        _platform.gameObject.SetActive(false); 
+        StartCoroutine(GeyserCycle());
     }
 
     private void FixedUpdate()
     {
-        if (_paused) return; // ✅ se corta toda la lógica continua
+        if (_paused) return;
 
-        if (_currentGeyserType == GeyserType.Basic)
-            MoveTowardsWaypoint();
-
-        if (_upInvisiblePlatform)
-            UpInvisiblePlatform(_currentGeyserType == GeyserType.Intense ? _viewIntense : _viewBasic);
-    }
-
-
-    #region Basic Mode => Common use
-
-    private void MoveTowardsWaypoint()
-    {
-        if (_paused || _isPausedPos) // 🛑 Detiene el movimiento si ya está en pausa de posición
+        // ⚡ NUEVA LÓGICA: Sube SOLO si está escupiendo arena Y el jugador está sobre ella.
+        if (_isErupting && _playerInTrigger)
         {
-            return;
-        }
-
-        // Calcula la direcc y mueve la plataform hacia el waypoint actual
-        Transform targetWaypoint = waypoints[_currentWaypointIndex];
-        float step = speedSand * Time.deltaTime;
-
-        _viewBasic.transform.position =
-            Vector3.MoveTowards(_viewBasic.transform.position, targetWaypoint.position, step);
-        _triggerTransform.transform.position = new Vector3(_triggerTransform.transform.position.x,
-            _viewBasic.transform.position.y,
-            _triggerTransform.transform.position.z);
-
-        // Pausa al llegar a un punto
-        // 💡 CORRECCIÓN: Usar un umbral pequeño en lugar de una igualdad estricta a cero.
-        if (Vector3.Distance(_viewBasic.transform.position, targetWaypoint.position) <= 0.01f) 
-        {
-            StartCoroutine(PauseAtWaypoint());
-        }
-    }
-
-    private IEnumerator PauseAtWaypoint()
-    {
-        _isPausedPos = true;
-
-        if (_currentWaypointIndex == 0)
-        {
-            // ⬇️ reemplazás por WaitForSecondsPausable
-            yield return WaitForSecondsPausable(stopTimeBase / 2,() => _paused);
-            _preUp1.Play();
-            _preUp2.Play();
-            yield return WaitForSecondsPausable(stopTimeBase / 2,() => _paused);
+            _platform.position = Vector3.MoveTowards(
+                _platform.position, 
+                _pos2.position, 
+                _platformRiseSpeed * Time.fixedDeltaTime
+            );
         }
         else
         {
-            yield return WaitForSecondsPausable(stopTimeTop,() => _paused);
-            _preUp1.Stop();
-            _preUp2.Stop();
+            // Si no hay erupción, o el jugador no está tocando el geyser, se queda en la base.
+            _platform.position = _pos1.position;
         }
-
-        _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
-        _isPausedPos = false;
     }
 
-
-    private void UpInvisiblePlatform(Transform viewPos)
+    private IEnumerator GeyserCycle()
     {
-        float step = speedInvisiblePlatform * Time.deltaTime;
-
-        _invisiblePlatform.position = Vector3.MoveTowards(_invisiblePlatform.position, viewPos.position, step);
-    }
-
-    #endregion
-
-    #region IntenseMode => Boss - Scorpion
-
-    public void ActivateIntenseMode(Action onGeysersFinished = null)
-    {
-        if (_isIntenseModeActive || _currentGeyserType != GeyserType.Intense) return;
-
-        _isIntenseModeActive = true;
-
-        StartCoroutine(IntenseGeyserSequence(onGeysersFinished));
-    }
-
-    private IEnumerator IntenseGeyserSequence(Action onGeysersFinished = null)
-    {
-        while (Vector3.Distance(_viewIntense.position, waypoints[1].position) > 0.01f)
+        while (true)
         {
-            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
+            // 1. REPOSO
+            _isErupting = false;
+            _penaltyApplied = false;
+            ReleasePlayer();
+            _platform.gameObject.SetActive(false); 
+            
+            if (_mainGeyserVFX != null && _mainGeyserVFX.isPlaying) 
+                _mainGeyserVFX.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            
+            yield return WaitForSecondsPausable(_cooldownTime, () => _paused);
 
-            _viewIntense.position = Vector3.MoveTowards(
-                _viewIntense.position, waypoints[1].position, intenseSpeed * Time.deltaTime);
-            _triggerTransform.position = new Vector3(
-                _triggerTransform.position.x,
-                _viewIntense.position.y,
-                _triggerTransform.position.z);
-            yield return null;
+            // 2. ANTICIPACIÓN
+            if (_mainGeyserVFX != null) 
+                _mainGeyserVFX.Play(true);
+            
+            yield return WaitForSecondsPausable(_anticipationTime, () => _paused);
+
+            // 3. ERUPCIÓN
+            _isErupting = true;
+            _platform.gameObject.SetActive(true); // Se activa en la base esperando al jugador
+            
+            yield return WaitForSecondsPausable(_eruptionTime, () => _paused);
         }
-
-        yield return WaitForSecondsPausable(stoptimeTopIntense,() => _paused);
-
-        while (Vector3.Distance(_viewIntense.position, waypoints[0].position) > 0.01f)
-        {
-            if (_paused) { yield return WaitWhilePaused(() => _paused); continue; }
-
-            _viewIntense.position = Vector3.MoveTowards(_viewIntense.position, waypoints[0].position,
-                intenseSpeed * Time.deltaTime);
-            _triggerTransform.position = new Vector3(
-                _triggerTransform.position.x,
-                _viewIntense.position.y,
-                _triggerTransform.position.z);
-            yield return null;
-        }
-
-        _isIntenseModeActive = false;
-
-        onGeysersFinished?.Invoke();
     }
-
-    #endregion
 
     public void OnPlayerEnterTrigger(Collider player)
     {
-        player.transform.SetParent(_invisiblePlatform);
-        _upInvisiblePlatform = true;
-
-        if (_playerContext.Model.Size != PlayerSize.Head)
+        _playerInTrigger = true;
+        _playerTransform = player.transform;
+        _playerTransform.SetParent(_platform);
+        
+        PlayerController pController = player.GetComponentInParent<PlayerController>();
+        if (pController != null)
         {
-            _playerContext.Model.TryConsumeBandage(_playerContext.Model.Bandages);
+            _currentPlayerContext = pController.Ctx;
+            CheckAndApplyPenalty();
         }
     }
 
     public void OnPlayerExitTrigger(Collider player)
     {
-        player.transform.SetParent(null);
-        _upInvisiblePlatform = false;
+        if (player.transform == _playerTransform)
+        {
+            ReleasePlayer();
+        }
+    }
 
-        _invisiblePlatform.position = waypoints[0].position;
+    private void ReleasePlayer()
+    {
+        if (_playerInTrigger && _playerTransform != null)
+        {
+            _playerTransform.SetParent(null);
+        }
+        
+        _playerInTrigger = false;
+        _playerTransform = null;
+        _currentPlayerContext = null;
+    }
+
+    private void CheckAndApplyPenalty()
+    {
+        if (_isErupting && _playerInTrigger && !_penaltyApplied && _currentPlayerContext != null)
+        {
+            if (_currentPlayerContext.Model.Size != PlayerSize.Head)
+            {
+                _currentPlayerContext.Model.TryConsumeBandage(_currentPlayerContext.Model.Bandages);
+            }
+            _penaltyApplied = true; 
+        }
     }
 
     public void OnPauseChanged(bool paused)
     {
         _paused = paused;
 
-        if (_preUp1)
+        if (_mainGeyserVFX != null)
         {
-            if (paused && _preUp1.isPlaying) _preUp1.Pause();
-            else if (!paused && !_preUp1.isPlaying) _preUp1.Play();
-        }
-
-        if (_preUp2)
-        {
-            if (paused && _preUp2.isPlaying) _preUp2.Pause();
-            else if (!paused && !_preUp2.isPlaying) _preUp2.Play();
+            if (paused && _mainGeyserVFX.isPlaying) 
+                _mainGeyserVFX.Pause(true);
+            else if (!paused && _mainGeyserVFX.isPaused) 
+                _mainGeyserVFX.Play(true);
         }
     }
     
     private void OnEnable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
     private void OnDisable() => GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
-}
-
-enum GeyserType
-{
-    Basic,
-    Intense
 }

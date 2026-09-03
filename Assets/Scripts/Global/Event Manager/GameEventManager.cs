@@ -14,7 +14,7 @@ public class GameEventManager : MonoBehaviour
     [Serializable]
     public struct BossEvents
     {
-        [FormerlySerializedAs("OnDamaged")] public GameEvent OnAngry;
+        public GameEvent OnAngry;
         public GameEvent OnDeath;
         public GameEvent OnStageCompleted;
     }
@@ -24,6 +24,7 @@ public class GameEventManager : MonoBehaviour
     {
         public GameEvent OnBandagesCountChanged;
         public GameEvent OnSizeChanged;
+        public GameEvent OnEmpoweredBegin;
         public GameEvent OnEmpoweredCompleted;
         public GameEvent OnShoot;
         public GameEvent OnHit;
