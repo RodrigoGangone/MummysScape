@@ -33,7 +33,7 @@ public sealed class GoapBrain
         if (boss.IsExecutingSkill)   return Intent.None;
 
         // Priorizamos daño si aplica.
-        if (boss.IsAngry)            return Intent.Angry;
+        //if (boss.IsAngry)            return Intent.Angry;
 
         // Cacheamos Time.time para evitar leerlo dos veces.
         float now = Time.time;

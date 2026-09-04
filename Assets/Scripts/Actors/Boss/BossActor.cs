@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine.Playables;
-using static Layers;
+using static Animations.Boss;
 
 /// <summary>
 /// Controlador Central: Integra el sistema de estados (FSM), el planificador de decisiones (GOAP) 
@@ -61,9 +61,9 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     public void NotifySkillStarted() => IsExecutingSkill = true;
     public void NotifySkillEnded() => IsExecutingSkill = false;
 
-    public bool IsAngry { get; private set; }
-    private void NotifyAngry() => IsAngry = true;
-    public void NotifyRecovery() => IsAngry = false;
+    //public bool IsAngry { get; private set; }
+    //private void NotifyAngry() => IsAngry = true;
+    //public void NotifyRecovery() => IsAngry = false;
     public bool IsPreDie { get; private set; }
     public void NotifyPreDie() => IsPreDie = true;
     public bool IsDie { get; private set; }
@@ -113,14 +113,20 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
             _lastIntent = intent;
             TriggerFsm(intent);
         }
-
-        if (Input.GetKeyDown(KeyCode.L))
-            GameEventManager.Instance.bossEvents.OnAngry.Raise();
     }
 
     private void AdvanceStage()
     {
         if (IsDie) return;
+        StartCoroutine(WaitAndAdvanceStageRoutine());
+    }
+
+    private IEnumerator WaitAndAdvanceStageRoutine()
+    {
+        // 1. Pausamos la ejecución hasta que AE_Skill_Ended devuelva la bandera a false
+        yield return new WaitUntil(() => !IsExecutingSkill);
+
+        // 2. Retomamos la lógica de progresión y disparamos el Timeline
         _stageIndex++;
 
         if (_stageIndex >= config.StageCount)
@@ -129,8 +135,11 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         }
         else
         {
-            //GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
-            angryTimeLine.Play();
+            
+            Animator.SetBool(PRIMARY_ANIM_SCORPION, false);
+            Animator.SetBool(SECONDARY_ANIM_SCORPION, false);
+            
+            if (angryTimeLine != null) angryTimeLine.Play();
         }
     }
 
@@ -257,7 +266,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
 
-        GameEventManager.Instance.bossEvents.OnAngry.Register(NotifyAngry);
+        //GameEventManager.Instance.bossEvents.OnAngry.Register(NotifyAngry);
         GameEventManager.Instance.bossEvents.OnAngry.Register(AdvanceStage);
 
         GameEventManager.Instance.bossEvents.OnDeath.Register(Death);
@@ -273,7 +282,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
 
-        GameEventManager.Instance.bossEvents.OnAngry.Unregister(NotifyAngry);
+        //GameEventManager.Instance.bossEvents.OnAngry.Unregister(NotifyAngry);
         GameEventManager.Instance.bossEvents.OnAngry.Unregister(AdvanceStage);
 
         GameEventManager.Instance.bossEvents.OnDeath.Unregister(Death);
