@@ -18,4 +18,6 @@ public class MummyColorSetSO : ScriptableObject
     [ColorUsage(true, true)] public Color fire2Mid = Color.yellow;
     [ColorUsage(true, true)] public Color fire2Top = Color.white;
     [ColorUsage(true, true)] public Color fire2Glow = Color.magenta;
+
+    [ColorUsage(false, true)] public Color skull;
 }

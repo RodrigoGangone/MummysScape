@@ -20328,6 +20328,8 @@ PlayableDirector:
     value: {fileID: 8494411703232438533}
   - key: {fileID: -6085686901025820330, guid: ac2d80d38b3c8164384257a5d46d8f63, type: 2}
     value: {fileID: 706550166425417461}
+  - key: {fileID: 8343865710529839464, guid: ac2d80d38b3c8164384257a5d46d8f63, type: 2}
+    value: {fileID: 4797485692898047505}
   m_ExposedReferences:
     m_References: []
 --- !u!1 &3272508662834399403
@@ -25310,6 +25312,7 @@ MonoBehaviour:
     m_Signals:
     - {fileID: 11400000, guid: d91e7b9afd19596499919bd276fc9d39, type: 2}
     - {fileID: 11400000, guid: cca92ff599de5b946b37f8373079af57, type: 2}
+    - {fileID: 11400000, guid: 6975d000d0404b44facbce308d5aa54b, type: 2}
     m_Events:
     - m_PersistentCalls:
         m_Calls:
@@ -25330,6 +25333,20 @@ MonoBehaviour:
         - m_Target: {fileID: 1429221517843768808}
           m_TargetAssemblyTypeName: Portal, Assembly-CSharp
           m_MethodName: UnlockPlayer
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 4514804196167913640}
+          m_TargetAssemblyTypeName: FocusOnActivation, Assembly-CSharp
+          m_MethodName: Activate
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}

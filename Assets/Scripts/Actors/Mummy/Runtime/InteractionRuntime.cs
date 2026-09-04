@@ -161,6 +161,13 @@ public sealed class InteractionRuntime : MonoBehaviour
     /// Identifica cajas para atraer a distancia mediante un rayo de visión, validando que 
     /// se encuentre dentro del rango permitido y en contacto con la superficie. 
     /// </summary>
+// -------------------- ATTRACT --------------------
+
+    /// <summary> 
+    /// Identifica cajas para atraer a distancia mediante un rayo de visión, validando que 
+    /// se encuentre dentro del rango permitido, en contacto con la superficie, 
+    /// y que la línea de visión no esté obstruida por paredes.
+    /// </summary>
     public bool TryGetAttractTarget(Transform playerTf, out BoxPushAttract target)
     {
         target = null;
@@ -174,6 +181,13 @@ public sealed class InteractionRuntime : MonoBehaviour
         _aHitPoint = hit ? h.point : _aEnd;
 
         if (!hit)
+        {
+            _aEligible = false;
+            return false;
+        }
+
+        int wallMask = LayerMask.GetMask(WALL_LAYER);
+        if (Physics.Raycast(_aOrigin, fwd, h.distance, wallMask, QueryTriggerInteraction.Ignore))
         {
             _aEligible = false;
             return false;
@@ -197,7 +211,6 @@ public sealed class InteractionRuntime : MonoBehaviour
         _aEligible = target.IsGroundedForPushAttract();
         return _aEligible;
     }
-
     // -------------------- AIM --------------------
 
     /// <summary> 

@@ -20,6 +20,9 @@ public class DestroyWall : MonoBehaviour
     [SerializeField] private float explosionForce = 500f;
     [SerializeField] private float explosionRadius = 5f;
     [SerializeField] private float explosionDepthOffset = 0.5f;
+    
+    [Tooltip("Fuerza adicional hacia arriba usada en BasicActivate para el efecto de expansión.")]
+    [SerializeField] private float basicUpwardModifier = 2f;
 
     [Header("Desvanecimiento")]
     [Tooltip("Tiempo en el que el Alpha pasará de 1 a 0 antes de desactivar el objeto.")]
@@ -27,11 +30,39 @@ public class DestroyWall : MonoBehaviour
 
     private int _currentLayerIndex = 0;
 
+    /// <summary>
+    /// Activa la explosión usando un punto exacto de impacto y una dirección.
+    /// </summary>
     public void Activate(Vector3 hitPoint, Vector3 hitDirection)
     {
         if (_currentLayerIndex >= destructionLayers.Length) return;
 
         Vector3 explosionPosition = hitPoint - (hitDirection.normalized * explosionDepthOffset);
+        
+        // Llamamos al método centralizado (sin modificador hacia arriba para respetar la dirección del golpe)
+        ProcessLayerExplosion(explosionPosition, 0f);
+    }
+
+    /// <summary>
+    /// Activa una explosión genérica desde el centro del objeto. 
+    /// Los ladrillos salen disparados hacia arriba y hacia los lados.
+    /// </summary>
+    public void BasicActivate()
+    {
+        if (_currentLayerIndex >= destructionLayers.Length) return;
+
+        // Tomamos la posición central del script (la pared) como epicentro
+        Vector3 explosionPosition = transform.position;
+        
+        // Llamamos al método centralizado aplicando el modificador hacia arriba
+        ProcessLayerExplosion(explosionPosition, basicUpwardModifier);
+    }
+
+    /// <summary>
+    /// Método centralizado que maneja la física y el desvanecimiento para no repetir código.
+    /// </summary>
+    private void ProcessLayerExplosion(Vector3 explosionPosition, float upwardModifier)
+    {
         Rigidbody[] currentBricks = destructionLayers[_currentLayerIndex].bricks;
 
         foreach (Rigidbody rb in currentBricks)
@@ -39,7 +70,9 @@ public class DestroyWall : MonoBehaviour
             if (rb == null) continue;
 
             rb.isKinematic = false;
-            rb.AddExplosionForce(explosionForce, explosionPosition, explosionRadius);
+            
+            // Aplicamos la fuerza. El 'upwardModifier' eleva los objetos mientras se expanden.
+            rb.AddExplosionForce(explosionForce, explosionPosition, explosionRadius, upwardModifier);
         }
 
         // Verificamos si esta es la última capa de la pared
@@ -53,7 +86,6 @@ public class DestroyWall : MonoBehaviour
 
     private IEnumerator FadeAndDeactivate(Rigidbody[] bricks, float duration, bool isLastLayer)
     {
-        // Recolectamos los materiales y GameObjects al inicio para no usar GetComponent en cada frame (optimización)
         List<Material> materials = new List<Material>();
         List<GameObject> objects = new List<GameObject>();
 
@@ -66,20 +98,15 @@ public class DestroyWall : MonoBehaviour
             Renderer rend = rb.GetComponent<Renderer>();
             if (rend != null)
             {
-                // Al llamar .material en Unity, se crea una instancia independiente del material.
-                // Esto es ideal para que solo se desvanezcan estos ladrillos y no todos los de la escena.
                 materials.Add(rend.material);
             }
         }
 
         float elapsedTime = 0f;
 
-        // Bucle de desvanecimiento
         while (elapsedTime < duration)
         {
             elapsedTime += Time.deltaTime;
-            
-            // Interpolar linealmente entre 1 y 0
             float currentAlpha = Mathf.Lerp(1f, 0f, elapsedTime / duration);
 
             foreach (Material mat in materials)
@@ -90,22 +117,19 @@ public class DestroyWall : MonoBehaviour
                 }
             }
 
-            yield return null; // Esperamos al siguiente frame
+            yield return null; 
         }
 
-        // Aseguramos que el valor termine exactamente en 0
         foreach (Material mat in materials)
         {
             if (mat != null) mat.SetFloat("_Alpha", 0f);
         }
 
-        // Desactivamos los GameObjects de los ladrillos en lugar de destruirlos
         foreach (GameObject obj in objects)
         {
             if (obj != null) obj.SetActive(false);
         }
 
-        // Si esta fue la última capa en destruirse, apagamos todo el objeto padre
         if (isLastLayer)
         {
             gameObject.SetActive(false);

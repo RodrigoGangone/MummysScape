@@ -6,10 +6,13 @@ using UnityEngine.UI;
 public class CinematicObserver : MonoBehaviour
 {
     [SerializeField] private string cinematicId;
+    
+    [Header("SETTINGS")]
+    [Tooltip("Si es verdadero, permitirá saltar la cinemática aunque no se haya visto antes.")]
+    [SerializeField] private bool isSkippable;
 
-    [Header("UI TUTORIAL / PROMPT")] [SerializeField]
-    private GameObject interaction;
-
+    [Header("UI TUTORIAL / PROMPT")] 
+    [SerializeField] private GameObject interaction;
     [SerializeField] private Image interactionBtn;
     [SerializeField] private Sprite btnA;
     [SerializeField] private Sprite btnY;
@@ -20,11 +23,10 @@ public class CinematicObserver : MonoBehaviour
 
     private void CheckStatus()
     {
-        // Si ya fue vista, activamos el prompt visual para indicar que se puede saltar
-        if (Save.IsCinematicSeen(cinematicId))
+        // Se mantiene tu condición original, sumando la variable isSkippable
+        if (Save.IsCinematicSeen(cinematicId) || isSkippable)
         {
             Debug.Log($"[Cinematic: {cinematicId}] Se puede saltear");
-            // Mostramos el prompt (Botón Y) para avisar que el skip está disponible
             ShowInteractionInput(true, ButtonType.Y);
         }
         else
@@ -36,7 +38,8 @@ public class CinematicObserver : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetButtonDown("Accept") && Save.IsCinematicSeen(cinematicId))
+        // Se mantiene tu condición original explícita, sumando isSkippable
+        if (Input.GetButtonDown("Accept") && (Save.IsCinematicSeen(cinematicId) || isSkippable))
             Transition.FadeInAndLoadScene(1);
     }
 

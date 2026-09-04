@@ -20,7 +20,11 @@ public sealed class MovementBySizeConfig : ScriptableObject
 
     [Header("Head")] 
     public float headMove = 5f;
-    public float headTurn = 20f;
+    public float headTurn = 20f;   
+    
+    [Header("Empowered")] 
+    public float empoweredMove = 1f;
+    public float empoweredTurn = 5f;
 
     public void Get(PlayerSize size, out float move, out float turn)
     {
@@ -33,6 +37,10 @@ public sealed class MovementBySizeConfig : ScriptableObject
             case Head:
                 move = headMove;
                 turn = headTurn;
+                break; 
+            case Empowered:
+                move = empoweredMove;
+                turn = empoweredTurn;
                 break;
             default:
                 move = normalMove;
