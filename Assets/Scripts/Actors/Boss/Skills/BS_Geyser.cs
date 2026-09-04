@@ -67,7 +67,8 @@ public class BS_Geyser : BossSkillSO
             origin,
             onArrived: () =>
             {
-                foreach (var g in selection.Where(g => g != null)) g.ActivateIntenseMode(null);
+                //foreach (var g in selection.Where(g => g != null)) 
+                    //g.ActivateIntenseMode(null);
             });
 
     }
