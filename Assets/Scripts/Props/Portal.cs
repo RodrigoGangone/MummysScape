@@ -46,10 +46,9 @@ public class Portal : MonoBehaviour
         if (!enterLevel) return;
 
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, true);
-
-        //Focus.Activate();
-        //OpenAnim();
-
+        
+        anim.SetTrigger(OPEN);
+        
         if (directorEnter != null)
             directorEnter.Play();
     }
