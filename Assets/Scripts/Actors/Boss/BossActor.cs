@@ -64,7 +64,8 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     public bool IsAngry { get; private set; }
     private void NotifyAngry() => IsAngry = true;
     public void NotifyRecovery() => IsAngry = false;
-
+    public bool IsPreDie { get; private set; }
+    public void NotifyPreDie() => IsPreDie = true;
     public bool IsDie { get; private set; }
     private void NotifyDie() => IsDie = true;
 
@@ -88,6 +89,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         _stateMachine.AddState(Angry, new BS_Angry(this));
         _stateMachine.AddState(Primary, new BS_UseSkillA(this));
         _stateMachine.AddState(Secondary, new BS_UseSkillB(this));
+        _stateMachine.AddState(PreDie, new BS_Pre_Die(this));
         _stateMachine.AddState(Die, new BS_Die(this));
 
         _stateMachine.ChangeState(Entry);
@@ -124,12 +126,10 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         if (_stageIndex >= config.StageCount)
         {
             _stageIndex = config.StageCount;
-            GameEventManager.Instance.bossEvents.OnDeath.Raise();
-            endedTimeLine.Play();
         }
         else
         {
-            GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
+            //GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
             angryTimeLine.Play();
         }
     }
@@ -189,6 +189,9 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
             case "Secondary":
                 _stateMachine.ChangeState(Secondary);
                 break;
+            case "PreDie":
+                _stateMachine.ChangeState(PreDie);
+                break;
             case "Die":
                 _stateMachine.ChangeState(Die);
                 break;
@@ -200,24 +203,24 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         _lastIntent = intentOrEvent;
     }
 
-    private void StartDeathSequence() => StartCoroutine(DeathSequenceCo());
-
-    private IEnumerator DeathSequenceCo()
-    {
-        NotifyDie();
-        _isLocked = true;
-        UpdateControlState();
-
-        GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Boss", true);
-
-        GameEventManager.Instance.bossEvents.OnDeath.Raise();
-
-        yield return new WaitForSecondsRealtime(0.15f);
-
-        _stateMachine.ChangeState(Die);
-
-        //GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
-    }
+    // private void StartDeathSequence() => StartCoroutine(DeathSequenceCo());
+    //
+    // private IEnumerator DeathSequenceCo()
+    // {
+    //     NotifyDie();
+    //     _isLocked = true;
+    //     UpdateControlState();
+    //
+    //     GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Boss", true);
+    //
+    //     GameEventManager.Instance.bossEvents.OnDeath.Raise();
+    //
+    //     yield return new WaitForSecondsRealtime(0.15f);
+    //
+    //     _stateMachine.ChangeState(Die);
+    //
+    //     //GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
+    // }
 
     private void UpdateControlState()
     {
@@ -230,6 +233,25 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         if (_stateMachine != null) _stateMachine.enabled = !shouldFreezeByLock;
     }
 
+    private void Death()
+    {
+        NotifyDie(); // Es mejor usar el método que ya tenías creado para esto
+        
+        // 1. Bloqueamos al jefe y al jugador durante la cinemática final
+        _isLocked = true;
+        UpdateControlState();
+        //GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Boss", true);
+
+        // 2. Avisamos a la máquina de estados para que lance el trigger en el Animator
+        _stateMachine.ChangeState(Die);
+
+        // 3. Reproducimos el Timeline
+        if (endedTimeLine != null)
+        {
+            endedTimeLine.Play(); 
+        }
+    }
+
     private void OnEnable()
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
@@ -238,7 +260,9 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         GameEventManager.Instance.bossEvents.OnAngry.Register(NotifyAngry);
         GameEventManager.Instance.bossEvents.OnAngry.Register(AdvanceStage);
 
-        GameEventManager.Instance.bossEvents.OnDeath.Register(StartDeathSequence);
+        GameEventManager.Instance.bossEvents.OnDeath.Register(Death);
+
+        //GameEventManager.Instance.bossEvents.OnDeath.Register(StartDeathSequence);
 
         OnPrimarySkill += TryUseSkillA;
         OnSecondarySkill += TryUseSkillB;
@@ -252,7 +276,8 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         GameEventManager.Instance.bossEvents.OnAngry.Unregister(NotifyAngry);
         GameEventManager.Instance.bossEvents.OnAngry.Unregister(AdvanceStage);
 
-        GameEventManager.Instance.bossEvents.OnDeath.Unregister(StartDeathSequence);
+        GameEventManager.Instance.bossEvents.OnDeath.Unregister(Death);
+        //GameEventManager.Instance.bossEvents.OnDeath.Unregister(StartDeathSequence);
 
         OnPrimarySkill -= TryUseSkillA;
         OnSecondarySkill -= TryUseSkillB;
@@ -281,5 +306,6 @@ public enum BossCommonState
     Angry,
     Primary,
     Secondary,
+    PreDie,
     Die
 }

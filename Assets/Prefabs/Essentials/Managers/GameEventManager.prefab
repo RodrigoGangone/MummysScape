@@ -48,12 +48,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bossEvents:
-    OnDamaged: {fileID: 11400000, guid: 30180795ab015c948bad1f31710e2e4a, type: 2}
+    OnAngry: {fileID: 11400000, guid: 30180795ab015c948bad1f31710e2e4a, type: 2}
     OnDeath: {fileID: 11400000, guid: a8dc8003889b40943bb2b6a0592082e4, type: 2}
     OnStageCompleted: {fileID: 11400000, guid: 0253e019938af614fabd824a8426273e, type: 2}
   playerEvents:
     OnBandagesCountChanged: {fileID: 11400000, guid: c16a33d0f4dfdda45a2e4cfd4e388b71, type: 2}
     OnSizeChanged: {fileID: 11400000, guid: e09b9beee18ed2449bb90b53140fd548, type: 2}
+    OnEmpoweredCompleted: {fileID: 11400000, guid: 385a9ab1a65569847b612b065d095dee, type: 2}
     OnShoot: {fileID: 11400000, guid: aadecd721d3c1e841804fe39fbf72f66, type: 2}
     OnHit: {fileID: 11400000, guid: 66e68af5ef87f0048b8517f83113a6bf, type: 2}
     OnLocked: {fileID: 11400000, guid: b85429a3ed50c224c89e583a75738fa5, type: 2}
@@ -69,6 +70,7 @@ MonoBehaviour:
     OnPickedGem: {fileID: 11400000, guid: 3f4209f5f7b619046bc2d29f394fc453, type: 2}
     OnRumbleLow: {fileID: 11400000, guid: e17a8107aa5fb9243a502b8d3827b165, type: 2}
     OnRumbleHigh: {fileID: 11400000, guid: 25e379f872d1a4b4b8ba8cef3a22e93d, type: 2}
+    OnCinematicToggled: {fileID: 11400000, guid: c94457a55ad1420419f6d893e06de07a, type: 2}
 --- !u!114 &2939013598129468616
 MonoBehaviour:
   m_ObjectHideFlags: 0

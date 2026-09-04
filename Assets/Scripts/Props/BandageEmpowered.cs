@@ -19,6 +19,8 @@ public class BandageEmpowered : MonoBehaviour
         if (ctrl.Ctx.Model.Size != PlayerEnum.PlayerSize.Normal)
             ctrl.TryCollectBandage(ctrl.Ctx.Model.MaxBandagesValue);
 
+        GameEventManager.Instance.playerEvents.OnEmpoweredBegin.Raise();
+        
         Destroy(gameObject);
     }
 }

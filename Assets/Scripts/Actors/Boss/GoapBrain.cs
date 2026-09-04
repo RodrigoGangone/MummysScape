@@ -11,6 +11,7 @@ public sealed class GoapBrain
     {
         public const string None      = "None";
         public const string Die   = "Die";
+        public const string PreDie   = "PreDie";
         public const string Angry   = "Angry";
         public const string Primary   = "Primary";
         public const string Secondary = "Secondary";
@@ -25,14 +26,14 @@ public sealed class GoapBrain
         if (ctx is not BossActor boss || Paused) return Intent.None;
 
         //Priorizamos la muerte del Boss por sobre todas las cosas
-        if (boss.IsDie)          return Intent.Die;
-
+        if (boss.IsDie)              return Intent.Die;
+        if (boss.IsPreDie)           return Intent.PreDie;
         // Estados que no deben cambiar intención (early-outs).
         if (boss.IsEntry)            return Intent.None;
         if (boss.IsExecutingSkill)   return Intent.None;
 
         // Priorizamos daño si aplica.
-        if (boss.IsAngry)          return Intent.Angry;
+        if (boss.IsAngry)            return Intent.Angry;
 
         // Cacheamos Time.time para evitar leerlo dos veces.
         float now = Time.time;
