@@ -9,6 +9,7 @@ public class BossBoxCatchTrigger : MonoBehaviour
     [SerializeField] private BossActor bossActor;
     [SerializeField] private Transform socket;
     [SerializeField] private GameObject fakeBox;
+    [SerializeField] private ParticleSystem impactFirstBox;
 
     [Header("Collider Offsets")]
     [Tooltip("El 'Center' local del collider esperando el 1er hit")]
@@ -61,7 +62,7 @@ public class BossBoxCatchTrigger : MonoBehaviour
         
         // Modificamos únicamente la posición central del collider
         SetColliderCenter(secondHitOffset);
-
+        impactFirstBox.Play();
         StartCoroutine(MoveAndDeactivateBox(box));
     }
 
@@ -90,7 +91,7 @@ public class BossBoxCatchTrigger : MonoBehaviour
     private void HandleSecondBoxImpact(GameObject box)
     {
         var boxRb = box.GetComponent<Rigidbody>();
-        
+        boxRb.freezeRotation = false;
         
         GameEventManager.Instance.bossEvents.OnDeath.Raise();
     }

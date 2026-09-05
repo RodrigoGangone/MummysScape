@@ -303,11 +303,16 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     private void OnLockChanged(bool locked)
     {
         _isLocked = locked;
-        //animator.enabled = !locked;
-        //_stateMachine.enabled = !locked;
-        
+    
+        // Si nos bloquean y estábamos atacando, cancelamos el ataque forzosamente
+        if (locked && IsExecutingSkill)
+        {
+            NotifySkillEnded(); // Avisamos que la skill "terminó" (se canceló)
+            _stateMachine.ChangeState(Idle); // Forzamos la salida al Idle para limpiar el Animator y los proyectiles
+        }
+    
         UpdateControlState();
-        
+    
         if (_goap != null) _goap.Locked = locked;
     }
 }
