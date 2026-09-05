@@ -302,15 +302,35 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         if (_goap != null) _goap.Paused = paused;
     }
 
+    public event Action<bool> OnLockStateChanged;
+    private int _lockCount = 0;
+
     private void OnLockChanged(bool locked)
     {
-        _isLocked = locked;
-        //animator.enabled = !locked;
-        //_stateMachine.enabled = !locked;
-        
+        // Fix 1: Si llega un false, forzamos a 0 para evitar contadores fantasma por Timelines interrumpidos.
+        if (locked) 
+            _lockCount++;
+        else 
+            _lockCount = 0; // Forzamos la liberación total
+
+        _isLocked = _lockCount > 0;
+
+        OnLockStateChanged?.Invoke(_isLocked);
+    
         UpdateControlState();
-        
-        if (_goap != null) _goap.Locked = locked;
+    
+        if (_goap != null) _goap.Locked = _isLocked;
+    }
+
+    public void AbortCurrentSkill()
+    {
+        NotifySkillEnded(); 
+    
+        // Fix 2: Si el BossSkillSO tiene estado interno, debemos limpiarlo (Requiere que agregues este método a tu SO)
+        if (_runtimePrimarySkill != null) _runtimePrimarySkill.ResetSkill();
+        if (_runtimeSecondarySkill != null) _runtimeSecondarySkill.ResetSkill();
+
+        TriggerFsm("Idle"); 
     }
 }
 

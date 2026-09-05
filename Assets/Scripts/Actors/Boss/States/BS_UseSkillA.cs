@@ -11,20 +11,24 @@ public sealed class BS_UseSkillA : State
     {
         _actor.NotifySkillStarted();
         _actor.Animator.SetBool(PRIMARY_ANIM_SCORPION, true);
+        
+        // Nos suscribimos al evento para escuchar bloqueos
+        _actor.OnLockStateChanged += HandleLock;
+    }
+
+    private void HandleLock(bool isLocked)
+    {
+        if (isLocked) 
+        {
+            CleanUpLocal();
+            // Acá aplicamos tu idea: Mandamos directo a Idle al interrumpir
+            _actor.AbortCurrentSkill(); 
+        }
     }
 
     public override void OnUpdate()
     {
         if (!_actor.IsExecutingSkill) return;
-
-        // NUEVO: Validación en el contexto de la habilidad
-        // Si el boss es bloqueado por una cinemática en pleno ataque, 
-        // abortamos la habilidad localmente para no esperar un Animation Event que nunca llegará.
-        if (_actor.IsLocked)
-        {
-            CancelSkillContext();
-            return;
-        }
 
         var t = _actor.Transform;
         var p = _actor.Player.Tf.position;
@@ -36,19 +40,17 @@ public sealed class BS_UseSkillA : State
 
     public override void OnExit()
     {
-        // Aprovechamos el método centralizado para limpiar si la habilidad termina de forma natural
-        CancelSkillContext();
+        _actor.OnLockStateChanged -= HandleLock;
+        
+        // Aseguramos la limpieza del Animator tanto si salimos por un Lock 
+        // como si la habilidad terminó de manera normal y natural.
+        CleanUpLocal();
     }
 
-    private void CancelSkillContext()
+    private void CleanUpLocal()
     {
-        // 1. Apagamos la bandera para que el GOAP sepa que ya no estamos atacando
-        _actor.NotifySkillEnded(); 
-        
-        // 2. Limpiamos el Animator localmente
         _actor.Animator.SetBool(PRIMARY_ANIM_SCORPION, false);
 
-        // 3. Destruimos cualquier proyectil que se haya quedado a medio cargar
         var chargingProjectile = _actor.Transform.GetComponentInChildren<ChargeableProjectile>();
         if (chargingProjectile != null)
             Object.Destroy(chargingProjectile.gameObject);
