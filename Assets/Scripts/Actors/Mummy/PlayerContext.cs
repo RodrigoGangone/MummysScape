@@ -93,7 +93,15 @@ public sealed class PlayerContext
         target = null;
         left = default;
         right = default;
-        return _interactions != null && _interactions.TryGetPushTarget(Tf, out target, out left, out right);
+        
+        if (_interactions == null) return false;
+
+        // Evaluamos el tamaño para definir el alcance del empuje
+        float currentDistance = Model.Size == PlayerEnum.PlayerSize.Empowered 
+            ? _interactions.EmpoweredDistance 
+            : _interactions.NormalDistance;
+
+        return _interactions.TryGetPushTarget(Tf, currentDistance, out target, out left, out right);
     }
 
     public bool TryGetAttractTarget(out BoxPushAttract target)
