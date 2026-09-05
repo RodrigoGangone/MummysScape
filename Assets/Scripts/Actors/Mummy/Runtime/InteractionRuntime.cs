@@ -14,10 +14,14 @@ public sealed class InteractionRuntime : MonoBehaviour
     [Header("Push Checker")] [SerializeField]
     private float _heightY = 1.0f;
 
-    [SerializeField] private float _distance = 1.0f;
+    [SerializeField] private float _normalDistance = 1.0f;
+    [SerializeField] private float _empoweredDistance = 2.0f;
+    
     [SerializeField] private float _separation = 0.5f;
     [SerializeField] private LayerMask _interactMask;
 
+    public float NormalDistance => _normalDistance;
+    public float EmpoweredDistance => _empoweredDistance;
     [Header("Attract Checker")] [SerializeField]
     private float _attractMinDistance = 1.0f;
 
@@ -74,8 +78,10 @@ public sealed class InteractionRuntime : MonoBehaviour
     /// Detecta objetivos de empuje mediante rayos frontales duales, validando que el objeto 
     /// sea una caja interactuable válida y esté apoyada en el suelo. 
     /// </summary>
-    public bool TryGetPushTarget(Transform playerTf, out BoxPushAttract target, out RaycastHit hitLeft,
-        out RaycastHit hitRight)
+    /// <summary> 
+    /// Detecta objetivos de empuje mediante rayos frontales duales...
+    /// </summary>
+    public bool TryGetPushTarget(Transform playerTf, float distance, out BoxPushAttract target, out RaycastHit hitLeft, out RaycastHit hitRight)
     {
         target = null;
         hitLeft = default;
@@ -90,14 +96,16 @@ public sealed class InteractionRuntime : MonoBehaviour
         _oRight = center + right * half;
         _dLeft = _dRight = fwd;
 
-        bool lHit = Physics.Raycast(_oLeft, fwd, out hitLeft, _distance, _interactMask, QueryTriggerInteraction.Ignore);
-        bool rHit = Physics.Raycast(_oRight, fwd, out hitRight, _distance, _interactMask,
-            QueryTriggerInteraction.Ignore);
+        // Inyectamos la variable 'distance' en los Raycasts
+        bool lHit = Physics.Raycast(_oLeft, fwd, out hitLeft, distance, _interactMask, QueryTriggerInteraction.Ignore);
+        bool rHit = Physics.Raycast(_oRight, fwd, out hitRight, distance, _interactMask, QueryTriggerInteraction.Ignore);
 
         _leftHitInteract = lHit;
         _rightHitInteract = rHit;
-        _leftHitPoint = lHit ? hitLeft.point : _oLeft + fwd * _distance;
-        _rightHitPoint = rHit ? hitRight.point : _oRight + fwd * _distance;
+        
+        // Inyectamos la variable 'distance' en el punto final de fallback
+        _leftHitPoint = lHit ? hitLeft.point : _oLeft + fwd * distance;
+        _rightHitPoint = rHit ? hitRight.point : _oRight + fwd * distance;
 
         if (!(lHit && rHit)) return false;
 
@@ -110,7 +118,7 @@ public sealed class InteractionRuntime : MonoBehaviour
 
         return target.IsGroundedForPushAttract();
     }
-
+    
     // -------------------- SWING --------------------
 
     /// <summary> 
@@ -374,69 +382,69 @@ public bool TryGetAim(Transform playertf, Vector2 aimScreenPosition, out Vector3
      [SerializeField] private Color _hitColor = new(0.2f, 1f, 0.2f, 0.9f);
      [SerializeField] private Color _missColor = new(1f, 0.2f, 0.2f, 0.9f);
 
- private void OnDrawGizmos()
- {
-     if (!_drawGizmos) return;
-
-     // PUSH rays
-     Gizmos.color = _leftHitInteract ? _hitColor : _missColor;
-     Gizmos.DrawLine(_oLeft, _oLeft + _dLeft * _distance);
-     Gizmos.DrawSphere(_leftHitPoint, 0.03f);
-
-     Gizmos.color = _rightHitInteract ? _hitColor : _missColor;
-     Gizmos.DrawLine(_oRight, _oRight + _dRight * _distance);
-     Gizmos.DrawSphere(_rightHitPoint, 0.03f);
-
-     // ATTRACT LOS
-     //Gizmos.color = _aEligible ? _hitColor : _missColor;
-     //Gizmos.DrawLine(_aOrigin, _aEnd);
-     //Gizmos.DrawSphere(_aHitPoint, 0.03f);
-     //
-     //var minMark = _aOrigin + ((_aEnd - _aOrigin).normalized * _attractMinDistance);
-     //Gizmos.DrawWireSphere(minMark, 0.05f);
-
-     //// SWING
-     //Transform tf = transform;
-     //Vector3 swingCenter = tf.TransformPoint(origin);
-     //Quaternion swingRot = tf.rotation;
-     //
-     //Collider[] swingHits = Physics.OverlapBox(swingCenter, halfExtents, swingRot, _interactMask);
-     //bool anyHook = false;
-     //
-     //foreach (var hit in swingHits)
-     //{
-     //    if (!hit) continue;
-     //    if (hit.CompareTag("Hook"))
-     //    {
-     //        anyHook = true;
-     //        break;
-     //    }
-     //}
+//  private void OnDrawGizmos()
+//  {
+//      if (!_drawGizmos) return;
 //
-     //Gizmos.color = anyHook ? _hitColor : _missColor;
-     //Matrix4x4 oldMatrix = Gizmos.matrix;
-     //Gizmos.matrix = Matrix4x4.TRS(swingCenter, swingRot, Vector3.one);
-     //Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2f);
-     //Gizmos.matrix = oldMatrix;
+//      // PUSH rays
+//      Gizmos.color = _leftHitInteract ? _hitColor : _missColor;
+//      Gizmos.DrawLine(_oLeft, _oLeft + _dLeft * _distance);
+//      Gizmos.DrawSphere(_leftHitPoint, 0.03f);
 //
-     //// AIM
-     //if (SimpleShootData.Path != null && SimpleShootData.Path.Count > 1)
-     //{
-     //    Gizmos.color = _hitColor;
-     //    for (int i = 0; i < SimpleShootData.Path.Count - 1; i++)
-     //    {
-     //        Gizmos.DrawLine(SimpleShootData.Path[i], SimpleShootData.Path[i + 1]);
-     //    }
+//      Gizmos.color = _rightHitInteract ? _hitColor : _missColor;
+//      Gizmos.DrawLine(_oRight, _oRight + _dRight * _distance);
+//      Gizmos.DrawSphere(_rightHitPoint, 0.03f);
 //
-     //    Vector3 impactPoint = SimpleShootData.Path[SimpleShootData.Path.Count - 1];
-     //    Gizmos.DrawSphere(impactPoint, 0.25f);
-     //}
+//      // ATTRACT LOS
+//      //Gizmos.color = _aEligible ? _hitColor : _missColor;
+//      //Gizmos.DrawLine(_aOrigin, _aEnd);
+//      //Gizmos.DrawSphere(_aHitPoint, 0.03f);
+//      //
+//      //var minMark = _aOrigin + ((_aEnd - _aOrigin).normalized * _attractMinDistance);
+//      //Gizmos.DrawWireSphere(minMark, 0.05f);
 //
-     //// SMASH
-     //bool smashHit = Physics.CheckSphere(transform.position, smashRange, smashLayer);
-     //Gizmos.color = smashHit ? _hitColor : new Color(1f, 1f, 0f, 0.5f);
-     //Gizmos.DrawWireSphere(transform.position, smashRange);
- }
-
+//      //// SWING
+//      //Transform tf = transform;
+//      //Vector3 swingCenter = tf.TransformPoint(origin);
+//      //Quaternion swingRot = tf.rotation;
+//      //
+//      //Collider[] swingHits = Physics.OverlapBox(swingCenter, halfExtents, swingRot, _interactMask);
+//      //bool anyHook = false;
+//      //
+//      //foreach (var hit in swingHits)
+//      //{
+//      //    if (!hit) continue;
+//      //    if (hit.CompareTag("Hook"))
+//      //    {
+//      //        anyHook = true;
+//      //        break;
+//      //    }
+//      //}
+// //
+//      //Gizmos.color = anyHook ? _hitColor : _missColor;
+//      //Matrix4x4 oldMatrix = Gizmos.matrix;
+//      //Gizmos.matrix = Matrix4x4.TRS(swingCenter, swingRot, Vector3.one);
+//      //Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2f);
+//      //Gizmos.matrix = oldMatrix;
+// //
+//      //// AIM
+//      //if (SimpleShootData.Path != null && SimpleShootData.Path.Count > 1)
+//      //{
+//      //    Gizmos.color = _hitColor;
+//      //    for (int i = 0; i < SimpleShootData.Path.Count - 1; i++)
+//      //    {
+//      //        Gizmos.DrawLine(SimpleShootData.Path[i], SimpleShootData.Path[i + 1]);
+//      //    }
+// //
+//      //    Vector3 impactPoint = SimpleShootData.Path[SimpleShootData.Path.Count - 1];
+//      //    Gizmos.DrawSphere(impactPoint, 0.25f);
+//      //}
+// //
+//      //// SMASH
+//      //bool smashHit = Physics.CheckSphere(transform.position, smashRange, smashLayer);
+//      //Gizmos.color = smashHit ? _hitColor : new Color(1f, 1f, 0f, 0.5f);
+//      //Gizmos.DrawWireSphere(transform.position, smashRange);
+//  }
+//
      #endregion
 }

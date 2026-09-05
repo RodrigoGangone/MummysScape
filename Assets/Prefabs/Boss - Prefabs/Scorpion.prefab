@@ -5234,7 +5234,7 @@ ParticleSystem:
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
-  autoRandomSeed: 1
+  autoRandomSeed: 0
   startDelay:
     serializedVersion: 2
     minMaxState: 0
@@ -5291,7 +5291,7 @@ ParticleSystem:
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 0
+  randomSeed: 1050
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -20303,7 +20303,7 @@ ParticleSystem:
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
-  autoRandomSeed: 1
+  autoRandomSeed: 0
   startDelay:
     serializedVersion: 2
     minMaxState: 0
@@ -20360,7 +20360,7 @@ ParticleSystem:
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 0
+  randomSeed: 1050
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -35864,7 +35864,7 @@ ParticleSystem:
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
-  autoRandomSeed: 1
+  autoRandomSeed: 0
   startDelay:
     serializedVersion: 2
     minMaxState: 0
@@ -35921,7 +35921,7 @@ ParticleSystem:
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 0
+  randomSeed: 1050
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -41195,7 +41195,7 @@ ParticleSystem:
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
-  autoRandomSeed: 1
+  autoRandomSeed: 0
   startDelay:
     serializedVersion: 2
     minMaxState: 0
@@ -41252,7 +41252,7 @@ ParticleSystem:
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 0
+  randomSeed: 1050
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -66098,7 +66098,7 @@ ParticleSystem:
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
-  autoRandomSeed: 1
+  autoRandomSeed: 0
   startDelay:
     serializedVersion: 2
     minMaxState: 0
@@ -66155,7 +66155,7 @@ ParticleSystem:
   moveWithTransform: 1
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 0
+  randomSeed: 1050
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -71144,6 +71144,14 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2024685954559331192, guid: a2654910235c1c44bb8678d405ec6e43, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2024685954559331192, guid: a2654910235c1c44bb8678d405ec6e43, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.096
+      objectReference: {fileID: 0}
+    - target: {fileID: 2024685954559331192, guid: a2654910235c1c44bb8678d405ec6e43, type: 3}
       propertyPath: m_LocalPosition.z
       value: -0
       objectReference: {fileID: 0}
@@ -71219,6 +71227,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8155635816652663035, guid: a2654910235c1c44bb8678d405ec6e43, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1461335946304093044}
     - targetCorrespondingSourceObject: {fileID: 4594801278027165173, guid: a2654910235c1c44bb8678d405ec6e43, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8752137079167305406}
@@ -71255,6 +71266,33 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6479614307790631773, guid: a2654910235c1c44bb8678d405ec6e43, type: 3}
   m_PrefabInstance: {fileID: 197564636205845245}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &8328070976863625734 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8155635816652663035, guid: a2654910235c1c44bb8678d405ec6e43, type: 3}
+  m_PrefabInstance: {fileID: 197564636205845245}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1461335946304093044
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8328070976863625734}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &247422061313053917
 PrefabInstance:
   m_ObjectHideFlags: 0
