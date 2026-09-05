@@ -3,18 +3,31 @@ using System.Collections;
 using static Tags;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(Collider))]
 public class BossBoxCatchTrigger : MonoBehaviour
 {
     [SerializeField] private BossActor bossActor;
     [SerializeField] private Transform socket;
     [SerializeField] private GameObject fakeBox;
 
-    [Header("Catch Settings")] [SerializeField]
-    private float catchDuration = 0.5f; // Tiempo que tarda en llegar a la pinza
+    [Header("Collider Offsets")]
+    [Tooltip("El 'Center' local del collider esperando el 1er hit")]
+    [SerializeField] private Vector3 firstHitOffset;
+    [Tooltip("El 'Center' local del collider esperando el 2do hit")]
+    [SerializeField] private Vector3 secondHitOffset;
 
+    [Header("Catch Settings")] 
+    [SerializeField] private float catchDuration = 0.5f; 
     [SerializeField] private AnimationCurve catchCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     private HashSet<GameObject> _caughtBoxes = new();
+    private Collider _triggerCollider;
+
+    private void Awake()
+    {
+        _triggerCollider = GetComponent<Collider>();
+        SetColliderCenter(firstHitOffset);
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -30,7 +43,7 @@ public class BossBoxCatchTrigger : MonoBehaviour
                 }
                 else
                 {
-                    HandleSecondBoxImpact();
+                    HandleSecondBoxImpact(box);
                 }
             }
         }
@@ -38,17 +51,17 @@ public class BossBoxCatchTrigger : MonoBehaviour
 
     private void HandleFirstBoxCatch(GameObject box)
     {
-        // 1. Apagamos físicas de inmediato para evitar colisiones erráticas durante el traslado
         if (box.TryGetComponent<Rigidbody>(out var rb))
         {
             rb.isKinematic = true;
             rb.useGravity = false;
         }
 
-        // 2. Notificamos al Boss para que pase a PreDie e inicie su animación en loop
         bossActor.NotifyPreDie();
+        
+        // Modificamos únicamente la posición central del collider
+        SetColliderCenter(secondHitOffset);
 
-        // 3. Iniciamos el traslado visual
         StartCoroutine(MoveAndDeactivateBox(box));
     }
 
@@ -64,17 +77,50 @@ public class BossBoxCatchTrigger : MonoBehaviour
             float t01 = Mathf.Clamp01(time / catchDuration);
             float curveValue = catchCurve.Evaluate(t01);
 
-            // Interpolación hacia el socket
             box.transform.position = Vector3.LerpUnclamped(startPos, socket.position, curveValue);
             box.transform.rotation = Quaternion.LerpUnclamped(startRot, socket.rotation, curveValue);
 
             yield return null;
         }
 
-        // 4. Apagamos la caja al llegar a destino
         box.SetActive(false);
         fakeBox.SetActive(true);
     }
 
-    private void HandleSecondBoxImpact() => GameEventManager.Instance.bossEvents.OnDeath.Raise();
+    private void HandleSecondBoxImpact(GameObject box)
+    {
+        var boxRb = box.GetComponent<Rigidbody>();
+        
+        
+        GameEventManager.Instance.bossEvents.OnDeath.Raise();
+    }
+
+    private void SetColliderCenter(Vector3 offset)
+    {
+        if (_triggerCollider is BoxCollider box) box.center = offset;
+        else if (_triggerCollider is SphereCollider sphere) sphere.center = offset;
+        else if (_triggerCollider is CapsuleCollider capsule) capsule.center = offset;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // Aplicamos la matriz del transform para que los gizmos respeten rotación y escala
+        Gizmos.matrix = transform.localToWorldMatrix;
+
+        // Intentamos sacar el tamaño si es un BoxCollider (lo más común para este tipo de catch)
+        BoxCollider box = GetComponent<BoxCollider>();
+        Vector3 size = box != null ? box.size : Vector3.one;
+
+        // Primer hit (Verde)
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireCube(firstHitOffset, size);
+
+        // Segundo hit (Rojo)
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(secondHitOffset, size);
+
+        // Línea de trayectoria
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(firstHitOffset, secondHitOffset);
+    }
 }
