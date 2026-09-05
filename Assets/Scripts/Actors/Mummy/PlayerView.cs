@@ -10,58 +10,65 @@ using static PlayerEnum;
 /// </summary>
 public sealed class PlayerView : MonoBehaviour, IPausable
 {
-    [Header("Animators (Asignar cada malla individual)")] 
-    [SerializeField] private Animator _animNormal;
+    [Header("Animators (Asignar cada malla individual)")] [SerializeField]
+    private Animator _animNormal;
+
     [SerializeField] private Animator _animSmall;
     [SerializeField] private Animator _animHead;
     [SerializeField] private Animator _animEmpowered;
 
-    [Header("FX Banks")]
-    [SerializeField] private FxBank bankNormal;
+    [Header("FX Banks")] [SerializeField] private FxBank bankNormal;
     [SerializeField] private FxBank bankSmall;
     [SerializeField] private FxBank bankHead;
     [SerializeField] private FxBank bankEmpowered;
 
-    [Header("Particles")]
-    [SerializeField] public ParticleSystem _smashFX;
+    [Header("Particles")] [SerializeField] public ParticleSystem _smashFX;
     [SerializeField] public ParticleSystem _dropFX;
     [SerializeField] public ParticleSystem _koFX;
     [SerializeField] public ParticleSystem fallingDust;
     [SerializeField] public ParticleSystem angerFx;
     [SerializeField] private DecalProjector shadow;
 
-    [Header("Shoot Visual")] 
-    [SerializeField] private GameObject _decal;
+    [Header("Shoot Visual")] [SerializeField]
+    private GameObject _decal;
+
     [SerializeField] private DecalProjector _rangeIndicator;
     [SerializeField] private LineRenderer _arcRenderer;
 
-    [ColorUsage(true, true), SerializeField] private Color _aimAllowed;
-    [ColorUsage(true, true), SerializeField] private Color _aimNotAllowed;
+    [ColorUsage(true, true), SerializeField]
+    private Color _aimAllowed;
 
-    [Header("Bandage Visuals System")] 
-    [SerializeField] private LineRenderer _bandageLine;
+    [ColorUsage(true, true), SerializeField]
+    private Color _aimNotAllowed;
+
+    [Header("Bandage Visuals System")] [SerializeField]
+    private LineRenderer _bandageLine;
+
     [SerializeField] private ParticleSystem _cutFx;
 
-    [Header("Hand Anchors (Asignar transforms de las manos)")] 
-    [SerializeField] private Transform _handAnchorNormal;
+    [Header("Hand Anchors (Asignar transforms de las manos)")] [SerializeField]
+    private Transform _handAnchorNormal;
+
     [SerializeField] private Transform _handAnchorSmall;
     [SerializeField] private Transform _handAnchorHead;
     [SerializeField] private Transform _handAnchorEmpowered;
 
-    [Header("Feedback System")] 
-    [SerializeField] private PlayerFeedbackLibrary _feedbackLibrary;
+    [Header("Feedback System")] [SerializeField]
+    private PlayerFeedbackLibrary _feedbackLibrary;
 
-    [Header("Color Settings (Scriptable Objects)")]
-    [SerializeField] private MummyColorSetSO _colorSetNormal;
+    [Header("Color Settings (Scriptable Objects)")] [SerializeField]
+    private MummyColorSetSO _colorSetNormal;
+
     [SerializeField] private MummyColorSetSO _colorSetSmall;
     [SerializeField] private MummyColorSetSO _colorSetHead;
     [SerializeField] private MummyColorSetSO _colorSetEmpowered;
 
-    [Header("Direct Material Assets")]
-    [FormerlySerializedAs("_fire1Renderer")] 
-    [SerializeField] private Material _fire1Mat;
-    [FormerlySerializedAs("_fire2Renderer")] 
-    [SerializeField] private Material _fire2Mat;
+    [Header("Direct Material Assets")] [FormerlySerializedAs("_fire1Renderer")] [SerializeField]
+    private Material _fire1Mat;
+
+    [FormerlySerializedAs("_fire2Renderer")] [SerializeField]
+    private Material _fire2Mat;
+
     [SerializeField] private Material _mainMaterial1;
     [SerializeField] private Material _mainMaterial2;
 
@@ -89,18 +96,18 @@ public sealed class PlayerView : MonoBehaviour, IPausable
     private static readonly int TopColorProp = Shader.PropertyToID("_TopColor");
     private static readonly int GlowColorProp = Shader.PropertyToID("_GlowColor");
     private static readonly int EmissionColorProp = Shader.PropertyToID("_EmissionColor");
-    
+
     public GameObject Decal => _decal;
     public DecalProjector Shadow => shadow;
     public DecalProjector RangeIndicator => _rangeIndicator;
     public LineRenderer ArcRenderer => _arcRenderer;
-    
+
     // Tus PlayerStates accederán siempre al Animator activo a través de esta propiedad
-    public Animator Animator => _currentAnim; 
-    
+    public Animator Animator => _currentAnim;
+
     public Color AimAllowed => _aimAllowed;
     public Color AimNotAllowed => _aimNotAllowed;
-    public Transform handAnchor => _currentHandAnchor; 
+    public Transform handAnchor => _currentHandAnchor;
 
     private void Awake()
     {
@@ -115,6 +122,8 @@ public sealed class PlayerView : MonoBehaviour, IPausable
             _bandageMatInst = _bandageLine.material;
             _bandageLine.enabled = false;
         }
+
+        ApplyColorSet(_colorSetNormal);
     }
 
     private void LateUpdate()
@@ -123,16 +132,16 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         {
             // 1. Obtener la posición inicial (Mano)
             Vector3 startPos = _currentHandAnchor.position;
-        
+
             // 2. Obtener la posición final (Objetivo)
             Vector3 targetWorldPos = _bandageTarget.TransformPoint(_bandageTargetLocalOffset);
 
             // 3. Actualizar el LineRenderer
             _bandageLine.SetPosition(0, startPos);
             _bandageLine.SetPosition(1, targetWorldPos);
-        
+
             // 4. Calcular el punto medio para el efecto de corte
-            _lastCutMidPoint = (startPos + targetWorldPos) * 0.5f;        
+            _lastCutMidPoint = (startPos + targetWorldPos) * 0.5f;
         }
     }
 
@@ -233,13 +242,12 @@ public sealed class PlayerView : MonoBehaviour, IPausable
             _fire2Mat.SetColor(TopColorProp, colorSet.fire2Top);
             _fire2Mat.SetColor(GlowColorProp, colorSet.fire2Glow);
         }
-        
-        if(_mainMaterial1 != null)
-            _mainMaterial1.SetColor(EmissionColorProp, colorSet.skull);    
-        
-        if(_mainMaterial2 != null)
-            _mainMaterial2.SetColor(EmissionColorProp, colorSet.skull);    
 
+        if (_mainMaterial1 != null)
+            _mainMaterial1.SetColor(EmissionColorProp, colorSet.skull);
+
+        if (_mainMaterial2 != null)
+            _mainMaterial2.SetColor(EmissionColorProp, colorSet.skull);
     }
 
     private void OnSizeChanged(PlayerSize newSize)
@@ -264,7 +272,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
                 _currentAnim = _animHead;
                 _currentHandAnchor = _handAnchorHead;
                 ApplyColorSet(_colorSetHead);
-                break;    
+                break;
             case PlayerSize.Empowered:
                 _currentAnim = _animEmpowered;
                 _currentHandAnchor = _handAnchorEmpowered;
@@ -315,7 +323,7 @@ public sealed class PlayerView : MonoBehaviour, IPausable
             case PlayerSize.Head:
                 main.startSize = new ParticleSystem.MinMaxCurve(1f, 2.5f);
                 main.startColor = new Color(0.6f, 1f, 1f, 0.5f);
-                break;   
+                break;
             case PlayerSize.Empowered:
                 main.startSize = new ParticleSystem.MinMaxCurve(1f, 2.5f);
                 main.startColor = new Color(1f, 1f, 0f, 0.5f);
