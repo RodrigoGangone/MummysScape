@@ -19,11 +19,12 @@ public sealed class GoapBrain
     }
     
     internal bool Paused;
+    internal bool Locked;
 
     public string DecideNextIntent(in WorldModel wm, IBossContext ctx, BossSkillSO runtimePrimary, BossSkillSO runtimeSecondary)
     {
         // Si el contexto no es un BossActor, no hay decisión posible.
-        if (ctx is not BossActor boss || Paused) return Intent.None;
+        if (ctx is not BossActor boss || Paused || Locked) return Intent.None;
 
         //Priorizamos la muerte del Boss por sobre todas las cosas
         if (boss.IsDie)              return Intent.Die;

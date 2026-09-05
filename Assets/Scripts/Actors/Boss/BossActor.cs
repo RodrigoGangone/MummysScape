@@ -2,7 +2,6 @@ using UnityEngine;
 using static BossCommonState;
 using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine.Playables;
 using static Animations.Boss;
 
@@ -233,7 +232,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private void UpdateControlState()
     {
-        if (_paused)
+        if (_paused || _isLocked)
             return;
 
         bool shouldFreezeByLock = _isLocked && !IsEntry && !IsDie;
@@ -297,13 +296,19 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         _paused = paused;
         animator.enabled = !paused;
         _stateMachine.enabled = !paused;
+        
         if (_goap != null) _goap.Paused = paused;
     }
 
-    public void OnLockChanged(bool locked)
+    private void OnLockChanged(bool locked)
     {
         _isLocked = locked;
+        //animator.enabled = !locked;
+        //_stateMachine.enabled = !locked;
+        
         UpdateControlState();
+        
+        if (_goap != null) _goap.Locked = locked;
     }
 }
 
