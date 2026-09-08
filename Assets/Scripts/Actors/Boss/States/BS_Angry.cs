@@ -14,27 +14,27 @@ public class BS_Angry : State
 
     public override void OnEnter()
     {
-        _actor.Animator.SetTrigger(ANGRY_ANIM_SCORPION);
-        
-        _actor.StartCoroutine(WaitForAnimationEnd(_actor.Animator, ANGRY_ANIM_SCORPION));
+        //_actor.Animator.SetTrigger(ANGRY_ANIM_SCORPION);
+        //
+        //_actor.StartCoroutine(WaitForAnimationEnd(_actor.Animator, ANGRY_ANIM_SCORPION));
     }
     public override void OnUpdate() { }
     public override void OnFixedUpdate() { }
 
     public override void OnExit() { }
     
-    private IEnumerator WaitForAnimationEnd(Animator scorpionAnimator, string animationName)
-    {
-        yield return null;
-
-        AnimatorStateInfo currentStateInfo = scorpionAnimator.GetCurrentAnimatorStateInfo(0);
-
-        while (currentStateInfo.IsName(animationName) && currentStateInfo.normalizedTime < 1.0f)
-        {
-            yield return null;
-            currentStateInfo = scorpionAnimator.GetCurrentAnimatorStateInfo(0);
-        }
-        
-        _actor.NotifyRecovery();
-    }
+    //private IEnumerator WaitForAnimationEnd(Animator scorpionAnimator, string animationName)
+    //{
+    //    yield return null;
+    //
+    //    AnimatorStateInfo currentStateInfo = scorpionAnimator.GetCurrentAnimatorStateInfo(0);
+    //
+    //    while (currentStateInfo.IsName(animationName) && currentStateInfo.normalizedTime < 1.0f)
+    //    {
+    //        yield return null;
+    //        currentStateInfo = scorpionAnimator.GetCurrentAnimatorStateInfo(0);
+    //    }
+    //    
+    //    _actor.NotifyRecovery();
+    //}
 }

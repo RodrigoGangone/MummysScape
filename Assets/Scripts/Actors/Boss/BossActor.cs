@@ -2,9 +2,8 @@ using UnityEngine;
 using static BossCommonState;
 using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine.Playables;
-using static Layers;
+using static Animations.Boss;
 
 /// <summary>
 /// Controlador Central: Integra el sistema de estados (FSM), el planificador de decisiones (GOAP) 
@@ -61,9 +60,9 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     public void NotifySkillStarted() => IsExecutingSkill = true;
     public void NotifySkillEnded() => IsExecutingSkill = false;
 
-    public bool IsAngry { get; private set; }
-    private void NotifyAngry() => IsAngry = true;
-    public void NotifyRecovery() => IsAngry = false;
+    //public bool IsAngry { get; private set; }
+    //private void NotifyAngry() => IsAngry = true;
+    //public void NotifyRecovery() => IsAngry = false;
     public bool IsPreDie { get; private set; }
     public void NotifyPreDie() => IsPreDie = true;
     public bool IsDie { get; private set; }
@@ -74,6 +73,8 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private bool _paused;
     private bool _isLocked;
+    
+    public bool IsLocked => _isLocked;
 
     private void Awake()
     {
@@ -113,14 +114,20 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
             _lastIntent = intent;
             TriggerFsm(intent);
         }
-
-        if (Input.GetKeyDown(KeyCode.L))
-            GameEventManager.Instance.bossEvents.OnAngry.Raise();
     }
 
     private void AdvanceStage()
     {
         if (IsDie) return;
+        StartCoroutine(WaitAndAdvanceStageRoutine());
+    }
+
+    private IEnumerator WaitAndAdvanceStageRoutine()
+    {
+        // 1. Pausamos la ejecución hasta que AE_Skill_Ended devuelva la bandera a false
+        yield return new WaitUntil(() => !IsExecutingSkill);
+
+        // 2. Retomamos la lógica de progresión y disparamos el Timeline
         _stageIndex++;
 
         if (_stageIndex >= config.StageCount)
@@ -129,8 +136,11 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         }
         else
         {
-            //GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
-            angryTimeLine.Play();
+            
+            Animator.SetBool(PRIMARY_ANIM_SCORPION, false);
+            Animator.SetBool(SECONDARY_ANIM_SCORPION, false);
+            
+            if (angryTimeLine != null) angryTimeLine.Play();
         }
     }
 
@@ -224,7 +234,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private void UpdateControlState()
     {
-        if (_paused)
+        if (_paused || _isLocked)
             return;
 
         bool shouldFreezeByLock = _isLocked && !IsEntry && !IsDie;
@@ -257,7 +267,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
 
-        GameEventManager.Instance.bossEvents.OnAngry.Register(NotifyAngry);
+        //GameEventManager.Instance.bossEvents.OnAngry.Register(NotifyAngry);
         GameEventManager.Instance.bossEvents.OnAngry.Register(AdvanceStage);
 
         GameEventManager.Instance.bossEvents.OnDeath.Register(Death);
@@ -273,7 +283,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
 
-        GameEventManager.Instance.bossEvents.OnAngry.Unregister(NotifyAngry);
+        //GameEventManager.Instance.bossEvents.OnAngry.Unregister(NotifyAngry);
         GameEventManager.Instance.bossEvents.OnAngry.Unregister(AdvanceStage);
 
         GameEventManager.Instance.bossEvents.OnDeath.Unregister(Death);
@@ -288,13 +298,39 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         _paused = paused;
         animator.enabled = !paused;
         _stateMachine.enabled = !paused;
+        
         if (_goap != null) _goap.Paused = paused;
     }
 
-    public void OnLockChanged(bool locked)
+    public event Action<bool> OnLockStateChanged;
+    private int _lockCount = 0;
+
+    private void OnLockChanged(bool locked)
     {
-        _isLocked = locked;
+        // Fix 1: Si llega un false, forzamos a 0 para evitar contadores fantasma por Timelines interrumpidos.
+        if (locked) 
+            _lockCount++;
+        else 
+            _lockCount = 0; // Forzamos la liberación total
+
+        _isLocked = _lockCount > 0;
+
+        OnLockStateChanged?.Invoke(_isLocked);
+    
         UpdateControlState();
+    
+        if (_goap != null) _goap.Locked = _isLocked;
+    }
+
+    public void AbortCurrentSkill()
+    {
+        NotifySkillEnded(); 
+    
+        // Fix 2: Si el BossSkillSO tiene estado interno, debemos limpiarlo (Requiere que agregues este método a tu SO)
+        if (_runtimePrimarySkill != null) _runtimePrimarySkill.ResetSkill();
+        if (_runtimeSecondarySkill != null) _runtimeSecondarySkill.ResetSkill();
+
+        TriggerFsm("Idle"); 
     }
 }
 

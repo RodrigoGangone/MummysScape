@@ -111,4 +111,14 @@ public abstract class BossSkillSO : ScriptableObject
     
     /// <summary> Lógica específica de la habilidad. Evitar dependencias duras: usar IBossContext. </summary>
     protected abstract void Execute(in WorldModel wm, IBossContext ctx);
+    
+    /// <summary>
+    /// Limpia el estado interno de la habilidad si es interrumpida forzosamente (ej: cinemáticas).
+    /// Al ser virtual, las habilidades hijas pueden sobrescribirlo para limpiar sus propias variables.
+    /// </summary>
+    public virtual void ResetSkill()
+    {
+        // Forzamos el tiempo de último uso a un valor muy antiguo para saltarnos el cooldown
+        _lastUseTime = -999f; 
+    }
 }

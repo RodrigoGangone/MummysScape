@@ -16,7 +16,7 @@ public class BossAnimHandler : MonoBehaviour
     [SerializeField] private GameObject brokenBox;
 
     public void AE_Entry_End() => _bossActor.NotifyEntryEnded();
-    public void AE_Damaged_Recovery() => _bossActor.NotifyRecovery();
+    //public void AE_Damaged_Recovery() => _bossActor.NotifyRecovery();
 
     public void AE_Primary_FX()
     {
@@ -92,6 +92,6 @@ public class BossAnimHandler : MonoBehaviour
         GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(1f, 2f);
         GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(1f, 2f);
     }
-
+    
     public void Play_BrokenBox() => brokenBox.SetActive(true);
 }

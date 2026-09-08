@@ -1,11 +1,6 @@
 using UnityEngine;
 using static Animations.Boss;
 
-/// <summary>
-/// Estado de Habilidad Primaria: Gestiona el ciclo del primer slot de ataque, asegurando que el Boss 
-/// mire al jugador y limpiando proyectiles residuales al finalizar la ejecución.
-/// </summary>
-
 public sealed class BS_UseSkillA : State
 {
     private readonly BossActor _actor;
@@ -16,6 +11,19 @@ public sealed class BS_UseSkillA : State
     {
         _actor.NotifySkillStarted();
         _actor.Animator.SetBool(PRIMARY_ANIM_SCORPION, true);
+        
+        // Nos suscribimos al evento para escuchar bloqueos
+        _actor.OnLockStateChanged += HandleLock;
+    }
+
+    private void HandleLock(bool isLocked)
+    {
+        if (isLocked) 
+        {
+            CleanUpLocal();
+            // Acá aplicamos tu idea: Mandamos directo a Idle al interrumpir
+            _actor.AbortCurrentSkill(); 
+        }
     }
 
     public override void OnUpdate()
@@ -32,10 +40,18 @@ public sealed class BS_UseSkillA : State
 
     public override void OnExit()
     {
+        _actor.OnLockStateChanged -= HandleLock;
+        
+        // Aseguramos la limpieza del Animator tanto si salimos por un Lock 
+        // como si la habilidad terminó de manera normal y natural.
+        CleanUpLocal();
+    }
+
+    private void CleanUpLocal()
+    {
         _actor.Animator.SetBool(PRIMARY_ANIM_SCORPION, false);
 
         var chargingProjectile = _actor.Transform.GetComponentInChildren<ChargeableProjectile>();
-
         if (chargingProjectile != null)
             Object.Destroy(chargingProjectile.gameObject);
     }
