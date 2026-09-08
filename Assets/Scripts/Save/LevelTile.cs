@@ -32,6 +32,8 @@ public class LevelTile : MonoBehaviour
 
     [Header("Referencias Generales")]
     [SerializeField] private Transform playerPos;
+    [Tooltip("Referencia al script del portal para bloquear su funcionalidad")]
+    [SerializeField] private Portal portal; // <--- Referencia agregada
 
     // Propiedades públicas
     public int BuildIndex => buildIndex;
@@ -59,8 +61,6 @@ public class LevelTile : MonoBehaviour
             director.playOnAwake = false; 
         }
     }
-
-    // ELIMINAMOS EL START. Ahora el Manager llama a este método.
     
     /// <summary>
     /// Configura el estado visual del Tile y devuelve TRUE si necesita ser encolado en el RevealManager.
@@ -82,10 +82,16 @@ public class LevelTile : MonoBehaviour
         {
             ApplyLockedMaterial();
             SetAllGems(false);
+            
+            // <--- Si está bloqueado o esperando la animación, apagamos el portal
+            if (portal != null) portal.enabled = false; 
         }
         else
         {
             RefreshGemsInstant();
+            
+            // <--- Si ya está desbloqueado y sin animaciones pendientes, lo encendemos
+            if (portal != null) portal.enabled = true; 
         }
 
         // Devolvemos la respuesta al Manager para que él decida si lo encola o no
@@ -173,21 +179,18 @@ public class LevelTile : MonoBehaviour
     /// </summary>
     public void AnimateNextGemReveal()
     {
-        // Si ya nos pasamos de la cantidad de gemas, salimos
         if (_currentGemRevealIndex >= gemIcons.Length) return;
 
         int gemIndex = _currentGemRevealIndex;
-        _currentGemRevealIndex++; // Preparamos el índice para el próximo llamado de la Timeline
+        _currentGemRevealIndex++; 
 
         if (gemIcons[gemIndex] == null) return;
 
-        // Verificamos si realmente se agarró en el nivel. 
         if (Save.WasGemPickedInLevel(gemIndex + 1, buildIndex))
         {
             StartCoroutine(GemPulseRoutine(gemIcons[gemIndex].transform));
         }
 
-        // Función local: Encapsula el Lerp de escala (Latido)
         IEnumerator GemPulseRoutine(Transform gemTransform)
         {
             gemTransform.gameObject.SetActive(true);
@@ -198,7 +201,6 @@ public class LevelTile : MonoBehaviour
             float halfDuration = gemPulseDuration / 2f;
             float timer = 0f;
 
-            // Fase 1: Latido Arriba (Crece)
             while (timer < halfDuration)
             {
                 timer += Time.deltaTime;
@@ -206,7 +208,6 @@ public class LevelTile : MonoBehaviour
                 yield return null;
             }
 
-            // Fase 2: Latido Abajo (Vuelve a su tamaño)
             timer = 0f;
             while (timer < halfDuration)
             {
@@ -215,7 +216,6 @@ public class LevelTile : MonoBehaviour
                 yield return null;
             }
 
-            // Aseguramos la escala exacta al terminar por cuestiones de precisión
             gemTransform.localScale = originalScale;
         }
     }
@@ -267,6 +267,10 @@ public class LevelTile : MonoBehaviour
     private void CompleteReveal()
     {
         Save.MarkLevelRevealSeen(buildIndex);
+        
+        // <--- Habilitamos el script del portal ahora que la animación de revelado terminó
+        if (portal != null) portal.enabled = true; 
+        
         _onRevealCompleteCallback?.Invoke();
     }
 
