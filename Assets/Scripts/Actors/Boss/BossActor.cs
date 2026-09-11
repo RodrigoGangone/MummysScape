@@ -5,6 +5,12 @@ using System.Collections;
 using UnityEngine.Playables;
 using static Animations.Boss;
 
+public enum BossDeathType
+{
+    BoxImpact,
+    PlayerImpact
+}
+
 /// <summary>
 /// Controlador Central: Integra el sistema de estados (FSM), el planificador de decisiones (GOAP) 
 /// y el contexto de batalla, gestionando además la progresión de fases y la secuencia de muerte.
@@ -12,31 +18,28 @@ using static Animations.Boss;
 [DisallowMultipleComponent]
 public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 {
-    [Header("Config & Refs")] [SerializeField]
-    private BossConfigSO config;
+    [Header("Config & Refs")] 
+    [SerializeField] private BossConfigSO config;
 
     [SerializeField] private PlayerController player;
     [SerializeField] private Animator animator;
     [SerializeField] private FxBank bank;
-    //[SerializeField] public FocusOnActivation focus;
 
     private StateMachinePlayer _stateMachine;
 
-    [Tooltip("Layers que bloquean la visión y largo del LoS")] [Header("Percepción")] [SerializeField]
-    private LayerMask losObstacleMask;
-
+    [Header("Percepción")] 
+    [Tooltip("Layers que bloquean la visión y largo del LoS")] 
+    [SerializeField] private LayerMask losObstacleMask;
     [SerializeField] private float losRayHeight = 1.5f;
 
     [Header("Cinematic's")]
-
-    //[SerializeField] private PlayableDirector entryTimeLine;
-    [SerializeField]
-    private PlayableDirector angryTimeLine;
-
-    [SerializeField] private PlayableDirector endedTimeLine;
-
-    //[SerializeField] private ParticleSystem deathImpactFx;
-    //[SerializeField] private Transform headSocket;
+    [SerializeField] private PlayableDirector angryTimeLine;
+    
+    [Tooltip("Timeline si muere por el impacto de la SEGUNDA CAJA")]
+    [SerializeField] private PlayableDirector deathByBoxTimeLine;
+    
+    [Tooltip("Timeline si muere por el impacto directo del PLAYER")]
+    [SerializeField] private PlayableDirector deathByPlayerTimeLine;
 
     public Transform Transform => transform;
     public Animator Animator => animator;
@@ -60,9 +63,6 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     public void NotifySkillStarted() => IsExecutingSkill = true;
     public void NotifySkillEnded() => IsExecutingSkill = false;
 
-    //public bool IsAngry { get; private set; }
-    //private void NotifyAngry() => IsAngry = true;
-    //public void NotifyRecovery() => IsAngry = false;
     public bool IsPreDie { get; private set; }
     public void NotifyPreDie() => IsPreDie = true;
     public bool IsDie { get; private set; }
@@ -124,10 +124,8 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private IEnumerator WaitAndAdvanceStageRoutine()
     {
-        // 1. Pausamos la ejecución hasta que AE_Skill_Ended devuelva la bandera a false
         yield return new WaitUntil(() => !IsExecutingSkill);
 
-        // 2. Retomamos la lógica de progresión y disparamos el Timeline
         _stageIndex++;
 
         if (_stageIndex >= config.StageCount)
@@ -136,7 +134,6 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         }
         else
         {
-            
             Animator.SetBool(PRIMARY_ANIM_SCORPION, false);
             Animator.SetBool(SECONDARY_ANIM_SCORPION, false);
             
@@ -151,8 +148,7 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         if (dist <= Mathf.Epsilon) return true;
         dir /= dist;
 
-        return !Physics.Raycast(from + Vector3.up * losRayHeight, dir, dist, losObstacleMask,
-            QueryTriggerInteraction.Ignore);
+        return !Physics.Raycast(from + Vector3.up * losRayHeight, dir, dist, losObstacleMask, QueryTriggerInteraction.Ignore);
     }
 
     private WorldModel BuildWorldModel()
@@ -160,8 +156,6 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         bool los = HasLineOfSight(transform.position, player.transform.position);
         return new WorldModel(this, los);
     }
-
-    #region Uso de Skills
 
     private bool TryUseSkillA()
     {
@@ -175,90 +169,51 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         return _runtimeSecondarySkill != null && _runtimeSecondarySkill.TryExecute(wm, this, _time);
     }
 
-    #endregion
-
     private void TriggerFsm(string intentOrEvent)
     {
         switch (intentOrEvent)
         {
-            case "Entry":
-                _stateMachine.ChangeState(Entry);
-                break;
-            case "Idle":
-                _stateMachine.ChangeState(Idle);
-                break;
-            case "Chase":
-                _stateMachine.ChangeState(Chase);
-                break;
-            case "Angry":
-                _stateMachine.ChangeState(Angry);
-                break;
-            case "Primary":
-                _stateMachine.ChangeState(Primary);
-                break;
-            case "Secondary":
-                _stateMachine.ChangeState(Secondary);
-                break;
-            case "PreDie":
-                _stateMachine.ChangeState(PreDie);
-                break;
-            case "Die":
-                _stateMachine.ChangeState(Die);
-                break;
+            case "Entry": _stateMachine.ChangeState(Entry); break;
+            case "Idle": _stateMachine.ChangeState(Idle); break;
+            case "Chase": _stateMachine.ChangeState(Chase); break;
+            case "Angry": _stateMachine.ChangeState(Angry); break;
+            case "Primary": _stateMachine.ChangeState(Primary); break;
+            case "Secondary": _stateMachine.ChangeState(Secondary); break;
+            case "PreDie": _stateMachine.ChangeState(PreDie); break;
+            case "Die": _stateMachine.ChangeState(Die); break;
             default:
                 Debug.LogWarning($"[BossActor] Intent desconocido: {intentOrEvent}");
                 break;
         }
-
         _lastIntent = intentOrEvent;
     }
 
-    // private void StartDeathSequence() => StartCoroutine(DeathSequenceCo());
-    //
-    // private IEnumerator DeathSequenceCo()
-    // {
-    //     NotifyDie();
-    //     _isLocked = true;
-    //     UpdateControlState();
-    //
-    //     GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Boss", true);
-    //
-    //     GameEventManager.Instance.bossEvents.OnDeath.Raise();
-    //
-    //     yield return new WaitForSecondsRealtime(0.15f);
-    //
-    //     _stateMachine.ChangeState(Die);
-    //
-    //     //GameEventManager.Instance.bossEvents.OnStageCompleted.Raise(_stageIndex);
-    // }
-
     private void UpdateControlState()
     {
-        if (_paused || _isLocked)
-            return;
+        if (_paused || _isLocked) return;
 
         bool shouldFreezeByLock = _isLocked && !IsEntry && !IsDie;
-
-        //if (animator != null) animator.enabled = !shouldFreezeByLock;
         if (_stateMachine != null) _stateMachine.enabled = !shouldFreezeByLock;
     }
 
-    private void Death()
+    // Ahora Death recibe el enum y ejecuta el Timeline correspondiente
+    private void Death(BossDeathType deathType)
     {
-        NotifyDie(); // Es mejor usar el método que ya tenías creado para esto
+        NotifyDie(); 
         
-        // 1. Bloqueamos al jefe y al jugador durante la cinemática final
         _isLocked = true;
         UpdateControlState();
-        //GameEventManager.Instance.playerEvents.OnLockRequested.Raise("Boss", true);
 
-        // 2. Avisamos a la máquina de estados para que lance el trigger en el Animator
         _stateMachine.ChangeState(Die);
 
-        // 3. Reproducimos el Timeline
-        if (endedTimeLine != null)
+        if (deathType == BossDeathType.BoxImpact && deathByBoxTimeLine != null)
         {
-            endedTimeLine.Play(); 
+            deathByBoxTimeLine.Play(); 
+        }
+        else if (deathType == BossDeathType.PlayerImpact && deathByPlayerTimeLine != null)
+        {
+            player.transform.position = new Vector3(-8.89999962f, 12.9200001f, -1.60000038f);
+            deathByPlayerTimeLine.Play();
         }
     }
 
@@ -266,13 +221,10 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Register<bool>(OnLockChanged);
-
-        //GameEventManager.Instance.bossEvents.OnAngry.Register(NotifyAngry);
         GameEventManager.Instance.bossEvents.OnAngry.Register(AdvanceStage);
-
-        GameEventManager.Instance.bossEvents.OnDeath.Register(Death);
-
-        //GameEventManager.Instance.bossEvents.OnDeath.Register(StartDeathSequence);
+        
+        // Suscripción con el tipo genérico BossDeathType
+        GameEventManager.Instance.bossEvents.OnDeath.Register<BossDeathType>(Death);
 
         OnPrimarySkill += TryUseSkillA;
         OnSecondarySkill += TryUseSkillB;
@@ -282,12 +234,10 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
     {
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnLocked.Unregister<bool>(OnLockChanged);
-
-        //GameEventManager.Instance.bossEvents.OnAngry.Unregister(NotifyAngry);
         GameEventManager.Instance.bossEvents.OnAngry.Unregister(AdvanceStage);
-
-        GameEventManager.Instance.bossEvents.OnDeath.Unregister(Death);
-        //GameEventManager.Instance.bossEvents.OnDeath.Unregister(StartDeathSequence);
+        
+        // Desuscripción con el tipo genérico BossDeathType
+        GameEventManager.Instance.bossEvents.OnDeath.Unregister<BossDeathType>(Death);
 
         OnPrimarySkill -= TryUseSkillA;
         OnSecondarySkill -= TryUseSkillB;
@@ -298,7 +248,6 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
         _paused = paused;
         animator.enabled = !paused;
         _stateMachine.enabled = !paused;
-        
         if (_goap != null) _goap.Paused = paused;
     }
 
@@ -307,29 +256,20 @@ public sealed class BossActor : MonoBehaviour, IPausable, IBossContext
 
     private void OnLockChanged(bool locked)
     {
-        // Fix 1: Si llega un false, forzamos a 0 para evitar contadores fantasma por Timelines interrumpidos.
-        if (locked) 
-            _lockCount++;
-        else 
-            _lockCount = 0; // Forzamos la liberación total
+        if (locked) _lockCount++;
+        else _lockCount = 0; 
 
         _isLocked = _lockCount > 0;
-
         OnLockStateChanged?.Invoke(_isLocked);
-    
         UpdateControlState();
-    
         if (_goap != null) _goap.Locked = _isLocked;
     }
 
     public void AbortCurrentSkill()
     {
         NotifySkillEnded(); 
-    
-        // Fix 2: Si el BossSkillSO tiene estado interno, debemos limpiarlo (Requiere que agregues este método a tu SO)
         if (_runtimePrimarySkill != null) _runtimePrimarySkill.ResetSkill();
         if (_runtimeSecondarySkill != null) _runtimeSecondarySkill.ResetSkill();
-
         TriggerFsm("Idle"); 
     }
 }

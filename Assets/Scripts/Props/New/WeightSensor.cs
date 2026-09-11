@@ -299,8 +299,10 @@ public class WeightSensor : MonoBehaviour
             {
                 continue;
             }
-
+// Dentro de RecalculateTotalWeight en WeightSensor.cs, justo antes de sumar:
+            Debug.Log($"[WeightSensor] Aportando peso: {record.Owner.name} = {record.Provider.Weight}");
             accumulatedWeight += Mathf.Max(0, record.Provider.Weight);
+            
         }
 
         int newTotal = accumulatedWeight > int.MaxValue
@@ -321,6 +323,7 @@ public class WeightSensor : MonoBehaviour
         {
             SensorChanged?.Invoke();
         }
+        
     }
 
     private void CleanupStaleColliders()
