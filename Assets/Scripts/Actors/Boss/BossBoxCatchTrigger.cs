@@ -14,15 +14,21 @@ public class BossBoxCatchTrigger : MonoBehaviour
     [Header("Collider Offsets")]
     [Tooltip("El 'Center' local del collider esperando el 1er hit")]
     [SerializeField] private Vector3 firstHitOffset;
-    [Tooltip("El 'Center' local del collider esperando el 2do hit")]
+    
+    [Tooltip("El 'Center' local del collider esperando el 2do hit de la CAJA")]
     [SerializeField] private Vector3 secondHitOffset;
+    
+    [Tooltip("El 'Center' local del collider esperando el 2do hit del PLAYER")]
+    [SerializeField] private Vector3 playerHitOffset;
 
     [Header("Catch Settings")] 
     [SerializeField] private float catchDuration = 0.5f; 
     [SerializeField] private AnimationCurve catchCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     private HashSet<GameObject> _caughtBoxes = new();
-    private Collider _triggerCollider;
+    
+    private Collider _triggerCollider; // El collider original (se usa para Caja 1 y Caja 2)
+    private Collider _playerTriggerCollider; // El collider dinámico (se usa solo para Player)
 
     private void Awake()
     {
@@ -32,20 +38,34 @@ public class BossBoxCatchTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag(HEAVY_BOX_TAG))
+        // ESTADO 1: Esperando la primera caja
+        if (_caughtBoxes.Count == 0)
         {
-            GameObject box = other.gameObject;
-
-            if (_caughtBoxes.Add(box))
+            if (other.CompareTag(HEAVY_BOX_TAG))
             {
-                if (_caughtBoxes.Count == 1)
+                GameObject box = other.gameObject;
+                if (_caughtBoxes.Add(box))
                 {
                     HandleFirstBoxCatch(box);
                 }
-                else
+            }
+        }
+        // ESTADO 2: Esperando el segundo impacto (Caja o Player)
+        else if (_caughtBoxes.Count == 1)
+        {
+            if (other.CompareTag(HEAVY_BOX_TAG))
+            {
+                GameObject box = other.gameObject;
+                if (_caughtBoxes.Add(box))
                 {
+                    DisableAllColliders();
                     HandleSecondBoxImpact(box);
                 }
+            }
+            else if (other.CompareTag(PLAYER_TAG))
+            {
+                DisableAllColliders();
+                HandlePlayerSecondImpact();
             }
         }
     }
@@ -60,10 +80,51 @@ public class BossBoxCatchTrigger : MonoBehaviour
 
         bossActor.NotifyPreDie();
         
-        // Modificamos únicamente la posición central del collider
+        // 1. Movemos el collider original para esperar la SEGUNDA CAJA
         SetColliderCenter(secondHitOffset);
+        
+        // 2. Creamos un nuevo collider específicamente para el PLAYER
+        CreatePlayerCollider();
+        
         impactFirstBox.Play();
         StartCoroutine(MoveAndDeactivateBox(box));
+    }
+
+    private void CreatePlayerCollider()
+    {
+        // Duplicamos el tipo de collider que ya estés usando y lo posicionamos para el Player
+        if (_triggerCollider is BoxCollider box)
+        {
+            var pCol = gameObject.AddComponent<BoxCollider>();
+            pCol.isTrigger = true;
+            pCol.size = box.size;
+            pCol.center = playerHitOffset;
+            _playerTriggerCollider = pCol;
+        }
+        else if (_triggerCollider is SphereCollider sphere)
+        {
+            var pCol = gameObject.AddComponent<SphereCollider>();
+            pCol.isTrigger = true;
+            pCol.radius = sphere.radius;
+            pCol.center = playerHitOffset;
+            _playerTriggerCollider = pCol;
+        }
+        else if (_triggerCollider is CapsuleCollider capsule)
+        {
+            var pCol = gameObject.AddComponent<CapsuleCollider>();
+            pCol.isTrigger = true;
+            pCol.radius = capsule.radius;
+            pCol.height = capsule.height;
+            pCol.direction = capsule.direction;
+            pCol.center = playerHitOffset;
+            _playerTriggerCollider = pCol;
+        }
+    }
+
+    private void DisableAllColliders()
+    {
+        if (_triggerCollider != null) _triggerCollider.enabled = false;
+        if (_playerTriggerCollider != null) _playerTriggerCollider.enabled = false;
     }
 
     private IEnumerator MoveAndDeactivateBox(GameObject box)
@@ -90,10 +151,17 @@ public class BossBoxCatchTrigger : MonoBehaviour
 
     private void HandleSecondBoxImpact(GameObject box)
     {
-        var boxRb = box.GetComponent<Rigidbody>();
-        boxRb.freezeRotation = false;
+        if (box.TryGetComponent<Rigidbody>(out var boxRb))
+        {
+            boxRb.freezeRotation = false;
+        }
         
-        GameEventManager.Instance.bossEvents.OnDeath.Raise();
+        GameEventManager.Instance.bossEvents.OnDeath.Raise(BossDeathType.BoxImpact);
+    }
+
+    private void HandlePlayerSecondImpact()
+    {
+        GameEventManager.Instance.bossEvents.OnDeath.Raise(BossDeathType.PlayerImpact);
     }
 
     private void SetColliderCenter(Vector3 offset)
@@ -105,10 +173,8 @@ public class BossBoxCatchTrigger : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        // Aplicamos la matriz del transform para que los gizmos respeten rotación y escala
         Gizmos.matrix = transform.localToWorldMatrix;
 
-        // Intentamos sacar el tamaño si es un BoxCollider (lo más común para este tipo de catch)
         BoxCollider box = GetComponent<BoxCollider>();
         Vector3 size = box != null ? box.size : Vector3.one;
 
@@ -116,11 +182,15 @@ public class BossBoxCatchTrigger : MonoBehaviour
         Gizmos.color = Color.green;
         Gizmos.DrawWireCube(firstHitOffset, size);
 
-        // Segundo hit (Rojo)
+        // Segundo hit CAJA (Rojo)
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(secondHitOffset, size);
 
-        // Línea de trayectoria
+        // Segundo hit PLAYER (Cian)
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireCube(playerHitOffset, size);
+
+        // Línea de trayectoria del collider de la caja
         Gizmos.color = Color.yellow;
         Gizmos.DrawLine(firstHitOffset, secondHitOffset);
     }

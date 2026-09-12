@@ -15,7 +15,7 @@ public class Bandage : MonoBehaviour, IPausable
     [Header("Restricted Area Settings")]
     [Tooltip("Capa de las zonas donde la venda no puede quedar atrapada (ej. restrictBandage).")]
     [SerializeField] private LayerMask restrictLayer;
-
+    private WeightProviderBehaviour _weightProvider;
     private Collider _collider;
     private bool _paused;
     private Material _instancedMaterial;
@@ -30,6 +30,8 @@ public class Bandage : MonoBehaviour, IPausable
     private void Awake()
     {
         _collider = GetComponent<Collider>();
+        _weightProvider = GetComponent<WeightProviderBehaviour>();
+        
         if (meshRenderer != null) _instancedMaterial = meshRenderer.material;
     }
 
@@ -42,6 +44,7 @@ public class Bandage : MonoBehaviour, IPausable
 
         // 2. Continuar con la lógica de inicialización temporal
         if (_collider != null) _collider.enabled = false;
+        if (_weightProvider != null) _weightProvider.enabled = false;
         if (_instancedMaterial != null) _instancedMaterial.SetFloat(IsActive, 0);
 
         StopAllCoroutines();
@@ -93,6 +96,7 @@ public class Bandage : MonoBehaviour, IPausable
     {
         yield return WaitForSecondsPausable(duration, () => _paused);
         if (_collider != null) _collider.enabled = true;
+        if (_weightProvider != null) _weightProvider.enabled = true;
         if (_instancedMaterial != null) _instancedMaterial.SetFloat(IsActive, 1);
     }
 
@@ -100,7 +104,30 @@ public class Bandage : MonoBehaviour, IPausable
     {
         if (!collision.gameObject.CompareTag(PLAYER_TAG)) return;
         var ctrl = collision.gameObject.GetComponentInParent<PlayerController>();
-        if (ctrl != null && ctrl.TryCollectBandage(AMOUNT)) Destroy(gameObject);
+    
+        if (ctrl != null)
+        {
+            // 1. Apagamos el peso ANTES de tocar el inventario del jugador.
+            // Ahora, cuando el sensor recalcule a la mitad de la recolección, ignorará esta venda.
+            if (_weightProvider != null) 
+            {
+                _weightProvider.enabled = false;
+            }
+
+            // 2. Disparamos la recolección (y toda su cadena de eventos síncronos)
+            if (ctrl.TryCollectBandage(AMOUNT))
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                // 3. Si el jugador no pudo recogerla (ej. inventario lleno o estado inválido), devolvemos el peso.
+                if (_weightProvider != null) 
+                {
+                    _weightProvider.enabled = true;
+                }
+            }
+        }
     }
 
     private void OnDestroy()
