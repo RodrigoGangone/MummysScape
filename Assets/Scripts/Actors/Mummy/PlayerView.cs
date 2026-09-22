@@ -351,6 +351,9 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(OnSizeChanged);
         GameEventManager.Instance.playerEvents.OnSizeChanged.Register<PlayerSize>(PlayDropFx);
+
+        GameEventManager.Instance.levelEvents.OnWin.Register(() => { ApplyColorSet(_colorSetNormal); });
+        GameEventManager.Instance.levelEvents.OnDeath.Register(() => { ApplyColorSet(_colorSetNormal); });
     }
 
     private void OnDisable()
@@ -358,6 +361,9 @@ public sealed class PlayerView : MonoBehaviour, IPausable
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
         GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(OnSizeChanged);
         GameEventManager.Instance.playerEvents.OnSizeChanged.Unregister<PlayerSize>(PlayDropFx);
+
+        GameEventManager.Instance.levelEvents.OnWin.Unregister(() => { ApplyColorSet(_colorSetNormal); });
+        GameEventManager.Instance.levelEvents.OnDeath.Unregister(() => { ApplyColorSet(_colorSetNormal); });
     }
 
     public void CutBandage()
