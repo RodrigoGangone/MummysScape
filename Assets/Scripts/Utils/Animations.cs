@@ -7,6 +7,7 @@ public static class Animations
         public const string WALK = "Walk";
         public const string FALL = "Fall";
         public const string AIM = "Aim";
+        public const string AIM_READY_TAG = "AimReady";
         public const string SHOOT = "Shoot";
         public const string SMASH = "Smash";
         public const string PUSH = "Push";

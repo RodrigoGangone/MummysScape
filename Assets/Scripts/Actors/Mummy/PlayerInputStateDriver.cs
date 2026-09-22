@@ -121,15 +121,17 @@ public class PlayerInputStateDriver : MonoBehaviour, IPausable, ILocked
             // 3. Mientras mantiene RT (solo entramos si NO está bloqueado por el candado)
             if (_input.IsAimHeld() && !_aimCanceledLock)
             {
+                // Una suelta anterior no debe quedar pendiente para esta carga.
+                _input.ConsumeAimUp();
                 if (!_sm.IsCurrent(Aim))
                     _sm.ChangeState(Aim);
                 return;
             }
 
-            // 4. Soltó RT (Disparo) - Ya no requiere CanEnter(Shoot) por separado si dependen de la misma skill
+            // 4. Soltar durante INTRO AIM cancela; solo LOOP AIM permite disparar.
             if (_input.ConsumeAimUp())
             {
-                if (_sm.IsCurrent(Aim) && _ctx.IsAimValid)
+                if (_sm.IsCurrent(Aim) && _ctx.IsAimReady && _ctx.IsAimValid)
                 {
                     _sm.ChangeState(Shoot);
                     return;

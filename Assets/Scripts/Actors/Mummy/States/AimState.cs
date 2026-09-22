@@ -46,6 +46,7 @@ public class AimState : State, IBandageRestrictor
 
     public override void OnEnter()
     {
+        _ctx.View.Animator.ResetTrigger(SHOOT);
         _ctx.View.Animator.SetBool(AIM, true);
 
         SimpleShootData.Path = null;
@@ -150,15 +151,19 @@ public class AimState : State, IBandageRestrictor
 
     public override void OnExit()
     {
+        // Limpiar incluso si faltan referencias visuales. ShootState activa su trigger después.
+        _ctx.View.Animator.SetBool(AIM, false);
+        _ctx.View.Animator.ResetTrigger(SHOOT);
+
         // Limpiar el estado visual del objeto interactuable al salir
         ClearCurrentInteractable();
 
         SetDecalVisible(false);
 
-        if (_rangeIndicator == null) return;
-
         if (_arcRenderer != null)
             _arcRenderer.enabled = false;
+
+        if (_rangeIndicator == null) return;
 
         if (_scaleCoroutine != null)
             _ctx.View.StopCoroutine(_scaleCoroutine);
@@ -169,7 +174,6 @@ public class AimState : State, IBandageRestrictor
             AnimateScale(_rangeIndicator.transform, exitScale, ANIM_DURATION, true)
         );
 
-        _ctx.View.Animator.SetBool(AIM, false);
     }
 
     // --- DETECCIÓN DE INTERACTUABLES ---
