@@ -11,8 +11,7 @@ public class PlayerPrefsRegistryEditor : Editor
     SerializedProperty _presetProp;
     SerializedProperty _lockProp;
     SerializedProperty _keyPrefixesProp;
-    SerializedProperty _keysProp;
-    SerializedProperty _valuesProp;
+    PlayerPrefsRegistry Registry => (PlayerPrefsRegistry)target;
 
     bool _showEntries = true;
     bool _showCreator = false;
@@ -33,9 +32,6 @@ public class PlayerPrefsRegistryEditor : Editor
         _presetProp = serializedObject.FindProperty("preset");
         _lockProp = serializedObject.FindProperty("lockToPreset");
         _keyPrefixesProp = serializedObject.FindProperty("keyPrefixes");
-        _keysProp = serializedObject.FindProperty("keys");
-        _valuesProp = serializedObject.FindProperty("values");
-
         SyncValuesFromDisk();
     }
 
@@ -176,7 +172,7 @@ public class PlayerPrefsRegistryEditor : Editor
                     ShowToast("Sincronizado");
                 }
 
-                _showEntries = EditorGUILayout.Foldout(_showEntries, $"Datos [{_keysProp.arraySize}]", true, EditorStyles.foldoutHeader);
+                _showEntries = EditorGUILayout.Foldout(_showEntries, $"Datos [{Registry.Entries.Count}]", true, EditorStyles.foldoutHeader);
                 if (_showEntries)
                 {
                     GUILayout.FlexibleSpace();
@@ -200,9 +196,9 @@ public class PlayerPrefsRegistryEditor : Editor
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.MinHeight(100), GUILayout.MaxHeight(400));
 
             int visibleCount = 0;
-            for (int i = 0; i < _keysProp.arraySize; i++)
+            for (int i = 0; i < Registry.Entries.Count; i++)
             {
-                string k = _keysProp.GetArrayElementAtIndex(i).stringValue;
+                string k = Registry.Entries[i].Key;
 
                 if (!MatchesPrefix(k, currentPrefixes)) continue;
                 if (!string.IsNullOrEmpty(_search) && !k.Contains(_search, StringComparison.OrdinalIgnoreCase)) continue;
@@ -218,7 +214,7 @@ public class PlayerPrefsRegistryEditor : Editor
                 visibleCount++;
             }
 
-            if (visibleCount == 0 && _keysProp.arraySize > 0)
+            if (visibleCount == 0 && Registry.Entries.Count > 0)
                 EditorGUILayout.LabelField("Oculto por filtro.", EditorStyles.centeredGreyMiniLabel);
 
             EditorGUILayout.EndScrollView();
@@ -235,10 +231,8 @@ public class PlayerPrefsRegistryEditor : Editor
 
     void DrawEditableRow(int index)
     {
-        SerializedProperty keyProp = _keysProp.GetArrayElementAtIndex(index);
-        SerializedProperty valProp = _valuesProp.GetArrayElementAtIndex(index);
-        string k = keyProp.stringValue;
-        string v = valProp.stringValue;
+        string k = Registry.Entries[index].Key;
+        string v = Registry.Entries[index].Value;
 
         if (index % 2 == 0) EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 22), new Color(0, 0, 0, 0.05f));
 
@@ -254,7 +248,7 @@ public class PlayerPrefsRegistryEditor : Editor
             if (EditorGUI.EndChangeCheck())
             {
                 UpdateDiskValue(k, newValue);
-                valProp.stringValue = newValue;
+                Registry.UpdateEntry(k, newValue);
             }
 
             GUI.color = Color.white;
@@ -282,16 +276,7 @@ public class PlayerPrefsRegistryEditor : Editor
 
     void SortRegistryByType()
     {
-        var reg = (PlayerPrefsRegistry)target;
-        var list = new List<KeyValuePair<string, string>>();
-        var so = new SerializedObject(reg);
-        var kP = so.FindProperty("keys");
-        var vP = so.FindProperty("values");
-
-        for (int i = 0; i < kP.arraySize; i++)
-            list.Add(new KeyValuePair<string, string>(kP.GetArrayElementAtIndex(i).stringValue, vP.GetArrayElementAtIndex(i).stringValue));
-
-        list.Sort((a, b) =>
+        Registry.SortEntries((a, b) =>
         {
             int wA = GetTypeWeight(a.Key);
             int wB = GetTypeWeight(b.Key);
@@ -299,25 +284,12 @@ public class PlayerPrefsRegistryEditor : Editor
             return string.Compare(a.Key, b.Key, StringComparison.Ordinal);
         });
 
-        kP.ClearArray(); vP.ClearArray();
-        for (int i = 0; i < list.Count; i++)
-        {
-            kP.InsertArrayElementAtIndex(i); vP.InsertArrayElementAtIndex(i);
-            kP.GetArrayElementAtIndex(i).stringValue = list[i].Key;
-            vP.GetArrayElementAtIndex(i).stringValue = list[i].Value;
-        }
-
-        so.ApplyModifiedProperties();
         ShowToast("Lista organizada");
     }
 
     void MoveItem(int index, int direction)
     {
-        int newIndex = index + direction;
-        if (newIndex < 0 || newIndex >= _keysProp.arraySize) return;
-        _keysProp.MoveArrayElement(index, newIndex);
-        _valuesProp.MoveArrayElement(index, newIndex);
-        serializedObject.ApplyModifiedProperties();
+        Registry.MoveEntry(index, direction);
     }
 
     string GetGroupHeader(string key)
@@ -384,7 +356,7 @@ public class PlayerPrefsRegistryEditor : Editor
             }
         }
 
-        if (found > 0) { EditorUtility.SetDirty(registry); serializedObject.Update(); Repaint(); ShowToast($"{found} claves importadas."); }
+        if (found > 0) { Repaint(); ShowToast($"{found} claves importadas."); }
         else ShowToast("Sin datos nuevos.");
     }
 
@@ -399,7 +371,7 @@ public class PlayerPrefsRegistryEditor : Editor
             else PlayerPrefs.SetString(_newKey, _newValue);
             PlayerPrefs.Save();
             ((PlayerPrefsRegistry)target).UpdateEntry(_newKey, _newValue);
-            EditorUtility.SetDirty(target); ShowToast("Creado");
+            ShowToast("Creado");
         }
         catch { ShowToast("Error formato"); }
     }
@@ -414,18 +386,15 @@ public class PlayerPrefsRegistryEditor : Editor
 
     void SyncValuesFromDisk()
     {
-        bool changed = false;
-        for (int i = 0; i < _keysProp.arraySize; i++)
+        for (int i = 0; i < Registry.Entries.Count; i++)
         {
-            string k = _keysProp.GetArrayElementAtIndex(i).stringValue;
+            string k = Registry.Entries[i].Key;
             if (PlayerPrefs.HasKey(k))
             {
                 string disk = GetValueAsString(k);
-                var vp = _valuesProp.GetArrayElementAtIndex(i);
-                if (vp.stringValue != disk) { vp.stringValue = disk; changed = true; }
+                Registry.UpdateEntry(k, disk);
             }
         }
-        if (changed) serializedObject.ApplyModifiedProperties();
     }
 
     string GetValueAsString(string key)
@@ -467,15 +436,12 @@ public class PlayerPrefsRegistryEditor : Editor
     void ClearByPreset(PlayerPrefsRegistry.RegistryKeyPreset preset)
     {
         string[] prefixes = PlayerPrefsRegistry.PresetToPrefixes(preset);
-        var so = new SerializedObject(target);
-        var kP = so.FindProperty("keys");
-        var vP = so.FindProperty("values");
-        for (int i = kP.arraySize - 1; i >= 0; i--)
+        for (int i = Registry.Entries.Count - 1; i >= 0; i--)
         {
-            string k = kP.GetArrayElementAtIndex(i).stringValue;
-            foreach (var p in prefixes) if (k.StartsWith(p)) { PlayerPrefs.DeleteKey(k); kP.DeleteArrayElementAtIndex(i); vP.DeleteArrayElementAtIndex(i); break; }
+            string k = Registry.Entries[i].Key;
+            foreach (var p in prefixes) if (k.StartsWith(p)) { PlayerPrefs.DeleteKey(k); Registry.RemoveEntry(k); break; }
         }
-        so.ApplyModifiedProperties(); PlayerPrefs.Save();
+        PlayerPrefs.Save();
     }
 
     void InitStyles()

@@ -34,9 +34,28 @@ public class PlayerPrefsRegistry : ScriptableObject
     [Header("Qué keys acepta este Registry (prefijos). Se autollenan con el preset si 'lockToPreset' está activo.")]
     [SerializeField] private string[] keyPrefixes;
 
-    // Almacenamiento visual/inspector
+    // Datos heredados: se conservan como lista inicial de claves conocidas.
+    // La partida y el inspector nunca deben modificar estos campos serializados.
     [SerializeField] private List<string> keys = new();
     [SerializeField] private List<string> values = new();
+
+    [NonSerialized] private List<KeyValuePair<string, string>> entries;
+
+    public IReadOnlyList<KeyValuePair<string, string>> Entries => RuntimeEntries;
+
+    private List<KeyValuePair<string, string>> RuntimeEntries
+    {
+        get
+        {
+            if (entries == null)
+            {
+                entries = new List<KeyValuePair<string, string>>();
+                for (int i = 0; i < keys.Count; i++)
+                    entries.Add(new KeyValuePair<string, string>(keys[i], i < values.Count ? values[i] : ""));
+            }
+            return entries;
+        }
+    }
 
     // --- Accesores por si los necesita el Editor ---
     public RegistryKeyPreset Preset => preset;
@@ -93,37 +112,36 @@ public class PlayerPrefsRegistry : ScriptableObject
 // --------- API para reflejar en inspector ----------
     public void UpdateEntry(string key, object value)
     {
-        string s = value?.ToString() ?? "null";
-        int idx = keys.IndexOf(key);
-        if (idx >= 0) values[idx] = s;
-        else { keys.Add(key); values.Add(s); }
-
-        MarkDirty();
+        var data = RuntimeEntries;
+        var entry = new KeyValuePair<string, string>(key, value?.ToString() ?? "null");
+        int idx = data.FindIndex(item => item.Key == key);
+        if (idx >= 0) data[idx] = entry;
+        else data.Add(entry);
     }
 
     public void RemoveEntry(string key)
     {
-        int idx = keys.IndexOf(key);
-        if (idx >= 0)
-        {
-            keys.RemoveAt(idx);
-            values.RemoveAt(idx);
-            MarkDirty();
-        }
+        RuntimeEntries.RemoveAll(item => item.Key == key);
     }
 
     public void ClearAll()
     {
-        keys.Clear();
-        values.Clear();
-        MarkDirty();
+        RuntimeEntries.Clear();
     }
 
-    void MarkDirty()
+    public void SortEntries(Comparison<KeyValuePair<string, string>> comparison)
     {
-#if UNITY_EDITOR
-        UnityEditor.EditorUtility.SetDirty(this);
-#endif
+        RuntimeEntries.Sort(comparison);
+    }
+
+    public void MoveEntry(int index, int direction)
+    {
+        var data = RuntimeEntries;
+        int newIndex = index + direction;
+        if (index < 0 || index >= data.Count || newIndex < 0 || newIndex >= data.Count) return;
+        var entry = data[index];
+        data.RemoveAt(index);
+        data.Insert(newIndex, entry);
     }
 
 }

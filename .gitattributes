@@ -1,2 +1,8 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Unity writes these serialized resources with LF line endings.
+# Keep Git from reporting CRLF-to-LF rewrites as local changes.
+*.mat text=auto eol=lf
+*.renderTexture text=auto eol=lf
+*.asset text=auto eol=lf
