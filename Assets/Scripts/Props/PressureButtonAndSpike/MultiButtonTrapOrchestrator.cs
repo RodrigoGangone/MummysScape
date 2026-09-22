@@ -1,92 +1,73 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Escucha múltiples botones y resuelve el estado de la trampa evaluando 
-/// el estado predominante entre todos los emisores.
+/// Conserva las conexiones antiguas. Spears suma estos botones junto a los conectados directamente.
+/// Otros ISpikeTrapController conservan la resolución por estado predominante.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class MultiButtonTrapOrchestrator : MonoBehaviour
 {
-    [Header("Inputs")]
+    [Header("Botones conectados (compatibilidad)")]
     [SerializeField] private PressureButtonStateResolver[] _buttonResolvers;
-
-    [Header("Output")]
+    [Header("Lanza de destino")]
     [SerializeField] private MonoBehaviour _spikeTrapTarget;
-    
-    private ISpikeTrapController _trapController;
 
-    private void Awake()
+    private readonly HashSet<PressureButtonStateResolver> _registeredButtons = new HashSet<PressureButtonStateResolver>();
+    private SpikeTrapController _registeredTrap;
+    private bool _connectionsChanged;
+    private bool _legacyDirty;
+
+    private void OnEnable() => RegisterConnections();
+
+    private void Update()
     {
-        if (_spikeTrapTarget != null)
-        {
-            _trapController = _spikeTrapTarget as ISpikeTrapController;
-        }
+        if (!_connectionsChanged) return;
+        _connectionsChanged = false;
+        UnregisterConnections();
+        RegisterConnections();
     }
 
-    private void OnEnable()
+    private void RegisterConnections()
     {
-        if (_buttonResolvers == null) return;
-
-        for (int i = 0; i < _buttonResolvers.Length; i++)
+        _registeredTrap = _spikeTrapTarget as SpikeTrapController;
+        if (_buttonResolvers != null)
         {
-            if (_buttonResolvers[i] != null)
+            foreach (PressureButtonStateResolver button in _buttonResolvers)
             {
-                _buttonResolvers[i].EffectiveStateChanged += EvaluateCombinedState;
+                if (button == null || !_registeredButtons.Add(button)) continue;
+                if (_registeredTrap != null) _registeredTrap.RegisterButton(button, this);
+                else button.EffectiveStateChanged += MarkLegacyDirty;
             }
         }
+        _legacyDirty = true;
     }
 
-    private void Start()
+    private void MarkLegacyDirty(PressureButtonState state) => _legacyDirty = true;
+
+    private void LateUpdate()
     {
-        // Forzar una evaluación inicial para establecer el estado de la trampa
-        EvaluateCombinedState(PressureButtonState.Released);
+        if (!_legacyDirty || _spikeTrapTarget == null || _spikeTrapTarget is SpikeTrapController ||
+            _spikeTrapTarget is not ISpikeTrapController controller) return;
+        _legacyDirty = false;
+        PressureButtonState highest = PressureButtonState.Released;
+        foreach (PressureButtonStateResolver button in _registeredButtons)
+            if (button != null && button.isActiveAndEnabled && button.EffectiveState > highest)
+                highest = button.EffectiveState;
+        controller.SetState(highest == PressureButtonState.FullyPressed ? SpikeTrapState.Lowered
+            : highest == PressureButtonState.HalfPressed ? SpikeTrapState.HalfRaised : SpikeTrapState.Raised);
     }
 
-    private void OnDisable()
+    private void OnDisable() => UnregisterConnections();
+
+    private void UnregisterConnections()
     {
-        if (_buttonResolvers == null) return;
-
-        for (int i = 0; i < _buttonResolvers.Length; i++)
-        {
-            if (_buttonResolvers[i] != null)
-            {
-                _buttonResolvers[i].EffectiveStateChanged -= EvaluateCombinedState;
-            }
-        }
+        if (_registeredTrap != null) _registeredTrap.UnregisterButtons(this);
+        foreach (PressureButtonStateResolver button in _registeredButtons)
+            if (button != null) button.EffectiveStateChanged -= MarkLegacyDirty;
+        _registeredButtons.Clear();
+        _registeredTrap = null;
     }
 
-    private void EvaluateCombinedState(PressureButtonState _)
-    {
-        if (_trapController == null) return;
-
-        PressureButtonState highestState = PressureButtonState.Released;
-
-        for (int i = 0; i < _buttonResolvers.Length; i++)
-        {
-            PressureButtonState state = _buttonResolvers[i].EffectiveState;
-            
-            if (state == PressureButtonState.FullyPressed)
-            {
-                highestState = PressureButtonState.FullyPressed;
-                break; // Optimización: Si encontramos un FullyPressed, no necesitamos seguir iterando
-            }
-            
-            if (state == PressureButtonState.HalfPressed)
-            {
-                highestState = PressureButtonState.HalfPressed;
-            }
-        }
-
-        _trapController.SetState(MapTrapState(highestState));
-    }
-
-    private static SpikeTrapState MapTrapState(PressureButtonState state)
-    {
-        return state switch
-        {
-            PressureButtonState.HalfPressed => SpikeTrapState.HalfRaised,
-            PressureButtonState.FullyPressed => SpikeTrapState.Lowered,
-            _ => SpikeTrapState.Raised
-        };
-    }
+    private void OnValidate() => _connectionsChanged = true;
 }

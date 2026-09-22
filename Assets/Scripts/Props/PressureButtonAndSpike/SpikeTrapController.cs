@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -16,7 +17,13 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
 
     private const float PositionEpsilonSquared = 0.0000001f;
 
-    [Header("References")]
+    [Header("Peso total de los botones conectados")]
+    [SerializeField, Min(1), Tooltip("Peso mínimo acumulado para media altura.")]
+    private int _halfRaisedWeight = 1;
+    [SerializeField, Min(2), Tooltip("Peso mínimo acumulado para bajar completamente.")]
+    private int _loweredWeight = 2;
+
+    [Header("Referencias internas")]
     [SerializeField] private Transform _motionRoot;
     [SerializeField] private Rigidbody _motionRigidbody;
     [SerializeField] private Transform _visualShakeRoot;
@@ -42,6 +49,79 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
     private Vector3 _moveStartLocalPosition;
     private Vector3 _moveTargetLocalPosition;
     private float _phaseElapsed;
+    private bool _initialized;
+    private bool _weightDriven;
+    private bool _refreshWeight;
+
+    // Una entrada por botón; cada ruta conserva su propietario para retirarla de forma independiente.
+    private readonly Dictionary<PressureButtonStateResolver, HashSet<MonoBehaviour>> _buttonConnections =
+        new Dictionary<PressureButtonStateResolver, HashSet<MonoBehaviour>>();
+    private readonly List<PressureButtonStateResolver> _removedButtons = new List<PressureButtonStateResolver>();
+    private readonly List<PressureButtonStateResolver> _contributingButtons = new List<PressureButtonStateResolver>();
+
+    public int TotalEffectiveWeight { get; private set; }
+    public IReadOnlyList<PressureButtonStateResolver> ContributingButtons => _contributingButtons;
+
+    /// <summary>Registra una conexión sin duplicar el aporte del mismo botón.</summary>
+    public void RegisterButton(PressureButtonStateResolver button, MonoBehaviour connectionOwner)
+    {
+        if (button == null || connectionOwner == null) return;
+        if (!_buttonConnections.TryGetValue(button, out HashSet<MonoBehaviour> owners))
+        {
+            owners = new HashSet<MonoBehaviour>();
+            _buttonConnections.Add(button, owners);
+        }
+        owners.Add(connectionOwner);
+        _weightDriven = true;
+        _refreshWeight = true;
+    }
+
+    /// <summary>Retira sólo las conexiones creadas por este coordinador u orquestador.</summary>
+    public void UnregisterButtons(MonoBehaviour connectionOwner)
+    {
+        foreach (HashSet<MonoBehaviour> owners in _buttonConnections.Values)
+            owners.Remove(connectionOwner);
+        _refreshWeight = true;
+    }
+
+    private void OnEnable() => _refreshWeight = true;
+
+    private void LateUpdate()
+    {
+        if (!_initialized || !_weightDriven) return;
+        long total = 0;
+        _removedButtons.Clear();
+        _contributingButtons.Clear();
+        foreach (var pair in _buttonConnections)
+        {
+            pair.Value.RemoveWhere(IsDestroyedOwner);
+            if (pair.Key == null || pair.Value.Count == 0)
+            {
+                _removedButtons.Add(pair.Key);
+                continue;
+            }
+
+            if (!pair.Key.isActiveAndEnabled) continue;
+            bool hasActiveConnection = false;
+            foreach (MonoBehaviour owner in pair.Value)
+                if (owner.isActiveAndEnabled) { hasActiveConnection = true; break; }
+            if (!hasActiveConnection) continue;
+
+            _contributingButtons.Add(pair.Key);
+            total += pair.Key.EffectiveWeight;
+        }
+        foreach (PressureButtonStateResolver button in _removedButtons) _buttonConnections.Remove(button);
+
+        int nextWeight = (int)System.Math.Min(int.MaxValue, total);
+        if (!_refreshWeight && nextWeight == TotalEffectiveWeight) return;
+        _refreshWeight = false;
+        TotalEffectiveWeight = nextWeight;
+        // Una única orden por frame, después de los cambios de sensores y temporizadores.
+        SetState(nextWeight >= _loweredWeight ? SpikeTrapState.Lowered
+            : nextWeight >= _halfRaisedWeight ? SpikeTrapState.HalfRaised : SpikeTrapState.Raised);
+    }
+
+    private static bool IsDestroyedOwner(MonoBehaviour owner) => owner == null;
 
     public SpikeTrapState CurrentState { get; private set; }
     public SpikeTrapState TargetState { get; private set; }
@@ -61,6 +141,7 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
         ConfigureRigidbody();
         _visualShakeCenter = _visualShakeRoot.localPosition;
         SnapToState(_initialState);
+        _initialized = true;
     }
 
     private void Update()
@@ -85,7 +166,7 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
 
     public void SetState(SpikeTrapState targetState)
     {
-        if (_motionRigidbody == null)
+        if (!_initialized || !isActiveAndEnabled || _motionRigidbody == null)
         {
             return;
         }
@@ -277,6 +358,13 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
             return false;
         }
 
+        if (_motionRigidbody.transform != _motionRoot || _visualShakeRoot == _motionRoot ||
+            !_visualShakeRoot.IsChildOf(_motionRoot))
+        {
+            Debug.LogError("Motion Rigidbody debe pertenecer a Motion Root y Visual Shake Root debe ser un hijo separado.", this);
+            return false;
+        }
+
         return true;
     }
 
@@ -345,6 +433,9 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
 
     private void OnValidate()
     {
+        _halfRaisedWeight = Mathf.Clamp(_halfRaisedWeight, 1, int.MaxValue - 1);
+        _loweredWeight = Mathf.Max(_halfRaisedWeight + 1, _loweredWeight);
+        _refreshWeight = true;
         _moveDuration = Mathf.Max(0f, _moveDuration);
         _shakeAmplitude = Mathf.Max(0f, _shakeAmplitude);
         _shakeFrequency = Mathf.Max(0f, _shakeFrequency);

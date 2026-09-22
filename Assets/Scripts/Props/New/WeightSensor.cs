@@ -78,6 +78,8 @@ public class WeightSensor : MonoBehaviour
     private BoxCollider _trigger;
     private Rigidbody _localRigidbody;
     private float _cleanupElapsed;
+    private bool _needsRescan;
+    private Collider[] _overlapBuffer = new Collider[16];
 
     public int TotalWeight => _totalWeight;
     public int ProviderCount => _providerCount;
@@ -87,6 +89,8 @@ public class WeightSensor : MonoBehaviour
 
     protected virtual void Awake()
     {
+        _totalWeight = 0;
+        _providerCount = 0;
         _trigger = GetComponent<BoxCollider>();
         _localRigidbody = GetComponent<Rigidbody>();
 
@@ -108,6 +112,17 @@ public class WeightSensor : MonoBehaviour
 
     protected virtual void FixedUpdate()
     {
+        if (_trigger == null || !_trigger.enabled)
+        {
+            if (_colliders.Count > 0) ClearTracking();
+            _needsRescan = true;
+            return;
+        }
+        if (_needsRescan)
+        {
+            _needsRescan = false;
+            RecoverOverlappingColliders();
+        }
         _cleanupElapsed += Time.fixedDeltaTime;
         if (_cleanupElapsed < _cleanupInterval)
         {
@@ -180,7 +195,8 @@ public class WeightSensor : MonoBehaviour
 
     private void TouchCollider(Collider other)
     {
-        if (!IsColliderAvailable(other))
+        // Unity también entrega mensajes trigger a MonoBehaviours deshabilitados.
+        if (!isActiveAndEnabled || _trigger == null || !_trigger.enabled || !IsColliderAvailable(other))
         {
             return;
         }
@@ -190,7 +206,7 @@ public class WeightSensor : MonoBehaviour
         if (_colliders.TryGetValue(other, out ColliderRecord existingRecord))
         {
             if (_providers.TryGetValue(existingRecord.ProviderOwner, out ProviderRecord existingProvider) &&
-                IsProviderAvailable(existingProvider))
+                existingProvider.Owner != null)
             {
                 existingRecord.LastSeenFixedTime = now;
                 return;
@@ -291,6 +307,7 @@ public class WeightSensor : MonoBehaviour
     private void RecalculateTotalWeight(bool forceSensorChanged)
     {
         long accumulatedWeight = 0;
+        int availableProviderCount = 0;
 
         foreach (KeyValuePair<MonoBehaviour, ProviderRecord> pair in _providers)
         {
@@ -299,9 +316,8 @@ public class WeightSensor : MonoBehaviour
             {
                 continue;
             }
-// Dentro de RecalculateTotalWeight en WeightSensor.cs, justo antes de sumar:
-            Debug.Log($"[WeightSensor] Aportando peso: {record.Owner.name} = {record.Provider.Weight}");
             accumulatedWeight += Mathf.Max(0, record.Provider.Weight);
+            availableProviderCount++;
             
         }
 
@@ -312,7 +328,7 @@ public class WeightSensor : MonoBehaviour
         bool totalChanged = newTotal != _totalWeight;
 
         _totalWeight = newTotal;
-        _providerCount = _providers.Count;
+        _providerCount = availableProviderCount;
 
         if (totalChanged)
         {
@@ -339,10 +355,14 @@ public class WeightSensor : MonoBehaviour
             bool invalidCollider = !IsColliderAvailable(collider);
             bool invalidProvider =
                 !_providers.TryGetValue(colliderRecord.ProviderOwner, out ProviderRecord providerRecord) ||
-                !IsProviderAvailable(providerRecord);
+                providerRecord.Owner == null;
+            // Conserva la suscripción de proveedores deshabilitados mientras su collider siga dentro:
+            // no aportan peso, pero OnEnable puede recuperarlos incluso con el Rigidbody dormido.
             bool wasNotSeenRecently = now - colliderRecord.LastSeenFixedTime > _staleColliderGrace;
 
-            if (invalidCollider || invalidProvider || wasNotSeenRecently)
+            // Un Rigidbody dormido puede dejar de enviar Stay sin haber abandonado el sensor.
+            bool leftVolume = !invalidCollider && wasNotSeenRecently && !OverlapsTrigger(collider);
+            if (invalidCollider || invalidProvider || leftVolume)
             {
                 _staleColliders.Add(collider);
             }
@@ -352,6 +372,40 @@ public class WeightSensor : MonoBehaviour
         {
             UnregisterCollider(_staleColliders[i]);
         }
+    }
+
+    private bool OverlapsTrigger(Collider collider)
+    {
+        return _trigger != null && _trigger.enabled && Physics.ComputePenetration(
+            _trigger, _trigger.transform.position, _trigger.transform.rotation,
+            collider, collider.transform.position, collider.transform.rotation, out _, out _);
+    }
+
+    protected virtual void OnEnable() => _needsRescan = true;
+
+    private void RecoverOverlappingColliders()
+    {
+        Vector3 scale = transform.lossyScale;
+        Vector3 halfExtents = Vector3.Scale(_trigger.size * 0.5f,
+            new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z)));
+        int count;
+        do
+        {
+            count = Physics.OverlapBoxNonAlloc(transform.TransformPoint(_trigger.center), halfExtents,
+                _overlapBuffer, transform.rotation, ~0, QueryTriggerInteraction.Collide);
+            if (count < _overlapBuffer.Length) break;
+            Array.Resize(ref _overlapBuffer, _overlapBuffer.Length * 2);
+        } while (true);
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider candidate = _overlapBuffer[i];
+            if (candidate == _trigger || candidate.attachedRigidbody == _trigger.attachedRigidbody ||
+                Physics.GetIgnoreLayerCollision(gameObject.layer, candidate.gameObject.layer) ||
+                Physics.GetIgnoreCollision(_trigger, candidate)) continue;
+            if (OverlapsTrigger(candidate)) TouchCollider(candidate);
+        }
+        Array.Clear(_overlapBuffer, 0, count);
     }
 
     private void ClearTracking()

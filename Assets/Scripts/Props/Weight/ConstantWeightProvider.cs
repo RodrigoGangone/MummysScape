@@ -11,15 +11,18 @@ public sealed class ConstantWeightProvider : WeightProviderBehaviour
 
     public override int Weight => Mathf.Max(0, _weight);
 
+    /// <summary>Actualiza el peso y notifica a sensores que ya estén detectando este objeto.</summary>
+    public void SetWeight(int weight)
+    {
+        int next = Mathf.Max(0, weight);
+        if (_weight == next) return;
+        _weight = next;
+        NotifyWeightChanged();
+    }
+
     private void OnValidate()
     {
-        int clampedWeight = Mathf.Max(0, _weight);
-        if (clampedWeight == _weight)
-        {
-            return;
-        }
-
-        _weight = clampedWeight;
+        _weight = Mathf.Max(0, _weight);
 
         if (Application.isPlaying)
         {
