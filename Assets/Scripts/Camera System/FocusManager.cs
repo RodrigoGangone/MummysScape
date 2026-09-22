@@ -30,6 +30,7 @@ public class FocusManager : MonoBehaviour, IPausable
         public Quaternion Rotation;
         public Transform LookAt;
         public float Duration;
+        public float BlendInDuration;
         public float ZoomAmount;
         public AnimationCurve ZoomCurve;
 
@@ -48,6 +49,7 @@ public class FocusManager : MonoBehaviour, IPausable
     private bool _isCollectingRequests;
     private bool _isSequenceRunning;
     private bool _paused;
+    private float _activeBlendInDuration = -1f;
 
     private const string TUTORIAL_BUTTON_NAME = "Accept";
     private const string LOCK_ID = "FocusManager";
@@ -74,7 +76,8 @@ public class FocusManager : MonoBehaviour, IPausable
         AnimationCurve zoomCurve,
         string message = "",
         Color? color = null,
-        float msgDuration = 1.5f)
+        float msgDuration = 1.5f,
+        float blendInDuration = -1f)
     {
         AddRequestInternal(
             index: 9999,
@@ -86,7 +89,8 @@ public class FocusManager : MonoBehaviour, IPausable
             onComplete: null,
             message: message,
             msgColor: color ?? Color.white,
-            msgDuration: msgDuration
+            msgDuration: msgDuration,
+            blendInDuration: blendInDuration
         );
     }
 
@@ -170,7 +174,8 @@ public class FocusManager : MonoBehaviour, IPausable
         bool canBeCancelled = false,
         string cancelText = "",
         Color? cancelColor = null,
-        Action onCancelled = null)
+        Action onCancelled = null,
+        float blendInDuration = -1f)
     {
         if (camT == null || focusCam == null) return;
 
@@ -181,6 +186,7 @@ public class FocusManager : MonoBehaviour, IPausable
             Rotation = camT.rotation,
             LookAt = lookAt,
             Duration = duration,
+            BlendInDuration = blendInDuration,
             ZoomAmount = zoomAmt,
             ZoomCurve = curve,
             Message = message,
@@ -238,6 +244,7 @@ public class FocusManager : MonoBehaviour, IPausable
             
             // Truco para evitar tirones desde la posición del foco anterior
             focusCam.PreviousStateIsValid = false;
+            _activeBlendInDuration = req.BlendInDuration;
             focusCam.Priority = 100;
 
             bool cancelled = false;
@@ -314,7 +321,20 @@ public class FocusManager : MonoBehaviour, IPausable
         focusCam.LookAt = null;
 
         _isSequenceRunning = false;
+        _activeBlendInDuration = -1f;
         GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, false);
+    }
+
+    private CinemachineBlendDefinition OverrideFocusBlend(
+        ICinemachineCamera fromCamera, ICinemachineCamera toCamera,
+        CinemachineBlendDefinition defaultBlend, MonoBehaviour owner)
+    {
+        // Solo cambia la entrada al foco solicitado; el regreso usa el blend habitual.
+        if (ReferenceEquals(toCamera, focusCam) && _activeBlendInDuration >= 0f)
+            return new CinemachineBlendDefinition(
+                CinemachineBlendDefinition.Style.EaseInOut, _activeBlendInDuration);
+
+        return defaultBlend;
     }
 
     public void OnPauseChanged(bool paused) 
@@ -323,9 +343,16 @@ public class FocusManager : MonoBehaviour, IPausable
         CinemachineCore.UniformDeltaTimeOverride = paused ? 0f : -1f;
     }
 
-    private void OnEnable() =>
+    private void OnEnable()
+    {
+        CinemachineCore.GetBlendOverride += OverrideFocusBlend;
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    }
 
-    private void OnDisable() =>
+    private void OnDisable()
+    {
+        CinemachineCore.GetBlendOverride -= OverrideFocusBlend;
+        _activeBlendInDuration = -1f;
         GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+    }
 }
