@@ -97,6 +97,10 @@ public sealed class SpikeTrapControllerInspector : SpearsInspectorBase
         Field("_shakeAmplitude", "Amplitud de vibración");
         Field("_shakeFrequency", "Frecuencia de vibración");
         Field("_shakeDuration", "Duración de vibración");
+        Field("_glowDuration", "Duración del brillo previo");
+        Field("_glowIntensity", "Intensidad del brillo");
+        Field("_activationRenderers", "Mallas con brillo");
+        Field("_activationParticles", "Partículas de activación");
         References("_motionRoot", "_motionRigidbody", "_visualShakeRoot");
         Required("_motionRoot", "Falta la raíz móvil de las lanzas.");
         Required("_motionRigidbody", "Falta el Rigidbody de la raíz móvil.");

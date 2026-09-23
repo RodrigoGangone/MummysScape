@@ -13,6 +13,50 @@ using static PauseUtils;
 public class FocusManager : MonoBehaviour, IPausable
 {
     public static FocusManager Instance { get; private set; }
+    public const string LockId = "FocusManager";
+
+    /// <summary>Una activación cancelable; finalizar siempre libera los permisos de su grupo.</summary>
+    public sealed class ActivationHandle : IDisposable
+    {
+        private readonly MonoBehaviour _owner;
+        private Action<bool> _onReady;
+        private Action _onFinished;
+        private Func<bool> _isPreparing;
+        public bool IsFinished { get; private set; }
+        public bool HasArrived { get; private set; }
+        internal bool OwnerIsActive => _owner != null && _owner.isActiveAndEnabled;
+
+        internal ActivationHandle(MonoBehaviour owner, Action<bool> onReady, Action onFinished, Func<bool> isPreparing)
+        {
+            _owner = owner;
+            _onReady = onReady;
+            _onFinished = onFinished;
+            _isPreparing = isPreparing;
+        }
+
+        internal bool IsPreparing => !IsFinished && (_isPreparing?.Invoke() ?? false);
+
+        internal void Arrive(bool hasFocus)
+        {
+            if (IsFinished || HasArrived) return;
+            if (!OwnerIsActive) { Dispose(); return; }
+            HasArrived = true;
+            var callback = _onReady;
+            _onReady = null;
+            callback?.Invoke(hasFocus);
+        }
+
+        public void Dispose()
+        {
+            if (IsFinished) return;
+            IsFinished = true;
+            _onReady = null;
+            var callback = _onFinished;
+            _onFinished = null;
+            _isPreparing = null;
+            callback?.Invoke();
+        }
+    }
 
     [Header("Cámara Nativa")]
     [SerializeField, Tooltip("La Virtual Camera compartida para todos los focos.")] 
@@ -43,6 +87,8 @@ public class FocusManager : MonoBehaviour, IPausable
         public Color CancelColor;
         public Action OnCancelled;
         public Action OnComplete;
+        public ActivationHandle Activation;
+        public bool CameraArrived;
     }
 
     private List<FocusRequest> _pendingRequests = new();
@@ -50,12 +96,36 @@ public class FocusManager : MonoBehaviour, IPausable
     private bool _isSequenceRunning;
     private bool _paused;
     private float _activeBlendInDuration = -1f;
+    private FocusRequest _activeRequest;
+    private float _originalFOV;
 
     private const string TUTORIAL_BUTTON_NAME = "Accept";
-    private const string LOCK_ID = "FocusManager";
 
     public string TutorialKey => TUTORIAL_BUTTON_NAME;
     public bool IsBusy => _isCollectingRequests || _pendingRequests.Count > 0 || _isSequenceRunning;
+    public bool CanFocus => isActiveAndEnabled && focusCam != null && focusCam.isActiveAndEnabled &&
+        CinemachineCore.Instance.FindPotentialTargetBrain(focusCam) != null;
+
+    public ActivationHandle RequestActivationFocus(MonoBehaviour owner, Transform cameraPos,
+        Transform lookAt, float duration, float zoomAmount, AnimationCurve zoomCurve,
+        Action<bool> onReady, Action onFinished = null, string message = "",
+        Color? color = null, float msgDuration = 1.5f, float blendInDuration = -1f,
+        Func<bool> isPreparing = null)
+    {
+        if (!CanFocus || cameraPos == null || owner == null || !owner.isActiveAndEnabled) return null;
+        var handle = new ActivationHandle(owner, onReady, onFinished, isPreparing);
+        AddRequestInternal(9999, cameraPos, lookAt, duration, zoomAmount, zoomCurve, null,
+            message, color, msgDuration, blendInDuration: blendInDuration, activation: handle);
+        return handle;
+    }
+
+    private void HandleCameraUpdated(CinemachineBrain brain)
+    {
+        if (_activeRequest?.Activation == null || _paused) return;
+        if (brain == CinemachineCore.Instance.FindPotentialTargetBrain(focusCam) &&
+            ReferenceEquals(brain.ActiveVirtualCamera, focusCam) && !brain.IsBlending)
+            _activeRequest.CameraArrived = true;
+    }
 
     private void Awake()
     {
@@ -175,7 +245,8 @@ public class FocusManager : MonoBehaviour, IPausable
         string cancelText = "",
         Color? cancelColor = null,
         Action onCancelled = null,
-        float blendInDuration = -1f)
+        float blendInDuration = -1f,
+        ActivationHandle activation = null)
     {
         if (camT == null || focusCam == null) return;
 
@@ -196,7 +267,8 @@ public class FocusManager : MonoBehaviour, IPausable
             CancelText = cancelText,
             CancelColor = cancelColor ?? Color.white,
             OnCancelled = onCancelled,
-            OnComplete = onComplete
+            OnComplete = onComplete,
+            Activation = activation
         };
 
         _pendingRequests.Add(req);
@@ -210,7 +282,8 @@ public class FocusManager : MonoBehaviour, IPausable
 
     private IEnumerator CollectAndSortRoutine()
     {
-        yield return new WaitForEndOfFrame();
+        // También funciona en batchmode, donde WaitForEndOfFrame no se reanuda.
+        yield return null;
 
         _pendingRequests = _pendingRequests.OrderBy(x => x.PriorityIndex).ToList();
 
@@ -222,14 +295,23 @@ public class FocusManager : MonoBehaviour, IPausable
     private IEnumerator PlaySequenceRoutine()
     {
         _isSequenceRunning = true;
-        GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, true);
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LockId, true);
 
-        float originalFOV = focusCam.m_Lens.FieldOfView;
+        float originalFOV = focusCam != null ? focusCam.m_Lens.FieldOfView : 60f;
+        _originalFOV = originalFOV;
 
         while (_pendingRequests.Count > 0)
         {
             FocusRequest req = _pendingRequests[0];
             _pendingRequests.RemoveAt(0);
+            _activeRequest = req;
+            if (ActivationWasCancelled(req)) continue;
+            if (req.Activation != null && !CanFocus)
+            {
+                ActivateWithoutCamera(req);
+                continue;
+            }
+            if (focusCam == null) continue;
 
             // Preparar la cámara antes de activarla
             focusCam.transform.position = req.Position;
@@ -247,6 +329,39 @@ public class FocusManager : MonoBehaviour, IPausable
             _activeBlendInDuration = req.BlendInDuration;
             focusCam.Priority = 100;
 
+            if (req.Activation != null)
+            {
+                while (!req.CameraArrived && !ActivationWasCancelled(req) && CanFocus)
+                    yield return null;
+
+                if (ActivationWasCancelled(req))
+                {
+                    focusCam.Priority = 0;
+                    yield return null;
+                    continue;
+                }
+
+                if (!CanFocus)
+                {
+                    ActivateWithoutCamera(req);
+                    if (focusCam != null) focusCam.Priority = 0;
+                    continue;
+                }
+
+                while (_paused && !ActivationWasCancelled(req)) yield return null;
+                req.Activation.Arrive(true);
+                // Las lanzas reciben el nuevo peso en LateUpdate. Dejar que inicien sus efectos.
+                yield return null;
+                while (!ActivationWasCancelled(req) && CanFocus && (_paused || req.Activation.IsPreparing))
+                    yield return null;
+                if (ActivationWasCancelled(req))
+                {
+                    if (focusCam != null) focusCam.Priority = 0;
+                    yield return null;
+                    continue;
+                }
+            }
+
             bool cancelled = false;
             float elapsed = 0f;
             float targetFOV = originalFOV - req.ZoomAmount;
@@ -260,6 +375,13 @@ public class FocusManager : MonoBehaviour, IPausable
 
             while (elapsed < req.Duration)
             {
+                if (ActivationWasCancelled(req)) { cancelled = true; break; }
+                if (req.Activation != null && !CanFocus)
+                {
+                    req.Activation.Dispose();
+                    cancelled = true;
+                    break;
+                }
                 if (_paused)
                 {
                     yield return null;
@@ -275,7 +397,7 @@ public class FocusManager : MonoBehaviour, IPausable
                 elapsed += Time.deltaTime;
 
                 float t = elapsed / req.Duration;
-                float curveValue = req.ZoomCurve.Evaluate(t);
+                float curveValue = req.ZoomCurve != null ? req.ZoomCurve.Evaluate(t) : t;
                 focusCam.m_Lens.FieldOfView = Mathf.Lerp(originalFOV, targetFOV, curveValue);
 
                 yield return null;
@@ -290,8 +412,9 @@ public class FocusManager : MonoBehaviour, IPausable
 
             if (cancelled)
             {
-                focusCam.Priority = 0;
+                if (focusCam != null) focusCam.Priority = 0;
                 req.OnCancelled?.Invoke();
+                if (req.Activation != null) yield return null;
                 continue;
             }
 
@@ -301,7 +424,12 @@ public class FocusManager : MonoBehaviour, IPausable
             {
                 GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(ContextUIFactory.CustomMessage(req.Message, req.MessageColor));
 
-                yield return WaitForSecondsPausable(req.MessageDuration, () => _paused);
+                float messageElapsed = 0f;
+                while (messageElapsed < req.MessageDuration && !ActivationWasCancelled(req))
+                {
+                    if (!_paused) messageElapsed += Time.deltaTime;
+                    yield return null;
+                }
 
                 GameEventManager.Instance.levelEvents.OnContextUIChanged.Raise(
                     ContextUIFactory.Hidden()
@@ -309,20 +437,42 @@ public class FocusManager : MonoBehaviour, IPausable
             }
 
             req.OnComplete?.Invoke();
+            req.Activation?.Dispose();
+            _activeRequest = null;
 
             focusCam.Priority = 0; // Devolver a la cámara del jugador
 
+            // Permite que el Brain procese la salida antes de reutilizar la misma cámara.
+            if (req.Activation != null) yield return null;
             if (_pendingRequests.Count > 0)
                 yield return WaitForSecondsPausable(bufferBetweenFocus, () => _paused);
         }
 
-        focusCam.m_Lens.FieldOfView = originalFOV;
-        focusCam.Priority = 0;
-        focusCam.LookAt = null;
+        if (focusCam != null)
+        {
+            focusCam.m_Lens.FieldOfView = originalFOV;
+            focusCam.Priority = 0;
+            focusCam.LookAt = null;
+        }
 
         _isSequenceRunning = false;
         _activeBlendInDuration = -1f;
-        GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LOCK_ID, false);
+        _activeRequest = null;
+        GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LockId, false);
+    }
+
+    private static bool ActivationWasCancelled(FocusRequest request)
+    {
+        if (request.Activation == null) return false;
+        if (!request.Activation.OwnerIsActive) request.Activation.Dispose();
+        return request.Activation.IsFinished;
+    }
+
+    private void ActivateWithoutCamera(FocusRequest request)
+    {
+        Debug.LogWarning("[FocusManager] Se perdió la cámara; activando sin foco.", this);
+        request.Activation.Arrive(false);
+        request.Activation.Dispose();
     }
 
     private CinemachineBlendDefinition OverrideFocusBlend(
@@ -346,13 +496,38 @@ public class FocusManager : MonoBehaviour, IPausable
     private void OnEnable()
     {
         CinemachineCore.GetBlendOverride += OverrideFocusBlend;
+        CinemachineCore.CameraUpdatedEvent.AddListener(HandleCameraUpdated);
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
     }
 
     private void OnDisable()
     {
         CinemachineCore.GetBlendOverride -= OverrideFocusBlend;
+        CinemachineCore.CameraUpdatedEvent.RemoveListener(HandleCameraUpdated);
+        StopAllCoroutines();
+        _activeRequest?.Activation?.Dispose();
+        foreach (var request in _pendingRequests.ToArray()) request.Activation?.Dispose();
+        _pendingRequests.Clear();
+        if (focusCam != null)
+        {
+            if (_isSequenceRunning) focusCam.m_Lens.FieldOfView = _originalFOV;
+            focusCam.Priority = 0;
+            focusCam.LookAt = null;
+        }
+        _activeRequest = null;
+        _isCollectingRequests = false;
+        _isSequenceRunning = false;
         _activeBlendInDuration = -1f;
-        GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+        CinemachineCore.UniformDeltaTimeOverride = -1f;
+        if (GameEventManager.Instance != null)
+        {
+            GameEventManager.Instance.playerEvents.OnLockRequested.Raise(LockId, false);
+            GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 }

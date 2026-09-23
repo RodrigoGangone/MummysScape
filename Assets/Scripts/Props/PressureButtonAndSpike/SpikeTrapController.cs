@@ -6,12 +6,14 @@ using UnityEngine;
 /// visual cuando corresponde y mueve el cuerpo cinemático vertical junto con su collider en FixedUpdate.
 /// </summary>
 [DisallowMultipleComponent]
-public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
+public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController, IPausable
 {
     private enum MotionPhase
     {
         Stable,
+        Activating,
         Shaking,
+        Ready,
         Moving
     }
 
@@ -44,6 +46,18 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
     [SerializeField, Min(0f)] private float _shakeFrequency = 24f;
     [SerializeField, Min(0f)] private float _shakeDuration = 0.2f;
 
+    [Header("Activation Effects")]
+    [SerializeField] private Renderer[] _activationRenderers;
+    [SerializeField] private ParticleSystem _activationParticles;
+    [SerializeField, Min(0f)] private float _glowDuration;
+    [SerializeField, Min(0f)] private float _glowIntensity = 2f;
+    private ActivationGlow _activationGlow;
+    private bool _grouped;
+    private readonly Dictionary<PressureButtonStateResolver, int> _lastWeights = new Dictionary<PressureButtonStateResolver, int>();
+    private readonly List<PressureButtonStateResolver> _changedButtons = new List<PressureButtonStateResolver>();
+    private bool _paused;
+    private bool _particlesStopped;
+
     private MotionPhase _phase;
     private Vector3 _visualShakeCenter;
     private Vector3 _moveStartLocalPosition;
@@ -72,6 +86,7 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
             _buttonConnections.Add(button, owners);
         }
         owners.Add(connectionOwner);
+        button.RegisterActivationTrap(this);
         _weightDriven = true;
         _refreshWeight = true;
     }
@@ -79,12 +94,20 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
     /// <summary>Retira sólo las conexiones creadas por este coordinador u orquestador.</summary>
     public void UnregisterButtons(MonoBehaviour connectionOwner)
     {
-        foreach (HashSet<MonoBehaviour> owners in _buttonConnections.Values)
-            owners.Remove(connectionOwner);
+        foreach (var pair in _buttonConnections)
+        {
+            pair.Value.Remove(connectionOwner);
+            if (pair.Value.Count == 0 && pair.Key != null) pair.Key.UnregisterActivationTrap(this);
+        }
         _refreshWeight = true;
     }
 
-    private void OnEnable() => _refreshWeight = true;
+    private void OnEnable()
+    {
+        _refreshWeight = true;
+        if (GameEventManager.Instance != null)
+            GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    }
 
     private void LateUpdate()
     {
@@ -92,6 +115,7 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
         long total = 0;
         _removedButtons.Clear();
         _contributingButtons.Clear();
+        _changedButtons.Clear();
         foreach (var pair in _buttonConnections)
         {
             pair.Value.RemoveWhere(IsDestroyedOwner);
@@ -101,24 +125,36 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
                 continue;
             }
 
-            if (!pair.Key.isActiveAndEnabled) continue;
+
             bool hasActiveConnection = false;
             foreach (MonoBehaviour owner in pair.Value)
                 if (owner.isActiveAndEnabled) { hasActiveConnection = true; break; }
+            int contribution = hasActiveConnection && pair.Key.isActiveAndEnabled ? pair.Key.TrapWeight : 0;
+            if (!_lastWeights.TryGetValue(pair.Key, out int previous) || previous != contribution)
+                _changedButtons.Add(pair.Key);
+            _lastWeights[pair.Key] = contribution;
             if (!hasActiveConnection) continue;
 
             _contributingButtons.Add(pair.Key);
-            total += pair.Key.EffectiveWeight;
+            total += contribution;
         }
-        foreach (PressureButtonStateResolver button in _removedButtons) _buttonConnections.Remove(button);
+        foreach (PressureButtonStateResolver button in _removedButtons)
+        {
+            if (button != null) button.UnregisterActivationTrap(this);
+            _changedButtons.Add(button);
+            _lastWeights.Remove(button);
+            _buttonConnections.Remove(button);
+        }
 
         int nextWeight = (int)System.Math.Min(int.MaxValue, total);
         if (!_refreshWeight && nextWeight == TotalEffectiveWeight) return;
         _refreshWeight = false;
         TotalEffectiveWeight = nextWeight;
         // Una única orden por frame, después de los cambios de sensores y temporizadores.
-        SetState(nextWeight >= _loweredWeight ? SpikeTrapState.Lowered
-            : nextWeight >= _halfRaisedWeight ? SpikeTrapState.HalfRaised : SpikeTrapState.Raised);
+        var target = nextWeight >= _loweredWeight ? SpikeTrapState.Lowered
+            : nextWeight >= _halfRaisedWeight ? SpikeTrapState.HalfRaised : SpikeTrapState.Raised;
+        if (target != TargetState) SpikeActivationGroup.Request(this, _changedButtons);
+        SetState(target);
     }
 
     private static bool IsDestroyedOwner(MonoBehaviour owner) => owner == null;
@@ -128,6 +164,8 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
     public bool IsTransitioning => _phase != MotionPhase.Stable;
     public bool IsShaking => _phase == MotionPhase.Shaking;
     public bool IsMoving => _phase == MotionPhase.Moving;
+    public bool IsPreparingActivation => isActiveAndEnabled &&
+        (_phase == MotionPhase.Activating || _phase == MotionPhase.Shaking || _phase == MotionPhase.Ready);
     public Vector3 CurrentLocalPosition => ReadPhysicsLocalPosition();
 
     private void Awake()
@@ -139,6 +177,10 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
         }
 
         ConfigureRigidbody();
+        _activationGlow = GetComponent<ActivationGlow>();
+        if (_activationGlow == null) _activationGlow = gameObject.AddComponent<ActivationGlow>();
+        if (_activationRenderers != null && _activationRenderers.Length > 0)
+            _activationGlow.Configure(_activationRenderers);
         _visualShakeCenter = _visualShakeRoot.localPosition;
         SnapToState(_initialState);
         _initialized = true;
@@ -146,6 +188,8 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
 
     private void Update()
     {
+        if (_paused) return;
+        if (_phase == MotionPhase.Activating) { UpdateActivationEffects(); return; }
         if (_phase != MotionPhase.Shaking)
         {
             return;
@@ -156,7 +200,7 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
 
     private void FixedUpdate()
     {
-        if (_phase != MotionPhase.Moving)
+        if (_paused || _grouped || _phase != MotionPhase.Moving)
         {
             return;
         }
@@ -184,9 +228,10 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
 
         TargetState = targetState;
 
-        if (_phase == MotionPhase.Shaking)
+        if (_phase == MotionPhase.Activating || _phase == MotionPhase.Shaking || _phase == MotionPhase.Ready)
         {
-            if (TargetState == CurrentState)
+            if (TargetState == CurrentState &&
+                (ReadPhysicsLocalPosition() - GetLocalPosition(CurrentState)).sqrMagnitude <= PositionEpsilonSquared)
             {
                 CancelShakeAndRemainStable();
             }
@@ -200,6 +245,37 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
             return;
         }
 
+        BeginActivationEffects();
+    }
+
+    private void BeginActivationEffects()
+    {
+        _phase = MotionPhase.Activating;
+        _phaseElapsed = 0f;
+        _particlesStopped = false;
+        _activationParticles?.Play(true);
+        if (_paused) _activationParticles?.Pause(true);
+        if (_glowDuration <= 0f && _activationParticles == null) FinishActivationEffects();
+    }
+
+    private void UpdateActivationEffects()
+    {
+        _phaseElapsed += Time.deltaTime;
+        float t = _glowDuration > 0f ? Mathf.Clamp01(_phaseElapsed / _glowDuration) : 1f;
+        SetActivationGlow(Mathf.Sin(t * Mathf.PI) * _glowIntensity);
+        if (t < 1f) return;
+        SetActivationGlow(0f);
+        if (!_particlesStopped)
+        {
+            _particlesStopped = true;
+            _activationParticles?.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        }
+        if (_activationParticles != null && _activationParticles.IsAlive(true)) return;
+        FinishActivationEffects();
+    }
+
+    private void FinishActivationEffects()
+    {
         if (RequiresWarningShake(CurrentState))
         {
             BeginShake();
@@ -208,6 +284,38 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
         {
             BeginVerticalMovement();
         }
+    }
+
+    private void SetActivationGlow(float value) => _activationGlow?.SetIntensity(value);
+
+    internal bool ActivationPaused => _paused;
+    internal bool GroupReady => _phase == MotionPhase.Ready || _phase == MotionPhase.Moving;
+    internal float MoveDuration => _moveDuration;
+    internal void JoinActivationGroup()
+    {
+        _grouped = true;
+        if (_phase == MotionPhase.Moving) _phase = MotionPhase.Ready;
+    }
+    internal void LeaveActivationGroup()
+    {
+        _grouped = false;
+        if (_phase == MotionPhase.Ready) BeginVerticalMovement();
+    }
+    internal void BeginGroupMovement()
+    {
+        RecenterVisualShake();
+        _moveStartLocalPosition = ReadPhysicsLocalPosition();
+        _moveTargetLocalPosition = GetLocalPosition(TargetState);
+        _phase = MotionPhase.Moving;
+    }
+    internal void TickGroupMovement(float normalizedTime) => ApplyVerticalMovement(normalizedTime);
+
+    public void OnPauseChanged(bool paused)
+    {
+        _paused = paused;
+        if (_activationParticles == null) return;
+        if (paused && _activationParticles.isPlaying) _activationParticles.Pause(true);
+        else if (!paused && _activationParticles.isPaused) _activationParticles.Play(true);
     }
 
     private void BeginShake()
@@ -259,6 +367,12 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
 
     private void BeginVerticalMovement()
     {
+        if (_grouped)
+        {
+            RecenterVisualShake();
+            _phase = MotionPhase.Ready;
+            return;
+        }
         RecenterVisualShake();
         _moveStartLocalPosition = ReadPhysicsLocalPosition();
         _moveTargetLocalPosition = GetLocalPosition(TargetState);
@@ -280,6 +394,11 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
             ? 1f
             : Mathf.Clamp01(_phaseElapsed / _moveDuration);
 
+        ApplyVerticalMovement(normalizedTime);
+    }
+
+    private void ApplyVerticalMovement(float normalizedTime)
+    {
         float curvedTime = _moveCurve != null
             ? _moveCurve.Evaluate(normalizedTime)
             : normalizedTime;
@@ -302,6 +421,7 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
 
     private void CompleteVerticalMovement()
     {
+        _grouped = false;
         CurrentState = TargetState;
         _phase = MotionPhase.Stable;
         _phaseElapsed = 0f;
@@ -309,6 +429,9 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
 
     private void CancelShakeAndRemainStable()
     {
+        _grouped = false;
+        SetActivationGlow(0f);
+        _activationParticles?.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         RecenterVisualShake();
         TargetState = CurrentState;
         _phase = MotionPhase.Stable;
@@ -428,7 +551,20 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
 
     private void OnDisable()
     {
+        _grouped = false;
         RecenterVisualShake();
+        SetActivationGlow(0f);
+        _activationParticles?.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        if (_phase == MotionPhase.Activating || _phase == MotionPhase.Shaking || _phase == MotionPhase.Ready)
+            CancelShakeAndRemainStable();
+        if (GameEventManager.Instance != null)
+            GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
+    }
+
+    private void OnDestroy()
+    {
+        foreach (var button in _buttonConnections.Keys)
+            if (button != null) button.UnregisterActivationTrap(this);
     }
 
     private void OnValidate()
@@ -440,6 +576,8 @@ public sealed class SpikeTrapController : MonoBehaviour, ISpikeTrapController
         _shakeAmplitude = Mathf.Max(0f, _shakeAmplitude);
         _shakeFrequency = Mathf.Max(0f, _shakeFrequency);
         _shakeDuration = Mathf.Max(0f, _shakeDuration);
+        _glowDuration = Mathf.Max(0f, _glowDuration);
+        _glowIntensity = Mathf.Max(0f, _glowIntensity);
 
         if (_motionRoot != null && _motionRigidbody == null)
         {

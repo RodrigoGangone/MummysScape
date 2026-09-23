@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary> 
@@ -27,6 +28,49 @@ public class FocusOnActivation : MonoBehaviour
     [SerializeField] private float messageDuration = 2.5f;
 
     private bool _used;
+    private FocusManager.ActivationHandle _activation;
+
+    public bool CanFocus => isActiveAndEnabled && cameraFocusPos != null &&
+        FocusManager.Instance != null && FocusManager.Instance.CanFocus;
+    public bool IsPending => _activation != null && !_activation.IsFinished;
+
+    /// <summary>
+    /// Ejecuta una sola acción al llegar. El bool indica si hay un foco propio activo;
+    /// sin cámara o si onlyOnce ya se consumió, ejecuta inmediatamente con false.
+    /// El propietario permite cancelar aunque el foco esté en otro objeto del grupo.
+    /// </summary>
+    public FocusManager.ActivationHandle ActivateWhenFocused(MonoBehaviour owner,
+        Action<bool> onReady, Action onFinished = null, Func<bool> isPreparing = null)
+    {
+        if (owner == null || !owner.isActiveAndEnabled) return null;
+        if (IsPending) return _activation;
+        if (onlyOnce && _used)
+        {
+            onReady?.Invoke(false);
+            onFinished?.Invoke();
+            return null;
+        }
+
+        _used = true;
+        if (CanFocus)
+        {
+            _activation = FocusManager.Instance.RequestActivationFocus(owner, cameraFocusPos,
+                cameraFocusLookAt, focusDuration, zoomAmount, zoomCurve, onReady, onFinished,
+                message, textColor, messageDuration, blendInDuration, isPreparing);
+            if (_activation != null) return _activation;
+        }
+
+        Debug.LogWarning("[FocusOnActivation] Foco no disponible; activando directamente.", this);
+        onReady?.Invoke(false);
+        onFinished?.Invoke();
+        return null;
+    }
+
+    private void OnDisable()
+    {
+        _activation?.Dispose();
+        _activation = null;
+    }
 
     public void Activate()
     {
