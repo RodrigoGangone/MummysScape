@@ -1,105 +1,90 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Propaga cada estado efectivo del botón a su placa visual y a una o varias trampas mediante
-/// contratos desacoplados, iniciando todos los cambios dentro de la misma actualización lógica.
-/// </summary>
+/// <summary>Conecta este botón a sus lanzas y actualiza la placa visual.</summary>
 [DisallowMultipleComponent]
 public sealed class PressureButtonCoordinator : MonoBehaviour
 {
+    [Header("Referencias internas")]
     [SerializeField] private PressureButtonStateResolver _stateResolver;
     [SerializeField] private PressureButtonPlateMover _plateMover;
+    [Header("Lanzas conectadas")]
+    [Tooltip("Arrastrá el SpikeTrapController de cada instancia de Spears. Cada botón se suma una sola vez por lanza.")]
     [SerializeField] private MonoBehaviour[] _spikeTrapTargets;
-    
+
+    private readonly HashSet<SpikeTrapController> _registeredTraps = new HashSet<SpikeTrapController>();
+    private bool _connectionsChanged;
+
+    private void Awake() => ResolveReferences();
+
     private void OnEnable()
     {
-        if (_stateResolver != null)
-        {
-            _stateResolver.EffectiveStateChanged += ApplyState;
-        }
+        ResolveReferences();
+        if (_stateResolver != null) _stateResolver.EffectiveStateChanged += ApplyState;
+        RegisterConnections();
+        if (_stateResolver != null) ApplyState(_stateResolver.EffectiveState);
     }
 
     private void Start()
     {
-        if (_stateResolver != null)
-        {
-            ApplyState(_stateResolver.EffectiveState);
-        }
+        if (_stateResolver != null) ApplyState(_stateResolver.EffectiveState);
+    }
+
+    private void Update()
+    {
+        if (!_connectionsChanged) return;
+        _connectionsChanged = false;
+        UnregisterConnections();
+        RegisterConnections();
+        if (_stateResolver != null) ApplyState(_stateResolver.EffectiveState);
     }
 
     private void OnDisable()
     {
-        if (_stateResolver != null)
+        if (_stateResolver != null) _stateResolver.EffectiveStateChanged -= ApplyState;
+        UnregisterConnections();
+    }
+
+    private void RegisterConnections()
+    {
+        if (_stateResolver == null || _spikeTrapTargets == null) return;
+        foreach (MonoBehaviour target in _spikeTrapTargets)
         {
-            _stateResolver.EffectiveStateChanged -= ApplyState;
+            if (target is SpikeTrapController trap && _registeredTraps.Add(trap))
+                trap.RegisterButton(_stateResolver, this);
         }
+    }
+
+    private void UnregisterConnections()
+    {
+        foreach (SpikeTrapController trap in _registeredTraps)
+            if (trap != null) trap.UnregisterButtons(this);
+        _registeredTraps.Clear();
     }
 
     private void ApplyState(PressureButtonState state)
     {
-        if (_plateMover != null)
+        if (_plateMover != null) _plateMover.SetState(state);
+        if (_spikeTrapTargets == null) return;
+        SpikeTrapState trapState = state == PressureButtonState.FullyPressed ? SpikeTrapState.Lowered
+            : state == PressureButtonState.HalfPressed ? SpikeTrapState.HalfRaised : SpikeTrapState.Raised;
+        foreach (MonoBehaviour target in _spikeTrapTargets)
         {
-            _plateMover.SetState(state);
-        }
-
-        SpikeTrapState trapState = MapTrapState(state);
-
-        if (_spikeTrapTargets == null)
-        {
-            return;
-        }
-
-        for (int i = 0; i < _spikeTrapTargets.Length; i++)
-        {
-            MonoBehaviour target = _spikeTrapTargets[i];
-            if (target == null)
-            {
-                continue;
-            }
-
-            if (target is ISpikeTrapController spikeTrapController)
-            {
-                spikeTrapController.SetState(trapState);
-            }
+            // Compatibilidad con otros controladores que sólo implementan el contrato de estados.
+            if (target != null && target is not SpikeTrapController && target is ISpikeTrapController controller)
+                controller.SetState(trapState);
         }
     }
 
-    private static SpikeTrapState MapTrapState(PressureButtonState state)
+    private void ResolveReferences()
     {
-        return state switch
-        {
-            PressureButtonState.HalfPressed => SpikeTrapState.HalfRaised,
-            PressureButtonState.FullyPressed => SpikeTrapState.Lowered,
-            _ => SpikeTrapState.Raised
-        };
+        if (_stateResolver == null) _stateResolver = GetComponent<PressureButtonStateResolver>();
+        if (_plateMover == null) _plateMover = GetComponent<PressureButtonPlateMover>();
     }
 
     private void OnValidate()
     {
-        if (_stateResolver == null)
-        {
-            _stateResolver = GetComponent<PressureButtonStateResolver>();
-        }
-
-        if (_plateMover == null)
-        {
-            _plateMover = GetComponent<PressureButtonPlateMover>();
-        }
-
-        if (_spikeTrapTargets == null)
-        {
-            return;
-        }
-
-        for (int i = 0; i < _spikeTrapTargets.Length; i++)
-        {
-            MonoBehaviour target = _spikeTrapTargets[i];
-            if (target != null && target is not ISpikeTrapController)
-            {
-                Debug.LogWarning(
-                    $"'{target.name}' no implementa {nameof(ISpikeTrapController)} y será ignorado.",
-                    target);
-            }
-        }
+        if (!Application.isPlaying) ResolveReferences();
+        _connectionsChanged = true;
     }
 }

@@ -188502,6 +188502,10 @@ PrefabInstance:
       value: 0.1952262
       objectReference: {fileID: 0}
     - target: {fileID: 3960280412314331136, guid: 32456fb0666d49f4e8182944e2ea055e, type: 3}
+      propertyPath: onlyOnce
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3960280412314331136, guid: 32456fb0666d49f4e8182944e2ea055e, type: 3}
       propertyPath: cameraFocusLookAt
       value: 
       objectReference: {fileID: 1491965523}
@@ -188585,7 +188589,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2210164109208734481, guid: 32456fb0666d49f4e8182944e2ea055e, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -202384,7 +202389,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1191012957}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0520814, y: 0.4502866, z: -0.026321216, w: 0.8909752}
+  m_LocalRotation: {x: 0.052076507, y: 0.4504535, z: -0.026330994, w: 0.89089084}
   m_LocalPosition: {x: -41.33273, y: 6.905377, z: -31.357595}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -258153,6 +258158,7 @@ MonoBehaviour:
   cameraFocusPos: {fileID: 0}
   cameraFocusLookAt: {fileID: 1019220111}
   focusDuration: 5
+  blendInDuration: -1
   onlyOnce: 1
   zoomAmount: 3
   zoomCurve:
