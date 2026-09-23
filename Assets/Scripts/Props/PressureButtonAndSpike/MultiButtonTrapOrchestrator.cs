@@ -37,7 +37,7 @@ public sealed class MultiButtonTrapOrchestrator : MonoBehaviour
             {
                 if (button == null || !_registeredButtons.Add(button)) continue;
                 if (_registeredTrap != null) _registeredTrap.RegisterButton(button, this);
-                else button.EffectiveStateChanged += MarkLegacyDirty;
+                else button.TrapStateChanged += MarkLegacyDirty;
             }
         }
         _legacyDirty = true;
@@ -52,8 +52,8 @@ public sealed class MultiButtonTrapOrchestrator : MonoBehaviour
         _legacyDirty = false;
         PressureButtonState highest = PressureButtonState.Released;
         foreach (PressureButtonStateResolver button in _registeredButtons)
-            if (button != null && button.isActiveAndEnabled && button.EffectiveState > highest)
-                highest = button.EffectiveState;
+            if (button != null && button.isActiveAndEnabled && button.TrapState > highest)
+                highest = button.TrapState;
         controller.SetState(highest == PressureButtonState.FullyPressed ? SpikeTrapState.Lowered
             : highest == PressureButtonState.HalfPressed ? SpikeTrapState.HalfRaised : SpikeTrapState.Raised);
     }
@@ -64,7 +64,7 @@ public sealed class MultiButtonTrapOrchestrator : MonoBehaviour
     {
         if (_registeredTrap != null) _registeredTrap.UnregisterButtons(this);
         foreach (PressureButtonStateResolver button in _registeredButtons)
-            if (button != null) button.EffectiveStateChanged -= MarkLegacyDirty;
+            if (button != null) button.TrapStateChanged -= MarkLegacyDirty;
         _registeredButtons.Clear();
         _registeredTrap = null;
     }

@@ -1,10 +1,6 @@
 using UnityEngine;
 
-/// <summary>
-/// Ejecuta el foco una única vez al entrar por primera vez en HalfPressed y una única vez
-/// al entrar por primera vez en FullyPressed. La unicidad se controla por estado y se reinicia
-/// solamente al recargar la escena o al invocar ResetOneShotTriggers.
-/// </summary>
+/// <summary>Retiene el primer aporte del botón hasta la llegada de su único foco.</summary>
 [DisallowMultipleComponent]
 public sealed class PressureButtonOneShotFocusTrigger : MonoBehaviour
 {
@@ -12,93 +8,74 @@ public sealed class PressureButtonOneShotFocusTrigger : MonoBehaviour
     [SerializeField] private PressureButtonStateResolver _stateResolver;
     [SerializeField] private FocusOnActivation _focusOnActivation;
 
+    // Se conservan los campos serializados: el primer estado habilitado consume el único foco.
     [Header("Enabled States")]
     [SerializeField] private bool _activateOnHalfPressed = true;
     [SerializeField] private bool _activateOnFullyPressed = true;
 
-    private bool _halfPressedTriggered;
-    private bool _fullyPressedTriggered;
+    private bool _triggered;
+    private FocusManager.ActivationHandle _activation;
+    public bool IsWaitingForFocus { get; private set; }
+
+    private void Awake() => ResolveReferences();
 
     private void OnEnable()
     {
-        if (_stateResolver == null || _focusOnActivation == null)
-        {
-            Debug.Log(
-                $"{nameof(PressureButtonOneShotFocusTrigger)} tiene referencias sin asignar.",
-                this);
+        ResolveReferences();
+        _stateResolver?.RefreshTrapContribution();
+    }
 
-            return;
-        }
+    // El resolver llama antes de publicar el aporte; no depende del orden de suscriptores.
+    public bool DelayFirstContribution(PressureButtonState state)
+    {
+        if (!isActiveAndEnabled) return false;
+        if (_triggered) return IsWaitingForFocus;
+        bool eligible = state == PressureButtonState.HalfPressed && _activateOnHalfPressed ||
+                        state == PressureButtonState.FullyPressed && _activateOnFullyPressed;
+        if (!eligible) return false;
 
-        _stateResolver.EffectiveStateChanged += HandleStateChanged;
+        ResolveReferences();
+        _triggered = true;
+        if (_focusOnActivation == null) return false;
+        IsWaitingForFocus = true;
+        _activation = _focusOnActivation.ActivateWhenFocused(this, _ => ReleaseContribution(), ReleaseContribution,
+            () => _stateResolver != null && _stateResolver.IsPreparingTraps());
+        return IsWaitingForFocus;
+    }
+
+    private void ReleaseContribution()
+    {
+        IsWaitingForFocus = false;
+        if (_stateResolver != null && _stateResolver.isActiveAndEnabled)
+            _stateResolver.RefreshTrapContribution();
+    }
+
+    public void CancelPending()
+    {
+        _activation?.Dispose();
+        _activation = null;
+        IsWaitingForFocus = false;
     }
 
     private void OnDisable()
     {
-        if (_stateResolver != null)
-        {
-            _stateResolver.EffectiveStateChanged -= HandleStateChanged;
-        }
+        CancelPending();
+        ReleaseContribution();
     }
 
-    private void HandleStateChanged(PressureButtonState state)
-    {
-        switch (state)
-        {
-            case PressureButtonState.HalfPressed:
-                ActivateHalfPressedOnce();
-                break;
-
-            case PressureButtonState.FullyPressed:
-                ActivateFullyPressedOnce();
-                break;
-        }
-    }
-
-    private void ActivateHalfPressedOnce()
-    {
-        if (!_activateOnHalfPressed || _halfPressedTriggered)
-        {
-            return;
-        }
-
-        _halfPressedTriggered = true;
-        _focusOnActivation.Activate();
-    }
-
-    private void ActivateFullyPressedOnce()
-    {
-        if (!_activateOnFullyPressed || _fullyPressedTriggered)
-        {
-            return;
-        }
-
-        _fullyPressedTriggered = true;
-        _focusOnActivation.Activate();
-    }
-
-    /// <summary>
-    /// Permite volver a habilitar ambos disparos, por ejemplo al reiniciar un puzzle
-    /// sin recargar la escena.
-    /// </summary>
     public void ResetOneShotTriggers()
     {
-        _halfPressedTriggered = false;
-        _fullyPressedTriggered = false;
+        CancelPending();
+        _triggered = false;
+    }
+
+    private void ResolveReferences()
+    {
+        if (_stateResolver == null) _stateResolver = GetComponent<PressureButtonStateResolver>();
+        if (_focusOnActivation == null) _focusOnActivation = GetComponent<FocusOnActivation>();
     }
 
 #if UNITY_EDITOR
-    private void OnValidate()
-    {
-        if (_stateResolver == null)
-        {
-            _stateResolver = GetComponent<PressureButtonStateResolver>();
-        }
-
-        if (_focusOnActivation == null)
-        {
-            _focusOnActivation = GetComponent<FocusOnActivation>();
-        }
-    }
+    private void OnValidate() => ResolveReferences();
 #endif
 }

@@ -1,18 +1,17 @@
 using System.Collections;
-using System.Linq;
 using UnityEngine;
 using static PauseUtils;
 
 /// <summary>
 /// Plataforma Vertical:
 /// - Idle: detenida
-/// - Activating: reproduce feedback visual/sonoro previo al movimiento
+/// - Activating: espera la llegada del foco
 /// - Moving: se desplaza hacia el waypoint objetivo
 /// - Waiting: espera en un waypoint antes de continuar
 ///
 /// Pause/Lock no cambian el estado lógico: solo congelan la ejecución.
 /// </summary>
-public class MoveVerticalPlatform : MonoBehaviour, IPausable
+public class MoveVerticalPlatform : MonoBehaviour, IPausable, IFocusActivatablePlatform
 {
     private enum PlatformState
     {
@@ -37,7 +36,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     [SerializeField] private ParticleSystem sandMoundsParticle;
     [SerializeField] private ParticleSystem activationParticles;
     [SerializeField] private float glowDuration = 2f;
-    [SerializeField] private float glowIntensity = 0.15f;
+    [SerializeField] private float glowIntensity = 2f;
 
     private PlatformState _state = PlatformState.Idle;
 
@@ -47,19 +46,27 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     private bool _isGloballyPaused;
     private bool _isLocked;
 
-    private Material[] _platformMaterials;
+    private ActivationGlow _activationGlow;
     private AudioSource _movingAudio;
     private Coroutine _stateRoutine;
 
     private FocusOnActivation _focusOnActivation;
+    private FocusManager.ActivationHandle _activation;
+    private Coroutine _glowRoutine;
+    private bool _activationEffectsStarted;
+    private bool _activationRumblePending;
+    public bool IsPreparingActivation => isActiveAndEnabled && _state == PlatformState.Activating;
+    private bool _moveDuringFocus;
 
-    private bool IsFrozen => _isGloballyPaused || _isLocked;
+    private bool IsFrozen => _isGloballyPaused || (_moveDuringFocus && PlayerLock.Instance != null
+        ? PlayerLock.Instance.IsLockedExcept(FocusManager.LockId) : _isLocked);
     private bool HasValidWaypoints => waypoints != null && waypoints.Length > 0;
     private bool CanMoveLogic => !IsFrozen && HasValidWaypoints;
 
     private void Awake()
     {
-        _platformMaterials = GetMaterialsFromChildren();
+        _activationGlow = GetComponent<ActivationGlow>();
+        if (_activationGlow == null) _activationGlow = gameObject.AddComponent<ActivationGlow>();
         _focusOnActivation = GetComponent<FocusOnActivation>();
     }
 
@@ -104,7 +111,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     public void StartAction()
     {
-        if (!HasValidWaypoints || waypoints.Length <= 1)
+        if (!isActiveAndEnabled || !HasValidWaypoints || waypoints.Length <= 1)
             return;
 
         switch (_state)
@@ -126,6 +133,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         if (!HasValidWaypoints || waypoints.Length <= 1)
             return;
 
+        CancelActivation();
         StopCurrentRoutine();
 
         _targetWaypointIndex = GetNextIndex(_currentWaypointIndex, -1);
@@ -143,11 +151,44 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
         StopCurrentRoutine();
         ChangeState(PlatformState.Activating);
-        _stateRoutine = StartCoroutine(ActivationRoutine());
+        if (_focusOnActivation != null)
+            _activation = _focusOnActivation.ActivateWhenFocused(this, BeginActivationEffects, EndActivationFocus,
+                () => IsPreparingActivation);
+        else
+            BeginActivationEffects(false);
+    }
+
+    public void StartActionWithoutFocus(bool allowMovementDuringFocus)
+    {
+        if (!isActiveAndEnabled || !HasValidWaypoints || waypoints.Length <= 1) return;
+        if (_state != PlatformState.Idle) { StopPlatform(); return; }
+        ChangeState(PlatformState.Activating);
+        BeginActivationEffects(allowMovementDuringFocus);
+    }
+
+    public void EndActivationFocus()
+    {
+        _moveDuringFocus = false;
+        if (_state == PlatformState.Activating && !_activationEffectsStarted) ChangeState(PlatformState.Idle);
+        RefreshFeedback();
+    }
+
+    private void CancelActivation()
+    {
+        _activationEffectsStarted = false;
+        _activationRumblePending = false;
+        _activation?.Dispose();
+        _activation = null;
+        EndActivationFocus();
+        if (_glowRoutine != null) StopCoroutine(_glowRoutine);
+        _glowRoutine = null;
+        activationParticles?.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        SetGlow(0f);
     }
 
     private void StopPlatform()
     {
+        CancelActivation();
         StopCurrentRoutine();
         ChangeState(PlatformState.Idle);
     }
@@ -158,19 +199,48 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         RefreshFeedback();
     }
 
-    private IEnumerator ActivationRoutine()
+    private void BeginActivationEffects(bool hasFocus)
     {
-        activationParticles?.Play();
-        _focusOnActivation?.Activate();
+        if (!isActiveAndEnabled || _state != PlatformState.Activating) return;
+        _moveDuringFocus = hasFocus;
+        _activationEffectsStarted = true;
+        _glowRoutine = StartCoroutine(ActivationEffectsRoutine());
+    }
 
+    private IEnumerator ActivationEffectsRoutine()
+    {
+        while (IsFrozen) yield return null;
+        activationParticles?.Play(true);
         yield return RunGlowSequence();
+        if (activationParticles != null)
+        {
+            activationParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            while (activationParticles.IsAlive(true) || IsFrozen) yield return null;
+        }
+        while (IsFrozen) yield return null;
+        if (!isActiveAndEnabled || _state != PlatformState.Activating) yield break;
+        _activationEffectsStarted = false;
+        _activationRumblePending = true;
+        BeginMovement();
+        _glowRoutine = null;
+    }
 
-        if (_state != PlatformState.Activating)
-            yield break;
+    // Un pulso con el primer desplazamiento, nunca al cambiar de waypoint.
+    private void NotifyActivationMovement(Vector3 previousPosition)
+    {
+        if (!_activationRumblePending || transform.position == previousPosition) return;
+        _activationRumblePending = false;
+        if (GameEventManager.Instance == null) return;
+        GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.8f, 2f);
+        GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.8f, 2f);
+    }
 
+    private void BeginMovement()
+    {
+        if (!isActiveAndEnabled || _state != PlatformState.Activating) return;
         _targetWaypointIndex = GetNextIndex(_currentWaypointIndex, 1);
         ChangeState(PlatformState.Moving);
-        _stateRoutine = null;
+        RefreshFeedback();
     }
 
     private IEnumerator WaitAtWaypointRoutine()
@@ -215,7 +285,9 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         }
 
         float step = speed * speedFactor * Time.deltaTime;
+        Vector3 previousPosition = transform.position;
         transform.position = Vector3.MoveTowards(transform.position, target.position, step);
+        NotifyActivationMovement(previousPosition);
 
         if (Vector3.Distance(transform.position, target.position) <= 0.001f)
         {
@@ -238,6 +310,11 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     private void RefreshFeedback()
     {
+        if (activationParticles != null)
+        {
+            if (IsFrozen && activationParticles.isPlaying) activationParticles.Pause();
+            else if (!IsFrozen && activationParticles.isPaused) activationParticles.Play();
+        }
         bool shouldPlayMoveFeedback = _state == PlatformState.Moving && !IsFrozen;
 
         RefreshSandParticles(shouldPlayMoveFeedback);
@@ -307,15 +384,9 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     #region Glow
 
-    private Material[] GetMaterialsFromChildren()
-    {
-        return GetComponentsInChildren<Renderer>()
-            .SelectMany(r => r.materials)
-            .ToArray();
-    }
-
     private IEnumerator RunGlowSequence()
     {
+        while (IsFrozen) yield return null;
         yield return AnimateGlow(0f, glowIntensity, glowDuration * 0.5f);
 
         if (platformBank != null && !string.IsNullOrEmpty(activationSoundKey))
@@ -323,11 +394,6 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
         yield return AnimateGlow(glowIntensity, 0f, glowDuration * 0.5f);
 
-        if (GameEventManager.Instance != null)
-        {
-            GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.8f, 2f);
-            GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.8f, 2f);
-        }
     }
 
     private IEnumerator AnimateGlow(float from, float to, float duration)
@@ -342,7 +408,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
         while (elapsed < duration)
         {
-            while (_isGloballyPaused)
+            while (IsFrozen)
                 yield return null;
 
             elapsed += Time.deltaTime;
@@ -355,16 +421,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
         SetGlow(to);
     }
 
-    private void SetGlow(float intensity)
-    {
-        if (_platformMaterials == null) return;
-
-        foreach (var mat in _platformMaterials)
-        {
-            if (mat != null && mat.HasProperty("_GlowIntensity"))
-                mat.SetFloat("_GlowIntensity", intensity);
-        }
-    }
+    private void SetGlow(float intensity) => _activationGlow?.SetIntensity(intensity);
 
     #endregion
 
@@ -389,6 +446,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     // de orden de ejecución con Event Managers globales que son Singletons.
     private void OnEnable()
     {
+        _isLocked = PlayerLock.Instance != null && PlayerLock.Instance.IsLocked;
         if (GameEventManager.Instance == null) return;
         
         GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
@@ -397,6 +455,7 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
 
     private void OnDisable()
     {
+        StopPlatform();
         // Es crucial desuscribirse aquí para que el Event Manager no llame 
         // a una plataforma destruida o desactivada al recargar escena/morir.
         if (GameEventManager.Instance == null) return;
@@ -423,3 +482,4 @@ public class MoveVerticalPlatform : MonoBehaviour, IPausable
     //
     // #endregion
 }
+
