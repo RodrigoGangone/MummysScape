@@ -44,7 +44,7 @@ public class Bandage : MonoBehaviour, IPausable
 
         // 2. Continuar con la lógica de inicialización temporal
         if (_collider != null) _collider.enabled = false;
-        if (_weightProvider != null) _weightProvider.enabled = false;
+        //if (_weightProvider != null) _weightProvider.enabled = false;
         if (_instancedMaterial != null) _instancedMaterial.SetFloat(IsActive, 0);
 
         StopAllCoroutines();
@@ -96,7 +96,7 @@ public class Bandage : MonoBehaviour, IPausable
     {
         yield return WaitForSecondsPausable(duration, () => _paused);
         if (_collider != null) _collider.enabled = true;
-        if (_weightProvider != null) _weightProvider.enabled = true;
+        //if (_weightProvider != null) _weightProvider.enabled = true;
         if (_instancedMaterial != null) _instancedMaterial.SetFloat(IsActive, 1);
     }
 
