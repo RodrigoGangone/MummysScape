@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>Resuelve la placa y el aporte de peso, con retención independiente por botón.</summary>
@@ -17,6 +18,17 @@ public sealed class PressureButtonStateResolver : MonoBehaviour
 
     private bool _fullyPressedWasReached;
     private bool _configurationChanged;
+    private PressureButtonOneShotFocusTrigger _focusTrigger;
+    private readonly HashSet<SpikeTrapController> _activationTraps = new HashSet<SpikeTrapController>();
+
+    public void RegisterActivationTrap(SpikeTrapController trap) => _activationTraps.Add(trap);
+    public void UnregisterActivationTrap(SpikeTrapController trap) => _activationTraps.Remove(trap);
+    public bool IsPreparingTraps()
+    {
+        foreach (var trap in _activationTraps)
+            if (trap != null && trap.IsPreparingActivation) return true;
+        return false;
+    }
 
     public PressureButtonState EffectiveState { get; private set; } = PressureButtonState.Released;
     public int RealWeight => _weightSensor != null && _weightSensor.isActiveAndEnabled
@@ -24,6 +36,9 @@ public sealed class PressureButtonStateResolver : MonoBehaviour
     public int EffectiveWeight { get; private set; }
     public event Action<PressureButtonState> EffectiveStateChanged;
     public event Action<int> EffectiveWeightChanged;
+    public int TrapWeight { get; private set; }
+    public PressureButtonState TrapState { get; private set; } = PressureButtonState.Released;
+    public event Action<PressureButtonState> TrapStateChanged;
 
     private void Awake() => ResolveReferences();
 
@@ -55,6 +70,7 @@ public sealed class PressureButtonStateResolver : MonoBehaviour
 
     private void OnDisable()
     {
+        _focusTrigger?.CancelPending();
         if (_weightSensor != null)
             _weightSensor.TotalWeightChanged -= EvaluateWeight;
         if (_holdTimer != null)
@@ -112,8 +128,23 @@ public sealed class PressureButtonStateResolver : MonoBehaviour
         // Ambos valores son coherentes antes de notificar a las vistas o a otros consumidores.
         EffectiveWeight = weight;
         EffectiveState = state;
+        RefreshTrapContribution();
         if (weightChanged) EffectiveWeightChanged?.Invoke(weight);
         if (stateChanged) EffectiveStateChanged?.Invoke(state);
+    }
+
+    public void RefreshTrapContribution()
+    {
+        if (_focusTrigger == null) _focusTrigger = GetComponent<PressureButtonOneShotFocusTrigger>();
+        if (isActiveAndEnabled && _focusTrigger != null &&
+            _focusTrigger.DelayFirstContribution(EffectiveState)) return;
+
+        TrapWeight = isActiveAndEnabled ? EffectiveWeight : 0;
+        PressureButtonState state = TrapWeight >= _fullPressThreshold ? PressureButtonState.FullyPressed
+            : TrapWeight >= _halfPressThreshold ? PressureButtonState.HalfPressed : PressureButtonState.Released;
+        if (TrapState == state) return;
+        TrapState = state;
+        TrapStateChanged?.Invoke(state);
     }
 
     private void ResolveReferences()

@@ -31,6 +31,16 @@ El menú contextual del componente permite capturar la posición de Motion Root 
 
 ## Configurar los botones y la retención
 
+### Foco de la primera pulsación
+
+Cada **SpearsButton** solicita un solo foco por carga de escena, al alcanzar el primer estado habilitado en **Pressure Button One Shot Focus Trigger**. Media presión y presión completa comparten ese único disparo. Los campos existentes de estados habilitados y las referencias de cámara se conservan.
+
+La placa, las runas y las partículas responden inmediatamente. El aporte a las lanzas espera hasta que Cinemachine termina la transición de entrada. Entonces se aplica el peso efectivo vigente: si cambió durante el recorrido de cámara, no se reproduce un valor anterior. Las siguientes pulsaciones y cambios de peso no esperan ni vuelven a enfocar. La vibración propia de la lanza se conserva.
+
+`EffectiveWeight` y `EffectiveState` describen el botón. `TrapWeight` y `TrapState` describen el aporte habilitado para sus lanzas; durante el primer paneo pueden ser distintos. Tanto las conexiones directas como los orquestadores antiguos usan este aporte. Los temporizadores de retención mantienen sus reglas y no se reinician por el foco.
+
+La configuración de cámara sigue en **Focus On Activation**. En esta secuencia, **Focus Duration** cuenta desde la llegada al encuadre, además del tiempo de entrada. Si el foco no está disponible, la activación continúa directamente y se registra una advertencia.
+
 En **Pressure Button State Resolver**:
 
 - **Peso para media pulsación:** 1 por defecto.

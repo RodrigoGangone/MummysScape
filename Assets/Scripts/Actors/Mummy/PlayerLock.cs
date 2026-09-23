@@ -17,6 +17,13 @@ public class PlayerLock : MonoBehaviour
 
     public bool IsLocked => _activeLocks.Count > 0;
 
+    public bool IsLockedExcept(string ignoredLockId)
+    {
+        foreach (string lockId in _activeLocks)
+            if (lockId != ignoredLockId) return true;
+        return false;
+    }
+
     private void Awake()
     {
         if (Instance == null)

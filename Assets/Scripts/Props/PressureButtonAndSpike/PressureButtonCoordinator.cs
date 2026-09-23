@@ -20,7 +20,11 @@ public sealed class PressureButtonCoordinator : MonoBehaviour
     private void OnEnable()
     {
         ResolveReferences();
-        if (_stateResolver != null) _stateResolver.EffectiveStateChanged += ApplyState;
+        if (_stateResolver != null)
+        {
+            _stateResolver.EffectiveStateChanged += ApplyState;
+            _stateResolver.TrapStateChanged += ApplyTrapState;
+        }
         RegisterConnections();
         if (_stateResolver != null) ApplyState(_stateResolver.EffectiveState);
     }
@@ -41,7 +45,11 @@ public sealed class PressureButtonCoordinator : MonoBehaviour
 
     private void OnDisable()
     {
-        if (_stateResolver != null) _stateResolver.EffectiveStateChanged -= ApplyState;
+        if (_stateResolver != null)
+        {
+            _stateResolver.EffectiveStateChanged -= ApplyState;
+            _stateResolver.TrapStateChanged -= ApplyTrapState;
+        }
         UnregisterConnections();
     }
 
@@ -65,6 +73,11 @@ public sealed class PressureButtonCoordinator : MonoBehaviour
     private void ApplyState(PressureButtonState state)
     {
         if (_plateMover != null) _plateMover.SetState(state);
+        if (_stateResolver != null) ApplyTrapState(_stateResolver.TrapState);
+    }
+
+    private void ApplyTrapState(PressureButtonState state)
+    {
         if (_spikeTrapTargets == null) return;
         SpikeTrapState trapState = state == PressureButtonState.FullyPressed ? SpikeTrapState.Lowered
             : state == PressureButtonState.HalfPressed ? SpikeTrapState.HalfRaised : SpikeTrapState.Raised;
