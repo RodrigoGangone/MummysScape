@@ -126,6 +126,11 @@ public sealed class PlayerContext
 
     public bool IsAimValid => _interactions != null && _interactions.IsAimValid;
 
+    // Solo habilitar el disparo cuando terminó la transición de INTRO AIM a LOOP AIM.
+    public bool IsAimReady => View.Animator != null
+                              && !View.Animator.IsInTransition(0)
+                              && View.Animator.GetCurrentAnimatorStateInfo(0).IsTag(Animations.Player.AIM_READY_TAG);
+
     public bool TryGetQuickTravel(Transform playerTf, out HippoTravel target)
     {
         target = null;

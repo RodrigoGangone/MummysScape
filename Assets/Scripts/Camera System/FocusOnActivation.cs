@@ -11,6 +11,8 @@ public class FocusOnActivation : MonoBehaviour
 
     [SerializeField] private Transform cameraFocusLookAt;
     [SerializeField] private float focusDuration = 2f;
+    [Tooltip("Duración del paneo de entrada. -1 conserva la transición de la cámara.")]
+    [SerializeField] private float blendInDuration = -1f;
     [SerializeField] private bool onlyOnce = true;
 
     [Header("Estilo del Foco")] [SerializeField]
@@ -42,7 +44,8 @@ public class FocusOnActivation : MonoBehaviour
                 zoomCurve,
                 message,
                 textColor,
-                messageDuration
+                messageDuration,
+                blendInDuration
             );
         }
         else
