@@ -18,10 +18,16 @@ public class Gem : MonoBehaviour
     
     private void Start()
     {
+        bool alreadyPicked = Save.WasGemPicked(gemNum);
+        if (alreadyPicked)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
         if (Renderer && Renderer.material.HasProperty(IsPickedProp))
         {
-            bool alreadyPicked = Save.WasGemPicked(gemNum);
-            Renderer.material.SetFloat(IsPickedProp, alreadyPicked ? 0 : 1f);
+            Renderer.material.SetFloat(IsPickedProp, 1f);
         }
     }
 
@@ -29,14 +35,19 @@ public class Gem : MonoBehaviour
     {
         if (!other.CompareTag(PLAYER_TAG)) return;
 
-        gemBank.Play3D(SfxIDs.Gem.Pick, transform.position);
-        
-        Save.MarkGemPicked(gemNum);
+        Vector3 pickupPosition = transform.position;
+        if (!Save.TryMarkGemPicked(gemNum))
+        {
+            gameObject.SetActive(false);
+            return;
+        }
 
-        GameEventManager.Instance.levelEvents.OnPickedGem.Raise(gemNum);
+        gemBank.Play3D(SfxIDs.Gem.Pick, pickupPosition);
+
+        GameEventManager.Instance.levelEvents.OnPickedGem.Raise(new GemPickupData(gemNum, pickupPosition));
         GameEventManager.Instance.levelEvents.OnRumbleLow.Raise(0.5f, 0.25f);
 
-        Instantiate(fxGemPick, transform.position, Quaternion.identity, null);
+        Instantiate(fxGemPick, pickupPosition, Quaternion.identity, null);
         
         gameObject.SetActive(false);
     }

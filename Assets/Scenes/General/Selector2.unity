@@ -178323,10 +178323,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3fda4ad8e02eddb428619f23c79bc2cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetUIElement: {fileID: 632331955}
-  uiCamera: {fileID: 0}
-  speed: 10
-  arrivalDistance: 0.5
+  _worldCamera: {fileID: 0}
+  _canvasRect: {fileID: 1255229863}
+  _gemUiPrefab: {fileID: 865852749827080046, guid: ecf65a7f18928024096b8018cb39bb4c, type: 3}
+  _travelDuration: 0.8
+  _curveHeight: 100
 --- !u!114 &1255229859
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178339,17 +178340,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72d2c5f98f179db4286c1f08cb904fdc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainCamera: {fileID: 0}
-  canvasRect: {fileID: 1255229863}
-  targetGemUI: {fileID: 632331955}
-  totalGemsText: {fileID: 682082965}
-  playerTransform: {fileID: 0}
-  gemUIPrefab: {fileID: 865852749827080046, guid: ecf65a7f18928024096b8018cb39bb4c, type: 3}
-  travelDuration: 0.8
-  curveHeight: 100
-  delayBetweenGems: 0.3
-  initialWaitTime: 2
-  iconPunchScale: {x: 1.3, y: 1.3, z: 1.3}
+  _flightAnimator: {fileID: 1255229858}
+  _targetGemUI: {fileID: 632331955}
+  _totalGemsText: {fileID: 682082965}
+  _playerTransform: {fileID: 0}
+  _delayBetweenGems: 0.3
+  _initialWaitTime: 2
+  _iconPunchScale: {x: 1.3, y: 1.3, z: 1.3}
 --- !u!114 &1255229860
 MonoBehaviour:
   m_ObjectHideFlags: 0

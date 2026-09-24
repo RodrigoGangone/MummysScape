@@ -43,6 +43,7 @@ public class GameEventManager : MonoBehaviour
         public GameEvent OnPauseChanged;
         public GameEvent OnRespawn;
         public GameEvent OnPickedGem;
+        public GameEvent OnGemReachedUI;
         public GameEvent OnRumbleLow;
         public GameEvent OnRumbleHigh;
         public GameEvent OnCinematicToggled;
