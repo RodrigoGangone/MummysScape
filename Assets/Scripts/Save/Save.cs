@@ -21,11 +21,11 @@ public static class Save
     #region TIER B: Lógica de Gemas
     
     // --- Escritura ---
-    public static void MarkGemPicked(int gemNum)
+    public static bool TryMarkGemPicked(int gemNum)
     {
         // 1. Verificar si ya se recogió para evitar duplicados
         string gemKey = PrefKeys.Gem(gemNum);
-        if (Get(gemKey, 0) != 0) return; 
+        if (Get(gemKey, 0) != 0) return false;
         
         // 2. Marcar gema individual
         Set(gemKey, true);
@@ -37,7 +37,11 @@ public static class Save
         // 4. Sumar al total GLOBAL
         string globalKey = PrefKeys.GemTotal(GLOBAL_ID);
         Set(globalKey, Get(globalKey, 0) + 1);
+
+        return true;
     }
+
+    public static void MarkGemPicked(int gemNum) => TryMarkGemPicked(gemNum);
 
     // --- Lectura ---
     public static bool WasGemPicked(int gemNum) 

@@ -1,136 +1,96 @@
 using System.Collections;
-using UnityEngine;
 using TMPro;
-using Random = UnityEngine.Random;
+using UnityEngine;
 
+/// <summary>
+/// Coordina en Selector el conteo de gemas globales pendientes de mostrar.
+/// El movimiento visual está delegado a GemFlightAnimator.
+/// </summary>
 public class GemCounterAnimator : MonoBehaviour
 {
-    [Header("Referencias")] 
-    public Camera mainCamera;
-    public RectTransform canvasRect;
-    public RectTransform targetGemUI; 
-    public TextMeshProUGUI totalGemsText;
-    public Transform playerTransform;
+    [Header("Referencias")]
+    [SerializeField] private GemFlightAnimator _flightAnimator;
+    [SerializeField] private RectTransform _targetGemUI;
+    [SerializeField] private TextMeshProUGUI _totalGemsText;
+    [SerializeField] private Transform _playerTransform;
 
-    [Header("Prefab")] 
-    public GameObject gemUIPrefab;
+    [Header("Configuración")]
+    [SerializeField] private float _delayBetweenGems = 0.15f;
+    [SerializeField] private float _initialWaitTime = 2f;
+    [SerializeField] private Vector3 _iconPunchScale = new(1.3f, 1.3f, 1.3f);
 
-    [Header("Configuración")] 
-    public float travelDuration = 0.8f;
-    public float curveHeight = 100f; 
-    public float delayBetweenGems = 0.15f;
-    public float initialWaitTime = 2.0f; // Tiempo de espera tras los focos
-    public Vector3 iconPunchScale = new Vector3(1.3f, 1.3f, 1.3f);
+    private Coroutine _punchRoutine;
 
-    IEnumerator Start()
+    private IEnumerator Start()
     {
-        if (mainCamera == null) mainCamera = Camera.main;
-
-        // 1. Esperamos a que todos los Tiles manden sus peticiones en su Start()
         yield return new WaitForEndOfFrame();
 
-        // 2. Si el FocusManager está ocupado con revelaciones, esperamos
         if (FocusManager.Instance != null && FocusManager.Instance.IsBusy)
         {
             while (FocusManager.Instance.IsBusy)
-            {
                 yield return null;
-            }
 
-            // Buffer extra tras las cámaras para que el jugador se ubique
-            yield return new WaitForSeconds(initialWaitTime);
+            yield return new WaitForSeconds(_initialWaitTime);
         }
 
-        // 3. Lógica de gemas usando tu sistema Save
-        int actualTotal = Save.GetGlobalGemCount(); 
+        int actualTotal = Save.GetGlobalGemCount();
         int lastSeenGems = Save.GetSeenGemsCount();
 
         if (actualTotal > lastSeenGems)
         {
-            int gemsToAnimate = actualTotal - lastSeenGems;
-            totalGemsText.text = lastSeenGems.ToString();
-            yield return StartCoroutine(SequenceRoutine(lastSeenGems, gemsToAnimate, actualTotal));
+            _totalGemsText.text = lastSeenGems.ToString();
+            yield return SequenceRoutine(lastSeenGems, actualTotal - lastSeenGems, actualTotal);
         }
         else
         {
-            totalGemsText.text = actualTotal.ToString();
+            _totalGemsText.text = actualTotal.ToString();
         }
     }
 
     private IEnumerator SequenceRoutine(int startCount, int amount, int finalTotal)
     {
-        // Pequeño delay inicial antes de que salgan las gemas
         yield return new WaitForSeconds(0.3f);
 
-        Vector3 pPos = (playerTransform != null) ? playerTransform.position : Vector3.zero;
-        Vector2 spawnBasePos = WorldToCanvasPosition(pPos + Vector3.up * 1.5f);
-        Vector2 destinationPos = GetCanvasPosition(targetGemUI);
+        if (_flightAnimator == null)
+        {
+            Debug.LogError("[GemCounterAnimator] Falta asignar GemFlightAnimator.", this);
+            _totalGemsText.text = finalTotal.ToString();
+            Save.UpdateSeenGemsCount(finalTotal);
+            yield break;
+        }
 
+        Vector3 playerPosition = _playerTransform != null ? _playerTransform.position : Vector3.zero;
         int currentCount = startCount;
+        int completedFlights = 0;
 
         for (int i = 0; i < amount; i++)
         {
-            GameObject go = Instantiate(gemUIPrefab, canvasRect);
-            RectTransform gemRect = go.GetComponent<RectTransform>();
-
-            gemRect.anchoredPosition = spawnBasePos + (Random.insideUnitCircle * 40f);
-
-            StartCoroutine(AnimateSingleGem(gemRect, destinationPos, () =>
+            _flightAnimator.PlayFromWorld(playerPosition + Vector3.up * 1.5f, _targetGemUI, () =>
             {
                 currentCount++;
-                totalGemsText.text = currentCount.ToString();
-                StopCoroutine(nameof(PunchIcon));
-                StartCoroutine(PunchIcon());
-            }));
+                completedFlights++;
+                _totalGemsText.text = currentCount.ToString();
 
-            yield return new WaitForSeconds(delayBetweenGems);
+                if (_punchRoutine != null)
+                    StopCoroutine(_punchRoutine);
+
+                _punchRoutine = StartCoroutine(PunchIcon());
+            });
+
+            yield return new WaitForSeconds(_delayBetweenGems);
         }
 
-        // Guardamos el progreso visto
-        Save.UpdateSeenGemsCount(finalTotal);
-    }
-
-    private IEnumerator AnimateSingleGem(RectTransform gem, Vector2 targetPos, System.Action onComplete)
-    {
-        float elapsed = 0;
-        Vector2 startPos = gem.anchoredPosition;
-        Vector2 midPoint = Vector2.Lerp(startPos, targetPos, 0.5f) + Vector2.up * curveHeight;
-
-        while (elapsed < travelDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / travelDuration;
-            float tStep = t * t * (3f - 2f * t); // Ease Out
-
-            Vector2 m1 = Vector2.Lerp(startPos, midPoint, tStep);
-            Vector2 m2 = Vector2.Lerp(midPoint, targetPos, tStep);
-            gem.anchoredPosition = Vector2.Lerp(m1, m2, tStep);
-
+        while (completedFlights < amount)
             yield return null;
-        }
 
-        onComplete?.Invoke();
-        Destroy(gem.gameObject);
+        Save.UpdateSeenGemsCount(finalTotal);
     }
 
     private IEnumerator PunchIcon()
     {
-        targetGemUI.localScale = iconPunchScale;
+        _targetGemUI.localScale = _iconPunchScale;
         yield return new WaitForSeconds(0.1f);
-        targetGemUI.localScale = Vector3.one;
-    }
-
-    private Vector2 WorldToCanvasPosition(Vector3 worldPos)
-    {
-        Vector2 screenPoint = mainCamera.WorldToScreenPoint(worldPos);
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, null, out Vector2 localPoint);
-        return localPoint;
-    }
-
-    private Vector2 GetCanvasPosition(RectTransform element)
-    {
-        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(null, element.position);
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, null, out Vector2 localPoint);
-        return localPoint;
+        _targetGemUI.localScale = Vector3.one;
+        _punchRoutine = null;
     }
 }
