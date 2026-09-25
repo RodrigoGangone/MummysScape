@@ -1,20 +1,19 @@
 using UnityEngine;
 
 /// <summary> 
-/// Estado de Retroceso: Desplaza al jugador por una curva Bézier al recibir daño, forzando la expulsión 
-/// de vendas del stock como un efecto visual de "drop" por impacto.
-/// Detecta colisiones contra cualquier objeto (excepto el propio jugador y triggers) en la trayectoria.
+/// Estado de Retroceso: Aplica una fuerza física (Impulso) al jugador tras un impacto.
+/// Respeta el tiempo de Stun inmovilizando al jugador mientras vuela y cae físicamente.
 /// </summary>
 public class KnockBackState : State, IBandageRestrictor
 {
     private readonly PlayerContext _ctx;
     private readonly GameObject _bandagePrefab;
     
-    private Vector3 _start, _end, _control;
     private float _duration, _timer;
     private bool _isActive;
 
-    private readonly float _playerRadius = 0.4f; 
+    // Fuerza de empuje ajustable. (Puedes mover esto al PlayerModel o pasarlo en el KnockbackData en el futuro)
+    private readonly float _pushForce = 300f;
 
     public bool isActive => _isActive;
     
@@ -41,75 +40,66 @@ public class KnockBackState : State, IBandageRestrictor
             return;
         }
 
+        // --- LÓGICA DE DROP DE VENDAS ---
         int stock = _ctx.Model.Bandages; 
-        
         if (_bandagePrefab != null && stock > 0)
         {
-            Vector3 spawnOrigin = _ctx.Tf.position + Vector3.up; 
+            Vector3 spawnOrigin = _ctx.Tf.position + (Vector3.up * 1f); 
 
             for (int i = 0; i < stock; i++)
             {
-                Vector3 randomOffset = Random.insideUnitSphere * 0.5f;
-                Vector3 spawnPos = spawnOrigin + randomOffset;
-
-                GameObject bandage = Object.Instantiate(_bandagePrefab, spawnPos, Random.rotation);
+                // Instanciamos en el centro sin offset para no quedar atrapados en paredes
+                GameObject bandage = Object.Instantiate(_bandagePrefab, spawnOrigin, Random.rotation);
                 bandage.GetComponent<Bandage>().SetupPickupDelay();
                 
                 if (bandage.TryGetComponent<Rigidbody>(out var rb))
                 {
                     Vector3 explosionDir = Random.onUnitSphere;
-                    explosionDir.y = Mathf.Abs(explosionDir.y);
-                    rb.AddForce(explosionDir * 8f, ForceMode.Impulse); 
+                    explosionDir.y = Mathf.Abs(explosionDir.y) + 0.5f; 
+                    rb.AddForce(explosionDir.normalized * 8f, ForceMode.Impulse); 
                 }
             }
         }
         
-        _start = _ctx.Tf.position;
-        _end = data.TargetPosition; 
+        // --- PREPARACIÓN DEL ESTADO ---
         _duration = data.Duration;
-        
-        GameEventManager.Instance.playerEvents.OnHit.Raise();
-
-        Vector3 mid = (_start + _end) / 2f;
-        mid.y += 5f; 
-        _control = mid;
-
         _timer = 0f;
         _isActive = true;
-        _ctx.Rb.isKinematic = true;
         
+        GameEventManager.Instance.playerEvents.OnHit.Raise();
         _ctx.View._koFX.Play();
+
+        // --- LÓGICA DE FÍSICAS (EL EMPUJÓN) ---
+        _ctx.Rb.isKinematic = false; 
+        _ctx.Rb.linearVelocity = Vector3.zero; // Limpiamos cualquier inercia previa (caminar, caer)
+
+        // Calculamos la dirección plana usando el TargetPosition que nos mandó el proyectil
+        Vector3 flatDirection = (data.TargetPosition - _ctx.Tf.position);
+        flatDirection.y = 0f; // Aseguramos que sea puramente horizontal
+        
+        // Si por alguna razón el vector es 0 (ej. superposición perfecta), empujamos hacia atrás del jugador
+        if (flatDirection.sqrMagnitude < 0.001f)
+        {
+            flatDirection = -_ctx.Tf.forward;
+        }
+
+        // Normalizamos y le agregamos una fuerte componente vertical (diagonal hacia arriba)
+        Vector3 pushDirection = flatDirection.normalized;
+        pushDirection.y = 1f; // Ángulo de ~45 grados hacia arriba
+        
+        // Aplicamos la fuerza física real en el espacio del mundo
+        _ctx.Rb.AddForce(pushDirection.normalized * _pushForce, ForceMode.Impulse);
     }
 
     public override void OnUpdate()
     {
         if (!_isActive) return;
 
-        float nextTimer = _timer + Time.deltaTime;
-        float t = Mathf.Clamp01(nextTimer / _duration);
-        float u = 1f - t;
-        
-        Vector3 nextPos = (u * u * _start) + (2f * u * t * _control) + (t * t * _end);
+        // Ahora el Update SOLO se encarga de contar el tiempo de Stun.
+        // Las colisiones y el movimiento en el aire las maneja Unity automáticamente.
+        _timer += Time.deltaTime;
 
-        // 2. Calculamos la dirección y distancia de este paso
-        Vector3 direction = nextPos - _ctx.Tf.position;
-        float distance = direction.magnitude;
-
-        int layerMask = ~(1 << _ctx.Tf.gameObject.layer);
-
-        if (distance > 0f && Physics.SphereCast(_ctx.Tf.position, _playerRadius, direction.normalized, out RaycastHit hit, distance, layerMask, QueryTriggerInteraction.Ignore))
-        {
-            _ctx.Tf.position = hit.point + (hit.normal * _playerRadius);
-            
-            _ctx.Observer.ConsumeKnockback();
-            _isActive = false;
-            return;
-        }
-
-        _timer = nextTimer;
-        _ctx.Tf.position = nextPos;
-
-        if (t >= 1f) 
+        if (_timer >= _duration) 
         {
             _ctx.Observer.ConsumeKnockback();
             _isActive = false;
@@ -125,8 +115,7 @@ public class KnockBackState : State, IBandageRestrictor
             _ctx.Observer.ConsumeKnockback();
         }
 
-        _ctx.Rb.isKinematic = false;
-        _ctx.Rb.linearVelocity = Vector3.zero; 
+        _ctx.Rb.linearVelocity = Vector3.zero; // Frenamos en seco al salir del Stun para no patinar
         _isActive = false;
         
         _ctx.View._koFX.Stop();

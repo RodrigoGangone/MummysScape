@@ -16,38 +16,91 @@ public class ActivateObjectsBullet : MonoBehaviour
     private Animator _animator;
     private Material _material;
     private BoxCollider _boxCollider;
+    private bool _activated;
+    private readonly List<MonoBehaviour> _activationGroup = new List<MonoBehaviour>();
+    private FocusManager.ActivationHandle _activation;
 
     private void Start()
     {
         _animator = GetComponent<Animator>();
-        _material = gameObject.GetComponentInChildren<Renderer>().material;
+        var targetRenderer = GetComponentInChildren<Renderer>();
+        if (targetRenderer != null) _material = targetRenderer.material;
         _boxCollider = GetComponent<BoxCollider>();
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.gameObject.CompareTag(PROJECTILE_TAG)) return;
+        if (_activated || !other.gameObject.CompareTag(PROJECTILE_TAG)) return;
+        _activated = true;
         
-        _boxCollider.enabled = false;
+        if (_boxCollider != null) _boxCollider.enabled = false;
         
-        eagleBank.Play3D(Eagle.Active, transform.position);
-        GameEventManager.Instance.levelEvents.OnRumbleHigh.Raise(0.5f,0.25f);
+        if (eagleBank != null) eagleBank.Play3D(Eagle.Active, transform.position);
         
-        _animator.SetBool("IsActive", !_animator.GetBool("IsActive"));
+        if (_animator != null) _animator.SetBool("IsActive", true);
 
-        StartCoroutine(SineIntensity());
+        if (_material != null) StartCoroutine(SineIntensity());
+
+        ActivatePlatforms();
+    }
+
+    private void ActivatePlatforms()
+    {
+        _activationGroup.Clear();
+        FocusOnActivation firstFocus = null;
+        var seen = new HashSet<MonoBehaviour>();
+        if (_platformsAll == null) return;
 
         foreach (GameObject platform in _platformsAll)
         {
-            MoveHorizontalPlatform moveHorizontalPlatform = platform.GetComponent<MoveHorizontalPlatform>();
-            MoveVerticalPlatform moveVerticalPlatform = platform.GetComponent<MoveVerticalPlatform>();
-
-            if (moveHorizontalPlatform != null)
-                moveHorizontalPlatform.StartAction();
-
-            if (moveVerticalPlatform != null)
-                moveVerticalPlatform.StartAction();
+            if (platform == null) continue;
+            foreach (var component in platform.GetComponents<MonoBehaviour>())
+            {
+                if (component is not IFocusActivatablePlatform || !component.isActiveAndEnabled ||
+                    !seen.Add(component)) continue;
+                _activationGroup.Add(component);
+                var focus = component.GetComponent<FocusOnActivation>();
+                if (firstFocus == null && focus != null && focus.CanFocus && !focus.IsPending)
+                    firstFocus = focus;
+            }
         }
+
+        if (_activationGroup.Count == 0) return;
+        if (firstFocus != null)
+            _activation = firstFocus.ActivateWhenFocused(this, StartGroup, FinishGroupFocus, IsGroupPreparing);
+        else
+        {
+            Debug.LogWarning("[ActivateObjectsBullet] El grupo no tiene un foco disponible; activando directamente.", this);
+            StartGroup(false);
+        }
+    }
+
+    private void StartGroup(bool hasFocus)
+    {
+        foreach (var component in _activationGroup)
+            if (component != null && component.isActiveAndEnabled)
+                ((IFocusActivatablePlatform)component).StartActionWithoutFocus(hasFocus);
+    }
+
+    private void FinishGroupFocus()
+    {
+        foreach (var component in _activationGroup)
+            if (component != null) ((IFocusActivatablePlatform)component).EndActivationFocus();
+    }
+
+    private bool IsGroupPreparing()
+    {
+        foreach (var component in _activationGroup)
+            if (component != null && component.isActiveAndEnabled &&
+                ((IFocusActivatablePlatform)component).IsPreparingActivation) return true;
+        return false;
+    }
+
+    private void OnDisable()
+    {
+        _activation?.Dispose();
+        _activation = null;
+        FinishGroupFocus();
     }
 
     IEnumerator SineIntensity()

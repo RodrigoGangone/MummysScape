@@ -22,9 +22,18 @@ public sealed class EnvironmentObserver : MonoBehaviour
 
     private void ProcessImpact(Collider other)
     {
+        // 1. Si ya tenemos un knockback pendiente esperando ser procesado, ignoramos los nuevos choques
+        if (HasKnockback) return; 
+
         if (other.TryGetComponent<IImpactSource>(out var source)) 
         {
-            _pendingKnockback = source.GetKnockbackData(transform.position);
+            var data = source.GetKnockbackData(transform.position);
+        
+            // 2. Filtro de seguridad: Solo guardamos el impacto si realmente tiene duración
+            if (data.Duration > 0f)
+            {
+                _pendingKnockback = data;
+            }
         }
     }
 

@@ -41,18 +41,19 @@ public class ChargeableProjectile : MonoBehaviour, IPausable, IImpactSource
         var mainModule = _particleSystem.main;
         mainModule.simulationSpace = ParticleSystemSimulationSpace.Local;
     }
-
     public KnockbackData GetKnockbackData(Vector3 victimPosition)
     {
         if (_hasImpacted) return new KnockbackData();
 
-        // Elevamos el punto de destino 1 metro para evitar el suelo
+        // Elevamos AMBOS puntos 1 metro para evitar el suelo de forma consistente
         Vector3 targetPoint = victimPosition + Vector3.up * 1.0f;
+        Vector3 originPoint = transform.position + Vector3.up * 1.0f;
 
-        if (Physics.Linecast(transform.position, targetPoint, wallMask))
+        // Trazamos el rayo desde el origen elevado
+        if (Physics.Linecast(originPoint, targetPoint, wallMask))
         {
             BeginImpactSequence();
-            return new KnockbackData { Duration = 0 }; // Importante: Duración 0
+            return new KnockbackData { Duration = 0 }; 
         }
 
         BeginImpactSequence();
@@ -133,14 +134,19 @@ public class ChargeableProjectile : MonoBehaviour, IPausable, IImpactSource
 
     private IEnumerator WaitParticlesAndDestroy()
     {
-        while (_particleSystem != null && _particleSystem.IsAlive(true))
+        float safetyTimer = 0f;
+        float maxWaitTime = 3f; // Tiempo máximo de vida tras el impacto
+
+        while (_particleSystem != null && _particleSystem.IsAlive(true) && safetyTimer < maxWaitTime)
         {
             if (_paused)
             {
                 yield return null;
+                continue; // ¡Clave! Evita que siga bajando y sume tiempo mientras está en pausa
             }
 
             yield return new WaitForSeconds(0.1f);
+            safetyTimer += 0.1f;
         }
 
         Destroy(gameObject);

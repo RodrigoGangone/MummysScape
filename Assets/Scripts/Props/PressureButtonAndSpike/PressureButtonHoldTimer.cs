@@ -8,10 +8,14 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class PressureButtonHoldTimer : MonoBehaviour
 {
+    [Header("Referencias internas")]
     [SerializeField] private TimerService _timerService;
+    [Header("Retención del botón")]
+    [Tooltip("Segundos que mantiene la pulsación completa después de perder peso.")]
     [SerializeField, Min(0.01f)] private float _duration = 10f;
 
     private TimerService.Handle _handle;
+    private float _runningDuration;
 
     public bool IsRunning { get; private set; }
     public float Progress { get; private set; }
@@ -19,25 +23,38 @@ public sealed class PressureButtonHoldTimer : MonoBehaviour
 
     public event Action<float> ProgressChanged;
     public event Action Completed;
+    public event Action Cancelled;
+
+    private void Awake()
+    {
+        if (_timerService == null) _timerService = GetComponent<TimerService>();
+    }
+
+    private void Update()
+    {
+        if (IsRunning && (_timerService == null || !_timerService.isActiveAndEnabled ||
+            _handle == null || !_handle.IsActive)) Cancel();
+    }
 
     public bool StartTimer()
     {
-        if (IsRunning)
+        if (IsRunning || !isActiveAndEnabled)
         {
             return false;
         }
 
-        if (_timerService == null)
+        if (_timerService == null || !_timerService.isActiveAndEnabled)
         {
             Debug.LogError($"{nameof(PressureButtonHoldTimer)} requiere una referencia a {nameof(TimerService)}.", this);
             return false;
         }
 
         IsRunning = true;
+        _runningDuration = _duration;
         SetProgress(0f);
 
         _handle = _timerService.StartTimer(
-            _duration,
+            _runningDuration,
             onTick: HandleTick,
             onComplete: HandleCompleted);
 
@@ -46,6 +63,7 @@ public sealed class PressureButtonHoldTimer : MonoBehaviour
 
     public void Cancel()
     {
+        bool wasRunning = IsRunning;
         if (_timerService != null)
         {
             _timerService.Cancel(_handle);
@@ -54,6 +72,7 @@ public sealed class PressureButtonHoldTimer : MonoBehaviour
         IsRunning = false;
         _handle = default;
         SetProgress(0f);
+        if (wasRunning) Cancelled?.Invoke();
     }
 
     public void ResetProgress()
@@ -68,9 +87,9 @@ public sealed class PressureButtonHoldTimer : MonoBehaviour
             return;
         }
 
-        float normalized = _duration <= Mathf.Epsilon
+        float normalized = _runningDuration <= Mathf.Epsilon
             ? 1f
-            : 1f - Mathf.Clamp01(remainingSeconds / _duration);
+            : 1f - Mathf.Clamp01(remainingSeconds / _runningDuration);
 
         SetProgress(normalized);
     }
@@ -113,5 +132,6 @@ public sealed class PressureButtonHoldTimer : MonoBehaviour
     private void OnValidate()
     {
         _duration = Mathf.Max(0.01f, _duration);
+        if (!Application.isPlaying && _timerService == null) _timerService = GetComponent<TimerService>();
     }
 }
