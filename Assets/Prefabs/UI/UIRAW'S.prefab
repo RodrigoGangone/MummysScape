@@ -15188,6 +15188,7 @@ GameObject:
   - component: {fileID: 1452704018874131265}
   - component: {fileID: 6465450270072123490}
   - component: {fileID: 2773828976717720136}
+  - component: {fileID: 8602942913382234541}
   m_Layer: 0
   m_Name: UIRAW'S
   m_TagString: Untagged
@@ -15327,7 +15328,9 @@ MonoBehaviour:
   - {fileID: 2634014140561048188}
   - {fileID: 6946103910405596220}
   - {fileID: 2308878015383503636}
-  _arrivalVfxPrefab: {fileID: 0}
+  _arrivalVfxPrefab: {fileID: 447731227072255516, guid: daaf971fbdd307f4ebc104da44da74ef, type: 3}
+  _gemCamera: {fileID: 593262403957919660}
+  _arrivalImpact: {fileID: 8602942913382234541}
 --- !u!114 &2773828976717720136
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15381,6 +15384,78 @@ MonoBehaviour:
     m_DissipationDistance: 100
     m_PropagationSpeed: 343
   m_DefaultVelocity: {x: 0, y: -1, z: 0}
+--- !u!114 &8602942913382234541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1131867531602732613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c07e5167c754156b5507d4c522ca959, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIGemArrivalImpact
+  _hourglassTarget: {fileID: 8128554405054064289}
+  _hourglassCamera: {fileID: 5844299055390964286}
+  _duration: 0.46
+  _recoilDistance: 0.045
+  _rollDegrees: 3.2
+  _squash: 0.075
+  _impactCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.34
+      value: -0.38
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.62
+      value: 0.14
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _impulseSource: {fileID: 2773828976717720136}
+  _shakeForce: 0.08
+  _shakeCooldown: 0.2
 --- !u!1 &1238904542461124749
 GameObject:
   m_ObjectHideFlags: 0
@@ -172793,6 +172868,11 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 5294635280621229833, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
   m_PrefabInstance: {fileID: 379728496170550536}
   m_PrefabAsset: {fileID: 0}
+--- !u!20 &5844299055390964286 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 6079311978427088694, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
+  m_PrefabInstance: {fileID: 379728496170550536}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &5853045662238334215 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6088623751154210831, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
@@ -172819,6 +172899,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f9d4957b06d62c4cbd3533b5df1424f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!4 &8128554405054064289 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8470000019200140201, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
+  m_PrefabInstance: {fileID: 379728496170550536}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &9091573718834834171 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8894278512471158771, guid: fc67a3da6da86d44b9c83dac57b96138, type: 3}
@@ -172928,6 +173013,11 @@ PrefabInstance:
       addedObject: {fileID: 2308878015383503636}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f214768d430db2a40a89a30601368d7d, type: 3}
+--- !u!20 &593262403957919660 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 174321440027701408, guid: f214768d430db2a40a89a30601368d7d, type: 3}
+  m_PrefabInstance: {fileID: 743341802338418444}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4420836291133795770 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3965725417120928438, guid: f214768d430db2a40a89a30601368d7d, type: 3}

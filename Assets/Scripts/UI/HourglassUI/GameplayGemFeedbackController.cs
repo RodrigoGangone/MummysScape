@@ -48,10 +48,13 @@ public class GameplayGemFeedbackController : MonoBehaviour
         RaiseArrival(gemNumber);
     }
 
-    private RectTransform GetTarget(int gemNumber)
+    public RectTransform GetTarget(int gemNumber)
     {
         int index = gemNumber - 1;
-        return _gemTargets != null && index >= 0 && index < _gemTargets.Length
+
+        return _gemTargets != null &&
+               index >= 0 &&
+               index < _gemTargets.Length
             ? _gemTargets[index]
             : null;
     }

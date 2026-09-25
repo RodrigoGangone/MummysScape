@@ -19,6 +19,7 @@ public class GemFlightAnimator : MonoBehaviour
     [SerializeField] private float _curveHeight = 100f;
 
     private readonly List<FlightHandle> _activeFlights = new();
+    private bool _paused;
 
     public int ActiveFlightCount => _activeFlights.Count;
 
@@ -112,6 +113,12 @@ public class GemFlightAnimator : MonoBehaviour
 
         while (elapsed < _travelDuration)
         {
+            if (_paused)
+            {
+                yield return null;
+                continue;
+            }
+
             elapsed += Time.deltaTime;
             float normalizedTime = Mathf.Clamp01(elapsed / _travelDuration);
             float easedTime = normalizedTime * normalizedTime * (3f - 2f * normalizedTime);
@@ -185,5 +192,20 @@ public class GemFlightAnimator : MonoBehaviour
         return canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
             ? canvas.worldCamera
             : null;
+    }
+
+    private void OnPauseChanged(bool paused) => _paused = paused;
+
+    private void OnEnable()
+    {
+        _paused = false;
+        if (GameEventManager.Instance != null)
+            GameEventManager.Instance.levelEvents.OnPauseChanged.Register<bool>(OnPauseChanged);
+    }
+
+    private void OnDisable()
+    {
+        if (GameEventManager.Instance != null)
+            GameEventManager.Instance.levelEvents.OnPauseChanged.Unregister<bool>(OnPauseChanged);
     }
 }
